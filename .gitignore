@@ -1,0 +1,31 @@
+# Environment
+.env
+.env.local
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+
+# Uploaded files
+app/static/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+.pytest_cache/
+*.egg-info/
+dist/
+build/

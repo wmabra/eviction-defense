@@ -1,0 +1,728 @@
+"""
+PDF Document Generator — produces the complete self-help paperwork packet.
+
+Generates all 8 documents in the $395 packet from confirmed customer data:
+1. Form 1.947(b) Answer — Residential Eviction (ReportLab PDF)
+2. Motion to Determine Rent (ReportLab PDF)
+3. Landlord Payment-Plan Letter (python-docx)
+4. Hardship/Extension Letter (python-docx)
+5. Filing Checklist (plain PDF)
+6. Court Checklist (plain PDF)
+7. E-Filing Instructions (python-docx)
+8. Rental Assistance Resource Sheet (python-docx)
+"""
+
+import os
+import logging
+from datetime import date, datetime
+from io import BytesIO
+from typing import Optional
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    PageBreak, ListFlowable, ListItem, HRFlowable,
+)
+from reportlab.pdfgen import canvas
+
+logger = logging.getLogger(__name__)
+
+
+def generate_packet(case_data: dict, output_dir: str) -> dict:
+    """Generate all documents for a case.
+
+    Args:
+        case_data: Confirmed case profile with all fields
+        output_dir: Directory to save generated PDFs
+
+    Returns:
+        dict with paths to each generated document
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    base = case_data
+
+    paths = {}
+
+    # 1. Form 1.947(b) Answer
+    answer_path = os.path.join(output_dir, "01_answer_residential_eviction.pdf")
+    _generate_answer_form(base, answer_path)
+    paths["answer"] = answer_path
+
+    # 2. Motion to Determine Rent (conditional)
+    defenses = base.get("defenses", {})
+    if defenses.get("def_amount", {}).get("checked"):
+        mtr_path = os.path.join(output_dir, "02_motion_to_determine_rent.pdf")
+        _generate_motion_to_determine_rent(base, mtr_path)
+        paths["motion_to_determine_rent"] = mtr_path
+
+    # 3. Landlord Payment-Plan Letter
+    if base.get("preferences", {}).get("wants_payment_plan"):
+        pplan_path = os.path.join(output_dir, "03_payment_plan_letter.docx")
+        _generate_payment_plan_letter(base, pplan_path)
+        paths["payment_plan_letter"] = pplan_path
+
+    # 4. Hardship Letter
+    if base.get("preferences", {}).get("needs_more_time"):
+        hardship_path = os.path.join(output_dir, "04_hardship_letter.docx")
+        _generate_hardship_letter(base, hardship_path)
+        paths["hardship_letter"] = hardship_path
+
+    # 5. Filing Checklist
+    checklist_path = os.path.join(output_dir, "05_filing_checklist.pdf")
+    _generate_filing_checklist(base, checklist_path)
+    paths["filing_checklist"] = checklist_path
+
+    # 6. Court Checklist
+    court_checklist_path = os.path.join(output_dir, "06_court_checklist.pdf")
+    _generate_court_checklist(base, court_checklist_path)
+    paths["court_checklist"] = court_checklist_path
+
+    # 7. E-Filing Instructions
+    efiling_path = os.path.join(output_dir, "07_e_filing_instructions.docx")
+    _generate_efiling_instructions(base, efiling_path)
+    paths["e_filing_instructions"] = efiling_path
+
+    # 8. Rental Assistance Sheet
+    rental_path = os.path.join(output_dir, "08_rental_assistance_resources.docx")
+    _generate_rental_assistance_sheet(base, rental_path)
+    paths["rental_assistance"] = rental_path
+
+    return paths
+
+
+# ======================== FORM 1.947(b) ANSWER ========================
+
+def _generate_answer_form(data: dict, output_path: str):
+    """Generate the Florida Form 1.947(b) Answer — Residential Eviction."""
+    doc = SimpleDocTemplate(
+        output_path, pagesize=letter,
+        topMargin=0.6*inch, bottomMargin=0.6*inch,
+        leftMargin=0.75*inch, rightMargin=0.75*inch,
+    )
+    styles = _get_styles()
+    elements = []
+    S = styles  # shorthand
+
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+
+    # Caption
+    caption_text = (
+        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, FLORIDA\n"
+        f"CASE NO.: {c.get('case_number', '_______________')}\n"
+        f"DIVISION: _______________\n\n"
+        f"{l.get('landlord_name', '_____________________________')}, Plaintiff(s),\n"
+        f"vs.\n"
+        f"{p.get('full_name', '_____________________________')}, Defendant(s).\n"
+    )
+    elements.append(Paragraph(caption_text, S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 12))
+
+    # Title
+    elements.append(Paragraph("ANSWER – RESIDENTIAL EVICTION", S["Title"]))
+    elements.append(Spacer(1, 12))
+
+    # Section 1: Answer the complaint
+    elements.append(Paragraph(
+        "<b>1.</b> The defendant answers the complaint as follows: "
+        "(Check <b>ONLY 1</b>, a. or b.)", S["Body"]
+    ))
+    elements.append(Spacer(1, 6))
+
+    # Determine if they generally deny or admit
+    defenses = data.get("defenses", {})
+    checked_defenses = [k for k, v in defenses.items() if isinstance(v, dict) and v.get("checked")]
+    generally_deny = len(checked_defenses) > 0  # If they have defenses, they generally deny
+
+    if generally_deny:
+        elements.append(Paragraph("☑ <b>a.</b> Defendant generally denies each statement of the complaint.", S["Body"]))
+        elements.append(Paragraph("☐ <b>b.</b> Defendant admits that all the statements of the complaint are true EXCEPT:", S["Body"]))
+    else:
+        elements.append(Paragraph("☐ <b>a.</b> Defendant generally denies each statement of the complaint.", S["Body"]))
+        elements.append(Paragraph("☑ <b>b.</b> Defendant admits that all the statements of the complaint are true EXCEPT:", S["Body"]))
+        elements.append(Paragraph(
+            "&nbsp;&nbsp;&nbsp;&nbsp;i. The following statement(s) in paragraph(s) _________ of the complaint is/are false.",
+            S["Body"]
+        ))
+
+    elements.append(Spacer(1, 12))
+
+    # Section 2: Rent deposit warning
+    elements.append(Paragraph(
+        '<b>2.</b> If you write down any defense other than payment of rent, then you must take '
+        'one of the following steps:', S["Body"]
+    ))
+    elements.append(Paragraph(
+        '&nbsp;&nbsp;<b>a.</b> If you agree with the landlord about the rent owed, then you must pay '
+        'the rent owed into the court registry when you file this response.', S["Body"]
+    ))
+    elements.append(Paragraph(
+        '&nbsp;&nbsp;<b>b.</b> If you disagree with the landlord about the rent owed for any reason, '
+        'then you must check box 3(b) below and describe with detail why you disagree.', S["Body"]
+    ))
+    elements.append(Paragraph(
+        '&nbsp;&nbsp;<b>c.</b> You <b>MUST</b> pay the clerk of court the rent each time it becomes due '
+        'until the lawsuit is over. If you fail to follow these instructions, then you will lose your '
+        'defenses. You will not have a hearing in your case and you may be evicted without a court date.',
+        S["BodyWarning"]
+    ))
+    elements.append(Spacer(1, 12))
+
+    # Section 3: Defenses
+    elements.append(Paragraph(
+        "<b>3.</b> The defendant sets forth the following defenses to the complaint: "
+        "(Check ONLY the defenses that apply, and state brief facts to support each checked defense.)",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 6))
+
+    defense_items = [
+        ("a", "The landlord did not make repairs, and I withheld my rent after sending written notice to the landlord.",
+         "def_repairs", "(Attach a copy of the written notice to the landlord.)"),
+        ("b", "I do not owe the total amount of rent or ongoing amount of rent the landlord claims I owe.",
+         "def_amount", "(Motion to Determine Rent.)"),
+        ("c", "I attempted/offered to pay all the rent due before the notice to pay rent expired, but the landlord did not accept the rent payment.",
+         "def_attempted_pay", ""),
+        ("d", "I paid the rent demanded by the landlord in the notice to pay rent.",
+         "def_paid", ""),
+        ("e", "The landlord waived, changed, or canceled the notice that required me to move out.",
+         "def_waived", ""),
+        ("f", "The landlord filed the eviction in retaliation against me.",
+         "def_retaliation", ""),
+        ("g", "The landlord filed the eviction in violation of the Federal Fair Housing Act and/or the Florida Fair Housing Act.",
+         "def_fair_housing", ""),
+        ("h", "The landlord accepted rent from me after sending me the notice to terminate.",
+         "def_accepted_rent", ""),
+        ("i", "I already corrected the violations claimed by the landlord on the notice to terminate.",
+         "def_corrected", ""),
+        ("j", "The landlord is not the owner of the property where I live.",
+         "def_not_owner", ""),
+        ("k", "I did not receive the notice to terminate or the notice was legally incorrect.",
+         "def_bad_notice", ""),
+        ("l", "Other defenses.",
+         "def_other", ""),
+    ]
+
+    for letter_code, text, def_key, extra in defense_items:
+        defense = defenses.get(def_key, {})
+        checked = defense.get("checked", False) if isinstance(defense, dict) else False
+        explanation = defense.get("explanation", "") if isinstance(defense, dict) else ""
+
+        checkbox = "☑" if checked else "☐"
+        extra_text = f" <i>{extra}</i>" if extra else ""
+        elements.append(Paragraph(
+            f"{checkbox} <b>{letter_code}.</b> {text}{extra_text}",
+            S["Body"]
+        ))
+        if checked and explanation:
+            elements.append(Paragraph(
+                f'&nbsp;&nbsp;&nbsp;&nbsp;<i>Explanation:</i> {explanation}',
+                S["BodySmall"]
+            ))
+        elements.append(Spacer(1, 4))
+
+    elements.append(Spacer(1, 12))
+
+    # Section 4: Jury trial notice
+    elements.append(Paragraph("<b>4.</b> You have a constitutional right to request a trial by jury.", S["Body"]))
+    for sub in ["a", "b", "c", "d"]:
+        jury_texts = {
+            "a": "You may have waived this right in your lease, so review it carefully before requesting a jury trial.",
+            "b": "If you want a jury trial, you should request it in writing when you file your answer.",
+            "c": "Jury trials are not simple to conduct. You will bear some responsibility in the process.",
+            "d": "If you have questions about whether to request a jury trial, you should speak with an attorney.",
+        }
+        elements.append(Paragraph(f"&nbsp;&nbsp;<b>{sub}.</b> {jury_texts[sub]}", S["BodySmall"]))
+
+    elements.append(Spacer(1, 12))
+
+    # Section 5: Trial by judge or jury
+    trial_by = data.get("preferences", {}).get("trial_by", "judge")
+    judge_checked = "☑" if trial_by == "judge" else "☐"
+    jury_checked = "☑" if trial_by == "jury" else "☐"
+
+    elements.append(Paragraph("<b>5.</b> Select whether you want to request a jury trial:", S["Body"]))
+    elements.append(Paragraph(f"{judge_checked} I want a <b>judge</b> to decide my case.", S["Body"]))
+    elements.append(Paragraph(f"{jury_checked} I want a <b>jury</b> to decide my case.", S["Body"]))
+    elements.append(Spacer(1, 12))
+
+    # Signature block
+    today = date.today().strftime("%B %d, %Y")
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(f"Signature: ______________________________", S["Body"]))
+    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '_____________________________')}", S["Body"]))
+    elements.append(Paragraph(f"Date: {today}", S["Body"]))
+    elements.append(Paragraph(f"Address: {p.get('property_address', '_____________________________')}", S["Body"]))
+    elements.append(Paragraph(f"Telephone: {p.get('phone', '_____________________________')}", S["Body"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '_____________________________')}", S["Body"]))
+    elements.append(Spacer(1, 12))
+
+    # Certificate of Service
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["Body"]))
+    elements.append(Paragraph(
+        f"I CERTIFY that a copy has been furnished by mail / hand-delivery / portal e-service "
+        f"on this {today}, to {l.get('landlord_name', 'the Plaintiff')}"
+        f" at {l.get('landlord_address', '_____________________________')}.",
+        S["BodySmall"]
+    ))
+
+    doc.build(elements)
+
+
+# ======================== MOTION TO DETERMINE RENT ========================
+
+def _generate_motion_to_determine_rent(data: dict, output_path: str):
+    """Generate Motion to Determine Rent under §83.60(2)."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    styles = _get_styles()
+    elements = []
+    S = styles
+
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    r = data.get("rent_payment", {})
+
+    caption = (
+        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, FLORIDA\n"
+        f"CASE NO.: {c.get('case_number', '_______________')}\n\n"
+        f"{l.get('landlord_name', 'Plaintiff')},\n"
+        f"vs.\n"
+        f"{p.get('full_name', 'Defendant')},\n"
+    )
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("DEFENDANT'S MOTION TO DETERMINE RENT", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(
+        f"Defendant, {p.get('full_name', '_________________')}, by and through this self-help filing, "
+        f"respectfully requests this Court to determine the amount of rent to be deposited "
+        f"into the Court Registry pursuant to Florida Statute §83.60(2).", S["Body"]
+    ))
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph("<b>FACTUAL BACKGROUND</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"1. Defendant resides at {p.get('property_address', '_________________')}, "
+        f"{p.get('property_city', '')}, Florida.", S["Body"]
+    ))
+    elements.append(Paragraph(
+        f"2. Plaintiff filed a complaint for eviction claiming ${c.get('complaint_amount_claimed', '0')} "
+        f"in unpaid rent.", S["Body"]
+    ))
+    elements.append(Paragraph(
+        f"3. Defendant believes the amount claimed is incorrect.", S["Body"]
+    ))
+    if r.get("why_disagree"):
+        elements.append(Paragraph(
+            f"4. Specifically: {r['why_disagree']}", S["Body"]
+        ))
+    elements.append(Paragraph(
+        f"5. Defendant believes the correct amount owed is "
+        f"${r.get('amount_tenant_believes_owed', 'an amount to be determined by the Court')}.", S["Body"]
+    ))
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph("<b>ARGUMENT</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        "Florida Statute §83.60(2) provides that when a tenant disputes the amount of rent "
+        "alleged in the complaint, the Court shall determine the correct amount to be deposited "
+        "into the Court Registry.", S["Body"]
+    ))
+    elements.append(Spacer(1, 8))
+
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    today = date.today().strftime("%B %d, %Y")
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing has been furnished "
+        f"to {l.get('landlord_name', 'Plaintiff')} at {l.get('landlord_address', '_________________')} "
+        f"on this {today}.", S["BodySmall"]
+    ))
+    elements.append(Spacer(1, 12))
+
+    hr = HRFlowable(width=3*inch, thickness=1, hAlign="LEFT")
+    elements.append(hr)
+    elements.append(Paragraph(f"Signature: ______________________________", S["Body"]))
+    elements.append(Paragraph(f"Date: {today}", S["Body"]))
+    elements.append(Paragraph(f"{p.get('full_name', '_________________')}, Defendant", S["Body"]))
+    elements.append(Paragraph(f"{p.get('phone', '')}", S["Body"]))
+    elements.append(Paragraph(f"{p.get('email', '')}", S["Body"]))
+
+    doc.build(elements)
+
+
+# ======================== LETTERS (DOCX) ========================
+
+def _generate_payment_plan_letter(data: dict, output_path: str):
+    """Generate landlord payment-plan request letter."""
+    from docx import Document
+    from docx.shared import Pt, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    doc = Document()
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    pref = data.get("preferences", {})
+
+    # Date
+    doc.add_paragraph(date.today().strftime("%B %d, %Y"))
+
+    # Landlord address
+    doc.add_paragraph("")
+    doc.add_paragraph(l.get("landlord_name", ""))
+    doc.add_paragraph(l.get("landlord_address", ""))
+    doc.add_paragraph("")
+
+    # Re:
+    doc.add_paragraph(f"RE: Payment Plan Request — Property at {p.get('property_address', '')}")
+    doc.add_paragraph(f"    Case No: {c.get('case_number', '')}")
+    doc.add_paragraph("")
+
+    # Body
+    doc.add_paragraph(f"Dear {l.get('landlord_name', 'Landlord')},")
+    doc.add_paragraph("")
+    body = doc.add_paragraph()
+    body.add_run(
+        f"I am writing to request a payment plan to address the outstanding rent balance "
+        f"of ${c.get('complaint_amount_claimed', '0')}. I am committed to fulfilling my "
+        f"obligations under the lease and propose the following payment arrangement:"
+    )
+
+    doc.add_paragraph("")
+    doc.add_paragraph(f"Monthly payment: ${pref.get('payment_plan_amount', '_____')}")
+    doc.add_paragraph("Payment due on: The _____ day of each month")
+    doc.add_paragraph("Start date: _________________")
+    doc.add_paragraph("")
+
+    doc.add_paragraph(
+        "I am requesting this arrangement due to temporary financial hardship. "
+        "I will make every effort to adhere to this schedule."
+    )
+    doc.add_paragraph("")
+    doc.add_paragraph("Thank you for your consideration.")
+    doc.add_paragraph("")
+    doc.add_paragraph("Sincerely,")
+    doc.add_paragraph("")
+    doc.add_paragraph(p.get("full_name", ""))
+    doc.add_paragraph(p.get("phone", ""))
+    doc.add_paragraph(p.get("email", ""))
+
+    doc.save(output_path)
+
+
+def _generate_hardship_letter(data: dict, output_path: str):
+    """Generate hardship/extension letter."""
+    from docx import Document
+    doc = Document()
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    pref = data.get("preferences", {})
+
+    doc.add_paragraph(date.today().strftime("%B %d, %Y"))
+    doc.add_paragraph("")
+    doc.add_paragraph(l.get("landlord_name", ""))
+    doc.add_paragraph(l.get("landlord_address", ""))
+    doc.add_paragraph("")
+    doc.add_paragraph(f"RE: Hardship Request — {p.get('property_address', '')}")
+    doc.add_paragraph(f"    Case No: {c.get('case_number', '')}")
+    doc.add_paragraph("")
+
+    doc.add_paragraph(f"Dear {l.get('landlord_name', 'Landlord')},")
+    doc.add_paragraph("")
+    doc.add_paragraph(
+        "I am writing to respectfully request additional time to vacate the premises "
+        "due to the following circumstances:"
+    )
+    doc.add_paragraph("")
+    doc.add_paragraph(pref.get("hardship_reason", "________________________________________________________________________"))
+    doc.add_paragraph("")
+    doc.add_paragraph(
+        "I understand my obligations under the lease and I am not seeking to avoid them. "
+        "I am simply requesting a short extension to allow me to make arrangements."
+    )
+    doc.add_paragraph("")
+    doc.add_paragraph("I am requesting an extension until: _________________")
+    doc.add_paragraph("")
+    doc.add_paragraph("Thank you for your understanding.")
+    doc.add_paragraph("")
+    doc.add_paragraph("Sincerely,")
+    doc.add_paragraph("")
+    doc.add_paragraph(p.get("full_name", ""))
+    doc.add_paragraph(p.get("phone", ""))
+    doc.add_paragraph(p.get("email", ""))
+
+    doc.save(output_path)
+
+
+# ======================== CHECKLISTS ========================
+
+def _generate_filing_checklist(data: dict, output_path: str):
+    """Generate a step-by-step filing checklist PDF."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    styles = _get_styles()
+    elements = []
+    S = styles
+
+    elements.append(Paragraph("FILING CHECKLIST", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        "Follow these steps to file your Answer with the court. "
+        "Check off each item as you complete it.", S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+
+    steps = [
+        ("☐ Step 1: Review Your Packet",
+         "Read through all documents. Make sure everything looks correct."),
+        ("☐ Step 2: Sign the Answer Form",
+         "Sign and date the Form 1.947(b) Answer where indicated."),
+        ("☐ Step 3: Make Copies",
+         "Make at least 3 copies of EVERY document in your packet."),
+        ("☐ Step 4: File with the Court Clerk",
+         f"Take the original + 2 copies to the county courthouse where "
+         f"your case was filed. Ask the clerk to stamp all copies as 'Filed'."),
+        ("☐ Step 5: Pay Filing Fee (or Request Waiver)",
+         "There may be a filing fee. If you cannot afford it, ask the clerk "
+         "for an 'Affidavit of Indigency' form."),
+        ("☐ Step 6: Serve the Landlord",
+         "You must deliver a copy of your filed Answer to the landlord or "
+         "their attorney. Keep proof of delivery (certified mail receipt, "
+         "hand-delivery receipt, or email confirmation)."),
+        ("☐ Step 7: Deposit Rent into Court Registry",
+         "If you raised any defense other than 'I already paid,' you must "
+         "deposit the rent into the court registry. Check with the clerk "
+         "for the exact amount and process."),
+        ("☐ Step 8: Note Your Deadline",
+         f"Your response deadline is shown on your summons. Count 5 business "
+         f"days (excluding weekends and holidays) from the date you were served."),
+        ("☐ Step 9: Prepare for Hearing",
+         "If a hearing is scheduled, bring all your documents, evidence, "
+         "and a list of what you want to say to the judge."),
+        ("☐ Step 10: Attend All Court Dates",
+         "If you miss a court date, the judge may enter a default judgment "
+         "against you."),
+    ]
+
+    for title, desc in steps:
+        elements.append(Paragraph(title, S["BodyBold"]))
+        elements.append(Paragraph(desc, S["BodySmall"]))
+        elements.append(Spacer(1, 6))
+
+    doc.build(elements)
+
+
+def _generate_court_checklist(data: dict, output_path: str):
+    """Generate 'what to bring to court' checklist PDF."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    styles = _get_styles()
+    elements = []
+    S = styles
+
+    elements.append(Paragraph("COURT HEARING CHECKLIST", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        "What to bring with you to your eviction hearing:", S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+
+    items = [
+        "☐ This packet (your filed Answer and all supporting documents)",
+        "☐ Your lease or rental agreement",
+        "☐ Any rent receipts or proof of payment (bank statements, canceled checks)",
+        "☐ Photos or videos of any repair issues (if applicable)",
+        "☐ Any written communication with your landlord (emails, texts, letters)",
+        "☐ Your 7-day repair notice (if you sent one)",
+        "☐ Proof of rental assistance application (if applicable)",
+        "☐ Photo ID",
+        "☐ A pen and paper for taking notes",
+        "☐ A list of the points you want to make to the judge",
+        "☐ Any witnesses (if applicable)",
+        "☐ Your phone (silenced) with important numbers saved",
+    ]
+
+    for item in items:
+        elements.append(Paragraph(item, S["Body"]))
+        elements.append(Spacer(1, 6))
+
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("<b>WHAT TO EXPECT AT THE HEARING:</b>", S["BodyBold"]))
+    elements.append(Spacer(1, 6))
+
+    expectations = [
+        "Arrive early. Find the right courtroom.",
+        "When your case is called, step forward.",
+        "Address the judge as 'Your Honor.'",
+        "Stay calm. Speak clearly. Stick to the facts.",
+        "The landlord (or their lawyer) will speak first.",
+        "When it's your turn, explain your defense briefly.",
+        "Show the judge any evidence you brought.",
+        "The judge may ask questions — answer honestly.",
+        "The judge will make a decision or set another hearing date.",
+    ]
+
+    for exp in expectations:
+        elements.append(Paragraph(f"• {exp}", S["BodySmall"]))
+
+    doc.build(elements)
+
+
+# ======================== E-FILING INSTRUCTIONS ========================
+
+def _generate_efiling_instructions(data: dict, output_path: str):
+    """Generate Florida e-filing portal instructions."""
+    from docx import Document
+    doc = Document()
+
+    doc.add_heading("E-Filing Instructions — Florida Courts E-Filing Portal", level=1)
+    doc.add_paragraph("")
+
+    sections = [
+        ("Step 1: Create an Account",
+         "Go to https://www.myflcourtaccess.com\n"
+         "Click 'Register' and select 'Self-Represented Litigant'\n"
+         "Fill in your name, email, and create a password\n"
+         "You will receive a confirmation email — click the link to activate."),
+        ("Step 2: Log In",
+         "Go to myflcourtaccess.com and log in with your email and password."),
+        ("Step 3: File a Document",
+         "Click 'File a New Case' or 'File to an Existing Case'\n"
+         "Enter your case number: " + data.get("case_details", {}).get("case_number", "") + "\n"
+         "Select the county where your case was filed.\n"
+         "Upload your signed Answer form (PDF or DOCX).\n"
+         "Select the document type as 'Answer to Complaint.'"),
+        ("Step 4: Pay Filing Fee",
+         "If a fee is required, you'll be prompted to pay by credit/debit card.\n"
+         "A convenience fee (3.5%) applies to card payments.\n"
+         "If you cannot afford the fee, file an 'Affidavit of Indigency' instead."),
+        ("Step 5: Service",
+         "The portal will send a copy to the landlord/attorney if they have an account.\n"
+         "You may also need to mail or hand-deliver a copy separately.\n"
+         "Complete the Certificate of Service at the bottom of your Answer form."),
+        ("Step 6: Keep Your Confirmation",
+         "After filing, you'll receive a confirmation email with a filing ID.\n"
+         "Save this email and the stamped copies of your documents."),
+    ]
+
+    for title, body in sections:
+        doc.add_heading(title, level=2)
+        for line in body.split("\n"):
+            doc.add_paragraph(line, style="List Bullet")
+        doc.add_paragraph("")
+
+    doc.add_paragraph("")
+    doc.add_paragraph("Need help? Call the Florida Courts E-Filing Authority at (850) 385-4509")
+    doc.save(output_path)
+
+
+# ======================== RENTAL ASSISTANCE ========================
+
+def _generate_rental_assistance_sheet(data: dict, output_path: str):
+    """Generate county-specific rental assistance resources."""
+    from docx import Document
+    doc = Document()
+    county = data.get("personal_info", {}).get("county", "your county")
+
+    resources = {
+        "Miami-Dade": [
+            "Community Action Agency: (305) 403-4600",
+            "Our Kids, Inc. (families with children): (305) 424-6888",
+            "Camillus House: (305) 374-1065",
+        ],
+        "Broward": [
+            "Broward County Human Services: (954) 831-7511",
+            "Community Tax & Debt Relief: (954) 763-9805",
+        ],
+        "Duval": [
+            "Duval County Department of Human Services: (904) 630-2525",
+            "United Way of Northeast Florida: (904) 390-3200",
+        ],
+        "Orange": [
+            "Orange County Human Services: (407) 836-6500",
+            "Coalition for the Homeless: (407) 426-1250",
+        ],
+        "Hillsborough": [
+            "Hillsborough County Social Services: (813) 272-5140",
+            "Metropolitan Ministries: (813) 209-1000",
+        ],
+    }
+
+    doc.add_heading("Rental Assistance Resources", level=1)
+    doc.add_paragraph(f"For: {county} County, Florida")
+    doc.add_paragraph("")
+
+    doc.add_heading("Statewide Resources", level=2)
+    doc.add_paragraph("Florida Department of Children and Families: (850) 300-4323")
+    doc.add_paragraph("Florida Law Help: https://www.floridalawhelp.org")
+    doc.add_paragraph("Florida Bar Lawyer Referral Service: 1-800-342-8011")
+    doc.add_paragraph("United Way 2-1-1 — Dial 211 for local assistance")
+    doc.add_paragraph("")
+
+    doc.add_heading(f"Resources for {county} County", level=2)
+    county_resources = resources.get(county, ["Contact your local United Way by dialing 211."])
+    for r in county_resources:
+        doc.add_paragraph(r, style="List Bullet")
+
+    doc.add_paragraph("")
+    doc.add_heading("Tips for Applying", level=2)
+    tips = [
+        "Apply as soon as possible — funds are limited and run out quickly.",
+        "Have your lease, eviction notice, and ID ready.",
+        "Some programs can pay past due rent directly to your landlord.",
+        "If you have a pending application, tell the judge at your hearing.",
+    ]
+    for tip in tips:
+        doc.add_paragraph(tip, style="List Bullet")
+
+    doc.save(output_path)
+
+
+# ======================== STYLES ========================
+
+def _get_styles():
+    """Get shared ReportLab styles for document generation."""
+    styles = getSampleStyleSheet()
+
+    styles.add(ParagraphStyle(
+        "Caption", parent=styles["Normal"],
+        fontSize=9, leading=12, alignment=TA_CENTER,
+        spaceAfter=6,
+    ))
+    styles.add(ParagraphStyle(
+        "FormTitle", parent=styles["Normal"],
+        fontSize=13, leading=16, alignment=TA_CENTER,
+        spaceAfter=6, spaceBefore=6,
+    ))
+    styles.add(ParagraphStyle(
+        "Body", parent=styles["Normal"],
+        fontSize=10, leading=14, alignment=TA_LEFT,
+        spaceAfter=4,
+    ))
+    styles.add(ParagraphStyle(
+        "BodyBold", parent=styles["Normal"],
+        fontSize=10, leading=14, alignment=TA_LEFT,
+        spaceAfter=4,
+    ))
+    styles.add(ParagraphStyle(
+        "BodySmall", parent=styles["Normal"],
+        fontSize=9, leading=12, alignment=TA_LEFT,
+        spaceAfter=3,
+    ))
+    styles.add(ParagraphStyle(
+        "BodyWarning", parent=styles["Body"],
+        textColor=colors.red, fontSize=10, leading=14,
+    ))
+
+    return styles

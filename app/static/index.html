@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eviction Defense — Florida Self-Help Paperwork</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <span class="header-logo">Eviction Defense</span>
+      <span class="header-badge">Florida Self-Help</span>
+    </header>
+
+    <div class="container">
+      <!-- ==================== SCREEN 1: LANDING / PRE-SCREEN ==================== -->
+      <div id="screen-landing">
+        <div class="hero">
+          <h1>Eviction Paperwork Prepared Same-Day — Flat $395</h1>
+          <p>
+            Answer a few questions, upload your eviction documents, confirm the
+            details, and receive a self-help paperwork packet you can review,
+            sign, and submit.
+          </p>
+          <div class="hero-price">$395</div>
+          <p class="hero-disclaimer">
+            Self-help document preparation. Not legal advice or representation.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Check if you're eligible</div>
+          <div class="card-subtitle">
+            We need to verify your case can be handled by our system.
+          </div>
+
+          <div id="pre-screen-form">
+            <div class="form-group">
+              <label class="form-label">What state is your eviction in?</label>
+              <select id="ps-state" class="form-select">
+                <option value="">Select a state</option>
+                <option value="FL" selected>Florida</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">What county is your case in?</label>
+              <select id="ps-county" class="form-select">
+                <option value="">Select your county</option>
+                <option value="Miami-Dade">Miami-Dade</option>
+                <option value="Broward">Broward</option>
+                <option value="Duval">Duval</option>
+                <option value="Hillsborough">Hillsborough</option>
+                <option value="Orange">Orange</option>
+                <option value="Palm Beach">Palm Beach</option>
+                <option value="Polk">Polk</option>
+                <option value="Pinellas">Pinellas</option>
+                <option value="Volusia">Volusia</option>
+                <option value="Lee">Lee</option>
+                <option value="Leon">Leon</option>
+                <option value="Seminole">Seminole</option>
+                <option value="Osceola">Osceola</option>
+                <option value="Pasco">Pasco</option>
+                <option value="Brevard">Brevard</option>
+              </select>
+            </div>
+
+            <div class="radio-group">
+              <div class="form-group">
+                <label class="form-label"
+                  >Are you the tenant named in the eviction?</label
+                >
+                <div class="radio-group" id="ps-is-tenant">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_is_tenant" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_is_tenant" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Is this a residential rental property?</label
+                >
+                <div class="radio-group" id="ps-residential">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_residential" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_residential" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Have you received court papers (summons + complaint)?</label
+                >
+                <div class="radio-group" id="ps-court-papers">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_court_papers" value="yes" />
+                    Yes, I've been served</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_court_papers" value="no" />
+                    Not yet</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Has a sheriff's eviction notice been posted or have you
+                  received a writ of possession?</label
+                >
+                <div class="radio-group" id="ps-writ">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_writ" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_writ" value="no" /> No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Do you receive Section 8 / housing vouchers or live in public
+                  housing?</label
+                >
+                <div class="radio-group" id="ps-section8">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_section8" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_section8" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Are you on active military duty?</label
+                >
+                <div class="radio-group" id="ps-military">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_military" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_military" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Have you filed for bankruptcy?</label>
+                <div class="radio-group" id="ps-bankruptcy">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_bankruptcy" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_bankruptcy" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Do you have your eviction papers ready to upload?</label
+                >
+                <div class="radio-group" id="ps-docs">
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_docs" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="ps_docs" value="no" /> No, but I
+                    can get them</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div id="ps-result" class="hidden mt-4"></div>
+            <button
+              id="btn-check-eligibility"
+              class="btn btn-primary btn-block btn-lg mt-4"
+              onclick="checkEligibility()"
+            >
+              Check Eligibility
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 2: PAYMENT ==================== -->
+      <div id="screen-payment" class="hidden">
+        <div class="card text-center">
+          <div class="step-label">Step 2 of 6</div>
+          <div class="step-title">Purchase Your Packet</div>
+          <div class="hero-price">$395</div>
+          <p class="card-subtitle">
+            One-time fee. Prepared within 1 business day after your
+            questionnaire and documents are complete.
+          </p>
+          <div id="payment-details" class="mb-4">
+            <p><strong>Your Packet Includes:</strong></p>
+            <ul
+              style="list-style: none; text-align: left; display: inline-block"
+            >
+              <li>✓ Form 1.947(b) Answer — Residential Eviction</li>
+              <li>✓ Motion to Determine Rent</li>
+              <li>✓ Landlord Payment-Plan Letter</li>
+              <li>✓ Hardship/Extension Letter</li>
+              <li>✓ Filing & Court Checklists</li>
+              <li>✓ E-Filing Instructions</li>
+              <li>✓ Rental Assistance Resources</li>
+              <li>✓ SMS Deadline Reminders</li>
+            </ul>
+          </div>
+          <button
+            id="btn-pay"
+            class="btn btn-primary btn-block btn-lg"
+            onclick="proceedToPayment()"
+          >
+            Continue to Payment
+          </button>
+          <p class="form-hint mt-2">
+            Secure payment via Stripe. 24-hour money-back guarantee.
+          </p>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 3: INTAKE FORM ==================== -->
+      <div id="screen-intake" class="hidden">
+        <div class="step-label">
+          Step <span id="intake-step-num">3</span> of 6
+        </div>
+
+        <div class="progress-bar" id="intake-progress">
+          <div class="progress-step completed" data-step="1">1</div>
+          <div class="progress-line completed"></div>
+          <div class="progress-step active" data-step="2">2</div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="3">3</div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="4">4</div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="5">5</div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="6">6</div>
+        </div>
+
+        <div class="card">
+          <!-- Intake Step 1: Personal Info -->
+          <div class="intake-page" id="intake-page-1">
+            <div class="step-title">Your Personal Information</div>
+            <div class="form-group">
+              <label class="form-label">Your full legal name</label>
+              <input
+                type="text"
+                id="i-full-name"
+                class="form-input"
+                placeholder="As it appears on your lease or court papers"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Also known as (any nicknames or aliases)</label
+              >
+              <input
+                type="text"
+                id="i-aka"
+                class="form-input"
+                placeholder="Optional"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Other tenants on the lease (names, comma separated)</label
+              >
+              <input
+                type="text"
+                id="i-co-tenants"
+                class="form-input"
+                placeholder="e.g. Jane Doe, John Smith"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Property address</label>
+              <input
+                type="text"
+                id="i-property-address"
+                class="form-input"
+                placeholder="Street address, unit #"
+              />
+            </div>
+            <div
+              style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem"
+            >
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" id="i-city" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">ZIP code</label>
+                <input
+                  type="text"
+                  id="i-zip"
+                  class="form-input"
+                  placeholder="5-digit"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">County</label>
+              <input type="text" id="i-county" class="form-input" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone number</label>
+              <input
+                type="tel"
+                id="i-phone"
+                class="form-input"
+                placeholder="(555) 555-5555"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email address</label>
+              <input
+                type="email"
+                id="i-email"
+                class="form-input"
+                placeholder="you@email.com"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Mailing address (if different from property)</label
+              >
+              <input
+                type="text"
+                id="i-mailing"
+                class="form-input"
+                placeholder="Leave blank if same as property"
+              />
+            </div>
+            <button
+              class="btn btn-primary btn-block mt-4"
+              onclick="nextIntakePage(2)"
+            >
+              Continue
+            </button>
+          </div>
+
+          <!-- Intake Step 2: Landlord Info -->
+          <div class="intake-page hidden" id="intake-page-2">
+            <div class="step-title">Landlord / Plaintiff Information</div>
+            <div class="form-group">
+              <label class="form-label">Landlord or property owner name</label>
+              <input
+                type="text"
+                id="i-ll-name"
+                class="form-input"
+                placeholder="Full name or LLC name"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Landlord's address</label>
+              <input
+                type="text"
+                id="i-ll-address"
+                class="form-input"
+                placeholder="For serving documents"
+              />
+            </div>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem"
+            >
+              <div class="form-group">
+                <label class="form-label">Landlord's phone</label>
+                <input
+                  type="tel"
+                  id="i-ll-phone"
+                  class="form-input"
+                  placeholder="Optional"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Landlord's email</label>
+                <input
+                  type="email"
+                  id="i-ll-email"
+                  class="form-input"
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Landlord's attorney name (if any)</label
+              >
+              <input
+                type="text"
+                id="i-ll-attorney"
+                class="form-input"
+                placeholder="If you know they have a lawyer"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Attorney's email (for e-service)</label>
+              <input
+                type="email"
+                id="i-ll-attorney-email"
+                class="form-input"
+                placeholder="If known"
+              />
+            </div>
+            <div style="display: flex; gap: 1rem">
+              <button class="btn btn-secondary" onclick="prevIntakePage(1)">
+                Back
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="nextIntakePage(3)"
+                style="flex: 1"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <!-- Intake Step 3: Case Details -->
+          <div class="intake-page hidden" id="intake-page-3">
+            <div class="step-title">Eviction Case Details</div>
+            <div class="alert alert-info mb-4">
+              You can find most of this information on the summons and complaint
+              you received.
+            </div>
+            <div class="form-group">
+              <label class="form-label">Case number</label>
+              <input
+                type="text"
+                id="i-case-num"
+                class="form-input"
+                placeholder="e.g. CACE-24-012345"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Court name</label>
+              <input
+                type="text"
+                id="i-court-name"
+                class="form-input"
+                placeholder="e.g. County Court in and for Miami-Dade County"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Did you receive a written 3-Day Notice from your
+                landlord?</label
+              >
+              <div class="radio-group" id="i-3day">
+                <label class="radio-label"
+                  ><input type="radio" name="i_3day" value="yes" /> Yes</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_3day" value="no" /> No</label
+                >
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Date you were served with court papers</label
+              >
+              <input type="date" id="i-service-date" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">How were you served?</label>
+              <select id="i-service-method" class="form-select">
+                <option value="">Select...</option>
+                <option value="in_person">In person</option>
+                <option value="posted">Posted on my door</option>
+                <option value="mail">By mail</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount landlord claims is owed</label>
+              <input
+                type="text"
+                id="i-amount-claimed"
+                class="form-input"
+                placeholder="$0.00"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Is there a court date scheduled?</label>
+              <div class="radio-group" id="i-court-date-yes">
+                <label class="radio-label"
+                  ><input type="radio" name="i_has_court_date" value="yes" />
+                  Yes</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_has_court_date" value="no" />
+                  No</label
+                >
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Court date (if any)</label>
+              <input type="date" id="i-court-date" class="form-input" />
+            </div>
+            <div style="display: flex; gap: 1rem">
+              <button class="btn btn-secondary" onclick="prevIntakePage(2)">
+                Back
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="nextIntakePage(4)"
+                style="flex: 1"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <!-- Intake Step 4: Rent & Payment -->
+          <div class="intake-page hidden" id="intake-page-4">
+            <div class="step-title">Rent & Payment History</div>
+            <div class="form-group">
+              <label class="form-label">Monthly rent amount (per lease)</label>
+              <input
+                type="text"
+                id="i-monthly-rent"
+                class="form-input"
+                placeholder="$0.00"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rent due day of month</label>
+              <input
+                type="number"
+                id="i-rent-due-day"
+                class="form-input"
+                placeholder="e.g. 1"
+                min="1"
+                max="31"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Do you agree with the amount the landlord claims is
+                owed?</label
+              >
+              <div class="radio-group" id="i-agree-amount">
+                <label class="radio-label"
+                  ><input type="radio" name="i_agree_amount" value="yes" /> Yes,
+                  I owe what they claim</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_agree_amount" value="no" /> No, I
+                  disagree</label
+                >
+              </div>
+            </div>
+            <div id="i-disagree-section" class="hidden">
+              <div class="form-group">
+                <label class="form-label"
+                  >What do you believe you actually owe?</label
+                >
+                <input
+                  type="text"
+                  id="i-believed-owed"
+                  class="form-input"
+                  placeholder="$0.00"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Why do you disagree?</label>
+                <textarea
+                  id="i-why-disagree"
+                  class="form-textarea"
+                  placeholder="Explain why the amount is wrong..."
+                ></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Did you pay any rent after receiving the 3-day notice?</label
+              >
+              <div class="radio-group" id="i-paid-after">
+                <label class="radio-label"
+                  ><input type="radio" name="i_paid_after" value="yes" />
+                  Yes</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_paid_after" value="no" />
+                  No</label
+                >
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Did you ever send a written 7-day notice to your landlord about
+                needed repairs?</label
+              >
+              <div class="radio-group" id="i-7day">
+                <label class="radio-label"
+                  ><input type="radio" name="i_7day" value="yes" /> Yes, I sent
+                  written notice about repairs</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_7day" value="no" /> No</label
+                >
+              </div>
+            </div>
+            <div id="i-repairs-section" class="hidden">
+              <div class="form-group">
+                <label class="form-label">What repairs were needed?</label>
+                <textarea
+                  id="i-repair-details"
+                  class="form-textarea"
+                  placeholder="Describe the problems..."
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Did the landlord fix them?</label>
+                <select id="i-landlord-fixed" class="form-select">
+                  <option value="">Select...</option>
+                  <option value="no">No, never fixed them</option>
+                  <option value="partial">Partially fixed</option>
+                  <option value="yes">Yes, fixed everything</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Have you applied for rental assistance?</label
+              >
+              <div class="radio-group" id="i-rental-help">
+                <label class="radio-label"
+                  ><input type="radio" name="i_rental_help" value="yes" />
+                  Yes</label
+                >
+                <label class="radio-label"
+                  ><input type="radio" name="i_rental_help" value="no" />
+                  No</label
+                >
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem">
+              <button class="btn btn-secondary" onclick="prevIntakePage(3)">
+                Back
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="nextIntakePage(5)"
+                style="flex: 1"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <!-- Intake Step 5: Defenses -->
+          <div class="intake-page hidden" id="intake-page-5">
+            <div class="step-title">Your Defenses</div>
+            <div class="card-subtitle">
+              Check any defenses that apply to your situation. Check all that
+              apply.
+            </div>
+
+            <div class="defense-grid">
+              <div class="defense-item" data-defense="def_repairs">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> Landlord
+                  didn't make repairs — I withheld rent after sending written
+                  notice</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Describe what repairs were needed and when you sent the notice..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_amount">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> I don't owe
+                  the amount claimed — Motion to Determine Rent</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain why the amount is wrong..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_attempted_pay">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> I tried to pay
+                  but the landlord wouldn't accept it</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain when and how you tried to pay..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_paid">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> I already paid
+                  the rent demanded in the notice</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain how and when you paid..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_waived">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> The landlord
+                  waived, changed, or canceled the notice</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain what happened..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_retaliation">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> Retaliatory
+                  eviction — I complained to authorities about code
+                  violations</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain who you complained to and when..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_fair_housing">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> Fair Housing
+                  Act or Florida Fair Housing Act violation
+                  (discrimination)</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain the discrimination..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_accepted_rent">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> The landlord
+                  accepted rent after sending the notice to terminate</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain when they accepted rent..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_corrected">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> I already
+                  corrected the violation claimed in the notice</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain what you fixed..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_not_owner">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> The landlord
+                  is not the actual owner of the property</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain who actually owns it..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_bad_notice">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> I didn't
+                  receive the notice or it was legally incorrect</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Explain what was wrong with the notice..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="defense-item" data-defense="def_other">
+                <label
+                  ><input type="checkbox" class="def-checkbox" /> Other
+                  defense</label
+                >
+                <div class="defense-explanation hidden">
+                  <textarea
+                    class="form-textarea def-explanation-input"
+                    placeholder="Describe your defense..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="mt-6">
+              <div class="step-title" style="font-size: 1.1rem">
+                Additional Requests
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Do you want your case decided by a judge or a jury?</label
+                >
+                <div class="radio-group" id="i-trial">
+                  <label class="radio-label"
+                    ><input type="radio" name="i_trial" value="judge" /> Judge
+                    (bench trial)</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="i_trial" value="jury" />
+                    Jury</label
+                  >
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Do you need more time to move out?</label
+                >
+                <div class="radio-group" id="i-more-time">
+                  <label class="radio-label"
+                    ><input type="radio" name="i_more_time" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="i_more_time" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+              <div id="i-hardship-section" class="hidden">
+                <div class="form-group">
+                  <label class="form-label"
+                    >Reason you need more time (for hardship letter)</label
+                  >
+                  <textarea
+                    id="i-hardship-reason"
+                    class="form-textarea"
+                    placeholder="Job loss, medical emergency, death in family, etc."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Do you want to request a payment plan with your
+                  landlord?</label
+                >
+                <div class="radio-group" id="i-payment-plan">
+                  <label class="radio-label"
+                    ><input type="radio" name="i_payment_plan" value="yes" />
+                    Yes</label
+                  >
+                  <label class="radio-label"
+                    ><input type="radio" name="i_payment_plan" value="no" />
+                    No</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem">
+              <button class="btn btn-secondary" onclick="prevIntakePage(4)">
+                Back
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="nextIntakePage(6)"
+                style="flex: 1"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <!-- Intake Step 6: Review & Submit -->
+          <div class="intake-page hidden" id="intake-page-6">
+            <div class="step-title">Review & Submit</div>
+            <div class="card-subtitle">
+              Please review your answers before submitting. You'll be able to
+              upload documents next.
+            </div>
+            <div id="intake-review"></div>
+            <div class="alert alert-warning mt-4">
+              <strong>Important:</strong> The information above will be used to
+              prepare your self-help paperwork packet. Please verify everything
+              is accurate before submitting.
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem">
+              <button class="btn btn-secondary" onclick="prevIntakePage(5)">
+                Back
+              </button>
+              <button
+                class="btn btn-success btn-lg"
+                onclick="submitIntake()"
+                style="flex: 1"
+              >
+                Submit My Information
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 4: DOCUMENT UPLOAD ==================== -->
+      <div id="screen-upload" class="hidden">
+        <div class="step-label">Step 4 of 6 — Upload Documents</div>
+        <div class="card">
+          <div class="step-title">Upload Your Eviction Documents</div>
+          <div class="card-subtitle">
+            Upload clear photos or PDFs. The system will read them and extract
+            your case details automatically.
+          </div>
+
+          <div id="upload-items">
+            <div
+              class="upload-zone"
+              data-doctype="notice_3day"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">📋</div>
+              <div class="upload-zone-text">
+                3-Day Notice (if you received one)
+              </div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="summons"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">📄</div>
+              <div class="upload-zone-text">Summons</div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="complaint"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">📄</div>
+              <div class="upload-zone-text">Complaint</div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="lease"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">📑</div>
+              <div class="upload-zone-text">Lease / Rental Agreement</div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="payment_proof"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">💰</div>
+              <div class="upload-zone-text">
+                Proof of Payment (receipts, bank statements)
+              </div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="repair_notice"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">🔧</div>
+              <div class="upload-zone-text">
+                7-Day Repair Notice (if you sent one)
+              </div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+            <div
+              class="upload-zone"
+              data-doctype="other"
+              onclick="triggerUpload(this)"
+            >
+              <div class="upload-zone-icon">📁</div>
+              <div class="upload-zone-text">
+                Other documents (emails, texts, letters)
+              </div>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                style="display: none"
+                onchange="handleUpload(this)"
+              />
+            </div>
+          </div>
+
+          <button
+            class="btn btn-primary btn-block mt-4"
+            onclick="startExtraction()"
+          >
+            Process My Documents
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 5: CONFIRMATION ==================== -->
+      <div id="screen-confirmation" class="hidden">
+        <div class="step-label">Step 5 of 6 — Confirm Your Case Details</div>
+        <div class="card">
+          <div class="step-title">Confirm Your Case Details</div>
+          <div class="card-subtitle">
+            We found the following information from your intake and documents.
+            Please verify each field is correct.
+          </div>
+
+          <div id="confirmation-fields"></div>
+          <div id="confirmation-conflicts" class="hidden"></div>
+
+          <div
+            class="mt-4"
+            style="
+              padding: 1rem;
+              background: var(--gray-50);
+              border-radius: var(--radius);
+            "
+          >
+            <label class="checkbox-label" style="font-size: 0.9rem">
+              <input type="checkbox" id="confirmation-sign" />
+              <span
+                >I confirm that the information above is accurate and should be
+                used to prepare my self-help paperwork packet. I understand this
+                is a self-help service and I am responsible for reviewing,
+                signing, and submitting the final documents.</span
+              >
+            </label>
+          </div>
+
+          <button
+            id="btn-confirm"
+            class="btn btn-success btn-block btn-lg mt-4"
+            onclick="confirmExtraction()"
+            disabled
+          >
+            Confirm & Generate My Packet
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 6: PACKET READY ==================== -->
+      <div id="screen-ready" class="hidden">
+        <div class="card text-center">
+          <div style="font-size: 3rem; margin-bottom: 1rem">🎉</div>
+          <div class="step-title">Your Packet Is Being Prepared!</div>
+          <p class="card-subtitle">
+            We'll send you an email and SMS when it's ready. You should receive
+            it within 1 business day.
+          </p>
+          <div
+            class="mt-4"
+            style="
+              background: var(--gray-50);
+              border-radius: var(--radius);
+              padding: 1.5rem;
+              text-align: left;
+            "
+          >
+            <p><strong>What happens next:</strong></p>
+            <ol
+              style="margin-top: 0.5rem; padding-left: 1.25rem; line-height: 2"
+            >
+              <li>We'll process your documents and generate your packet</li>
+              <li>You'll receive an email with a download link</li>
+              <li>You'll also get an SMS reminder</li>
+              <li>Review all documents, sign where indicated</li>
+              <li>File with the court (instructions included)</li>
+              <li>Serve a copy on your landlord</li>
+            </ol>
+          </div>
+          <div
+            class="mt-4"
+            style="
+              background: var(--primary-light);
+              border-radius: var(--radius);
+              padding: 1rem;
+            "
+          >
+            <p style="font-size: 0.9rem">
+              <strong>Your case reference:</strong>
+              <span id="ready-case-id">—</span>
+            </p>
+            <p style="font-size: 0.8rem; color: var(--gray-500)">
+              Save this reference number. You'll need it to check your case
+              status.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      Eviction Defense — Self-help document preparation. Not a law firm. Not
+      legal advice.<br />
+      Florida residents only. &copy; 2026
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
