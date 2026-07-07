@@ -239,8 +239,21 @@ async function handlePaymentResponse(response) {
         <div class="eligibility-banner">
           <h3>Payment Successful!</h3>
           <p>Transaction ID: ${result.transaction_id}</p>
-          <p>Your eviction defense packet is being generated.</p>
+          <p>Downloading your packet now...</p>
         </div>`;
+      
+      // Generate and download the packet
+      const d = appData || {};
+      const downloadUrl = '/api/v1/documents/generate-packet?' +
+        'full_name=' + encodeURIComponent(d.full_name || 'Tenant') +
+        '&county=' + encodeURIComponent(d.county || 'Miami-Dade') +
+        '&property_address=' + encodeURIComponent(d.property_address || '') +
+        '&landlord_name=' + encodeURIComponent(d.landlord_name || '') +
+        '&case_number=' + encodeURIComponent(d.case_number || '') +
+        '&phone=' + encodeURIComponent(d.phone || '') +
+        '&email=' + encodeURIComponent(d.email || '');
+      
+      window.location.href = downloadUrl;
     } else {
       throw new Error(resp.status === 402 ? JSON.parse(await resp.text()).detail : 'Payment failed');
     }

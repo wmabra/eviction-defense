@@ -6,7 +6,7 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -377,6 +377,88 @@ def _merge_intake_and_extraction(intake_data: dict, extraction_result: dict) -> 
         "conflicts": conflicts,
         "has_conflicts": len(conflicts) > 0,
     }
+
+
+@router.get("/generate-packet")
+def generate_packet(
+    full_name: str,
+    county: str,
+    state: str = "FL",
+    property_address: str = "",
+    landlord_name: str = "",
+    case_number: str = "",
+    phone: str = "",
+    email: str = "",
+):
+    """Generate a filled eviction answer packet for download."""
+    import tempfile
+    
+    data = {
+        "personal_info": {
+            "full_name": full_name,
+            "property_address": property_address,
+            "property_city": "",
+            "county": county,
+            "phone": phone,
+            "email": email,
+        },
+        "landlord_info": {
+            "landlord_name": landlord_name,
+            "landlord_address": "",
+        },
+        "case_details": {
+            "case_number": case_number,
+            "court_name": county,
+        },
+        "defenses": {},
+        "preferences": {"trial_by": "judge"},
+    }
+    
+    # Map state to form
+    state_forms = {
+        ("FL", "Miami-Dade"): "answer_form_704.pdf",
+        ("FL", None): "answer_form_917.pdf",
+        ("CA", None): "ca_ud105.pdf",
+        ("IL", None): "il_eviction_answer.pdf",
+        ("TX", None): "tx_eviction_answer.pdf",
+        ("MI", None): "mi_eviction_answer.pdf",
+        ("NV", None): "nv_answer_nonpayment.pdf",
+        ("OR", None): "or_eviction_answer.pdf",
+        ("MN", None): "mn_eviction_answer.pdf",
+    }
+    
+    form_key = (state.upper(), county) if county == "Miami-Dade" else (state.upper(), None)
+    form_file = state_forms.get(form_key) or state_forms.get((state.upper(), None))
+    
+    if not form_file:
+        raise HTTPException(status_code=400, detail=f"No form available for {state}")
+    
+    try:
+        from app.services.form_filler import fill_answer_form
+        output_path = tempfile.mktemp(suffix=".pdf")
+        success = fill_answer_form(data, county if state.upper() == "FL" else state, output_path)
+        
+        if success:
+            return FileResponse(
+                output_path,
+                media_type="application/pdf",
+                filename=f"eviction_answer_{full_name.replace(' ', '_')}.pdf"
+            )
+        else:
+            # Fallback: return the blank form
+            blank_path = os.path.join(
+                os.path.dirname(__file__), "..", "templates", "counties", form_file
+            )
+            if os.path.exists(blank_path):
+                return FileResponse(
+                    blank_path,
+                    media_type="application/pdf",
+                    filename=f"eviction_answer_{full_name.replace(' ', '_')}.pdf"
+                )
+    except Exception as e:
+        logger.error(f"Form generation failed: {e}")
+    
+    raise HTTPException(status_code=500, detail="Could not generate packet")
 
 
 def _build_intake_dict(case: Case) -> dict:

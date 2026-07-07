@@ -12,24 +12,37 @@ FORMS_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "counties
 # County-specific form files
 COUNTY_FORMS = {
     "Miami-Dade": "answer_form_704.pdf",
-    # Add more counties as we get their forms
+}
+
+STATE_FORMS = {
+    "CA": "ca_ud105.pdf",
+    "IL": "il_eviction_answer.pdf",
+    "TX": "tx_eviction_answer.pdf",
+    "MI": "mi_eviction_answer.pdf",
+    "NV": "nv_answer_nonpayment.pdf",
+    "OR": "or_eviction_answer.pdf",
+    "MN": "mn_eviction_answer.pdf",
+    "FL": "answer_form_917.pdf",  # statewide FL fallback
 }
 
 
-def fill_answer_form(data: dict, county: str, output_path: str) -> bool:
-    """Fill the official county eviction answer form.
+def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
+    """Fill the official court eviction answer form.
     
     Args:
-        data: Case data dict (matching schema/case.py structure)
-        county: County name (e.g., "Miami-Dade")
+        data: Case data dict
+        state: State code (FL, CA, IL, etc.) or county name (Miami-Dade)
         output_path: Where to save the filled PDF
     
     Returns:
-        True if successful, False if county not supported
+        True if successful
     """
-    form_filename = COUNTY_FORMS.get(county)
+    # Check county-specific first, then state-level
+    county = data.get("personal_info", {}).get("county", state)
+    form_filename = COUNTY_FORMS.get(county) or STATE_FORMS.get(state.upper())
+    
     if not form_filename:
-        logger.warning(f"No form template for {county}")
+        logger.warning(f"No form template for state={state}, county={county}")
         return False
     
     form_path = os.path.join(FORMS_DIR, form_filename)
