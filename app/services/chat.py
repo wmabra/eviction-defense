@@ -11,7 +11,7 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        api_key = settings.deepseek_api_key or "sk-3cf448cce77048659ce5eaf4efdd9562"
+        api_key = settings.deepseek_api_key
         _client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
     return _client
 
