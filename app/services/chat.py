@@ -25,7 +25,7 @@ CRITICAL RULES:
    - Property address being evicted from (street, city, zip)
    - County in Florida (must be one of: Miami-Dade, Broward, Duval, Hillsborough, Orange, Palm Beach, Polk, Pinellas, Volusia, Lee, Leon, Seminole, Osceola, Pasco, Brevard)
    - Do they have a copy of the eviction notice or court papers? Encourage upload if yes.
-   - Landlord or property management company name
+   - Landlord or company name EXACTLY as written on the eviction notice/summons
    - Case number (from the summons/complaint, if they have it)
    - Cell phone number (for SMS court date reminders)
    - Email address (to receive the completed packet)
