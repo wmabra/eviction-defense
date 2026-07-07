@@ -8,8 +8,10 @@ Generates all 8 documents in the $395 packet from confirmed customer data:
 4. Hardship/Extension Letter (python-docx)
 5. Filing Checklist (plain PDF)
 6. Court Checklist (plain PDF)
-7. E-Filing Instructions (python-docx)
-8. Rental Assistance Resource Sheet (python-docx)
+7. Hearing Script — What to Say in Court (plain PDF)
+8. Fee Waiver Instructions (plain PDF)
+9. E-Filing Instructions (python-docx)
+10. Rental Assistance Resource Sheet (python-docx)
 """
 
 import os
@@ -81,7 +83,17 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     _generate_court_checklist(base, court_checklist_path)
     paths["court_checklist"] = court_checklist_path
 
-    # 7. E-Filing Instructions
+    # 7. Hearing Script
+    hearing_path = os.path.join(output_dir, "07_hearing_script.pdf")
+    _generate_hearing_script(base, hearing_path)
+    paths["hearing_script"] = hearing_path
+
+    # 8. Fee Waiver Instructions
+    fee_waiver_path = os.path.join(output_dir, "08_fee_waiver.pdf")
+    _generate_fee_waiver(base, fee_waiver_path)
+    paths["fee_waiver"] = fee_waiver_path
+
+    # 9. E-Filing Instructions
     efiling_path = os.path.join(output_dir, "07_e_filing_instructions.docx")
     _generate_efiling_instructions(base, efiling_path)
     paths["e_filing_instructions"] = efiling_path
@@ -576,6 +588,87 @@ def _generate_court_checklist(data: dict, output_path: str):
     for exp in expectations:
         elements.append(Paragraph(f"• {exp}", S["BodySmall"]))
 
+    doc.build(elements)
+
+
+# ======================== HEARING SCRIPT ========================
+
+def _generate_hearing_script(data: dict, output_path: str):
+    """Generate a sample script for what to say in court."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    
+    elements.append(Paragraph("YOUR COURT HEARING SCRIPT", S["FormTitle"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
+        "This script helps you speak to the judge. You can bring this paper with you.",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 14))
+    
+    script_lines = [
+        ("<b>WHEN YOUR CASE IS CALLED:</b> Walk to the front.", False),
+        (f"<b>You:</b> Good morning/afternoon, Your Honor. My name is {p.get('full_name', '[YOUR NAME]')}.", True),
+        ("<b>Judge:</b> Do you have an attorney?", False),
+        ("<b>You:</b> No, Your Honor. I am representing myself.", True),
+        ("<b>Judge:</b> Have you filed your Answer?", False),
+        ("<b>You:</b> Yes, Your Honor. Here is a copy. (hand judge copy)", True),
+        ("<b>Judge:</b> Do you owe the rent?", False),
+        ("<b>You:</b> I dispute the amount claimed OR Yes, and I deposited it with the court.", True),
+        ("<b>EXPLAIN YOUR DEFENSE:</b> Tell the judge briefly why you should not be evicted.", False),
+        ("Examples: Landlord refused repairs / Retaliation / Improper notice / Already paid", False),
+        ("<b>IF YOU NEED MORE TIME:</b>", False),
+        ("<b>You:</b> Your Honor, I request more time to find housing or make arrangements.", True),
+        ("<b>CLOSING:</b> Thank you for hearing me, Your Honor.", True),
+    ]
+    
+    for text, _ in script_lines:
+        elements.append(Paragraph(text, S["Body"]))
+        elements.append(Spacer(1, 6))
+    
+    elements.append(Spacer(1, 14))
+    elements.append(Paragraph("<b>TIPS:</b> Dress neatly. No phone. Do not interrupt. Bring all documents.", S["BodySmall"]))
+    
+    doc.build(elements)
+
+
+# ======================== FEE WAIVER ========================
+
+def _generate_fee_waiver(data: dict, output_path: str):
+    """Generate fee waiver (Affidavit of Indigency) instructions."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    
+    elements.append(Paragraph("FEE WAIVER — FILE YOUR CASE FOR FREE", S["FormTitle"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
+        "If you cannot afford the filing fee, ask the court to waive it. "
+        "This is called an Affidavit of Indigency (Form 12.902(e)).",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+    
+    elements.append(Paragraph("<b>HOW TO FILE:</b>", S["BodyBold"]))
+    for step in [
+        "1. Ask the clerk for Form 12.902(e) or download from www.flcourts.gov",
+        "2. Fill out your income, expenses, assets, and dependents",
+        "3. Sign in front of the clerk (free notary) or a notary",
+        "4. Submit WITH your Answer before the deadline",
+        "5. Judge reviews — if approved, you pay $0 instead of ~$295",
+    ]:
+        elements.append(Paragraph(step, S["Body"]))
+        elements.append(Spacer(1, 3))
+    
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("<b>WHO QUALIFIES:</b> Public benefits (SNAP/Medicaid), income below poverty level, or cannot pay without hardship.", S["BodySmall"]))
+    elements.append(Paragraph("<b>IMPORTANT:</b> File the fee waiver AND your Answer together BEFORE the deadline.", S["BodyWarning"]))
+    
     doc.build(elements)
 
 
