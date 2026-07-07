@@ -134,7 +134,16 @@ function showEligibilityButton(data) {
         <strong>Has notice:</strong> ${data.has_eviction_notice ? 'Yes' : 'No'} | <strong>Tenant:</strong> ${data.is_tenant ? 'Yes' : 'No'}<br>
         <strong>Served:</strong> ${data.received_court_papers ? 'Yes' : 'No'}
       </div>
-      <p>Your paperwork packet: $395</p>
+      <p>Your packet includes:</p>
+      <div style="text-align:left;font-size:12px;margin:8px 0;color:#555">
+        📄 Official Court Answer Form (filled)<br>
+        📋 Filing Checklist (step-by-step)<br>
+        🏛️ Court Hearing Guide<br>
+        ✉️ Landlord Letter<br>
+        💰 Rental Assistance List<br>
+        📱 SMS Court Reminders
+      </div>
+      <p>One-time payment: $395</p>
       <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
       <button type="button" class="AcceptUI"
         data-billingAddressOptions='{"show":false, "required":false}'
@@ -239,7 +248,8 @@ async function handlePaymentResponse(response) {
         <div class="eligibility-banner">
           <h3>Payment Successful!</h3>
           <p>Transaction ID: ${result.transaction_id}</p>
-          <p>Downloading your packet now...</p>
+          <p>Your eviction defense packet is being generated and downloaded. It includes your official court answer form, filing checklist, hearing guide, landlord letter, and rental assistance resources.</p>
+          <p style="font-size:12px;margin-top:8px">📱 SMS reminders will be sent to ${appData?.phone || 'your phone'}</p>
         </div>`;
       
       // Generate and download the packet

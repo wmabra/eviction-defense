@@ -390,8 +390,8 @@ def generate_packet(
     phone: str = "",
     email: str = "",
 ):
-    """Generate a filled eviction answer packet for download."""
-    import tempfile
+    """Generate a complete eviction defense packet with all documents."""
+    import tempfile, zipfile
     
     data = {
         "personal_info": {
@@ -405,60 +405,46 @@ def generate_packet(
         "landlord_info": {
             "landlord_name": landlord_name,
             "landlord_address": "",
+            "landlord_phone": "",
+            "landlord_email": "",
         },
         "case_details": {
             "case_number": case_number,
             "court_name": county,
+            "complaint_amount_claimed": "",
         },
+        "rent_payment": {"monthly_rent": ""},
         "defenses": {},
         "preferences": {"trial_by": "judge"},
     }
     
-    # Map state to form
-    state_forms = {
-        ("FL", "Miami-Dade"): "answer_form_704.pdf",
-        ("FL", None): "answer_form_917.pdf",
-        ("CA", None): "ca_ud105.pdf",
-        ("IL", None): "il_eviction_answer.pdf",
-        ("TX", None): "tx_eviction_answer.pdf",
-        ("MI", None): "mi_eviction_answer.pdf",
-        ("NV", None): "nv_answer_nonpayment.pdf",
-        ("OR", None): "or_eviction_answer.pdf",
-        ("MN", None): "mn_eviction_answer.pdf",
-    }
+    # Generate all documents to a temp dir
+    tmpdir = tempfile.mkdtemp()
+    from app.services.generator import generate_packet as gen
+    paths = gen(data, tmpdir)
     
-    form_key = (state.upper(), county) if county == "Miami-Dade" else (state.upper(), None)
-    form_file = state_forms.get(form_key) or state_forms.get((state.upper(), None))
-    
-    if not form_file:
-        raise HTTPException(status_code=400, detail=f"No form available for {state}")
-    
+    # Also fill the official court form if available
     try:
         from app.services.form_filler import fill_answer_form
-        output_path = tempfile.mktemp(suffix=".pdf")
-        success = fill_answer_form(data, county if state.upper() == "FL" else state, output_path)
-        
-        if success:
-            return FileResponse(
-                output_path,
-                media_type="application/pdf",
-                filename=f"eviction_answer_{full_name.replace(' ', '_')}.pdf"
-            )
-        else:
-            # Fallback: return the blank form
-            blank_path = os.path.join(
-                os.path.dirname(__file__), "..", "templates", "counties", form_file
-            )
-            if os.path.exists(blank_path):
-                return FileResponse(
-                    blank_path,
-                    media_type="application/pdf",
-                    filename=f"eviction_answer_{full_name.replace(' ', '_')}.pdf"
-                )
-    except Exception as e:
-        logger.error(f"Form generation failed: {e}")
+        court_pdf = os.path.join(tmpdir, "00_court_answer_form.pdf")
+        fill_answer_form(data, county, court_pdf)
+        paths["court_form"] = court_pdf
+    except:
+        pass
     
-    raise HTTPException(status_code=500, detail="Could not generate packet")
+    # Create zip file
+    zip_path = tempfile.mktemp(suffix=".zip")
+    with zipfile.ZipFile(zip_path, 'w') as zf:
+        for name, filepath in paths.items():
+            if os.path.exists(filepath):
+                zf.write(filepath, os.path.basename(filepath))
+    
+    safe_name = full_name.replace(' ', '_') if full_name else 'Tenant'
+    return FileResponse(
+        zip_path,
+        media_type="application/zip",
+        filename=f"eviction_defense_packet_{safe_name}.zip"
+    )
 
 
 def _build_intake_dict(case: Case) -> dict:
