@@ -71,6 +71,11 @@ function checkEligibility() {
 					showScreen("screen-payment");
 			} else {
 				showPreScreenResult(false, result.message);
+				// Show specific reasons too
+				if (result.reason) {
+					var reasonEl = document.getElementById('ps-reasons');
+					if (reasonEl) reasonEl.textContent = result.reason;
+				}
 				btn.disabled = false;
 				btn.textContent = "Check Eligibility";
 			}
@@ -89,6 +94,14 @@ function showPreScreenResult(success, message) {
 		: "alert alert-error mt-4";
 	el.textContent = message;
 	el.classList.remove("hidden");
+	
+	// Show specific reasons if rejected
+	const reasonsEl = document.getElementById("ps-reasons");
+	if (!success && reasonsEl && reasonsEl.textContent) {
+		reasonsEl.classList.remove("hidden");
+	} else if (reasonsEl) {
+		reasonsEl.classList.add("hidden");
+	}
 }
 
 // ======================== PAYMENT ========================

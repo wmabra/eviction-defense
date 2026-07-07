@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.database import init_db
 from app.routers import intake
 from app.routers import documents
+from app.routers import chat
 
 app = FastAPI(
     title="Eviction Defense API",
@@ -30,6 +31,7 @@ def on_startup():
 
 app.include_router(intake.router)
 app.include_router(documents.router)
+app.include_router(chat.router)
 
 # Serve frontend static files
 
@@ -42,6 +44,12 @@ def health_check():
 def root():
     from fastapi.responses import FileResponse
     return FileResponse("app/static/index.html")
+
+
+@app.get("/chat")
+def chat_page():
+    from fastapi.responses import FileResponse
+    return FileResponse("app/static/chat.html")
 
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
