@@ -25,6 +25,14 @@ STATE_FORMS = {
     "FL": "answer_form_917.pdf",  # statewide FL fallback
 }
 
+FEE_WAIVER_FORMS = {
+    "CA": "ca_fee_waiver.pdf",
+    "MI": "mi_fee_waiver.pdf",
+    "FL": "fl_fee_waiver.pdf",
+}
+
+
+
 
 def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
     """Fill the official court eviction answer form.
