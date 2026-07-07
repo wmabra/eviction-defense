@@ -27,6 +27,8 @@ CRITICAL RULES:
    - Do they have a copy of the eviction notice or court papers? Encourage upload if yes.
    - Landlord or property management company name
    - Case number (from the summons/complaint, if they have it)
+   - Cell phone number (for SMS court date reminders)
+   - Email address (to receive the completed packet)
    - Are they the tenant named in the eviction? (yes/no)
    - Is this a residential property? (yes/no)
    - Have they been served with court papers (summons and complaint)? (yes/no)

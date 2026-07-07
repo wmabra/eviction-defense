@@ -54,6 +54,7 @@ body{font-family:-apple-system,sans-serif;background:#f8f9fa;display:flex;flex-d
 <script>
 const API = '/api/v1/chat/send';
 let messages = [];
+let appData = null;
 
 function addMessage(role, text) {
   const div = document.createElement('div');
@@ -104,6 +105,7 @@ async function sendMessage() {
     }
 
     if (data.ready_for_eligibility && data.extracted_data) {
+      appData = data.extracted_data;  // Save for payment
       showEligibilityButton(data.extracted_data);
     }
   } catch (e) {
@@ -123,13 +125,14 @@ function showEligibilityButton(data) {
       <p>Please confirm these details before we prepare your packet:</p>
       <div style="text-align:left;font-size:13px;margin:12px 0;color:#555;background:#f8f9fa;padding:12px;border-radius:8px">
         <strong>Name:</strong> ${data.full_name || '—'}<br>
+        <strong>Phone:</strong> ${data.phone || '—'}<br>
+        <strong>Email:</strong> ${data.email || '—'}<br>
         <strong>Property:</strong> ${data.property_address || '—'}<br>
         <strong>County:</strong> ${data.county || '—'}<br>
         <strong>Landlord:</strong> ${data.landlord_name || '—'}<br>
         <strong>Case #:</strong> ${data.case_number || '—'}<br>
-        <strong>Has eviction notice:</strong> ${data.has_eviction_notice ? 'Yes' : 'No'}<br>
-        <strong>Tenant:</strong> ${data.is_tenant ? 'Yes' : 'No'} | <strong>Residential:</strong> ${data.is_residential ? 'Yes' : 'No'}<br>
-        <strong>Served papers:</strong> ${data.received_court_papers ? 'Yes' : 'No'}
+        <strong>Has notice:</strong> ${data.has_eviction_notice ? 'Yes' : 'No'} | <strong>Tenant:</strong> ${data.is_tenant ? 'Yes' : 'No'}<br>
+        <strong>Served:</strong> ${data.received_court_papers ? 'Yes' : 'No'}
       </div>
       <p>Your paperwork packet: $395</p>
       <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
@@ -224,8 +227,9 @@ async function handlePaymentResponse(response) {
       body: JSON.stringify({
         opaque_data: response.opaqueData,
         order_id: 'EV-' + Date.now().toString(36).toUpperCase(),
-        customer_email: document.getElementById('eligibilityEmail')?.value || 'test@example.com',
-        customer_name: 'Test Customer'
+        customer_email: appData?.email || 'test@example.com',
+        customer_name: appData?.full_name || 'Test Customer',
+        customer_phone: appData?.phone || ''
       })
     });
     
