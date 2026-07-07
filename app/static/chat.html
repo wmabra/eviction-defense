@@ -120,19 +120,29 @@ function showEligibilityButton(data) {
   el.innerHTML = `
     <div class="eligibility-banner">
       <h3>Ready to proceed!</h3>
-      <p>I've collected everything I need. Your case details:</p>
-      <p style="font-size:13px;margin:8px 0;color:#555">
+      <p>Please confirm these details before we prepare your packet:</p>
+      <div style="text-align:left;font-size:13px;margin:12px 0;color:#555;background:#f8f9fa;padding:12px;border-radius:8px">
         <strong>Name:</strong> ${data.full_name || '—'}<br>
+        <strong>Property:</strong> ${data.property_address || '—'}<br>
         <strong>County:</strong> ${data.county || '—'}<br>
-        <strong>Tenant:</strong> ${data.is_tenant || '—'}<br>
-        <strong>Residential:</strong> ${data.is_residential || '—'}<br>
-        <strong>Served papers:</strong> ${data.received_court_papers || '—'}
-      </p>
-      <button onclick="runEligibility()">Check Eligibility →</button>
-    </div>
-  `;
-  el.scrollIntoView({ behavior: 'smooth' });
-}
+        <strong>Landlord:</strong> ${data.landlord_name || '—'}<br>
+        <strong>Case #:</strong> ${data.case_number || '—'}<br>
+        <strong>Has eviction notice:</strong> ${data.has_eviction_notice ? 'Yes' : 'No'}<br>
+        <strong>Tenant:</strong> ${data.is_tenant ? 'Yes' : 'No'} | <strong>Residential:</strong> ${data.is_residential ? 'Yes' : 'No'}<br>
+        <strong>Served papers:</strong> ${data.received_court_papers ? 'Yes' : 'No'}
+      </div>
+      <p>Your paperwork packet: $395</p>
+      <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
+      <button type="button" class="AcceptUI"
+        data-billingAddressOptions='{"show":false, "required":false}'
+        data-apiLoginID="5KP3u95bQpv"
+        data-clientKey="3jBc8v9fY2xM5wQr"
+        data-acceptUIFormBtnTxt="Pay $395 — Get My Packet"
+        data-acceptUIFormHeaderTxt="Eviction Defense Packet"
+        data-paymentOptions='{"showCreditCard": true, "showBankAccount": false}'
+        data-responseHandler="handlePaymentResponse">
+      </button>
+    </div>`;
 
 async function runEligibility() {
   const btn = document.querySelector('.eligibility-banner button');
