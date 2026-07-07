@@ -394,6 +394,7 @@ def generate_packet(
     import tempfile, zipfile
     
     data = {
+        "state": state.upper(),
         "personal_info": {
             "full_name": full_name,
             "property_address": property_address,

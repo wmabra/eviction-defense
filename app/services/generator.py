@@ -638,36 +638,53 @@ def _generate_hearing_script(data: dict, output_path: str):
 # ======================== FEE WAIVER ========================
 
 def _generate_fee_waiver(data: dict, output_path: str):
-    """Generate fee waiver (Affidavit of Indigency) instructions."""
+    """Generate fee waiver instructions — state-specific."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
     p = data.get("personal_info", {})
+    county = p.get('county', 'your county')
+    
+    # State-specific fee waiver info
+    waiver_info = {
+        "FL": {"form": "Form 12.902(e)", "site": "www.flcourts.gov", "fee": "$295"},
+        "CA": {"form": "Form FW-001", "site": "www.courts.ca.gov", "fee": "$240-$450"},
+        "TX": {"form": "Statement of Inability to Afford Payment of Court Costs", "site": "www.txcourts.gov", "fee": "varies by court"},
+        "IL": {"form": "Application for Waiver of Court Fees", "site": "www.illinoiscourts.gov", "fee": "varies by county"},
+        "MI": {"form": "MC 20 Fee Waiver Request", "site": "www.courts.michigan.gov", "fee": "varies by court"},
+        "NV": {"form": "Application to Proceed In Forma Pauperis", "site": "www.civillawselfhelpcenter.org", "fee": "varies by court"},
+        "OR": {"form": "Application for Deferral or Waiver of Fees", "site": "www.courts.oregon.gov", "fee": "varies by court"},
+        "MN": {"form": "In Forma Pauperis Affidavit", "site": "www.mncourts.gov", "fee": "varies by court"},
+    }
+    info = waiver_info.get(data.get("state", "FL").upper(), waiver_info.get("FL", {"form": "fee waiver form", "site": "your state court website", "fee": "varies"}))
     
     elements.append(Paragraph("FEE WAIVER — FILE YOUR CASE FOR FREE", S["FormTitle"]))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f"<b>For:</b> {county}", S["Body"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
-        "If you cannot afford the filing fee, ask the court to waive it. "
-        "This is called an Affidavit of Indigency (Form 12.902(e)).",
+        "If you cannot afford the court filing fee, you can ask the court to waive it. "
+        "This is called filing \"In Forma Pauperis\" or an Affidavit of Indigency.",
         S["Body"]
     ))
-    elements.append(Spacer(1, 12))
-    
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(f"<b>YOUR STATE USES: {info['form']}</b>", S["BodyBold"]))
+    elements.append(Paragraph(f"Download from: {info['site']}", S["BodySmall"]))
+    elements.append(Spacer(1, 10))
     elements.append(Paragraph("<b>HOW TO FILE:</b>", S["BodyBold"]))
     for step in [
-        "1. Ask the clerk for Form 12.902(e) or download from www.flcourts.gov",
-        "2. Fill out your income, expenses, assets, and dependents",
-        "3. Sign in front of the clerk (free notary) or a notary",
-        "4. Submit WITH your Answer before the deadline",
-        "5. Judge reviews — if approved, you pay $0 instead of ~$295",
+        f"1. Download {info['form']} from {info['site']} OR ask the court clerk for a copy",
+        "2. Fill out your income, expenses, assets, and number of dependents",
+        "3. Sign the form in front of the court clerk (they notarize for free) or any notary",
+        f"4. Submit the fee waiver ALONG with your Answer before the deadline",
+        f"5. Judge reviews your financial situation — if approved, you pay $0 instead of {info['fee']}",
     ]:
         elements.append(Paragraph(step, S["Body"]))
         elements.append(Spacer(1, 3))
-    
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph("<b>WHO QUALIFIES:</b> Public benefits (SNAP/Medicaid), income below poverty level, or cannot pay without hardship.", S["BodySmall"]))
-    elements.append(Paragraph("<b>IMPORTANT:</b> File the fee waiver AND your Answer together BEFORE the deadline.", S["BodyWarning"]))
+    elements.append(Paragraph("<b>WHO QUALIFIES:</b> You receive public benefits (SNAP, Medicaid, SSI) OR your income is below 200% of federal poverty level OR paying the fee would cause hardship.", S["BodySmall"]))
+    elements.append(Paragraph("<b>IMPORTANT:</b> File the fee waiver AND your Answer together BEFORE the deadline. Even if the waiver is denied, you must still file on time.", S["BodyWarning"]))
     
     doc.build(elements)
 
