@@ -7,6 +7,7 @@ from app.database import init_db
 from app.routers import intake
 from app.routers import documents
 from app.routers import chat
+from app.routers import payment
 
 app = FastAPI(
     title="Eviction Defense API",
@@ -32,6 +33,7 @@ def on_startup():
 app.include_router(intake.router)
 app.include_router(documents.router)
 app.include_router(chat.router)
+app.include_router(payment.router)
 
 # Serve frontend static files
 

@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     product_price: int = 39500  # $395.00 in cents
 
+    # Authorize.net
+    authorize_login_id: str = ""
+    authorize_transaction_key: str = ""
+    authorize_sandbox: bool = True  # True = test mode, False = live
+
     # LLM Provider (OpenAI, DeepSeek, or any OpenAI-compatible API)
     llm_api_key: str = ""
     llm_base_url: str = "https://api.openai.com/v1"

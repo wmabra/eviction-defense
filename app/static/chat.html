@@ -50,7 +50,7 @@ body{font-family:-apple-system,sans-serif;background:#f8f9fa;display:flex;flex-d
 </div>
 <button class="reset-btn" onclick="resetChat()">Start Over</button>
 
-<script>
+<script src="https://js.authorize.net/v3/AcceptUI.js" charset="utf-8"></script>
 const API = '/api/v1/chat/send';
 let messages = [];
 
@@ -161,7 +161,16 @@ async function runEligibility() {
       el.className = 'eligibility-banner';
       el.innerHTML = `<h3>${result.message}</h3>
         <p>Your paperwork packet: $395</p>
-        <button onclick="alert('Payment would go here')">Pay $395 — Get My Packet</button>`;
+        <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
+        <button type="button" class="AcceptUI" 
+          data-billingAddressOptions='{"show":false, "required":false}'
+          data-apiLoginID="5KP3u95bQpv" 
+          data-clientKey="3jBc8v9fY2xM5wQr"
+          data-acceptUIFormBtnTxt="Pay $395 — Get My Packet"
+          data-acceptUIFormHeaderTxt="Eviction Defense Packet"
+          data-paymentOptions='{"showCreditCard": true, "showBankAccount": false}'
+          data-responseHandler="handlePaymentResponse">
+        </button>
     } else {
       el.className = 'eligibility-banner rejected';
       el.innerHTML = `<h3>${result.message}</h3><p style="font-size:13px">${result.reason || ''}</p>`;
@@ -180,6 +189,53 @@ async function resetChat() {
     </div>`;
   document.getElementById('eligibility').style.display = 'none';
   await fetch('/api/v1/chat/reset', { method: 'POST' });
+}
+
+async function handlePaymentResponse(response) {
+  if (response.messages.resultCode === 'Error') {
+    const errors = response.messages.message.map(m => m.text).join(', ');
+    document.getElementById('eligibility').innerHTML = `
+      <div class="eligibility-banner rejected">
+        <h3>Payment Failed</h3><p>${errors}</p>
+        <button onclick="location.reload()">Try Again</button>
+      </div>`;
+    return;
+  }
+  
+  // Payment successful — send to server
+  document.getElementById('eligibility').innerHTML = `
+    <div class="eligibility-banner"><h3>Processing payment...</h3></div>`;
+  
+  try {
+    const resp = await fetch('/api/v1/payment/charge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        opaque_data: response.opaqueData,
+        order_id: 'EV-' + Date.now().toString(36).toUpperCase(),
+        customer_email: document.getElementById('eligibilityEmail')?.value || 'test@example.com',
+        customer_name: 'Test Customer'
+      })
+    });
+    
+    const result = await resp.json();
+    if (result.success) {
+      document.getElementById('eligibility').innerHTML = `
+        <div class="eligibility-banner">
+          <h3>Payment Successful!</h3>
+          <p>Transaction ID: ${result.transaction_id}</p>
+          <p>Your eviction defense packet is being generated.</p>
+        </div>`;
+    } else {
+      throw new Error(resp.status === 402 ? JSON.parse(await resp.text()).detail : 'Payment failed');
+    }
+  } catch(e) {
+    document.getElementById('eligibility').innerHTML = `
+      <div class="eligibility-banner rejected">
+        <h3>Payment Error</h3><p>${e.message}</p>
+        <button onclick="location.reload()">Try Again</button>
+      </div>`;
+  }
 }
 </script>
 </body>
