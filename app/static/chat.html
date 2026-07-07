@@ -162,15 +162,15 @@ async function runEligibility() {
       el.innerHTML = `<h3>${result.message}</h3>
         <p>Your paperwork packet: $395</p>
         <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
-        <button type="button" class="AcceptUI" 
-          data-billingAddressOptions='{"show":false, "required":false}'
-          data-apiLoginID="5KP3u95bQpv" 
+        <button type="button" class="AcceptUI"
+          data-billingAddressOptions='{\"show\":false, \"required\":false}'
+          data-apiLoginID="5KP3u95bQpv"
           data-clientKey="3jBc8v9fY2xM5wQr"
           data-acceptUIFormBtnTxt="Pay $395 — Get My Packet"
           data-acceptUIFormHeaderTxt="Eviction Defense Packet"
-          data-paymentOptions='{"showCreditCard": true, "showBankAccount": false}'
+          data-paymentOptions='{\"showCreditCard\": true, \"showBankAccount\": false}'
           data-responseHandler="handlePaymentResponse">
-        </button>
+        </button>`;
     } else {
       el.className = 'eligibility-banner rejected';
       el.innerHTML = `<h3>${result.message}</h3><p style="font-size:13px">${result.reason || ''}</p>`;
