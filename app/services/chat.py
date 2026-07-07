@@ -1,13 +1,20 @@
 """DeepSeek-powered chat intake service."""
 import json
-import os
 from openai import OpenAI
+from app.config import settings
 
-# DeepSeek API config
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 
-client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        api_key = settings.deepseek_api_key or "sk-3cf448cce77048659ce5eaf4efdd9562"
+        _client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
+    return _client
+
 
 SYSTEM_PROMPT = """You are an intake specialist for Eviction Defense, a Florida self-help document preparation service. Your job is to conversationally collect the information needed to prepare eviction defense paperwork.
 
@@ -43,6 +50,7 @@ def get_chat_response(messages: list[dict]) -> dict:
         *messages,
     ]
 
+    client = _get_client()
     response = client.chat.completions.create(
         model="deepseek-chat",
         messages=full_messages,

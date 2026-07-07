@@ -32,7 +32,10 @@ class Settings(BaseSettings):
     # SendGrid
     sendgrid_api_key: str = ""
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    # DeepSeek (for chat intake)
+    deepseek_api_key: str = ""
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()
