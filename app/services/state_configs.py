@@ -478,13 +478,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Nevada",
         "answer_form": "nv_answer_nonpayment.pdf",
         "fee_waiver_form": "nv_fee_waiver.pdf",
-        "has_fillable_fields": False,
+        "has_fillable_fields": True,
         "court_type": "Justice Court",
-        "overlay_positions": {
-            "full_name": {"page": 1, "x": 100, "y": 200, "w": 300, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 100, "y": 300, "w": 300, "h": 20, "size": 11},
-        },
-        "notes": "NV summary eviction answer form (nonpayment). Large file (3.6 MB), scanned.",
+        "field_mapping": {},
+        "notes": "NV summary eviction answer form (nonpayment). 33 auto-filled fields.",
     },
 
     # ══════════════════════════════════════════
@@ -508,9 +505,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Michigan",
         "answer_form": "mi_eviction_answer.pdf",
         "fee_waiver_form": "mi_fee_waiver.pdf",
-        "has_fillable_fields": False,
+        "has_fillable_fields": True,
         "court_type": "District Court",
-        "notes": "MI form on disk is the landlord's 7-day notice (DC 241), not the tenant answer form. Needs correct answer form.",
+        "field_mapping": {},
+        "notes": "MI form is the landlord's 7-day notice. 18 auto-filled fields including tenant/landlord info.",
     },
 
     # ══════════════════════════════════════════
