@@ -80,23 +80,19 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Magistrates Court",
         "field_mapping": {
-            # Personal info
             "full_name": "Defendant(s) Name",
-            "street_address": "Defendant(s) Street Address",
-            "city_state_zip": "City, State and Zip Code of the Defendant(s) Street Address",
             "phone": "Defendant(s) Telephone Number",
             "email": "Defendant(s) Email Address",
-            # Landlord / Plaintiff
+            "address": "Defendant(s) Street Address",
+            "city_state_zip": "City, State and Zip Code of the Defendant(s) Street Address",
             "landlord_name": "Plaintiff Name",
             "landlord_address": "Plaintiff Street Address",
             "landlord_city_state_zip": "City, State and Zip Code of the Plaintiff\u2019s Street Address",
             "landlord_phone": "Plaintiff\u2019s Telephone Number",
-            # Case info
             "case_number": "Civil Case Number",
             "county": "County of:",
             "court_name": "Magistrate Court Filed With",
             "date_served": "Date Served with a Complaint",
-            "date_signed": "Date Signed",
         },
         "defense_options": [
             {"key": "def_admit_all", "label": "I admit everything in the complaint and do not want a trial", "field": "I admit everything in the complaint and do not want a trial"},
@@ -122,15 +118,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Magistrate Court",
         "field_mapping": {
-            "full_name": "Defendant.SEQ002.Name.Full",
-            "address": "Defendant.SEQ001.HomeAddress.Street",
-            "city_state_zip": "Defendant.SEQ001.HomeAddress.CityStateZip",
-            "property_address": "Property",
-            "landlord_name": "Plaintiff.SEQ001.Name.Full",
-            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
             "case_number": "CaseNumber",
             "county": "County.Selection",
             "date": "Date.CurrentDate.SlashMDY",
+            "full_name": "Defendant.SEQ001.Name.Full",
+            "address": "Defendant.SEQ001.HomeAddress.Street",
+            "landlord_name": "Plaintiff.SEQ001.Name.Full",
+            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
+            "plaintiff_city_state": "Plaintiff.SEQ001.HomeAddress.CityStateZip",
         },
         "defense_options": [
             {"key": "def_did_repairs", "label": "Defendant did make repairs", "field": "DidMakeRepairs"},
