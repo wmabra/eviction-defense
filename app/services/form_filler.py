@@ -40,15 +40,12 @@ FEE_WAIVER_FORMS = {
     "CA": "ca_fee_waiver.pdf",
     "CO": "co_fee_waiver.pdf",
     "FL": "fl_fee_waiver.pdf",
-    "GA": "ga_fee_waiver.pdf",
     "IL": "il_fee_waiver.pdf",
     "MI": "mi_fee_waiver.pdf",
-    "MN": "mn_fee_waiver.pdf",
-    "NC": "nc_fee_waiver.pdf",
     "NV": "nv_fee_waiver.pdf",
-    "NY": "ny_fee_waiver.pdf",
     "OR": "or_fee_waiver.pdf",
     "TX": "tx_fee_waiver.pdf",
+    "VA": "va_fee_waiver.pdf",
 }
 
 
