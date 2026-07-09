@@ -38,14 +38,21 @@ STATE_FORMS = {
 }
 
 FEE_WAIVER_FORMS = {
+    "AR": "ar_fee_waiver.pdf",
     "AZ": "az_fee_waiver.pdf",
     "CA": "ca_fee_waiver.pdf",
     "CO": "co_fee_waiver.pdf",
+    "CT": "ct_fee_waiver.pdf",
     "FL": "fl_fee_waiver.pdf",
+    "GA": "ga_fee_waiver.pdf",
     "IL": "il_fee_waiver.pdf",
+    "LA": "la_fee_waiver.pdf",
     "MI": "mi_fee_waiver.pdf",
+    "NM": "nm_fee_waiver.pdf",
     "NV": "nv_fee_waiver.pdf",
     "OR": "or_fee_waiver.pdf",
+    "RI": "ri_fee_waiver.pdf",
+    "SC": "sc_fee_waiver.pdf",
     "TX": "tx_fee_waiver.pdf",
     "VA": "va_fee_waiver.pdf",
 }
