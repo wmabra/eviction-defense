@@ -26,6 +26,7 @@ STATE_FORMS = {
     "MI": "mi_eviction_answer.pdf",
     "MN": "mn_eviction_answer.pdf",
     "MS": "ms_eviction_answer.pdf",
+    "NC": "nc_eviction_answer.pdf",
     "NM": "nm_eviction_answer.pdf",
     "NV": "nv_answer_nonpayment.pdf",
     "OR": "or_eviction_answer.pdf",
