@@ -18,6 +18,7 @@ STATE_FORMS = {
     "AR": "ar_eviction_answer.pdf",
     "AZ": "az_eviction_answer.pdf",
     "CA": "ca_ud105.pdf",
+    "CO": "co_eviction_answer.pdf",
     "CT": "ct_eviction_answer.pdf",
     "FL": "answer_form_917.pdf",
     "GA": "ga_eviction_answer.pdf",
