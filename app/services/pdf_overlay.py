@@ -77,12 +77,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
 
 def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
-    """Fill a PDF's form fields using widget/field mapping."""
+    """Fill a PDF's form fields using widget/field mapping + smart auto-fill."""
     mapping = config.get("field_mapping", {})
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     defenses = data.get("defenses", {})
+    today = date.today()
     
     # Build values from data using flexible key resolution
     _all_data = {}
@@ -132,14 +133,47 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             if checked:
                 values[field_name] = "Yes"
     
+    # Smart auto-fill for common field names not in explicit mapping
+    auto_fill_rules = [
+        ("defendant", p.get("full_name", "")),
+        ("plaintiff", l.get("landlord_name", "")),
+        ("tenant", p.get("full_name", "")),
+        ("landlord", l.get("landlord_name", "")),
+        ("case number", c.get("case_number", "")),
+        ("case no", c.get("case_number", "")),
+        ("file number", c.get("case_number", "")),
+        ("phone", p.get("phone", "")),
+        ("telephone", p.get("phone", "")),
+        ("email", p.get("email", "")),
+        ("address", p.get("property_address", "")),
+        ("county", p.get("county", "")),
+        ("property", p.get("property_address", "")),
+        ("date", today.strftime("%m/%d/%Y")),
+        ("signature", "/s/"),
+        ("signed", today.strftime("%m/%d/%Y")),
+    ]
+    
     # Apply to each page
     for page_num in range(len(doc)):
         page = doc[page_num]
         for widget in page.widgets():
             field_name = widget.field_name
+            
+            # 1. Check explicit mapping first
             if field_name in values:
                 widget.field_value = values[field_name]
                 widget.update()
+                continue
+            
+            # 2. Try auto-fill rules on field name
+            if not field_name:
+                continue
+            fn_lower = field_name.lower()
+            for keyword, value in auto_fill_rules:
+                if value and keyword in fn_lower:
+                    widget.field_value = str(value)
+                    widget.update()
+                    break
 
 
 def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
