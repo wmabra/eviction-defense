@@ -461,8 +461,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": False,
         "court_type": "District Court (Housing)",
         "overlay_positions": {
-            "full_name": {"page": 1, "x": 72, "y": 88, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 72, "y": 106, "w": 200, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 200, "y": 277, "w": 200, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 200, "y": 188, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 75, "y": 106, "w": 200, "h": 20, "size": 11},
             "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
             "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
         },
