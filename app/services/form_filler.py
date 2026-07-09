@@ -2,7 +2,10 @@
 import os
 import logging
 from io import BytesIO
+from datetime import date
 from PyPDF2 import PdfReader, PdfWriter
+
+from app.services.state_configs import get_state_config
 
 logger = logging.getLogger(__name__)
 
@@ -66,34 +69,39 @@ FEE_WAIVER_FORMS = {
 
 
 def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
-    """Fill the official court eviction answer form.
+    """Fill the official court eviction answer form using state-specific config.
     
     Args:
         data: Case data dict
-        state: State code (FL, CA, IL, etc.) or county name (Miami-Dade)
+        state: State code (FL, CA, IL, VA, etc.)
         output_path: Where to save the filled PDF
     
     Returns:
         True if successful
     """
-    # Check county-specific first, then state-level
-    county = data.get("personal_info", {}).get("county", state)
-    form_filename = COUNTY_FORMS.get(county) or STATE_FORMS.get(state.upper())
+    state_code = state.upper()
+    config = get_state_config(state_code)
     
+    if not config:
+        logger.warning(f"No state config for {state_code}")
+        return False
+    
+    form_filename = config.get("answer_form")
     if not form_filename:
-        logger.warning(f"No form template for state={state}, county={county}")
+        logger.warning(f"No answer form configured for {state_code}")
+        return False
+    
+    if not config.get("has_fillable_fields", False):
+        logger.warning(f"{state_code} form is not fillable PDF — use overlay or PDF generation instead")
         return False
     
     form_path = os.path.join(FORMS_DIR, form_filename)
     if not os.path.exists(form_path):
-        logger.error(f"Form template not found: {form_path}")
+        logger.error(f"Form not found: {form_path}")
         return False
     
-    # Read the blank form
     reader = PdfReader(form_path)
     writer = PdfWriter()
-    
-    # Copy all pages and get fields
     writer.append(reader)
     
     p = data.get("personal_info", {})
@@ -101,54 +109,63 @@ def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
     c = data.get("case_details", {})
     defenses = data.get("defenses", {})
     
-    # Build the field updates dict
+    mapping = config.get("field_mapping", {})
     updates = {}
     
-    # Basic info
-    updates["Defendant(s)"] = p.get("full_name", "")
-    updates["Plaintiff(s)"] = l.get("landlord_name", "")
-    updates["Case number"] = c.get("case_number", "")
+    # Map generic fields to state-specific PDF fields
+    if "full_name" in mapping and p.get("full_name"):
+        updates[mapping["full_name"]] = p["full_name"]
     
-    # Address info
-    updates["Defendant(s) address"] = f"{p.get('property_address', '')}, {p.get('property_city', '')}, FL"
+    if "landlord_name" in mapping and l.get("landlord_name"):
+        updates[mapping["landlord_name"]] = l["landlord_name"]
     
-    # Phone/email
-    updates["Defendants telephone number"] = p.get("phone", "")
-    updates["Defendants email address"] = p.get("email", "")
+    if "case_number" in mapping and c.get("case_number"):
+        updates[mapping["case_number"]] = c["case_number"]
     
-    # Answer type — if they raised defenses, they deny
-    has_defenses = any(
-        isinstance(v, dict) and v.get("checked") 
-        for k, v in defenses.items() 
-        if k.startswith("def_")
-    )
+    if "phone" in mapping and p.get("phone"):
+        updates[mapping["phone"]] = p["phone"]
     
-    if has_defenses:
-        updates["Defendant generally denies each statement"] = "/Yes"
-    else:
-        updates["Defendant admits"] = "/Yes"
+    if "email" in mapping and p.get("email"):
+        updates[mapping["email"]] = p["email"]
     
-    # Check defense boxes (Miami-Dade form uses specific field names)
-    defense_field_map = {
-        "def_repairs": "The landlord did not make repairs and I withheld my rent after sending written notice to the landlord Click if this applies to you",
-        "def_amount": "I do not owe the total amount of rent or ongoing amount of rent the landlord claims I owe Click if this applies to you",
-        "def_attempted_pay": "I attemptedoffered to pay all the rent due before the notice to pay rent expired but the landlord did not accept the rent payment Click if this applies to you",
-        "def_paid": "I paid the rent demanded by the landlord in the notice to pay rent Click if this applies to you",
-        "def_waived": "The landlord waived, changed or canceled the notice that required me to move out Click if this applies to you",
-        "def_retaliation": "The landlord filed the eviction in retaliation against me Click if this applies to you",
-        "def_fair_housing": "The landlord filed the eviction in violation of the Federal Fair Housing Act andor the Florida Fair Housing Act Click if this applies to you",
-        "def_accepted_rent": "The landlord accepted rent from me after sending me the notice to terminate Click if this applies to you",
-        "def_corrected": "I already corrected the violations claimed by the landlord on the notice to terminate Click if this applies to you",
-        "def_not_owner": "The landlord is not the owner of the property where I live Click if this applies to you",
-        "def_bad_notice": "I did not receive the notice to terminate or the notice was legally incorrect Click if this applies to you",
-        "def_other": "Other defenses set forth as follows Click if this applies to you",
-    }
+    if "address" in mapping and p.get("property_address"):
+        updates[mapping["address"]] = p["property_address"]
     
-    for def_key, field_name in defense_field_map.items():
-        defense = defenses.get(def_key, {})
-        checked = defense.get("checked", False) if isinstance(defense, dict) else False
-        if checked:
-            updates[field_name] = "/Yes"
+    if "county" in mapping and p.get("county"):
+        updates[mapping["county"]] = p["county"]
+    
+    if "date" in mapping:
+        updates[mapping["date"]] = date.today().strftime("%m/%d/%Y")
+    
+    # Handle defense checkboxes
+    defense_options = config.get("defense_options", [])
+    for opt in defense_options:
+        def_key = opt.get("key", "")
+        field_name = opt.get("field", "")
+        if def_key and field_name:
+            defense = defenses.get(def_key, {})
+            checked = defense.get("checked", False) if isinstance(defense, dict) else False
+            if checked:
+                updates[field_name] = "/Yes" if state_code in ("SC",) else "1"
+    
+    # Apply all updates
+    try:
+        writer.update_page_form_field_values(writer.pages[0], updates)
+    except Exception as e:
+        logger.warning(f"Some fields couldn't be updated: {e}")
+        try:
+            fields = reader.get_fields()
+            for key, value in updates.items():
+                if key in fields:
+                    writer.update_page_form_field_values(writer.pages[0], {key: value})
+        except Exception:
+            pass
+    
+    with open(output_path, "wb") as f:
+        writer.write(f)
+    
+    logger.info(f"Filled {state_code} form saved to {output_path}")
+    return True
     
     # Add explanations for checked defenses
     for def_key, defense in defenses.items():
