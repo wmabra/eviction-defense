@@ -37,9 +37,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         logger.warning(f"No state config for {state_code}")
         return False
 
-    form_filename = config.get("answer_form")
+    form_filename = config.get(form_key)
     if not form_filename:
-        logger.warning(f"No answer form for {state_code}")
+        logger.warning(f"No form configured for {state_code} ({form_key})")
         return False
 
     form_path = os.path.join(FORMS_DIR, form_filename)
@@ -55,13 +55,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     doc = fitz.open(form_path)
     
     # Check if form has fillable fields
-    has_fields = len(doc.xref_get_keys(doc.pdf_catalog) or []) > 0  # simplistic check
-    # Better: try to get form fields
+    has_fields = False
     try:
-        fields_count = len(doc.load_page(0).widgets())
+        widgets_list = list(doc.load_page(0).widgets())
+        fields_count = len(widgets_list)
         has_fields = fields_count > 0
-    except:
-        has_fields = False
+    except Exception:
+        pass
 
     if has_fields:
         # Use fillable field approach

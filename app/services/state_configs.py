@@ -130,40 +130,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Magistrate Court",
         "field_mapping": {
-            # Personal
-            "full_name": "Defendant",
-            "address": "HomeAddress",
-            "city_state_zip": "CityStateZip",
-            # Property
+            "full_name": "Defendant.SEQ002.Name.Full",
+            "address": "Defendant.SEQ001.HomeAddress.Street",
+            "city_state_zip": "Defendant.SEQ001.HomeAddress.CityStateZip",
             "property_address": "Property",
-            # Landlord
-            "landlord_name": "Landlord",
-            "landlord_name_alt": "Landord",
-            "landlord_address": "Street",
-            # Case
+            "landlord_name": "Plaintiff.SEQ001.Name.Full",
+            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
             "case_number": "CaseNumber",
-            "county": "County",
-            "date": "Date",
-            "current_date": "CurrentDate",
-            "plaintiff": "Plaintiff",
-            # Amounts
-            "amount_owed": "Amount",
-            "attorney_fees": "AttorneyFees",
-            "damages_amount": "DamagesAmt",
-            "owns_amount": "OwesAmt",
-            "reduced_rent": "ReducedRentAmt",
-            "repairs_cost": "RepairsAmt",
-            "reduced_rent_months": "ReducedRentNumberMonths",
-            # Defendant type
-            "is_tenant": "IsDefendant",
-            "is_resident": "ResidentTenant",
-            "full_name_alt": "Full",
-            "name": "Name",
-            # Signature
-            "signature_date": "SlashMDY",
-            # Reason
-            "additional_reasons": "AdditionalReasons",
-            "reason": "Reason",
+            "county": "County.Selection",
+            "date": "Date.CurrentDate.SlashMDY",
         },
         "defense_options": [
             {"key": "def_did_repairs", "label": "Defendant did make repairs", "field": "DidMakeRepairs"},
