@@ -20,18 +20,17 @@ FORMS_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "counties
 
 
 def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
-    """Fill a state's eviction answer form — handles fillable AND scanned PDFs.
-    
-    First attempts field-level filling. Falls back to coordinate-based overlay.
-    
-    Args:
-        data: Case data dict with personal_info, landlord_info, case_details, defenses
-        state: State code (VA, SC, GA, TX, etc.)
-        output_path: Where to save the filled PDF
-    
-    Returns:
-        True if successful
-    """
+    """Fill a state's eviction answer form — handles fillable AND scanned PDFs."""
+    return _fill_form(data, state, output_path, "answer_form")
+
+
+def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
+    """Fill a state's fee waiver form."""
+    return _fill_form(data, state, output_path, "fee_waiver_form")
+
+
+def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
+    """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
     config = get_state_config(state_code)
     if not config:

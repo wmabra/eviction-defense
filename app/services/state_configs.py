@@ -396,6 +396,211 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "date": "Date",
         },
     },
+
+    # ══════════════════════════════════════════
+    # COLORADO — JDF 103 Eviction Answer
+    # 6 pages, 57 fillable fields
+    # ══════════════════════════════════════════
+    "CO": {
+        "name": "Colorado",
+        "answer_form": "co_eviction_answer.pdf",
+        "fee_waiver_form": "co_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "County Court",
+        "field_mapping": {
+            "full_name": "0",
+            "landlord_name": "1",
+            "case_number": "2",
+            "county": "3",
+            "phone": "4",
+            "address": "5",
+        },
+        "overlay_positions": {},
+        "notes": "JDF 103 Eviction Answer. 6 pages. Field names are numbered 0-56.",
+    },
+
+    # ══════════════════════════════════════════
+    # LOUISIANA — Eviction Answer (LSBA form)
+    # 14 pages, 62 fillable fields (checkbox based)
+    # ══════════════════════════════════════════
+    "LA": {
+        "name": "Louisiana",
+        "answer_form": "la_eviction_answer.pdf",
+        "fee_waiver_form": "la_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "District Court / City Court",
+        "field_mapping": {
+            "defendant_name": "",
+            "plaintiff_name": "",
+        },
+        "defense_options": [
+            {"key": "def_not_violate_lease", "label": "I did not commit the lease violations", "field": "I did not commit the lease violations stated by my landlord"},
+            {"key": "def_no_notice", "label": "I did not receive notice to vacate", "field": "I did not receive a Notice to Vacate I have a tenantbased Section 8 voucher so"},
+            {"key": "def_section8", "label": "Section 8 / government housing protections", "field": "I do not owe the rent because I am on Section 8 or another government housing"},
+            {"key": "def_ownership", "label": "I have ownership interest in the property", "field": "I have an ownership interest in the property I am being evicted from"},
+            {"key": "def_general", "label": "I have exceptions or defenses", "field": "I have exceptions andor defenses to the claims made in the eviction paperwork"},
+        ],
+        "notes": "LA LSBA eviction answer form. Has good checkbox-style defense fields with descriptive names.",
+    },
+
+    # ══════════════════════════════════════════
+    # MISSISSIPPI — Justice Court Answer
+    # 2 pages, 9 fillable fields
+    # ══════════════════════════════════════════
+    "MS": {
+        "name": "Mississippi",
+        "answer_form": "ms_eviction_answer.pdf",
+        "fee_waiver_form": "ms_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "Justice Court",
+        "field_mapping": {
+            "county": "COUNTY MISSISSIPPI",
+            "county_2": "COUNTY MISSISSIPPI_2",
+            "court_name": "IN THE JUSTICE COURT OF",
+            "court_name_2": "IN THE JUSTICE COURT OF_2",
+            "notary_text": "Personally appeared befoe me the undersigned authority a Notary Public in and for",
+            "vs_label": "VS",
+        },
+        "notes": "MS Justice Court eviction answer. 9 fillable fields. Simple form.",
+    },
+
+    # ══════════════════════════════════════════
+    # TENNESSEE — Sworn Denial (General Sessions)
+    # 2 pages, 20 fillable fields
+    # ══════════════════════════════════════════
+    "TN": {
+        "name": "Tennessee",
+        "answer_form": "tn_eviction_answer.pdf",
+        "fee_waiver_form": "tn_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "General Sessions Court",
+        "field_mapping": {
+            "hearing_at_1": "at the hearing 1",
+            "hearing_at_2": "at the hearing 2",
+            "hearing_at_3": "at the hearing 3",
+            "hearing_at_4": "at the hearing 4",
+            "certification_1": "cert_1",
+            "certification_2": "cert_2",
+        },
+        "notes": "TN Sworn Denial form. 20 fillable fields. Used in General Sessions Court for eviction defense.",
+    },
+
+    # ══════════════════════════════════════════
+    # CALIFORNIA — UD-105 Answer Unlawful Detainer
+    # 4 pages, 154 fillable fields
+    # ══════════════════════════════════════════
+    "CA": {
+        "name": "California",
+        "answer_form": "ca_ud105.pdf",
+        "fee_waiver_form": "ca_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "Superior Court",
+        "field_mapping": {
+            "address": "Address[0]",
+            "attorney_name": "AsstName[0]",
+            "attorney_bar_no": "AttyBarNo[0]",
+            "attorney_firm": "AttyFirm[0]",
+            "case_number": "CASE NUMBER[0]",
+            "city": "City[0]",
+            "plaintiff_name": "COMPLAINT OF[0]",
+            "defendant_name": "DEFENDANT[0]",
+            "email": "EMAIL ADDRESS[0]",
+            "phone": "TELEPHONE NO[0]",
+            "state": "State[0]",
+            "zip": "ZIP CODE[0]",
+            "defendant_addr": "ADDRESS OF DEFENDANT[0]",
+        },
+        "notes": "CA UD-105 form. 154 fillable fields. Complex multi-page form for unlawful detainer defense.",
+    },
+
+    # ══════════════════════════════════════════
+    # ARKANSAS — Unlawful Detainer Answer Packet
+    # 11 pages (scanned, overlay needed)
+    # ══════════════════════════════════════════
+    "AR": {
+        "name": "Arkansas",
+        "answer_form": "ar_eviction_answer.pdf",
+        "fee_waiver_form": "ar_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "District Court",
+        "overlay_positions": {
+            "full_name": {"page": 9, "x": 90, "y": 620, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 7, "x": 200, "y": 70, "w": 200, "h": 20, "size": 11},
+            "landlord_name": {"page": 9, "x": 90, "y": 650, "w": 300, "h": 20, "size": 11},
+            "address": {"page": 10, "x": 110, "y": 81, "w": 300, "h": 20, "size": 11},
+            "phone": {"page": 10, "x": 360, "y": 134, "w": 150, "h": 20, "size": 11},
+        },
+        "notes": "AR unlawful detainer answer packet from Arkansas Justice. 11 pages including instructions.",
+    },
+
+    # ══════════════════════════════════════════
+    # ARIZONA — Answer (LJEA00004F) + MHJCEA2I Instructions
+    # Answer form is 2 pages, scanned
+    # ══════════════════════════════════════════
+    "AZ": {
+        "name": "Arizona",
+        "answer_form": "az_answer_form.pdf",
+        "instructions_form": "az_eviction_answer.pdf",
+        "fee_waiver_form": "az_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "Justice Court / Superior Court",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 72, "y": 420, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 2, "x": 130, "y": 37, "w": 200, "h": 20, "size": 11},
+        },
+        "notes": "AZ answer form is scanned (no fillable fields). LJEA00004F is the official form. MHJCEA2I contains instructions.",
+    },
+
+    # ══════════════════════════════════════════
+    # FLORIDA — Form 1.947(b) Answer Residential Eviction (generated)
+    # Standardized form generated by the packet system
+    # ══════════════════════════════════════════
+    "FL": {
+        "name": "Florida",
+        "answer_form": "answer_form_917.pdf",
+        "fee_waiver_form": "fl_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "County Court",
+        "notes": "FL uses generated documents from the packet system rather than fillable PDFs. Fee waiver is scanned (fl_fee_waiver.pdf).",
+    },
+
+    # ══════════════════════════════════════════
+    # MINNESOTA — Housing Court Eviction Answer (HOU202)
+    # 4 pages, has text labels
+    # ══════════════════════════════════════════
+    "MN": {
+        "name": "Minnesota",
+        "answer_form": "mn_eviction_answer.pdf",
+        "fee_waiver_form": "mn_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "District Court (Housing)",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 88, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 72, "y": 106, "w": 200, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
+        },
+        "notes": "MN Housing Court eviction answer form (HOU202). Has text labels that can be used for positioning.",
+    },
+
+    # ══════════════════════════════════════════
+    # NEW MEXICO — 4-907 Answer to Petition for Restitution
+    # 1 page, has text labels
+    # ══════════════════════════════════════════
+    "NM": {
+        "name": "New Mexico",
+        "answer_form": "nm_eviction_answer.pdf",
+        "fee_waiver_form": "nm_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "Metropolitan Court",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 100, "y": 200, "w": 300, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 100, "y": 400, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 200, "y": 80, "w": 200, "h": 20, "size": 11},
+        },
+        "notes": "NM 4-907 Answer to Petition for Restitution. Metro Court form for eviction defense.",
+    },
 }
 
 
