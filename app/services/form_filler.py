@@ -32,6 +32,7 @@ STATE_FORMS = {
     "OR": "or_eviction_answer.pdf",
     "RI": "ri_eviction_answer.pdf",
     "SC": "sc_eviction_answer.pdf",
+    "TN": "tn_eviction_answer.pdf",
     "TX": "tx_eviction_answer.pdf",
     "VA": "va_eviction_answer.pdf",
 }
