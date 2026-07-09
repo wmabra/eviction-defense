@@ -168,38 +168,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Justice of the Peace Court",
         "field_mapping": {
-            "text1": "Text1",
-            "text2": "Text2",
-            "text3": "Text3",
-            "text4": "Text4",
-            "text5": "Text5",
-            "text8": "Text8",
-            "text9": "Text9",
-            "text12": "Text12",
-            "text13": "Text13",
-            "text15": "Text15",
-            "text16": "Text16",
-            "text17": "Text17",
-            "text18": "Text18",
-            "text23": "Text23",
-            "text24": "Text24",
-            "text25": "Text25",
-            "text28": "Text28",
-            "text44": "Text44",
-            "text108": "Text108",
-            "text109": "Text109",
-            "text277": "Text277",
-            "text1023": "Text1023",
-            "text1024": "Text1024",
-            "text1025": "Text1025",
-            "text1026": "Text1026",
-            "text1027": "Text1027",
-            "text1028": "Text1028",
-            "text1029": "Text1029",
-            "text1030": "Text1030",
-            "text1031": "Text1031",
-            "text1032": "Text1032",
-            "text1033": "Text1033",
+            # TX uses generic Text1-Text277 numbered fields without labels.
+            # We map them sequentially — adjust based on the specific PDF.
+            "full_name": "Text1",
+            "landlord_name": "Text2",
+            "case_number": "Text3",
+            "property_address": "Text4",
+            "phone": "Text5",
+            "date": "Text9",
         },
         "checkbox_mapping": {
             "jp_court": "Check Box JP",
@@ -210,7 +186,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "counterclaim": "Check BoxCD",
             "other_court": "Other Court",
         },
-        "notes": "TX JP Court eviction answer. Has 55 fields including many checkboxes. Most text fields need sequential mapping.",
+        "notes": "TX JP Court eviction answer. Generic Text fields. Sequential mapping: Text1=defendant, Text2=plaintiff, Text3=case#.",
     },
 
     # ══════════════════════════════════════════
@@ -225,19 +201,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Circuit Court",
         "field_mapping": {
             "county": "1 - County",
-            "date_filed": "1 - Date",
-            "plaintiff_name": "1 - Name of Person or Organization",
-            "plaintiff_action": "1 - What You Told Them or Did",
-            "plaintiff_name_2": "2 - Name of Person or Organization",
-            "plaintiff_name_first_middle_last": "2 - Plaintiff Name (First, Middle, Last)",
-            "plaintiff_action_2": "2 - What You Told Them or Did",
-            "plaintiff_name_3": "3 - Plaintiff Name (First, Middle, Last)",
-            "date_3": "3 - Date",
-            "plaintiff_action_3": "3 - What You Told Them or Did",
-            "delivery_address": "4 - Delivery Address",
-            "plaintiff_name_4": "4 - Plaintiff Name (First, Middle, Last)",
+            "full_name": "5 - Defendants (First, middle, last name)",
+            "landlord_name": "2 - Plaintiff Name (First, Middle, Last)",
+            "case_number": "9 - Case Number",
+            "property_address": "10 - Property Address",
         },
-        "notes": "IL form has 156 fields — complex admit/deny paragraph structure. Each paragraph needs admit/deny/do-not-know response.",
+        "notes": "IL Circuit Court eviction answer. 189 field widgets across 6 pages with admit/deny paragraph structure.",
     },
 
     # ══════════════════════════════════════════
@@ -358,16 +327,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "District Court",
         "field_mapping": {
-            "defendant": "Defendant",
-            "plaintiff": "Plaintiff",
+            "full_name": "Defendant",
+            "landlord_name": "Plaintiff",
             "case_number": "Civil Action File Number",
-            "defendant_tenant": "DefendantTenant",
-            "plaintiff_landlord": "PlaintiffLandlord",
-            "defendant_attorney": "Attorney for the DefendantTenant or the DefendantTenant",
-            "defendant_address": "Address of the DefendantTenants Attorney or the DefendantTenant",
-            "plaintiff_attorney": "Attorney for the PlaintiffLandlords Attorney or the PlaintiffLandlord",
-            "plaintiff_address": "Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord",
-            "telephone": "Telephone Number",
+            "phone": "Telephone Number",
             "date": "Date",
         },
     },
@@ -565,6 +528,60 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
         },
         "notes": "MN Housing Court eviction answer form (HOU202). Has text labels that can be used for positioning.",
+    },
+
+    # ══════════════════════════════════════════
+    # NEVADA — Summary Eviction Answer
+    # Scanned form — overlay needed
+    # ══════════════════════════════════════════
+    "NV": {
+        "name": "Nevada",
+        "answer_form": "nv_answer_nonpayment.pdf",
+        "fee_waiver_form": "nv_fee_waiver.pdf",
+        "has_fillable_fields": False,
+        "court_type": "Justice Court",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 100, "y": 200, "w": 300, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 100, "y": 300, "w": 300, "h": 20, "size": 11},
+        },
+        "notes": "NV summary eviction answer form (nonpayment). Large file (3.6 MB), scanned.",
+    },
+
+    # ══════════════════════════════════════════
+    # OREGON — Eviction Answer
+    # Fillable form
+    # ══════════════════════════════════════════
+    "OR": {
+        "name": "Oregon",
+        "answer_form": "or_eviction_answer.pdf",
+        "fee_waiver_form": "or_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "Circuit Court",
+        "field_mapping": {
+            "full_name": "DefendantName",
+            "landlord_name": "PlaintiffName",
+            "case_number": "CaseNumber",
+            "property_address": "PropertyAddress",
+        },
+        "notes": "OR eviction answer form. Fillable PDF.",
+    },
+
+    # ══════════════════════════════════════════
+    # MICHIGAN — Summary Eviction Answer
+    # Fillable form
+    # ══════════════════════════════════════════
+    "MI": {
+        "name": "Michigan",
+        "answer_form": "mi_eviction_answer.pdf",
+        "fee_waiver_form": "mi_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "District Court",
+        "field_mapping": {
+            "full_name": "DefendantName",
+            "landlord_name": "PlaintiffName",
+            "case_number": "CaseNumber",
+        },
+        "notes": "MI summary eviction answer form. Fillable PDF.",
     },
 
     # ══════════════════════════════════════════
