@@ -37,30 +37,22 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "General District Court",
         "field_mapping": {
-            # Personal info
-            "full_name": "Defendant",
-            "phone": "PhoneName2",
-            "address": "AddressName2",
-            "email": "User",
-            # Landlord info
-            "landlord_name": "Plaintiff",
-            "landlord_address": "CourtAddress",  # reuse CourtAddress field as needed
-            # Case info
-            "case_number": "CaseNo",
-            "court_name": "Court",
-            "trial_date": "TrialDate",
-            "trial_time": "TrialTime",
-            "file_date": "FileDate",
-            "bop_due_date": "BOPDueDate",
-            # Dates
-            "date": "Date3",
-            "day": "Day",
-            "month": "Month",
-            "year": "Year",
-            # Party names
-            "defendant_name_2": "Name2",
-            "defendant_role": "Role",
-            "defendant_role_2": "Role2",
+            "full_name": "User.Defendant",
+            "phone": "User.PhoneName2",
+            "address": "User.AddressName2",
+            "email": "User.CaseNo",
+            "landlord_name": "User.Plaintiff",
+            "landlord_address": "User.CourtAddress",
+            "case_number": "User.CaseNo",
+            "court_name": "User.Court",
+            "trial_date": "User.TrialDate",
+            "trial_time": "User.TrialTime",
+            "file_date": "User.FileDate",
+            "bop_due_date": "User.BOPDueDate",
+            "date": "User.Date3",
+            "day": "User.Day",
+            "month": "User.Month",
+            "year": "User.Year",
         },
         "defense_map": {
             # Map defense keys to checkboxes
@@ -168,14 +160,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Justice of the Peace Court",
         "field_mapping": {
-            # TX uses generic Text1-Text277 numbered fields without labels.
-            # We map them sequentially — adjust based on the specific PDF.
-            "full_name": "Text1",
-            "landlord_name": "Text2",
-            "case_number": "Text3",
-            "property_address": "Text4",
-            "phone": "Text5",
+            "case_number": "Text1",
+            "full_name": "Text5",
+            "phone": "Text8",
             "date": "Text9",
+            "email": "Text277",
         },
         "checkbox_mapping": {
             "jp_court": "Check Box JP",
