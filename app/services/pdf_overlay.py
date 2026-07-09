@@ -82,35 +82,46 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
+    defenses = data.get("defenses", {})
     
-    # Build field values
+    # Build values from data using flexible key resolution
+    _all_data = {}
+    for section in [p, l, c]:
+        for k, v in section.items():
+            if v:
+                _all_data[k] = str(v)
+    
+    # Add common aliases
+    if "full_name" not in _all_data and "name" in _all_data:
+        _all_data["full_name"] = _all_data["name"]
+    if "landlord_name" not in _all_data and "landlord" in _all_data:
+        _all_data["landlord_name"] = _all_data["landlord"]
+    if "case_number" not in _all_data and "case" in _all_data:
+        _all_data["case_number"] = _all_data["case"]
+    if "address" not in _all_data and "property_address" in _all_data:
+        _all_data["address"] = _all_data["property_address"]
+    
     values = {}
     
-    # Map generic fields to PDF fields
-    generic_to_field = {
-        "full_name": p.get("full_name", ""),
-        "landlord_name": l.get("landlord_name", ""),
-        "case_number": c.get("case_number", ""),
-        "phone": p.get("phone", ""),
-        "email": p.get("email", ""),
-        "address": p.get("property_address", ""),
-        "county": p.get("county", ""),
-        "property_address": p.get("property_address", ""),
-        "landlord_address": l.get("landlord_address", ""),
-        "landlord_phone": l.get("landlord_phone", ""),
-        "landlord_email": l.get("landlord_email", ""),
-    }
-    
-    for generic_key, value in generic_to_field.items():
-        if value and generic_key in mapping:
-            values[mapping[generic_key]] = str(value)
+    # Map each field_mapping key to a value from our data
+    for map_key, pdf_field in mapping.items():
+        if map_key in _all_data:
+            values[pdf_field] = str(_all_data[map_key])
     
     # Date
     if "date" in mapping:
         values[mapping["date"]] = date.today().strftime("%m/%d/%Y")
     
+    # Month/day/year handling
+    today = date.today()
+    if "month" in mapping:
+        values[mapping["month"]] = str(today.month)
+    if "day" in mapping:
+        values[mapping["day"]] = str(today.day)
+    if "year" in mapping:
+        values[mapping["year"]] = str(today.year)
+    
     # Handle defense checkboxes
-    defenses = data.get("defenses", {})
     defense_opts = config.get("defense_options", [])
     for opt in defense_opts:
         def_key = opt.get("key", "")
@@ -124,8 +135,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     # Apply to each page
     for page_num in range(len(doc)):
         page = doc[page_num]
-        widgets = page.widgets()
-        for widget in widgets:
+        for widget in page.widgets():
             field_name = widget.field_name
             if field_name in values:
                 widget.field_value = values[field_name]
