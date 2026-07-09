@@ -15,14 +15,24 @@ COUNTY_FORMS = {
 }
 
 STATE_FORMS = {
+    "AR": "ar_eviction_answer.pdf",
+    "AZ": "az_eviction_answer.pdf",
     "CA": "ca_ud105.pdf",
+    "CT": "ct_eviction_answer.pdf",
+    "FL": "answer_form_917.pdf",
+    "GA": "ga_eviction_answer.pdf",
     "IL": "il_eviction_answer.pdf",
-    "TX": "tx_eviction_answer.pdf",
+    "LA": "la_eviction_answer.pdf",
     "MI": "mi_eviction_answer.pdf",
+    "MN": "mn_eviction_answer.pdf",
+    "MS": "ms_eviction_answer.pdf",
+    "NM": "nm_eviction_answer.pdf",
     "NV": "nv_answer_nonpayment.pdf",
     "OR": "or_eviction_answer.pdf",
-    "MN": "mn_eviction_answer.pdf",
-    "FL": "answer_form_917.pdf",  # statewide FL fallback
+    "RI": "ri_eviction_answer.pdf",
+    "SC": "sc_eviction_answer.pdf",
+    "TX": "tx_eviction_answer.pdf",
+    "VA": "va_eviction_answer.pdf",
 }
 
 FEE_WAIVER_FORMS = {
