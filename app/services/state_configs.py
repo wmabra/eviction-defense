@@ -522,9 +522,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": False,
         "court_type": "Metropolitan Court",
         "overlay_positions": {
-            "full_name": {"page": 1, "x": 100, "y": 200, "w": 300, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 100, "y": 400, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 200, "y": 80, "w": 200, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 100, "y": 120, "w": 300, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 100, "y": 140, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 250, "y": 80, "w": 200, "h": 20, "size": 11},
         },
         "notes": "NM 4-907 Answer to Petition for Restitution. Metro Court form for eviction defense.",
     },
