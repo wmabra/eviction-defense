@@ -410,7 +410,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "District Court",
         "overlay_positions": {
             "full_name": {"page": 9, "x": 90, "y": 620, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 7, "x": 200, "y": 70, "w": 200, "h": 20, "size": 11},
+            "case_number": {"page": 7, "x": 300, "y": 45, "w": 200, "h": 20, "size": 11},
             "landlord_name": {"page": 9, "x": 90, "y": 650, "w": 300, "h": 20, "size": 11},
             "address": {"page": 10, "x": 110, "y": 81, "w": 300, "h": 20, "size": 11},
             "phone": {"page": 10, "x": 360, "y": 134, "w": 150, "h": 20, "size": 11},
