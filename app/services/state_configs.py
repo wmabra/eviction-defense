@@ -494,7 +494,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "or_fee_waiver.pdf",
         "has_fillable_fields": False,
         "court_type": "Circuit Court",
-        "notes": "OR form is scanned/no fillable fields. Needs overlay or replacement.",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 100, "w": 250, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 72, "y": 120, "w": 250, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 300, "y": 72, "w": 200, "h": 20, "size": 11},
+        },
+        "notes": "OR FED Answer form. Scanned PDF - overlay positions for basic info.",
     },
 
     # ══════════════════════════════════════════
