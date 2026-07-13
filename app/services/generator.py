@@ -113,11 +113,6 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     paths["fee_waiver"] = fee_waiver_path
 
     seq += 1
-    efiling_path = os.path.join(output_dir, f"{seq:02d}_efiling_instructions.pdf")
-    _generate_efiling_instructions(base, efiling_path)
-    paths["e_filing_instructions"] = efiling_path
-
-    seq += 1
     rental_path = os.path.join(output_dir, f"{seq:02d}_rental_assistance.pdf")
     _generate_rental_assistance_sheet(base, rental_path)
     paths["rental_assistance"] = rental_path
@@ -860,98 +855,6 @@ def _generate_fee_waiver(data: dict, output_path: str):
         S["BodyWarning"]))
     
     doc.build(elements)
-
-
-# ======================== E-FILING INSTRUCTIONS ========================
-
-def _generate_efiling_instructions(data: dict, output_path: str):
-    """Generate state-specific e-filing instructions."""
-    doc = SimpleDocTemplate(output_path, pagesize=letter,
-                            topMargin=0.75*inch, bottomMargin=0.75*inch)
-    S = _get_styles()
-    elements = []
-    state = data.get("state", "FL").upper()
-    c = data.get("case_details", {})
-    case_number = c.get('case_number', 'your case number')
-    
-    # State-specific e-filing info
-    EFILING = {
-        "FL": {"portal": "Florida Courts E-Filing Portal", "url": "www.myflcourtaccess.com", "help_phone": "(850) 385-4509"},
-        "CA": {"portal": "California e-Filing (Odyssey eFileCA)", "url": "www.efileca.com", "help_phone": "check your county court website"},
-        "TX": {"portal": "Texas eFile (eFileTexas.gov)", "url": "www.efiletexas.gov", "help_phone": "(855) 839-3453"},
-        "IL": {"portal": "Illinois eFileIL (Odyssey)", "url": "www.efile.illinoiscourts.gov", "help_phone": "(800) 297-5378"},
-        "MI": {"portal": "Michigan e-Filing (MiFILE)", "url": "www.courts.michigan.gov/efiling", "help_phone": "check your county court"},
-        "NV": {"portal": "Nevada eFileNV", "url": "www.efilenv.com", "help_phone": "(702) 464-5400"},
-        "OR": {"portal": "Oregon eCourt (File and Serve)", "url": "www.courts.oregon.gov/online-services", "help_phone": "check your county court"},
-        "MN": {"portal": "Minnesota eFile & eServe (eFileMN)", "url": "www.mncourts.gov/efile", "help_phone": "(651) 413-9500"},
-        "CO": {"portal": "Colorado e-Filing (ICCES)", "url": "www.courts.state.co.us/eFile", "help_phone": "(720) 625-5000"},
-        "CT": {"portal": "Connecticut E-Services (Judicial Branch)", "url": "www.jud.ct.gov/eservices", "help_phone": "(860) 757-2200"},
-        "VA": {"portal": "Virginia Judicial E-Filing System (VJEFS)", "url": "www.vacourts.gov/efiling", "help_phone": "check your local court"},
-        "SC": {"portal": "South Carolina eFiling (Attorney Portal / pro se limited)", "url": "www.sccourts.org", "help_phone": "file in person at the clerk's office"},
-        "GA": {"portal": "Georgia eFile (PeachCourt / Odyssey)", "url": "www.peachcourt.com", "help_phone": "(404) 656-5170"},
-        "LA": {"portal": "Louisiana Clerk of Court (parish-specific)", "url": "www.laclerks.org", "help_phone": "contact your parish clerk"},
-        "TN": {"portal": "Tennessee e-Filing (Odyssey)", "url": "www.tncourts.gov/efiling", "help_phone": "check your county court"},
-        "AR": {"portal": "Arkansas eFlex (e-Filing)", "url": "www.arcourts.gov/efiling", "help_phone": "(501) 682-9400"},
-        "AZ": {"portal": "Arizona eFileAZ (TurboCourt)", "url": "www.azcourts.gov/efiling", "help_phone": "(602) 452-3300"},
-        "MA": {"portal": "Massachusetts eFileMA (Odyssey)", "url": "www.mass.gov/efiling", "help_phone": "check your housing court"},
-        "NM": {"portal": "New Mexico e-Filing (Odyssey)", "url": "www.nmcourts.gov/efiling", "help_phone": "(505) 827-4800"},
-        "RI": {"portal": "Rhode Island e-Filing (Tyler)", "url": "www.courts.ri.gov/efiling", "help_phone": "(401) 222-3210"},
-    }
-    info = EFILING.get(state, {"portal": "your state's e-filing portal", "url": "your state court website", "help_phone": "contact your local court clerk"})
-    
-    elements.append(Paragraph(f"E-FILING INSTRUCTIONS — {state}", S["FormTitle"]))
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(
-        f"<b>Portal:</b> {info['portal']}<br/>"
-        f"<b>Website:</b> {info['url']}<br/>"
-        f"<b>Help:</b> {info['help_phone']}",
-        S["BodySmall"]
-    ))
-    elements.append(Spacer(1, 12))
-    
-    steps = [
-        ("Step 1: Create an Account (if required)",
-         f"Go to {info['url']}. Look for 'Register' or 'Create Account' and select "
-         "'Self-Represented Litigant' if that option is available. Enter your name, "
-         "email, and create a password. Confirm your email by clicking the link sent to you."),
-        ("Step 2: Log In",
-         f"Return to {info['url']} and log in with your email and password."),
-        ("Step 3: Start a New Filing",
-         f"Look for 'File a New Case' or 'File to an Existing Case.' "
-         f"If your case already has a number ({case_number}), select the existing case option. "
-         f"Enter your case number and select the county where your case was filed."),
-        ("Step 4: Upload Your Documents",
-         "Upload your signed Answer form (the form beginning with '01_' in this packet). "
-         "Select the document type as 'Answer' or 'Answer to Complaint.' "
-         "Upload your fee waiver form if you are requesting one."),
-        ("Step 5: Pay Filing Fee (or Submit Fee Waiver)",
-         "If a filing fee is required, you will be prompted to pay by credit/debit card. "
-         "A convenience fee may apply. If you are filing a fee waiver, select that option "
-         "instead of payment. Your fee waiver form must be uploaded."),
-        ("Step 6: Complete Certificate of Service",
-         "The portal may send a copy to the landlord or their attorney if they have "
-         "registered for e-service. If not, you may also need to mail or hand-deliver a "
-         "copy. Complete the Certificate of Service at the bottom of your Answer form."),
-        ("Step 7: Save Your Confirmation",
-         "After filing, you will receive a confirmation email or receipt with a filing ID. "
-         "SAVE THIS. Print it and bring it to court. This is your proof that you filed on time."),
-    ]
-    
-    for title, body in steps:
-        elements.append(Paragraph(f"<b>{title}</b>", S["BodyBold"]))
-        elements.append(Paragraph(body, S["Body"]))
-        elements.append(Spacer(1, 8))
-    
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(
-        f"<b>IMPORTANT:</b> If e-filing is not working or you are unsure, go IN PERSON to the "
-        f"courthouse clerk's office and file on paper BEFORE your deadline. Ask the clerk to "
-        f"stamp your copies. Do not miss your deadline because of a technical issue.",
-        S["BodyWarning"]
-    ))
-    
-    doc.build(elements)
-
 
 # ======================== RENTAL ASSISTANCE ========================
 
@@ -1862,7 +1765,6 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
         "court_checklist": ("Court Hearing Checklist", "What to bring and what to expect at your hearing"),
         "hearing_script": ("Hearing Script", "What to say to the judge — personalized for your case"),
         "fee_waiver": ("Fee Waiver Instructions", "How to file your case for free if you can't afford the fee"),
-        "e_filing_instructions": ("E-Filing Instructions", f"How to file online through {state}'s e-filing system"),
         "rental_assistance": ("Rental Assistance Resources", "Local organizations that can help with rent and housing"),
         "demand_letter": ("Demand Letter to Landlord", "Formal written demand for repairs — critical for building your case"),
         "payment_plan_letter": ("Payment Plan Letter", "Formal request to your landlord to set up a payment plan"),
@@ -1873,7 +1775,7 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
     ALWAYS_DOCS = ["emergency_action_plan", "eviction_timeline", "defenses_explained",
                    "evidence_guide", "income_expense_worksheet", "filing_checklist",
                    "court_checklist", "hearing_script", "fee_waiver",
-                   "e_filing_instructions", "rental_assistance"]
+                   "rental_assistance"]
     COND_DOCS = ["demand_letter", "motion_to_determine_rent", "payment_plan_letter", "hardship_letter"]
 
     doc_num = 1
