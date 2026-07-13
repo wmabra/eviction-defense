@@ -1,17 +1,21 @@
 """
 PDF Document Generator — produces the complete self-help paperwork packet.
 
-Generates all 8 documents in the $395 packet from confirmed customer data:
-1. Form 1.947(b) Answer — Residential Eviction (ReportLab PDF)
-2. Motion to Determine Rent (ReportLab PDF)
-3. Landlord Payment-Plan Letter (python-docx)
-4. Hardship/Extension Letter (python-docx)
-5. Filing Checklist (plain PDF)
-6. Court Checklist (plain PDF)
-7. Hearing Script — What to Say in Court (plain PDF)
-8. Fee Waiver Instructions (plain PDF)
-9. E-Filing Instructions (python-docx)
-10. Rental Assistance Resource Sheet (python-docx)
+Generates up to 11 documents from confirmed customer data:
+  01. Cover Page & Document Index
+  02. Filing Checklist (state-specific)
+  03. Court Hearing Checklist
+  04. Hearing Script — What to Say in Court (personalized)
+  05. Fee Waiver Instructions (state-specific)
+  06. E-Filing Instructions (state-specific)
+  07. Rental Assistance Resource Sheet (county-specific)
+  --- Conditional documents (appended when applicable) ---
+  08. Landlord Payment-Plan Letter
+  09. Hardship / Extension Letter
+  10. Motion to Determine Rent
+
+Court answer form and fee waiver form are filled via form_filler.py
+using each state's official court PDF for guaranteed court acceptance.
 """
 
 import os
@@ -58,54 +62,67 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     # OLD: _generate_answer_form(base, answer_path)
     # NEW: Use fill_answer_form(data, state, output_path) separately
 
-    # 2. Motion to Determine Rent (conditional)
-    defenses = base.get("defenses", {})
-    if defenses.get("def_amount", {}).get("checked"):
-        mtr_path = os.path.join(output_dir, "02_motion_to_determine_rent.pdf")
-        _generate_motion_to_determine_rent(base, mtr_path)
-        paths["motion_to_determine_rent"] = mtr_path
+    # Generate all supporting documents. Always-present docs use sequential
+    # numbering (01-07). Conditional docs use 08-10 so there are never gaps.
+    seq = 1  # 01 = cover page (generated last so it knows what's included)
 
-    # 3. Landlord Payment-Plan Letter
-    if base.get("preferences", {}).get("wants_payment_plan"):
-        pplan_path = os.path.join(output_dir, "03_payment_plan_letter.docx")
-        _generate_payment_plan_letter(base, pplan_path)
-        paths["payment_plan_letter"] = pplan_path
+    # Always-present documents
+    seq += 1
+    filing_path = os.path.join(output_dir, f"{seq:02d}_filing_checklist.pdf")
+    _generate_filing_checklist(base, filing_path)
+    paths["filing_checklist"] = filing_path
 
-    # 4. Hardship Letter
-    if base.get("preferences", {}).get("needs_more_time"):
-        hardship_path = os.path.join(output_dir, "04_hardship_letter.docx")
-        _generate_hardship_letter(base, hardship_path)
-        paths["hardship_letter"] = hardship_path
-
-    # 5. Filing Checklist
-    checklist_path = os.path.join(output_dir, "05_filing_checklist.pdf")
-    _generate_filing_checklist(base, checklist_path)
-    paths["filing_checklist"] = checklist_path
-
-    # 6. Court Checklist
-    court_checklist_path = os.path.join(output_dir, "06_court_checklist.pdf")
+    seq += 1
+    court_checklist_path = os.path.join(output_dir, f"{seq:02d}_court_checklist.pdf")
     _generate_court_checklist(base, court_checklist_path)
     paths["court_checklist"] = court_checklist_path
 
-    # 7. Hearing Script
-    hearing_path = os.path.join(output_dir, "07_hearing_script.pdf")
+    seq += 1
+    hearing_path = os.path.join(output_dir, f"{seq:02d}_hearing_script.pdf")
     _generate_hearing_script(base, hearing_path)
     paths["hearing_script"] = hearing_path
 
-    # 8. Fee Waiver Instructions
-    fee_waiver_path = os.path.join(output_dir, "08_fee_waiver.pdf")
+    seq += 1
+    fee_waiver_path = os.path.join(output_dir, f"{seq:02d}_fee_waiver.pdf")
     _generate_fee_waiver(base, fee_waiver_path)
     paths["fee_waiver"] = fee_waiver_path
 
-    # 9. E-Filing Instructions
-    efiling_path = os.path.join(output_dir, "07_e_filing_instructions.docx")
+    seq += 1
+    efiling_path = os.path.join(output_dir, f"{seq:02d}_efiling_instructions.pdf")
     _generate_efiling_instructions(base, efiling_path)
     paths["e_filing_instructions"] = efiling_path
 
-    # 8. Rental Assistance Sheet
-    rental_path = os.path.join(output_dir, "08_rental_assistance_resources.docx")
+    seq += 1
+    rental_path = os.path.join(output_dir, f"{seq:02d}_rental_assistance.pdf")
     _generate_rental_assistance_sheet(base, rental_path)
     paths["rental_assistance"] = rental_path
+
+    # Conditional documents — always start at 08 so no gaps
+    cond_seq = 7
+
+    defenses = base.get("defenses", {})
+    if defenses.get("def_amount", {}).get("checked"):
+        cond_seq += 1
+        mtr_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_to_determine_rent.pdf")
+        _generate_motion_to_determine_rent(base, mtr_path)
+        paths["motion_to_determine_rent"] = mtr_path
+
+    if base.get("preferences", {}).get("wants_payment_plan"):
+        cond_seq += 1
+        pplan_path = os.path.join(output_dir, f"{cond_seq:02d}_payment_plan_letter.pdf")
+        _generate_payment_plan_letter(base, pplan_path)
+        paths["payment_plan_letter"] = pplan_path
+
+    if base.get("preferences", {}).get("needs_more_time"):
+        cond_seq += 1
+        hardship_path = os.path.join(output_dir, f"{cond_seq:02d}_hardship_letter.pdf")
+        _generate_hardship_letter(base, hardship_path)
+        paths["hardship_letter"] = hardship_path
+
+    # Cover page — generated last so it knows all included documents
+    cover_path = os.path.join(output_dir, "01_cover_page.pdf")
+    _generate_cover_page(base, paths, cover_path)
+    paths["cover_page"] = cover_path
 
     return paths
 
@@ -379,119 +396,138 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
 # ======================== LETTERS (DOCX) ========================
 
 def _generate_payment_plan_letter(data: dict, output_path: str):
-    """Generate landlord payment-plan request letter."""
-    from docx import Document
-    from docx.shared import Pt, Inches
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-    doc = Document()
+    """Generate landlord payment-plan request letter as PDF."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=1*inch, bottomMargin=1*inch,
+                            leftMargin=1*inch, rightMargin=1*inch)
+    S = _get_styles()
+    elements = []
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     pref = data.get("preferences", {})
-
-    # Date
-    doc.add_paragraph(date.today().strftime("%B %d, %Y"))
-
-    # Landlord address
-    doc.add_paragraph("")
-    doc.add_paragraph(l.get("landlord_name", ""))
-    doc.add_paragraph(l.get("landlord_address", ""))
-    doc.add_paragraph("")
-
-    # Re:
-    doc.add_paragraph(f"RE: Payment Plan Request — Property at {p.get('property_address', '')}")
-    doc.add_paragraph(f"    Case No: {c.get('case_number', '')}")
-    doc.add_paragraph("")
-
-    # Body
-    doc.add_paragraph(f"Dear {l.get('landlord_name', 'Landlord')},")
-    doc.add_paragraph("")
-    body = doc.add_paragraph()
-    body.add_run(
+    today = date.today().strftime("%B %d, %Y")
+    
+    amount_claimed = c.get('complaint_amount_claimed', 0)
+    plan_amount = pref.get('payment_plan_amount', '')
+    if not plan_amount and amount_claimed:
+        try:
+            plan_amount = f"${float(amount_claimed) / 4:,.0f}"
+        except:
+            plan_amount = "$_____"
+    
+    elements.append(Paragraph(today, S["Body"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(l.get("landlord_name", "Landlord"), S["Body"]))
+    elements.append(Paragraph(l.get("landlord_address", ""), S["Body"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        f"<b>RE:</b> Payment Plan Request — Property at {p.get('property_address', '')}<br/>"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;Case No: {c.get('case_number', '')}",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Dear {l.get('landlord_name', 'Landlord')},", S["Body"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
         f"I am writing to request a payment plan to address the outstanding rent balance "
-        f"of ${c.get('complaint_amount_claimed', '0')}. I am committed to fulfilling my "
-        f"obligations under the lease and propose the following payment arrangement:"
-    )
-
-    doc.add_paragraph("")
-    doc.add_paragraph(f"Monthly payment: ${pref.get('payment_plan_amount', '_____')}")
-    doc.add_paragraph("Payment due on: The _____ day of each month")
-    doc.add_paragraph("Start date: _________________")
-    doc.add_paragraph("")
-
-    doc.add_paragraph(
+        f"of ${amount_claimed}. I am committed to fulfilling my obligations under the lease "
+        f"and propose the following payment arrangement:",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(f"<b>Monthly payment:</b> {plan_amount}", S["Body"]))
+    elements.append(Paragraph("<b>Payment due on:</b> The 1st day of each month", S["Body"]))
+    elements.append(Paragraph(f"<b>Start date:</b> {date.today().strftime('%B 1, %Y')}", S["Body"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
         "I am requesting this arrangement due to temporary financial hardship. "
-        "I will make every effort to adhere to this schedule."
-    )
-    doc.add_paragraph("")
-    doc.add_paragraph("Thank you for your consideration.")
-    doc.add_paragraph("")
-    doc.add_paragraph("Sincerely,")
-    doc.add_paragraph("")
-    doc.add_paragraph(p.get("full_name", ""))
-    doc.add_paragraph(p.get("phone", ""))
-    doc.add_paragraph(p.get("email", ""))
-
-    doc.save(output_path)
+        "I will make every effort to adhere to this schedule.",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("Thank you for your consideration.", S["Body"]))
+    elements.append(Spacer(1, 18))
+    elements.append(Paragraph("Sincerely,", S["Body"]))
+    elements.append(Spacer(1, 18))
+    elements.append(Paragraph(p.get("full_name", ""), S["Body"]))
+    elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
+    elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
+    
+    doc.build(elements)
 
 
 def _generate_hardship_letter(data: dict, output_path: str):
-    """Generate hardship/extension letter."""
-    from docx import Document
-    doc = Document()
+    """Generate hardship/extension letter as PDF."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=1*inch, bottomMargin=1*inch,
+                            leftMargin=1*inch, rightMargin=1*inch)
+    S = _get_styles()
+    elements = []
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     pref = data.get("preferences", {})
-
-    doc.add_paragraph(date.today().strftime("%B %d, %Y"))
-    doc.add_paragraph("")
-    doc.add_paragraph(l.get("landlord_name", ""))
-    doc.add_paragraph(l.get("landlord_address", ""))
-    doc.add_paragraph("")
-    doc.add_paragraph(f"RE: Hardship Request — {p.get('property_address', '')}")
-    doc.add_paragraph(f"    Case No: {c.get('case_number', '')}")
-    doc.add_paragraph("")
-
-    doc.add_paragraph(f"Dear {l.get('landlord_name', 'Landlord')},")
-    doc.add_paragraph("")
-    doc.add_paragraph(
-        "I am writing to respectfully request additional time to vacate the premises "
-        "due to the following circumstances:"
-    )
-    doc.add_paragraph("")
-    doc.add_paragraph(pref.get("hardship_reason", "________________________________________________________________________"))
-    doc.add_paragraph("")
-    doc.add_paragraph(
+    today = date.today().strftime("%B %d, %Y")
+    
+    hardship_reason = pref.get('hardship_reason', 'temporary financial hardship')
+    
+    elements.append(Paragraph(today, S["Body"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(l.get("landlord_name", "Landlord"), S["Body"]))
+    elements.append(Paragraph(l.get("landlord_address", ""), S["Body"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        f"<b>RE:</b> Hardship Request — {p.get('property_address', '')}<br/>"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;Case No: {c.get('case_number', '')}",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Dear {l.get('landlord_name', 'Landlord')},", S["Body"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
+        "I am writing to respectfully request additional time regarding my tenancy "
+        "due to the following circumstances:",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(hardship_reason, S["Body"]))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
         "I understand my obligations under the lease and I am not seeking to avoid them. "
-        "I am simply requesting a short extension to allow me to make arrangements."
-    )
-    doc.add_paragraph("")
-    doc.add_paragraph("I am requesting an extension until: _________________")
-    doc.add_paragraph("")
-    doc.add_paragraph("Thank you for your understanding.")
-    doc.add_paragraph("")
-    doc.add_paragraph("Sincerely,")
-    doc.add_paragraph("")
-    doc.add_paragraph(p.get("full_name", ""))
-    doc.add_paragraph(p.get("phone", ""))
-    doc.add_paragraph(p.get("email", ""))
-
-    doc.save(output_path)
+        "I am simply requesting accommodation to make appropriate arrangements.",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("Thank you for your understanding.", S["Body"]))
+    elements.append(Spacer(1, 18))
+    elements.append(Paragraph("Sincerely,", S["Body"]))
+    elements.append(Spacer(1, 18))
+    elements.append(Paragraph(p.get("full_name", ""), S["Body"]))
+    elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
+    elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
+    
+    doc.build(elements)
 
 
 # ======================== CHECKLISTS ========================
 
 def _generate_filing_checklist(data: dict, output_path: str):
-    """Generate a step-by-step filing checklist PDF."""
+    """Generate a state-specific step-by-step filing checklist PDF."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     styles = _get_styles()
     elements = []
     S = styles
+    state = data.get("state", "FL").upper()
+    p = data.get("personal_info", {})
 
     elements.append(Paragraph("FILING CHECKLIST", S["FormTitle"]))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        f"<b>For:</b> {p.get('full_name', 'Tenant')} — {p.get('county', 'your county')}, {state}",
+        S["BodySmall"]
+    ))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
         "Follow these steps to file your Answer with the court. "
@@ -499,36 +535,58 @@ def _generate_filing_checklist(data: dict, output_path: str):
     ))
     elements.append(Spacer(1, 12))
 
+    # State-specific deadlines
+    STATE_DEADLINES = {
+        "FL": "5 business days (excluding weekends and holidays)",
+        "CA": "5 days if served in person, 15 days if served by substituted service",
+        "TX": "14 days from the date you were served (or the Monday after if the 14th day falls on a weekend)",
+        "IL": "5-10 days depending on the type of eviction (check your summons for the exact date)",
+        "MI": "7 days from the date you were served",
+        "NV": "7 days from the date you were served",
+        "OR": "7 days from the date you were served",
+        "MN": "7 days from the date you were served",
+        "CO": "7 days from the date you were served",
+        "CT": "2 days from the return date on your summons",
+        "RI": "20 days from the date you were served",
+        "SC": "10 days from the date you were served",
+        "GA": "7 days from the date you were served",
+        "LA": "5-10 days depending on the parish (check your summons)",
+        "TN": "14 days from the date you were served",
+        "AR": "5 days from the date you were served",
+        "AZ": "5 days from the date you were served",
+        "VA": "You must appear on the return date shown on your summons",
+        "MA": "You must file your Answer on or before the return date listed on your summons",
+        "NM": "10 days from the date you were served",
+    }
+    deadline = STATE_DEADLINES.get(state, "the deadline shown on your summons")
+
     steps = [
         ("☐ Step 1: Review Your Packet",
-         "Read through all documents. Make sure everything looks correct."),
+         "Read through all documents. Make sure your name, case number, and all information is correct."),
         ("☐ Step 2: Sign the Answer Form",
-         "Sign and date the Form 1.947(b) Answer where indicated."),
+         "Sign and date your Answer form where indicated. Use blue or black ink."),
         ("☐ Step 3: Make Copies",
-         "Make at least 3 copies of EVERY document in your packet."),
+         "Make at least 3 copies of EVERY document in your packet. Keep one copy for yourself."),
         ("☐ Step 4: File with the Court Clerk",
-         f"Take the original + 2 copies to the county courthouse where "
-         f"your case was filed. Ask the clerk to stamp all copies as 'Filed'."),
-        ("☐ Step 5: Pay Filing Fee (or Request Waiver)",
-         "There may be a filing fee. If you cannot afford it, ask the clerk "
-         "for an 'Affidavit of Indigency' form."),
+         f"Take the original + 2 copies to the courthouse where your case was filed. "
+         f"Ask the clerk to stamp all copies as 'Filed' and keep a stamped copy."),
+        ("☐ Step 5: Check Filing Fee (or File Fee Waiver)",
+         "Ask the clerk about the filing fee. If you cannot afford it, submit your "
+         "fee waiver form (included in this packet) at the same time."),
         ("☐ Step 6: Serve the Landlord",
-         "You must deliver a copy of your filed Answer to the landlord or "
-         "their attorney. Keep proof of delivery (certified mail receipt, "
-         "hand-delivery receipt, or email confirmation)."),
-        ("☐ Step 7: Deposit Rent into Court Registry",
-         "If you raised any defense other than 'I already paid,' you must "
-         "deposit the rent into the court registry. Check with the clerk "
-         "for the exact amount and process."),
-        ("☐ Step 8: Note Your Deadline",
-         f"Your response deadline is shown on your summons. Count 5 business "
-         f"days (excluding weekends and holidays) from the date you were served."),
-        ("☐ Step 9: Prepare for Hearing",
+         "You must deliver a copy of your filed Answer to the landlord or their attorney. "
+         "Keep proof of delivery (certified mail receipt, hand-delivery receipt, or email confirmation)."),
+        ("☐ Step 7: Note Your Deadline",
+         f"Your response deadline: {deadline}. Mark this date on your calendar."),
+        ("☐ Step 8: Prepare for Hearing",
          "If a hearing is scheduled, bring all your documents, evidence, "
-         "and a list of what you want to say to the judge."),
-        ("☐ Step 10: Attend All Court Dates",
-         "If you miss a court date, the judge may enter a default judgment "
-         "against you."),
+         "and your hearing script (included in this packet). Review it beforehand."),
+        ("☐ Step 9: Attend All Court Dates",
+         "Arrive 15 minutes early. If you miss a court date, the judge may enter "
+         "a default judgment against you."),
+        ("☐ Step 10: File Proof of Service",
+         "After serving the landlord, file a Certificate of Service or Proof of Service "
+         "with the court. The e-filing instructions in this packet explain how."),
     ]
 
     for title, desc in steps:
@@ -598,43 +656,101 @@ def _generate_court_checklist(data: dict, output_path: str):
 # ======================== HEARING SCRIPT ========================
 
 def _generate_hearing_script(data: dict, output_path: str):
-    """Generate a sample script for what to say in court."""
+    """Generate a personalized hearing script based on the tenant's actual defenses."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
     p = data.get("personal_info", {})
+    defenses = data.get("defenses", {})
+    full_name = p.get('full_name', '[YOUR NAME]')
     
     elements.append(Paragraph("YOUR COURT HEARING SCRIPT", S["FormTitle"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
+        f"<b>Prepared for:</b> {full_name}<br/>"
         "This script helps you speak to the judge. You can bring this paper with you.",
         S["Body"]
     ))
     elements.append(Spacer(1, 14))
     
+    # Gather checked defenses
+    DEFENSE_LABELS = {
+        "def_repairs": "The landlord failed to make necessary repairs despite being notified.",
+        "def_amount": "I dispute the amount of rent the landlord claims I owe.",
+        "def_attempted_pay": "I tried to pay the rent but the landlord refused to accept it.",
+        "def_paid": "I have already paid the rent that the landlord claims is owed.",
+        "def_waived": "The landlord waived or canceled the eviction notice.",
+        "def_retaliation": "The landlord is evicting me in retaliation for exercising my rights.",
+        "def_fair_housing": "The eviction violates fair housing laws (discrimination).",
+        "def_accepted_rent": "The landlord accepted my rent after sending the eviction notice.",
+        "def_corrected": "I already fixed the problem the landlord complained about.",
+        "def_not_owner": "The person suing me is not the actual owner of the property.",
+        "def_bad_notice": "I did not receive proper legal notice of the eviction.",
+        "def_not_owed": "I do not owe the amount the landlord claims.",
+        "def_landlord_breach": "The landlord broke the rental agreement.",
+        "def_discrimination": "The eviction is discriminatory.",
+        "def_other": "I have another legal defense to this eviction.",
+    }
+    
+    checked = []
+    for key, label in DEFENSE_LABELS.items():
+        d = defenses.get(key, {})
+        if isinstance(d, dict) and d.get("checked"):
+            checked.append(label)
+    
+    # Build personalized defense statement
+    if checked:
+        defense_lines = ["<b>YOUR DEFENSES (tell the judge):</b>"]
+        for i, defense in enumerate(checked, 1):
+            defense_lines.append(f"{i}. {defense}")
+        rent_dispute = any(d in ["def_amount", "def_not_owed"] for d in 
+            [k for k, v in defenses.items() if isinstance(v, dict) and v.get("checked")])
+    else:
+        defense_lines = ["<b>YOUR DEFENSE:</b> Tell the judge briefly why you should not be evicted."]
+        defense_lines.append("(Examples: Landlord refused repairs / Retaliation / Improper notice / Already paid)")
+        rent_dispute = False
+    
     script_lines = [
-        ("<b>WHEN YOUR CASE IS CALLED:</b> Walk to the front.", False),
-        (f"<b>You:</b> Good morning/afternoon, Your Honor. My name is {p.get('full_name', '[YOUR NAME]')}.", True),
+        ("<b>WHEN YOUR CASE IS CALLED:</b> Walk to the front of the courtroom.", False),
+        (f"<b>You:</b> Good morning/afternoon, Your Honor. My name is {full_name}.", True),
         ("<b>Judge:</b> Do you have an attorney?", False),
         ("<b>You:</b> No, Your Honor. I am representing myself.", True),
         ("<b>Judge:</b> Have you filed your Answer?", False),
-        ("<b>You:</b> Yes, Your Honor. Here is a copy. (hand judge copy)", True),
+        ("<b>You:</b> Yes, Your Honor. Here is a copy. (hand judge a copy of your Answer)", True),
         ("<b>Judge:</b> Do you owe the rent?", False),
-        ("<b>You:</b> I dispute the amount claimed OR Yes, and I deposited it with the court.", True),
-        ("<b>EXPLAIN YOUR DEFENSE:</b> Tell the judge briefly why you should not be evicted.", False),
-        ("Examples: Landlord refused repairs / Retaliation / Improper notice / Already paid", False),
-        ("<b>IF YOU NEED MORE TIME:</b>", False),
-        ("<b>You:</b> Your Honor, I request more time to find housing or make arrangements.", True),
-        ("<b>CLOSING:</b> Thank you for hearing me, Your Honor.", True),
     ]
+    
+    if rent_dispute:
+        script_lines.append(
+            ("<b>You:</b> Your Honor, I dispute the amount claimed. I would like to explain why.", True)
+        )
+    else:
+        script_lines.append(
+            ("<b>You:</b> I have deposited the rent with the court, Your Honor.", True)
+        )
+    
+    script_lines.append(("<b>EXPLAIN YOUR DEFENSE:</b> Now tell the judge:", False))
+    for line in defense_lines:
+        script_lines.append((line, False))
+    script_lines.extend([
+        ("<b>IF YOU NEED MORE TIME:</b>", False),
+        ("<b>You:</b> Your Honor, I respectfully request additional time to resolve this matter.", True),
+        ("<b>CLOSING:</b>", False),
+        ("<b>You:</b> Thank you for hearing me, Your Honor.", True),
+    ])
     
     for text, _ in script_lines:
         elements.append(Paragraph(text, S["Body"]))
         elements.append(Spacer(1, 6))
     
     elements.append(Spacer(1, 14))
-    elements.append(Paragraph("<b>TIPS:</b> Dress neatly. No phone. Do not interrupt. Bring all documents.", S["BodySmall"]))
+    elements.append(Paragraph(
+        "<b>TIPS:</b> Dress neatly. Turn off your phone. Do not interrupt. "
+        "Bring all documents. Speak clearly and respectfully. "
+        "If you don't understand a question, ask the judge to repeat it.",
+        S["BodySmall"]
+    ))
     
     doc.build(elements)
 
@@ -642,53 +758,72 @@ def _generate_hearing_script(data: dict, output_path: str):
 # ======================== FEE WAIVER ========================
 
 def _generate_fee_waiver(data: dict, output_path: str):
-    """Generate fee waiver instructions — state-specific."""
+    """Generate state-specific fee waiver instructions."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
     p = data.get("personal_info", {})
     county = p.get('county', 'your county')
+    state = data.get("state", "FL").upper()
     
-    # State-specific fee waiver info
-    waiver_info = {
-        "FL": {"form": "Form 12.902(e)", "site": "www.flcourts.gov", "fee": "$295"},
-        "CA": {"form": "Form FW-001", "site": "www.courts.ca.gov", "fee": "$240-$450"},
+    # Complete state-specific fee waiver info for all 20 states
+    WAIVER_INFO = {
+        "VA": {"form": "Form CC-1414 — Petition for Proceeding Without Payment of Fees", "site": "www.vacourts.gov", "fee": "varies by court"},
+        "SC": {"form": "Motion and Affidavit to Proceed In Forma Pauperis", "site": "www.sccourts.org", "fee": "varies by county"},
+        "GA": {"form": "Poverty Affidavit (Affidavit of Indigence)", "site": "www.georgiacourts.gov", "fee": "varies by county"},
         "TX": {"form": "Statement of Inability to Afford Payment of Court Costs", "site": "www.txcourts.gov", "fee": "varies by court"},
         "IL": {"form": "Application for Waiver of Court Fees", "site": "www.illinoiscourts.gov", "fee": "varies by county"},
-        "MI": {"form": "MC 20 Fee Waiver Request", "site": "www.courts.michigan.gov", "fee": "varies by court"},
+        "CT": {"form": "Application for Waiver of Fees (JD-CV-120)", "site": "www.jud.ct.gov", "fee": "varies by court"},
+        "CO": {"form": "Motion to File Without Payment (JDF 205)", "site": "www.courts.state.co.us", "fee": "varies by court"},
+        "LA": {"form": "Affidavit of Inability to Pay Costs (In Forma Pauperis)", "site": "www.lasc.org", "fee": "varies by parish"},
+        "TN": {"form": "Uniform Civil Affidavit of Indigency", "site": "www.tncourts.gov", "fee": "varies by county"},
+        "CA": {"form": "Form FW-001 — Request to Waive Court Fees", "site": "www.courts.ca.gov", "fee": "$240-$450"},
+        "AR": {"form": "Affidavit of Indigency (In Forma Pauperis)", "site": "www.arcourts.gov", "fee": "varies by court"},
+        "AZ": {"form": "Application for Deferral/Waiver of Court Fees", "site": "www.azcourts.gov", "fee": "varies by court"},
+        "FL": {"form": "Form 12.902(e) — Affidavit of Indigency", "site": "www.flcourts.gov", "fee": "$295"},
+        "MN": {"form": "In Forma Pauperis Affidavit (IFP102)", "site": "www.mncourts.gov", "fee": "varies by court"},
         "NV": {"form": "Application to Proceed In Forma Pauperis", "site": "www.civillawselfhelpcenter.org", "fee": "varies by court"},
         "OR": {"form": "Application for Deferral or Waiver of Fees", "site": "www.courts.oregon.gov", "fee": "varies by court"},
-        "MN": {"form": "In Forma Pauperis Affidavit", "site": "www.mncourts.gov", "fee": "varies by court"},
+        "MI": {"form": "MC 20 — Fee Waiver Request", "site": "www.courts.michigan.gov", "fee": "varies by court"},
+        "MA": {"form": "Affidavit of Indigency (Housing Court)", "site": "www.mass.gov/courts", "fee": "varies by court"},
+        "NM": {"form": "Application for Free Process (In Forma Pauperis)", "site": "www.nmcourts.gov", "fee": "varies by court"},
+        "RI": {"form": "Motion to Proceed In Forma Pauperis", "site": "www.courts.ri.gov", "fee": "varies by court"},
     }
-    info = waiver_info.get(data.get("state", "FL").upper(), waiver_info.get("FL", {"form": "fee waiver form", "site": "your state court website", "fee": "varies"}))
+    info = WAIVER_INFO.get(state, {"form": "your state's fee waiver form", "site": "your state court website", "fee": "varies"})
     
     elements.append(Paragraph("FEE WAIVER — FILE YOUR CASE FOR FREE", S["FormTitle"]))
     elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f"<b>For:</b> {county}", S["Body"]))
+    elements.append(Paragraph(f"<b>For:</b> {county}, {state}", S["Body"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
-        "If you cannot afford the court filing fee, you can ask the court to waive it. "
-        "This is called filing \"In Forma Pauperis\" or an Affidavit of Indigency.",
+        f"If you cannot afford the court filing fee, you can ask the court to waive it. "
+        f"This is called filing \"In Forma Pauperis\" or an Affidavit of Indigency.",
         S["Body"]
     ))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph(f"<b>YOUR STATE USES: {info['form']}</b>", S["BodyBold"]))
+    elements.append(Paragraph(f"<b>YOUR STATE USES:</b> {info['form']}", S["BodyBold"]))
     elements.append(Paragraph(f"Download from: {info['site']}", S["BodySmall"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph("<b>HOW TO FILE:</b>", S["BodyBold"]))
     for step in [
-        f"1. Download {info['form']} from {info['site']} OR ask the court clerk for a copy",
-        "2. Fill out your income, expenses, assets, and number of dependents",
-        "3. Sign the form in front of the court clerk (they notarize for free) or any notary",
-        f"4. Submit the fee waiver ALONG with your Answer before the deadline",
-        f"5. Judge reviews your financial situation — if approved, you pay $0 instead of {info['fee']}",
+        f"1. A fillable fee waiver form is included in this packet. Review it and fill in any missing information.",
+        "2. You will need to provide your income, expenses, assets, and number of dependents",
+        "3. Sign the form in front of the court clerk (they notarize for free) or any notary public",
+        f"4. Submit the fee waiver ALONG with your Answer form BEFORE the deadline",
+        f"5. The judge reviews your financial situation — if approved, you pay $0 instead of {info['fee']}",
     ]:
         elements.append(Paragraph(step, S["Body"]))
         elements.append(Spacer(1, 3))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph("<b>WHO QUALIFIES:</b> You receive public benefits (SNAP, Medicaid, SSI) OR your income is below 200% of federal poverty level OR paying the fee would cause hardship.", S["BodySmall"]))
-    elements.append(Paragraph("<b>IMPORTANT:</b> File the fee waiver AND your Answer together BEFORE the deadline. Even if the waiver is denied, you must still file on time.", S["BodyWarning"]))
+    elements.append(Paragraph(
+        "<b>WHO QUALIFIES:</b> You receive public benefits (SNAP, Medicaid, SSI) OR your income "
+        "is below 200% of federal poverty level OR paying the fee would cause financial hardship.",
+        S["BodySmall"]))
+    elements.append(Paragraph(
+        "<b>IMPORTANT:</b> File the fee waiver AND your Answer together BEFORE the deadline. "
+        "Even if the waiver is denied, you must still file on time.",
+        S["BodyWarning"]))
     
     doc.build(elements)
 
@@ -696,68 +831,133 @@ def _generate_fee_waiver(data: dict, output_path: str):
 # ======================== E-FILING INSTRUCTIONS ========================
 
 def _generate_efiling_instructions(data: dict, output_path: str):
-    """Generate Florida e-filing portal instructions."""
-    from docx import Document
-    doc = Document()
-
-    doc.add_heading("E-Filing Instructions — Florida Courts E-Filing Portal", level=1)
-    doc.add_paragraph("")
-
-    sections = [
-        ("Step 1: Create an Account",
-         "Go to https://www.myflcourtaccess.com\n"
-         "Click 'Register' and select 'Self-Represented Litigant'\n"
-         "Fill in your name, email, and create a password\n"
-         "You will receive a confirmation email — click the link to activate."),
+    """Generate state-specific e-filing instructions."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    state = data.get("state", "FL").upper()
+    c = data.get("case_details", {})
+    case_number = c.get('case_number', 'your case number')
+    
+    # State-specific e-filing info
+    EFILING = {
+        "FL": {"portal": "Florida Courts E-Filing Portal", "url": "www.myflcourtaccess.com", "help_phone": "(850) 385-4509"},
+        "CA": {"portal": "California e-Filing (Odyssey eFileCA)", "url": "www.efileca.com", "help_phone": "check your county court website"},
+        "TX": {"portal": "Texas eFile (eFileTexas.gov)", "url": "www.efiletexas.gov", "help_phone": "(855) 839-3453"},
+        "IL": {"portal": "Illinois eFileIL (Odyssey)", "url": "www.efile.illinoiscourts.gov", "help_phone": "(800) 297-5378"},
+        "MI": {"portal": "Michigan e-Filing (MiFILE)", "url": "www.courts.michigan.gov/efiling", "help_phone": "check your county court"},
+        "NV": {"portal": "Nevada eFileNV", "url": "www.efilenv.com", "help_phone": "(702) 464-5400"},
+        "OR": {"portal": "Oregon eCourt (File and Serve)", "url": "www.courts.oregon.gov/online-services", "help_phone": "check your county court"},
+        "MN": {"portal": "Minnesota eFile & eServe (eFileMN)", "url": "www.mncourts.gov/efile", "help_phone": "(651) 413-9500"},
+        "CO": {"portal": "Colorado e-Filing (ICCES)", "url": "www.courts.state.co.us/eFile", "help_phone": "(720) 625-5000"},
+        "CT": {"portal": "Connecticut E-Services (Judicial Branch)", "url": "www.jud.ct.gov/eservices", "help_phone": "(860) 757-2200"},
+        "VA": {"portal": "Virginia Judicial E-Filing System (VJEFS)", "url": "www.vacourts.gov/efiling", "help_phone": "check your local court"},
+        "SC": {"portal": "South Carolina eFiling (Attorney Portal / pro se limited)", "url": "www.sccourts.org", "help_phone": "file in person at the clerk's office"},
+        "GA": {"portal": "Georgia eFile (PeachCourt / Odyssey)", "url": "www.peachcourt.com", "help_phone": "(404) 656-5170"},
+        "LA": {"portal": "Louisiana Clerk of Court (parish-specific)", "url": "www.laclerks.org", "help_phone": "contact your parish clerk"},
+        "TN": {"portal": "Tennessee e-Filing (Odyssey)", "url": "www.tncourts.gov/efiling", "help_phone": "check your county court"},
+        "AR": {"portal": "Arkansas eFlex (e-Filing)", "url": "www.arcourts.gov/efiling", "help_phone": "(501) 682-9400"},
+        "AZ": {"portal": "Arizona eFileAZ (TurboCourt)", "url": "www.azcourts.gov/efiling", "help_phone": "(602) 452-3300"},
+        "MA": {"portal": "Massachusetts eFileMA (Odyssey)", "url": "www.mass.gov/efiling", "help_phone": "check your housing court"},
+        "NM": {"portal": "New Mexico e-Filing (Odyssey)", "url": "www.nmcourts.gov/efiling", "help_phone": "(505) 827-4800"},
+        "RI": {"portal": "Rhode Island e-Filing (Tyler)", "url": "www.courts.ri.gov/efiling", "help_phone": "(401) 222-3210"},
+    }
+    info = EFILING.get(state, {"portal": "your state's e-filing portal", "url": "your state court website", "help_phone": "contact your local court clerk"})
+    
+    elements.append(Paragraph(f"E-FILING INSTRUCTIONS — {state}", S["FormTitle"]))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        f"<b>Portal:</b> {info['portal']}<br/>"
+        f"<b>Website:</b> {info['url']}<br/>"
+        f"<b>Help:</b> {info['help_phone']}",
+        S["BodySmall"]
+    ))
+    elements.append(Spacer(1, 12))
+    
+    steps = [
+        ("Step 1: Create an Account (if required)",
+         f"Go to {info['url']}. Look for 'Register' or 'Create Account' and select "
+         "'Self-Represented Litigant' if that option is available. Enter your name, "
+         "email, and create a password. Confirm your email by clicking the link sent to you."),
         ("Step 2: Log In",
-         "Go to myflcourtaccess.com and log in with your email and password."),
-        ("Step 3: File a Document",
-         "Click 'File a New Case' or 'File to an Existing Case'\n"
-         "Enter your case number: " + data.get("case_details", {}).get("case_number", "") + "\n"
-         "Select the county where your case was filed.\n"
-         "Upload your signed Answer form (PDF or DOCX).\n"
-         "Select the document type as 'Answer to Complaint.'"),
-        ("Step 4: Pay Filing Fee",
-         "If a fee is required, you'll be prompted to pay by credit/debit card.\n"
-         "A convenience fee (3.5%) applies to card payments.\n"
-         "If you cannot afford the fee, file an 'Affidavit of Indigency' instead."),
-        ("Step 5: Service",
-         "The portal will send a copy to the landlord/attorney if they have an account.\n"
-         "You may also need to mail or hand-deliver a copy separately.\n"
-         "Complete the Certificate of Service at the bottom of your Answer form."),
-        ("Step 6: Keep Your Confirmation",
-         "After filing, you'll receive a confirmation email with a filing ID.\n"
-         "Save this email and the stamped copies of your documents."),
+         f"Return to {info['url']} and log in with your email and password."),
+        ("Step 3: Start a New Filing",
+         f"Look for 'File a New Case' or 'File to an Existing Case.' "
+         f"If your case already has a number ({case_number}), select the existing case option. "
+         f"Enter your case number and select the county where your case was filed."),
+        ("Step 4: Upload Your Documents",
+         "Upload your signed Answer form (the form beginning with '01_' in this packet). "
+         "Select the document type as 'Answer' or 'Answer to Complaint.' "
+         "Upload your fee waiver form if you are requesting one."),
+        ("Step 5: Pay Filing Fee (or Submit Fee Waiver)",
+         "If a filing fee is required, you will be prompted to pay by credit/debit card. "
+         "A convenience fee may apply. If you are filing a fee waiver, select that option "
+         "instead of payment. Your fee waiver form must be uploaded."),
+        ("Step 6: Complete Certificate of Service",
+         "The portal may send a copy to the landlord or their attorney if they have "
+         "registered for e-service. If not, you may also need to mail or hand-deliver a "
+         "copy. Complete the Certificate of Service at the bottom of your Answer form."),
+        ("Step 7: Save Your Confirmation",
+         "After filing, you will receive a confirmation email or receipt with a filing ID. "
+         "SAVE THIS. Print it and bring it to court. This is your proof that you filed on time."),
     ]
-
-    for title, body in sections:
-        doc.add_heading(title, level=2)
-        for line in body.split("\n"):
-            doc.add_paragraph(line, style="List Bullet")
-        doc.add_paragraph("")
-
-    doc.add_paragraph("")
-    doc.add_paragraph("Need help? Call the Florida Courts E-Filing Authority at (850) 385-4509")
-    doc.save(output_path)
+    
+    for title, body in steps:
+        elements.append(Paragraph(f"<b>{title}</b>", S["BodyBold"]))
+        elements.append(Paragraph(body, S["Body"]))
+        elements.append(Spacer(1, 8))
+    
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        f"<b>IMPORTANT:</b> If e-filing is not working or you are unsure, go IN PERSON to the "
+        f"courthouse clerk's office and file on paper BEFORE your deadline. Ask the clerk to "
+        f"stamp your copies. Do not miss your deadline because of a technical issue.",
+        S["BodyWarning"]
+    ))
+    
+    doc.build(elements)
 
 
 # ======================== RENTAL ASSISTANCE ========================
 
 def _generate_rental_assistance_sheet(data: dict, output_path: str):
-    """Generate county-specific rental assistance resources from state databases."""
-    from docx import Document
-    import os
-    
-    doc = Document()
+    """Generate county-specific rental assistance resources as PDF."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
     state = data.get("state", "FL").upper()
     county = data.get("personal_info", {}).get("county", "your county")
     full_name = data.get("personal_info", {}).get("full_name", "Tenant")
 
-    # Load state database if available
+    # Load verified phone numbers from state resource JSON
+    import json as _json
+    resource_json = os.path.join(os.path.dirname(__file__), f"{state.lower()}_resources.json")
+    region_phones = {}
+    statewide_phones = {
+        "HUD": "1-800-569-4287",
+        "United Way": "2-1-1",
+        "211": "2-1-1",
+    }
+    if os.path.exists(resource_json):
+        try:
+            with open(resource_json) as f:
+                state_data = _json.load(f)
+            if "statewide" in state_data:
+                statewide_phones.update(state_data["statewide"])
+            counties = state_data.get("counties", {})
+            regions = state_data.get("regions", {})
+            county_info = counties.get(county, {})
+            region = county_info.get("_region", "")
+            if region and region in regions:
+                region_phones = {k: v for k, v in regions[region].items() if not k.startswith("_")}
+        except Exception as e:
+            logger.warning(f"Could not load resource JSON: {e}")
+
+    # Also try Excel database
     db_dir = os.path.join(os.path.dirname(__file__), "..", "..", "databases")
-    resources = []
-    
-    # Map state codes to database filenames
+    db_resources = []
     db_files = {
         "FL": "Florida_Eviction_Support_Verified_Resource_Database_200.xlsx",
         "AZ": "Arizona_Eviction_Support_Database_Framework_200.xlsx",
@@ -776,7 +976,6 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "TX": "Texas_Eviction_Support_Database_Framework_200.xlsx",
         "VA": "Virginia_Eviction_Support_Database_Framework_200.xlsx",
     }
-    
     db_file = db_files.get(state)
     if db_file:
         db_path = os.path.join(db_dir, db_file)
@@ -784,181 +983,265 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
             try:
                 import openpyxl
                 wb = openpyxl.load_workbook(db_path)
-                # Find the data sheet (may be 'Verified Resources' or the first sheet)
                 ws = wb['Verified Resources'] if 'Verified Resources' in wb.sheetnames else wb.active
-                # Auto-detect header row (look for 'Organization' in the first 5 rows)
                 header_row = 1
                 for r in range(1, min(6, ws.max_row + 1)):
                     for c in range(1, ws.max_column + 1):
-                        val = str(ws.cell(r, c).value or '').strip()
-                        if val == 'Organization':
+                        if str(ws.cell(r, c).value or '').strip() == 'Organization':
                             header_row = r
                             break
                     if header_row > 1:
                         break
-                # Build column index
                 col_map = {}
                 for c in range(1, ws.max_column + 1):
-                    hdr = str(ws.cell(header_row, c).value or '').strip()
-                    if 'county' in hdr.lower():
+                    hdr = str(ws.cell(header_row, c).value or '').strip().lower()
+                    if 'county' in hdr or 'city' in hdr:
                         col_map['county'] = c
-                    elif 'category' in hdr.lower():
+                    elif 'category' in hdr:
                         col_map['category'] = c
-                    elif 'organization' in hdr.lower():
+                    elif 'organization' in hdr:
                         col_map['organization'] = c
-                    elif 'program' in hdr.lower() or 'service' in hdr.lower():
+                    elif 'program' in hdr or 'service' in hdr:
                         col_map['program'] = c
-                    elif 'website' in hdr.lower():
+                    elif 'website' in hdr:
                         col_map['website'] = c
-                    elif 'phone' in hdr.lower():
+                    elif 'phone' in hdr:
                         col_map['phone'] = c
-                    elif 'eligibility' in hdr.lower():
+                    elif 'eligibility' in hdr:
                         col_map['eligibility'] = c
                 for row in range(header_row + 1, ws.max_row + 1):
                     r_county = str(ws.cell(row, col_map.get('county', 1)).value or "").strip()
                     if r_county.lower() == county.lower():
-                        resources.append({
+                        db_resources.append({
                             "category": str(ws.cell(row, col_map.get('category', 2)).value or ""),
                             "organization": str(ws.cell(row, col_map.get('organization', 3)).value or ""),
-                            "program": str(ws.cell(row, col_map.get('program', 4)).value or ""),
                             "website": str(ws.cell(row, col_map.get('website', 5)).value or ""),
                             "phone": str(ws.cell(row, col_map.get('phone', 6)).value or ""),
-                            "eligibility": str(ws.cell(row, col_map.get('eligibility', 8)).value or ""),
                         })
                 wb.close()
             except Exception as e:
                 logger.warning(f"Could not load resource database: {e}")
 
-    # Phone number lookup — loads verified numbers from state resource JSON files.
-    # Falls back to national numbers. The customer pays $395; they should not
-    # have to research phone numbers themselves.
-    import json
-    resource_json = os.path.join(os.path.dirname(__file__), f"{state.lower()}_resources.json")
-    known_phones = {
-        "HUD": "1-800-569-4287",
-        "United Way": "2-1-1",
-        "211": "2-1-1",
-        "Eviction Legal Helpline": "1-833-NOEVICT",
-    }
-    if os.path.exists(resource_json):
-        try:
-            with open(resource_json) as f:
-                state_data = json.load(f)
-            # Merge statewide numbers
-            if "statewide" in state_data:
-                known_phones.update(state_data["statewide"])
-            # Get county-specific numbers by region
-            counties = state_data.get("counties", {})
-            regions = state_data.get("regions", {})
-            county_info = counties.get(county, {})
-            region = county_info.get("_region", "")
-            if region and region in regions:
-                known_phones.update(regions[region])
-        except Exception as e:
-            logger.warning(f"Could not load resource JSON: {e}")
+    # Clean up placeholder text in organization names
+    PLACEHOLDER_SUFFIXES = [
+        " — Area-specific resource slot / local program lookup",
+        " — County-specific resource slot / local program lookup",
+        " — Market-specific resource slot / local program lookup",
+    ]
+    for r in db_resources:
+        for suffix in PLACEHOLDER_SUFFIXES:
+            if r["organization"].endswith(suffix):
+                r["organization"] = r["organization"][: -len(suffix)]
+                break
 
-    # Substitute placeholder phone numbers with known real numbers
+    # Substitute placeholder phones from verified JSON
     placeholder_phones = {"Research / verify", "Research/verify", "N/A", "None", "See website", "Find local office", ""}
-    for r in resources:
+    all_phones = {**statewide_phones, **region_phones}
+    for r in db_resources:
         phone = r.get("phone", "").strip()
-        org = r.get("organization", "").strip()
-        cat = r.get("category", "").strip()
         if phone in placeholder_phones:
-            found = None
-            # Try keyword matching against category and organization
-            search_text = (cat + " " + org).lower()
-            for keyword, num in known_phones.items():
-                if keyword.lower() in search_text:
-                    found = num
+            search = (r.get("category", "") + " " + r.get("organization", "")).lower()
+            for keyword, num in all_phones.items():
+                if keyword.lower() in search:
+                    r["phone"] = num
                     break
-            # Fallback: map edge-case categories to closest match
-            if not found:
-                fallback_map = {
-                    "SHIP": "Housing Department",
-                    "Section 8": "Housing Authority",
-                    "Voucher": "Housing Authority",
-                    "Public Housing": "Housing Authority",
-                }
-                for fkw, target in fallback_map.items():
-                    if fkw.lower() in search_text and target in known_phones:
-                        found = known_phones[target]
-                        break
-            if found:
-                r["phone"] = found
 
-    # Document header
-    doc.add_heading("Rental Assistance & Eviction Support Resources", level=1)
-    doc.add_paragraph(f"Prepared for: {full_name}")
-    doc.add_paragraph(f"County: {county}, {state}")
-    doc.add_paragraph("")
+    # Build PDF
+    elements.append(Paragraph("RENTAL ASSISTANCE RESOURCES", S["FormTitle"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"<b>Prepared for:</b> {full_name}<br/>"
+        f"<b>County:</b> {county}, {state}",
+        S["BodySmall"]
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(
+        "Contact these organizations as soon as possible — funds are limited "
+        "and programs close when money runs out.",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
 
-    if resources:
-        # Group by category
-        from collections import defaultdict
-        by_category = defaultdict(list)
-        for r in resources:
-            by_category[r["category"]].append(r)
+    if db_resources or region_phones:
+        elements.append(Paragraph(f"<b>Local Resources — {county} County</b>", S["BodyBold"]))
+        elements.append(Spacer(1, 8))
 
-        doc.add_heading(f"Resources in {county} County", level=2)
-        doc.add_paragraph(f"Found {len(resources)} verified resources. Contact these organizations as soon as possible — funds are limited.")
-        doc.add_paragraph("")
+        if db_resources:
+            from collections import defaultdict as _dd
+            by_cat = _dd(list)
+            for r in db_resources:
+                by_cat[r["category"]].append(r)
+            for cat, items in sorted(by_cat.items()):
+                elements.append(Paragraph(f"<b>{cat}</b>", S["BodyBold"]))
+                for item in items:
+                    org = item["organization"]
+                    phone = item.get("phone", "").strip()
+                    web = item.get("website", "").strip()
+                    if phone in placeholder_phones:
+                        phone = ""
+                    if web in ("None", "N/A", ""):
+                        web = ""
+                    line = f"• {org}"
+                    if phone:
+                        line += f" — {phone}"
+                    elements.append(Paragraph(line, S["Body"]))
+                    if web:
+                        elements.append(Paragraph(f"&nbsp;&nbsp;{web}", S["BodySmall"]))
+                    elements.append(Spacer(1, 3))
+                elements.append(Spacer(1, 4))
 
-        for category, items in by_category.items():
-            doc.add_heading(category, level=3)
-            for item in items:
-                org = item["organization"]
-                prog = item["program"]
-                phone = item["phone"]
-                web = item["website"]
-                elig = item["eligibility"]
-                
-                # Build bullet text
-                bullet = f"{org}"
-                if prog and prog != "None":
-                    bullet += f" — {prog}"
-                doc.add_paragraph(bullet, style="List Bullet")
-                
-                if phone and phone not in ("None", "N/A", "See website", "Find local office", "Research / verify", "Research/verify", ""):
-                    doc.add_paragraph(f"Phone: {phone}")
-                elif web and web not in ("None", "N/A"):
-                    doc.add_paragraph(f"Phone: Call 211 or visit website for current contact info")
-                if web and web not in ("None", "N/A"):
-                    doc.add_paragraph(f"Website: {web}")
-                if elig and elig not in ("None", "N/A"):
-                    p = doc.add_paragraph()
-                    p.add_run(f"Note: {elig[:200]}").italic = True
-                doc.add_paragraph("")
+        if region_phones:
+            elements.append(Spacer(1, 4))
+            elements.append(Paragraph("<b>Key Contacts</b>", S["BodyBold"]))
+            for name, phone in sorted(region_phones.items()):
+                elements.append(Paragraph(f"• {name}: {phone}", S["Body"]))
     else:
-        # No database available — provide general guidance
-        doc.add_heading("How to Find Help", level=2)
-        doc.add_paragraph("Dial 211 from any phone — United Way's free referral service for rent, utility, food, and emergency assistance.")
-        doc.add_paragraph("")
-        doc.add_paragraph("Visit your county's official website and search for 'rental assistance' or 'housing programs.'")
-        doc.add_paragraph("")
-        doc.add_paragraph("Contact your local Legal Aid office — search online for '[your county] legal aid'.")
+        elements.append(Paragraph(
+            "<b>How to Find Local Help:</b>", S["BodyBold"]))
+        elements.append(Paragraph(
+            "• Dial <b>211</b> from any phone — United Way's free referral service for "
+            "rent, utility, food, and emergency assistance.", S["Body"]))
+        elements.append(Paragraph(
+            "• Visit your county's official website and search for 'rental assistance' "
+            "or 'housing programs.'", S["Body"]))
+        elements.append(Paragraph(
+            "• Contact your local Legal Aid office — search online for '[your county] legal aid'.",
+            S["Body"]))
 
-    # Statewide resources (always included)
-    doc.add_paragraph("")
-    doc.add_heading("Statewide Resources", level=2)
-    doc.add_paragraph("United Way 2-1-1 — Dial 211 for local assistance referrals", style="List Bullet")
-    doc.add_paragraph("HUD-approved housing counselors: 1-800-569-4287 or hud.gov/counseling", style="List Bullet")
-    doc.add_paragraph("Legal Services Corporation — Find your local legal aid: lsc.gov", style="List Bullet")
+    # Statewide resources
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("<b>Statewide & National Resources</b>", S["BodyBold"]))
+    for name, phone in sorted(statewide_phones.items()):
+        if phone != "2-1-1":
+            elements.append(Paragraph(f"• {name}: {phone}", S["Body"]))
+        else:
+            elements.append(Paragraph(f"• {name}: Dial 211 for free local referrals", S["Body"]))
+    elements.append(Paragraph("• HUD Housing Counseling: 1-800-569-4287 or hud.gov/counseling", S["Body"]))
+    elements.append(Paragraph("• Legal Services Corporation: lsc.gov/find-legal-aid", S["Body"]))
 
     # Tips
-    doc.add_paragraph("")
-    doc.add_heading("Tips for Applying", level=2)
-    tips = [
+    elements.append(Spacer(1, 14))
+    elements.append(Paragraph("<b>Tips for Applying</b>", S["BodyBold"]))
+    for tip in [
         "Apply as soon as possible — funds are limited and programs close when money runs out.",
-        "Have these documents ready: lease, eviction notice/court papers, ID, proof of income.",
-        "Many programs can pay back rent directly to your landlord — ask about this option.",
+        "Have these documents ready: lease, eviction notice/court papers, photo ID, proof of income.",
+        "Many programs pay back rent directly to the landlord — ask about this option.",
         "If you have a pending application, tell the judge at your eviction hearing.",
         "Some programs require landlord cooperation — contact your landlord early.",
         "Keep copies of all applications, emails, and reference numbers.",
-    ]
-    for tip in tips:
-        doc.add_paragraph(tip, style="List Bullet")
+    ]:
+        elements.append(Paragraph(f"• {tip}", S["BodySmall"]))
+        elements.append(Spacer(1, 2))
 
-    doc.save(output_path)
+    doc.build(elements)
+
+
+# ======================== COVER PAGE ========================
+
+def _generate_cover_page(data: dict, paths: dict, output_path: str):
+    """Generate a cover page with document index for the packet."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=1*inch, bottomMargin=1*inch,
+                            leftMargin=1*inch, rightMargin=1*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    c = data.get("case_details", {})
+    l = data.get("landlord_info", {})
+    state = data.get("state", "").upper()
+
+    today = date.today().strftime("%B %d, %Y")
+
+    elements.append(Spacer(1, 1.5*inch))
+    elements.append(Paragraph("EVICTION DEFENSE PACKET", S["FormTitle"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"<b>Prepared for:</b> {p.get('full_name', 'Tenant')}<br/>"
+        f"<b>Date:</b> {today}",
+        S["Body"]
+    ))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        f"<b>Case:</b> {l.get('landlord_name', 'Landlord')} v. {p.get('full_name', 'Tenant')}<br/>"
+        f"<b>Case No:</b> {c.get('case_number', 'N/A')}<br/>"
+        f"<b>County:</b> {p.get('county', 'N/A')}, {state}",
+        S["BodySmall"]
+    ))
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 12))
+
+    # Document index
+    elements.append(Paragraph("<b>DOCUMENTS IN THIS PACKET</b>", S["BodyBold"]))
+    elements.append(Spacer(1, 8))
+
+    DOC_DESCRIPTIONS = {
+        "filing_checklist": ("Filing Checklist", "Step-by-step instructions to file your Answer with the court"),
+        "court_checklist": ("Court Hearing Checklist", "What to bring and what to expect at your hearing"),
+        "hearing_script": ("Hearing Script", "What to say to the judge — personalized for your case"),
+        "fee_waiver": ("Fee Waiver Instructions", "How to file your case for free if you can't afford the fee"),
+        "e_filing_instructions": ("E-Filing Instructions", f"How to file online through {state}'s e-filing system"),
+        "rental_assistance": ("Rental Assistance Resources", "Local organizations that can help with rent and housing"),
+        "payment_plan_letter": ("Payment Plan Letter", "Formal request to your landlord to set up a payment plan"),
+        "hardship_letter": ("Hardship Letter", "Request for more time due to financial hardship"),
+        "motion_to_determine_rent": ("Motion to Determine Rent", "Court motion to dispute the amount of rent claimed"),
+    }
+
+    # Always-present docs first
+    ALWAYS_DOCS = ["filing_checklist", "court_checklist", "hearing_script",
+                   "fee_waiver", "e_filing_instructions", "rental_assistance"]
+    COND_DOCS = ["motion_to_determine_rent", "payment_plan_letter", "hardship_letter"]
+
+    doc_num = 1
+    for key in ALWAYS_DOCS:
+        if key in paths:
+            desc = DOC_DESCRIPTIONS.get(key, (key, ""))
+            elements.append(Paragraph(
+                f"<b>Document {doc_num}:</b> {desc[0]} — {desc[1]}",
+                S["Body"]
+            ))
+            doc_num += 1
+
+    # Conditional docs
+    has_conditional = any(k in paths for k in COND_DOCS)
+    if has_conditional:
+        elements.append(Spacer(1, 8))
+        elements.append(Paragraph("<b>ADDITIONAL DOCUMENTS:</b>", S["BodyBold"]))
+        for key in COND_DOCS:
+            if key in paths:
+                desc = DOC_DESCRIPTIONS.get(key, (key, ""))
+                elements.append(Paragraph(
+                    f"<b>Document {doc_num}:</b> {desc[0]} — {desc[1]}",
+                    S["Body"]
+                ))
+                doc_num += 1
+
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 12))
+
+    # Urgent instructions
+    elements.append(Paragraph("<b>URGENT — READ THIS FIRST</b>", S["BodyBold"]))
+    elements.append(Spacer(1, 6))
+    for line in [
+        "1. Your eviction summons has a DEADLINE. Find it on your court papers NOW. Mark it on your calendar.",
+        "2. Sign and file your Answer form (separate PDF) BEFORE the deadline.",
+        "3. If you can't afford the filing fee, submit the fee waiver form (also a separate PDF) at the same time.",
+        "4. Keep a stamped copy of everything you file with the court.",
+        "5. Bring this entire packet to your court hearing.",
+    ]:
+        elements.append(Paragraph(line, S["Body"]))
+        elements.append(Spacer(1, 3))
+
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        "<i>This packet was generated by an automated document preparation service. "
+        "It does not constitute legal advice. If you need legal advice, contact a "
+        "licensed attorney in your state.</i>",
+        S["BodySmall"]
+    ))
+
+    doc.build(elements)
 
 
 # ======================== STYLES ========================
