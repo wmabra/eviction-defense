@@ -4,80 +4,35 @@
     "HUD": "1-800-569-4287",
     "United Way": "2-1-1",
     "211": "2-1-1",
-    "Court": "(401)222-3250"
+    "Court": "(401)222-3210"
   },
   "counties": {
-    "Barrington": {
-      "_region": "statewide"
-    },
-    "Bristol": {
-      "_region": "statewide"
-    },
-    "Central Falls": {
-      "_region": "statewide"
-    },
-    "Coventry": {
-      "_region": "statewide"
-    },
-    "Cranston": {
-      "_region": "statewide"
-    },
-    "Cumberland": {
-      "_region": "statewide"
-    },
-    "East Providence": {
-      "_region": "statewide"
-    },
-    "Johnston": {
-      "_region": "statewide"
-    },
-    "Lincoln": {
-      "_region": "statewide"
-    },
-    "Middletown": {
-      "_region": "statewide"
-    },
-    "Newport": {
-      "_region": "statewide"
-    },
-    "North Kingstown": {
-      "_region": "statewide"
-    },
-    "North Providence": {
-      "_region": "statewide"
-    },
-    "Pawtucket": {
-      "_region": "statewide"
-    },
-    "Providence": {
-      "_region": "statewide"
-    },
-    "South Kingstown": {
-      "_region": "statewide"
-    },
-    "Warwick": {
-      "_region": "statewide"
-    },
-    "West Warwick": {
-      "_region": "statewide"
-    },
-    "Westerly": {
-      "_region": "statewide"
-    },
-    "Woonsocket": {
-      "_region": "statewide"
-    }
+    "Providence": { "_region": "metro" },
+    "Kent": { "_region": "metro" },
+    "Bristol": { "_region": "metro" },
+    "Washington": { "_region": "south" },
+    "Newport": { "_region": "south" }
   },
   "regions": {
-    "statewide": {
-      "Legal Aid": "(401)274-2652",
-      "Salvation Army": "(401)421-6373",
+    "metro": {
+      "Legal Aid": "1-800-662-5034",
+      "Salvation Army": "(401)831-1119",
       "Catholic Charities": "(401)421-7833",
-      "Housing Authority": "(401)751-6404",
-      "Housing Department": "(401)457-1288",
+      "Housing Authority": "(401)457-1200",
+      "Housing Department": "(401)680-8488",
       "Community Action": "(401)273-2000",
-      "Human Services": "(401)462-2121",
-      "Emergency Rental": "(401)457-1288"
+      "Human Services": "(401)479-3256",
+      "Emergency Rental": "(401)680-8488"
+    },
+    "south": {
+      "Legal Aid": "1-800-662-5034",
+      "Salvation Army": "(401)846-3234",
+      "Catholic Charities": "(401)847-6883",
+      "Housing Authority": "(401)847-0435",
+      "Housing Department": "(401)845-5400",
+      "Community Action": "(401)846-4557",
+      "Human Services": "(401)845-5400",
+      "Emergency Rental": "(401)845-5400"
     }
   }
 }

@@ -237,24 +237,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
 
     # ══════════════════════════════════════════
     # NORTH CAROLINA — AOC-CVM-201 Complaint in Summary Ejectment
-    # 65 fillable fields
-    # ══════════════════════════════════════════
-    "NC": {
-        "name": "North Carolina",
-        "answer_form": "nc_eviction_answer.pdf",
-        "fee_waiver_form": "nc_fee_waiver.pdf",
-        "has_fillable_fields": True,
-        "court_type": "District Court / Magistrate",
-        "field_mapping": {
-            "full_name": "Defendant1Name",
-            "landlord_name": "PlaintiffName",
-            "case_number": "FileNumber",
-            "property_address": "PremisesDescription",
-            "county": "CountyName",
-        },
-        "notes": "NC AOC-CVM-201 is the complaint form (landlord filing). Tenant fills Defendant sections. 65 fields.",
-    },
-
     # ══════════════════════════════════════════
     # RHODE ISLAND — District Court Eviction Answer
     # 4 pages, 51 fillable fields
@@ -376,31 +358,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_ownership", "label": "Ownership interest in property", "field": "I have an ownership interest in the property I am being evicted from"},
         ],
         "notes": "LA LSBA eviction answer form — 14 pages of checkbox defense fields only. No fillable name/case# fields on form, so data fields use overlay positions on page 1. 39 defense options mapped.",
-    },
-
-    # ══════════════════════════════════════════
-    # MISSISSIPPI — Justice Court Answer
-    # 2 pages, broken fillable fields ("undefined" names)
-    # Uses overlay positions for critical fields + auto-fill for the 2 named fields
-    # ══════════════════════════════════════════
-    "MS": {
-        "name": "Mississippi",
-        "answer_form": "ms_eviction_answer.pdf",
-        "fee_waiver_form": "ms_fee_waiver.pdf",
-        "has_fillable_fields": True,
-        "court_type": "Justice Court",
-        "field_mapping": {
-            "county": "COUNTY MISSISSIPPI",
-            "court_name": "IN THE JUSTICE COURT OF",
-        },
-        "overlay_positions": {
-            "full_name": {"page": 1, "x": 72, "y": 630, "w": 250, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 72, "y": 670, "w": 250, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 400, "y": 90, "w": 200, "h": 20, "size": 11},
-            "address": {"page": 1, "x": 72, "y": 700, "w": 300, "h": 20, "size": 11},
-            "phone": {"page": 1, "x": 72, "y": 720, "w": 200, "h": 20, "size": 11},
-        },
-        "notes": "MS Justice Court eviction answer. Most fillable fields have 'undefined' names — county and court are the only named widgets. Remaining tenant/landlord info uses overlay positions. Form needs a proper replacement (unknown if MS has an official fillable eviction answer form).",
     },
 
     # ══════════════════════════════════════════

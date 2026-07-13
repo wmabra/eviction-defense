@@ -7,36 +7,29 @@
     "Court": "(501)682-9400"
   },
   "counties": {
-    "County Resources": {
-      "_region": "statewide"
-    },
-    "County Targets": {
-      "_region": "statewide"
-    },
-    "Important Note": {
-      "_region": "statewide"
-    },
-    "Intake Fields": {
-      "_region": "statewide"
-    },
-    "Key Sources": {
-      "_region": "statewide"
-    },
-    "Matching Rules": {
-      "_region": "statewide"
-    },
-    "Priority Tags": {
-      "_region": "statewide"
-    },
-    "Purpose": {
-      "_region": "statewide"
-    },
-    "Sheets Included": {
-      "_region": "statewide"
-    }
+    "Pulaski": { "_region": "central" },
+    "Faulkner": { "_region": "central" },
+    "Saline": { "_region": "central" },
+    "Lonoke": { "_region": "central" },
+    "Garland": { "_region": "central" },
+    "Jefferson": { "_region": "central" },
+    "Washington": { "_region": "northwest" },
+    "Benton": { "_region": "northwest" },
+    "Sebastian": { "_region": "northwest" },
+    "Crawford": { "_region": "northwest" },
+    "Craighead": { "_region": "northeast" },
+    "Greene": { "_region": "northeast" },
+    "White": { "_region": "northeast" },
+    "Independence": { "_region": "northeast" },
+    "Mississippi": { "_region": "northeast" },
+    "Miller": { "_region": "southwest" },
+    "Union": { "_region": "southwest" },
+    "Columbia": { "_region": "southwest" },
+    "Ouachita": { "_region": "southwest" },
+    "Hempstead": { "_region": "southwest" }
   },
   "regions": {
-    "statewide": {
+    "central": {
       "Legal Aid": "1-800-952-9243",
       "Salvation Army": "(501)374-9296",
       "Catholic Charities": "(501)664-0340",
@@ -45,6 +38,36 @@
       "Community Action": "(501)372-0807",
       "Human Services": "(501)682-1001",
       "Emergency Rental": "(501)370-9537"
+    },
+    "northwest": {
+      "Legal Aid": "1-800-952-9243",
+      "Salvation Army": "(479)521-2151",
+      "Catholic Charities": "(479)442-2342",
+      "Housing Authority": "(479)521-3850",
+      "Housing Department": "(479)443-1300",
+      "Community Action": "(479)872-7479",
+      "Human Services": "(479)443-1300",
+      "Emergency Rental": "(479)443-1300"
+    },
+    "northeast": {
+      "Legal Aid": "1-800-952-9243",
+      "Salvation Army": "(870)932-2196",
+      "Catholic Charities": "(870)932-2529",
+      "Housing Authority": "(870)932-2572",
+      "Housing Department": "(870)933-4500",
+      "Community Action": "(870)802-7100",
+      "Human Services": "(870)933-4500",
+      "Emergency Rental": "(870)933-4500"
+    },
+    "southwest": {
+      "Legal Aid": "1-800-952-9243",
+      "Salvation Army": "(870)773-1281",
+      "Catholic Charities": "(870)773-2381",
+      "Housing Authority": "(870)773-4500",
+      "Housing Department": "(870)773-4400",
+      "Community Action": "(870)773-4400",
+      "Human Services": "(870)773-4400",
+      "Emergency Rental": "(870)773-4400"
     }
   }
 }

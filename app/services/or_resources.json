@@ -6,17 +6,68 @@
     "211": "2-1-1",
     "Court": "(503)986-5500"
   },
-  "counties": {},
+  "counties": {
+    "Multnomah": { "_region": "portland" },
+    "Washington": { "_region": "portland" },
+    "Clackamas": { "_region": "portland" },
+    "Marion": { "_region": "valley" },
+    "Lane": { "_region": "valley" },
+    "Benton": { "_region": "valley" },
+    "Linn": { "_region": "valley" },
+    "Yamhill": { "_region": "valley" },
+    "Polk": { "_region": "valley" },
+    "Jackson": { "_region": "southern" },
+    "Deschutes": { "_region": "southern" },
+    "Douglas": { "_region": "southern" },
+    "Klamath": { "_region": "southern" },
+    "Josephine": { "_region": "southern" },
+    "Coos": { "_region": "southern" },
+    "Umatilla": { "_region": "eastern" },
+    "Malheur": { "_region": "eastern" },
+    "Union": { "_region": "eastern" },
+    "Baker": { "_region": "eastern" },
+    "Crook": { "_region": "eastern" }
+  },
   "regions": {
-    "statewide": {
-      "Legal Aid": "(503)224-4086",
-      "Salvation Army": "(503)239-1229",
-      "Catholic Charities": "(503)688-2612",
-      "Housing Authority": "(503)802-8300",
-      "Housing Department": "(503)823-2375",
-      "Community Action": "(503)546-1271",
-      "Human Services": "(503)988-6000",
-      "Emergency Rental": "(503)546-1271"
+    "portland": {
+      "Legal Aid": "1-888-585-9638",
+      "Salvation Army": "(503)239-1259",
+      "Catholic Charities": "(503)688-2600",
+      "Housing Authority": "(503)988-3500",
+      "Housing Department": "(503)823-3400",
+      "Community Action": "(503)595-4891",
+      "Human Services": "(503)988-3500",
+      "Emergency Rental": "(503)823-3400"
+    },
+    "valley": {
+      "Legal Aid": "1-888-585-9638",
+      "Salvation Army": "(503)370-4384",
+      "Catholic Charities": "(541)345-3628",
+      "Housing Authority": "(503)588-6420",
+      "Housing Department": "(503)588-6134",
+      "Community Action": "(541)687-9797",
+      "Human Services": "(541)687-9797",
+      "Emergency Rental": "(503)588-6134"
+    },
+    "southern": {
+      "Legal Aid": "1-888-585-9638",
+      "Salvation Army": "(541)773-6965",
+      "Catholic Charities": "(541)826-9436",
+      "Housing Authority": "(541)779-8687",
+      "Housing Department": "(541)774-2440",
+      "Community Action": "(541)779-6691",
+      "Human Services": "(541)779-6691",
+      "Emergency Rental": "(541)774-2440"
+    },
+    "eastern": {
+      "Legal Aid": "1-888-585-9638",
+      "Salvation Army": "(541)276-3666",
+      "Catholic Charities": "(541)889-6541",
+      "Housing Authority": "(541)567-3240",
+      "Housing Department": "(541)276-5744",
+      "Community Action": "(541)276-1926",
+      "Human Services": "(541)276-1926",
+      "Emergency Rental": "(541)276-5744"
     }
   }
 }

@@ -6,17 +6,58 @@
     "211": "2-1-1",
     "Court": "(803)734-1800"
   },
-  "counties": {},
+  "counties": {
+    "Greenville": { "_region": "upstate" },
+    "Spartanburg": { "_region": "upstate" },
+    "Anderson": { "_region": "upstate" },
+    "Pickens": { "_region": "upstate" },
+    "Oconee": { "_region": "upstate" },
+    "Richland": { "_region": "midlands" },
+    "Lexington": { "_region": "midlands" },
+    "York": { "_region": "midlands" },
+    "Sumter": { "_region": "midlands" },
+    "Aiken": { "_region": "midlands" },
+    "Kershaw": { "_region": "midlands" },
+    "Charleston": { "_region": "lowcountry" },
+    "Berkeley": { "_region": "lowcountry" },
+    "Dorchester": { "_region": "lowcountry" },
+    "Beaufort": { "_region": "lowcountry" },
+    "Horry": { "_region": "lowcountry" },
+    "Florence": { "_region": "lowcountry" },
+    "Georgetown": { "_region": "lowcountry" },
+    "Orangeburg": { "_region": "midlands" },
+    "Greenwood": { "_region": "upstate" }
+  },
   "regions": {
-    "statewide": {
-      "Legal Aid": "(803)799-6653",
-      "Salvation Army": "(803)252-1732",
-      "Catholic Charities": "(803)254-9756",
-      "Housing Authority": "(803)253-6935",
-      "Housing Department": "(803)545-3373",
-      "Community Action": "(803)771-0888",
-      "Human Services": "(803)898-7601",
-      "Emergency Rental": "(803)771-0888"
+    "upstate": {
+      "Legal Aid": "1-888-346-5592",
+      "Salvation Army": "(864)235-4803",
+      "Catholic Charities": "(864)242-2233",
+      "Housing Authority": "(864)242-1720",
+      "Housing Department": "(864)467-4455",
+      "Community Action": "(864)227-2016",
+      "Human Services": "(864)467-7000",
+      "Emergency Rental": "(864)467-4455"
+    },
+    "midlands": {
+      "Legal Aid": "1-888-346-5592",
+      "Salvation Army": "(803)254-9778",
+      "Catholic Charities": "(803)254-9776",
+      "Housing Authority": "(803)253-6330",
+      "Housing Department": "(803)545-3184",
+      "Community Action": "(803)733-5400",
+      "Human Services": "(803)733-5400",
+      "Emergency Rental": "(803)545-3184"
+    },
+    "lowcountry": {
+      "Legal Aid": "1-888-346-5592",
+      "Salvation Army": "(843)722-9332",
+      "Catholic Charities": "(843)402-9115",
+      "Housing Authority": "(843)720-3970",
+      "Housing Department": "(843)724-7350",
+      "Community Action": "(843)747-6162",
+      "Human Services": "(843)724-3745",
+      "Emergency Rental": "(843)724-7350"
     }
   }
 }

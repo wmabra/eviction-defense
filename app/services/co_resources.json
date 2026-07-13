@@ -7,69 +7,29 @@
     "Court": "(720)625-5000"
   },
   "counties": {
-    "Adams": {
-      "_region": "statewide"
-    },
-    "Arapahoe": {
-      "_region": "statewide"
-    },
-    "Boulder": {
-      "_region": "statewide"
-    },
-    "Broomfield": {
-      "_region": "statewide"
-    },
-    "Denver": {
-      "_region": "statewide"
-    },
-    "Douglas": {
-      "_region": "statewide"
-    },
-    "Eagle": {
-      "_region": "statewide"
-    },
-    "El Paso": {
-      "_region": "statewide"
-    },
-    "Fremont": {
-      "_region": "statewide"
-    },
-    "Garfield": {
-      "_region": "statewide"
-    },
-    "Jefferson": {
-      "_region": "statewide"
-    },
-    "La Plata": {
-      "_region": "statewide"
-    },
-    "Larimer": {
-      "_region": "statewide"
-    },
-    "Mesa": {
-      "_region": "statewide"
-    },
-    "Montrose": {
-      "_region": "statewide"
-    },
-    "Morgan": {
-      "_region": "statewide"
-    },
-    "Pueblo": {
-      "_region": "statewide"
-    },
-    "Routt": {
-      "_region": "statewide"
-    },
-    "Summit": {
-      "_region": "statewide"
-    },
-    "Weld": {
-      "_region": "statewide"
-    }
+    "Denver": { "_region": "metro" },
+    "Adams": { "_region": "metro" },
+    "Arapahoe": { "_region": "metro" },
+    "Boulder": { "_region": "metro" },
+    "Broomfield": { "_region": "metro" },
+    "Douglas": { "_region": "metro" },
+    "Jefferson": { "_region": "metro" },
+    "El Paso": { "_region": "frontrange" },
+    "Larimer": { "_region": "frontrange" },
+    "Weld": { "_region": "frontrange" },
+    "Pueblo": { "_region": "frontrange" },
+    "Mesa": { "_region": "western" },
+    "Garfield": { "_region": "western" },
+    "La Plata": { "_region": "western" },
+    "Eagle": { "_region": "western" },
+    "Summit": { "_region": "western" },
+    "Routt": { "_region": "western" },
+    "Montrose": { "_region": "western" },
+    "Fremont": { "_region": "western" },
+    "Morgan": { "_region": "frontrange" }
   },
   "regions": {
-    "statewide": {
+    "metro": {
       "Legal Aid": "(303)837-1321",
       "Salvation Army": "(303)866-9276",
       "Catholic Charities": "(303)742-0828",
@@ -78,6 +38,26 @@
       "Community Action": "(303)227-2028",
       "Human Services": "(303)227-2028",
       "Emergency Rental": "(720)913-2000"
+    },
+    "frontrange": {
+      "Legal Aid": "(303)837-1321",
+      "Salvation Army": "(719)636-3891",
+      "Catholic Charities": "(719)866-6559",
+      "Housing Authority": "(719)442-0500",
+      "Housing Department": "(719)385-5900",
+      "Community Action": "(719)545-4242",
+      "Human Services": "(719)444-5500",
+      "Emergency Rental": "(719)385-5900"
+    },
+    "western": {
+      "Legal Aid": "(303)837-1321",
+      "Salvation Army": "(970)245-3200",
+      "Catholic Charities": "(970)241-3658",
+      "Housing Authority": "(970)244-1853",
+      "Housing Department": "(970)244-1550",
+      "Community Action": "(970)245-6286",
+      "Human Services": "(970)245-6286",
+      "Emergency Rental": "(970)244-1550"
     }
   }
 }

@@ -7,69 +7,29 @@
     "Court": "(505)827-4800"
   },
   "counties": {
-    "Bernalillo": {
-      "_region": "statewide"
-    },
-    "Chaves": {
-      "_region": "statewide"
-    },
-    "Curry": {
-      "_region": "statewide"
-    },
-    "Do\u00f1a Ana": {
-      "_region": "statewide"
-    },
-    "Eddy": {
-      "_region": "statewide"
-    },
-    "Grant": {
-      "_region": "statewide"
-    },
-    "Lea": {
-      "_region": "statewide"
-    },
-    "Lincoln": {
-      "_region": "statewide"
-    },
-    "Los Alamos": {
-      "_region": "statewide"
-    },
-    "Luna": {
-      "_region": "statewide"
-    },
-    "McKinley": {
-      "_region": "statewide"
-    },
-    "Otero": {
-      "_region": "statewide"
-    },
-    "Rio Arriba": {
-      "_region": "statewide"
-    },
-    "Roosevelt": {
-      "_region": "statewide"
-    },
-    "San Juan": {
-      "_region": "statewide"
-    },
-    "San Miguel": {
-      "_region": "statewide"
-    },
-    "Sandoval": {
-      "_region": "statewide"
-    },
-    "Santa Fe": {
-      "_region": "statewide"
-    },
-    "Taos": {
-      "_region": "statewide"
-    },
-    "Valencia": {
-      "_region": "statewide"
-    }
+    "Bernalillo": { "_region": "central" },
+    "Sandoval": { "_region": "central" },
+    "Santa Fe": { "_region": "central" },
+    "Valencia": { "_region": "central" },
+    "Torrance": { "_region": "central" },
+    "Doña Ana": { "_region": "southern" },
+    "Otero": { "_region": "southern" },
+    "Lea": { "_region": "southern" },
+    "Eddy": { "_region": "southern" },
+    "Luna": { "_region": "southern" },
+    "Chaves": { "_region": "southern" },
+    "Grant": { "_region": "southern" },
+    "San Juan": { "_region": "northwest" },
+    "McKinley": { "_region": "northwest" },
+    "Rio Arriba": { "_region": "northwest" },
+    "Taos": { "_region": "northwest" },
+    "Los Alamos": { "_region": "northwest" },
+    "San Miguel": { "_region": "northwest" },
+    "Curry": { "_region": "eastern" },
+    "Roosevelt": { "_region": "eastern" }
   },
   "regions": {
-    "statewide": {
+    "central": {
       "Legal Aid": "1-833-545-4357",
       "Salvation Army": "(505)242-3112",
       "Catholic Charities": "(505)724-4670",
@@ -78,6 +38,36 @@
       "Community Action": "(505)217-0222",
       "Human Services": "(505)768-2860",
       "Emergency Rental": "(505)768-2860"
+    },
+    "southern": {
+      "Legal Aid": "1-833-545-4357",
+      "Salvation Army": "(575)523-8871",
+      "Catholic Charities": "(575)527-3588",
+      "Housing Authority": "(575)528-2000",
+      "Housing Department": "(575)541-2190",
+      "Community Action": "(575)527-8799",
+      "Human Services": "(575)527-8799",
+      "Emergency Rental": "(575)541-2190"
+    },
+    "northwest": {
+      "Legal Aid": "1-833-545-4357",
+      "Salvation Army": "(505)325-5871",
+      "Catholic Charities": "(505)326-6283",
+      "Housing Authority": "(505)324-2455",
+      "Housing Department": "(505)599-1266",
+      "Community Action": "(505)325-3167",
+      "Human Services": "(505)325-3167",
+      "Emergency Rental": "(505)599-1266"
+    },
+    "eastern": {
+      "Legal Aid": "1-833-545-4357",
+      "Salvation Army": "(575)762-3801",
+      "Catholic Charities": "(575)769-2128",
+      "Housing Authority": "(575)762-2182",
+      "Housing Department": "(575)763-9500",
+      "Community Action": "(575)356-8574",
+      "Human Services": "(575)763-9500",
+      "Emergency Rental": "(575)763-9500"
     }
   }
 }

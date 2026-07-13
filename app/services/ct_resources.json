@@ -4,80 +4,49 @@
     "HUD": "1-800-569-4287",
     "United Way": "2-1-1",
     "211": "2-1-1",
-    "Court": "(860)757-2200"
+    "Court": "(860)757-2200",
+    "Eviction Legal Helpline": "1-833-NOEVICT"
   },
   "counties": {
-    "Bridgeport": {
-      "_region": "statewide"
-    },
-    "Bristol": {
-      "_region": "statewide"
-    },
-    "Danbury": {
-      "_region": "statewide"
-    },
-    "East Hartford": {
-      "_region": "statewide"
-    },
-    "Greenwich": {
-      "_region": "statewide"
-    },
-    "Hamden": {
-      "_region": "statewide"
-    },
-    "Hartford": {
-      "_region": "statewide"
-    },
-    "Manchester": {
-      "_region": "statewide"
-    },
-    "Meriden": {
-      "_region": "statewide"
-    },
-    "Middletown": {
-      "_region": "statewide"
-    },
-    "Milford": {
-      "_region": "statewide"
-    },
-    "New Britain": {
-      "_region": "statewide"
-    },
-    "New Haven": {
-      "_region": "statewide"
-    },
-    "New London": {
-      "_region": "statewide"
-    },
-    "Norwalk": {
-      "_region": "statewide"
-    },
-    "Norwich": {
-      "_region": "statewide"
-    },
-    "Stamford": {
-      "_region": "statewide"
-    },
-    "Torrington": {
-      "_region": "statewide"
-    },
-    "Waterbury": {
-      "_region": "statewide"
-    },
-    "West Haven": {
-      "_region": "statewide"
-    }
+    "Fairfield": { "_region": "southwest" },
+    "Hartford": { "_region": "central" },
+    "New Haven": { "_region": "coastal" },
+    "New London": { "_region": "coastal" },
+    "Middlesex": { "_region": "coastal" },
+    "Litchfield": { "_region": "central" },
+    "Tolland": { "_region": "central" },
+    "Windham": { "_region": "central" }
   },
   "regions": {
-    "statewide": {
+    "southwest": {
       "Legal Aid": "1-800-453-3320",
-      "Salvation Army": "(860)522-8331",
-      "Catholic Charities": "(860)724-6443",
-      "Housing Authority": "(860)723-8400",
-      "Housing Department": "(860)757-9000",
-      "Community Action": "(860)560-5600",
-      "Human Services": "(860)424-5281",
-      "Emergency Rental": "(860)424-5281"
+      "Salvation Army": "(203)366-4278",
+      "Catholic Charities": "(203)416-1319",
+      "Housing Authority": "(203)337-8900",
+      "Housing Department": "(203)576-8000",
+      "Community Action": "(203)333-5481",
+      "Human Services": "(203)576-8000",
+      "Emergency Rental": "(203)333-5481"
+    },
+    "central": {
+      "Legal Aid": "1-800-453-3320",
+      "Salvation Army": "(860)543-8413",
+      "Catholic Charities": "(860)522-8241",
+      "Housing Authority": "(860)757-4000",
+      "Housing Department": "(860)757-9200",
+      "Community Action": "(860)560-5435",
+      "Human Services": "(860)757-9200",
+      "Emergency Rental": "(860)560-5435"
+    },
+    "coastal": {
+      "Legal Aid": "1-800-453-3320",
+      "Salvation Army": "(203)624-9876",
+      "Catholic Charities": "(203)787-2206",
+      "Housing Authority": "(203)498-8800",
+      "Housing Department": "(203)946-8070",
+      "Community Action": "(203)387-7700",
+      "Human Services": "(203)946-2330",
+      "Emergency Rental": "(203)387-7700"
     }
   }
 }
