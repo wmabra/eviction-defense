@@ -1,0 +1,83 @@
+{
+  "state": "CO",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(720)625-5000"
+  },
+  "counties": {
+    "Adams": {
+      "_region": "statewide"
+    },
+    "Arapahoe": {
+      "_region": "statewide"
+    },
+    "Boulder": {
+      "_region": "statewide"
+    },
+    "Broomfield": {
+      "_region": "statewide"
+    },
+    "Denver": {
+      "_region": "statewide"
+    },
+    "Douglas": {
+      "_region": "statewide"
+    },
+    "Eagle": {
+      "_region": "statewide"
+    },
+    "El Paso": {
+      "_region": "statewide"
+    },
+    "Fremont": {
+      "_region": "statewide"
+    },
+    "Garfield": {
+      "_region": "statewide"
+    },
+    "Jefferson": {
+      "_region": "statewide"
+    },
+    "La Plata": {
+      "_region": "statewide"
+    },
+    "Larimer": {
+      "_region": "statewide"
+    },
+    "Mesa": {
+      "_region": "statewide"
+    },
+    "Montrose": {
+      "_region": "statewide"
+    },
+    "Morgan": {
+      "_region": "statewide"
+    },
+    "Pueblo": {
+      "_region": "statewide"
+    },
+    "Routt": {
+      "_region": "statewide"
+    },
+    "Summit": {
+      "_region": "statewide"
+    },
+    "Weld": {
+      "_region": "statewide"
+    }
+  },
+  "regions": {
+    "statewide": {
+      "Legal Aid": "(303)837-1321",
+      "Salvation Army": "(303)866-9276",
+      "Catholic Charities": "(303)742-0828",
+      "Housing Authority": "(720)932-3000",
+      "Housing Department": "(720)913-1536",
+      "Community Action": "(303)227-2028",
+      "Human Services": "(303)227-2028",
+      "Emergency Rental": "(720)913-2000"
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "state": "GA",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(404)656-3450"
+  },
+  "counties": {
+    "Bibb": {
+      "_region": "central"
+    },
+    "Chatham": {
+      "_region": "coastal"
+    },
+    "Cherokee": {
+      "_region": "atlanta"
+    },
+    "Clarke": {
+      "_region": "atlanta"
+    },
+    "Clayton": {
+      "_region": "atlanta"
+    },
+    "Cobb": {
+      "_region": "atlanta"
+    },
+    "Columbia": {
+      "_region": "atlanta"
+    },
+    "Coweta": {
+      "_region": "atlanta"
+    },
+    "DeKalb": {
+      "_region": "atlanta"
+    },
+    "Douglas": {
+      "_region": "atlanta"
+    },
+    "Fayette": {
+      "_region": "atlanta"
+    },
+    "Forsyth": {
+      "_region": "atlanta"
+    },
+    "Fulton": {
+      "_region": "atlanta"
+    },
+    "Gwinnett": {
+      "_region": "atlanta"
+    },
+    "Hall": {
+      "_region": "atlanta"
+    },
+    "Henry": {
+      "_region": "atlanta"
+    },
+    "Houston": {
+      "_region": "atlanta"
+    },
+    "Muscogee": {
+      "_region": "central"
+    },
+    "Paulding": {
+      "_region": "atlanta"
+    },
+    "Richmond": {
+      "_region": "coastal"
+    }
+  },
+  "regions": {
+    "central": {
+      "Legal Aid": "(478)751-6261",
+      "Salvation Army": "(478)746-4803",
+      "Catholic Charities": "(478)743-5800",
+      "Housing Authority": "(478)752-2100",
+      "Housing Department": "(478)751-9230",
+      "Community Action": "(478)751-9230",
+      "Human Services": "(478)751-9230",
+      "Emergency Rental": "(478)751-9230"
+    },
+    "atlanta": {
+      "Legal Aid": "(404)524-5811",
+      "Salvation Army": "(404)486-2878",
+      "Catholic Charities": "(404)920-7725",
+      "Housing Authority": "(404)892-4700",
+      "Housing Department": "(404)330-6390",
+      "Community Action": "(404)320-0166",
+      "Human Services": "(404)613-6300",
+      "Emergency Rental": "(404)330-6390"
+    },
+    "coastal": {
+      "Legal Aid": "(912)651-2180",
+      "Salvation Army": "(912)651-7420",
+      "Catholic Charities": "(912)238-9344",
+      "Housing Authority": "(912)235-5800",
+      "Housing Department": "(912)651-2000",
+      "Community Action": "(912)651-2000",
+      "Human Services": "(912)651-2000",
+      "Emergency Rental": "(912)651-2000"
+    }
+  }
+}

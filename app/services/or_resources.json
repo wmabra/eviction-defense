@@ -1,0 +1,22 @@
+{
+  "state": "OR",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(503)986-5500"
+  },
+  "counties": {},
+  "regions": {
+    "statewide": {
+      "Legal Aid": "(503)224-4086",
+      "Salvation Army": "(503)239-1229",
+      "Catholic Charities": "(503)688-2612",
+      "Housing Authority": "(503)802-8300",
+      "Housing Department": "(503)823-2375",
+      "Community Action": "(503)546-1271",
+      "Human Services": "(503)988-6000",
+      "Emergency Rental": "(503)546-1271"
+    }
+  }
+}

@@ -1,202 +1,306 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SaaS Product Brief: AI-Driven Rent Relief Document Assistant</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #1e3a8a;
-            --accent: #10b981;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background-color: var(--bg);
-            margin: 0;
-            padding: 2rem 1rem;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            padding: 3rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-        h1 {
-            color: var(--secondary);
-            border-bottom: 3px solid var(--primary);
-            padding-bottom: 0.5rem;
-            margin-top: 0;
-            font-size: 2.25rem;
-        }
-        h2 {
-            color: var(--secondary);
-            margin-top: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.25rem;
-            font-size: 1.5rem;
-        }
-        h3 {
-            color: var(--primary);
-            font-size: 1.15rem;
-            margin-top: 1.5rem;
-        }
-        p {
-            margin: 0.5rem 0 1rem 0;
-        }
-        ul, ol {
-            padding-left: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        li {
-            margin-bottom: 0.5rem;
-        }
-        .highlight {
-            background-color: #eff6ff;
-            border-left: 4px solid var(--primary);
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 0 8px 8px 0;
-        }
-        .warning {
-            background-color: #fff7ed;
-            border-left: 4px solid #f97316;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 0 8px 8px 0;
-        }
-        code {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-            background-color: #f1f5f9;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-        pre {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-            background-color: #0f172a;
-            color: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.9em;
-            margin: 1rem 0;
-        }
-        .tech-flow {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            justify-content: space-between;
-        }
-        .flow-step {
-            flex: 1;
-            min-width: 180px;
-            background: #f1f5f9;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid var(--border);
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-        .strategy-box {
-            background-color: #f0fdf4;
-            border-left: 4px solid var(--accent);
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 0 8px 8px 0;
-        }
+      :root {
+        --primary: #2563eb;
+        --secondary: #1e3a8a;
+        --accent: #10b981;
+        --bg: #f8fafc;
+        --card-bg: #ffffff;
+        --text: #1e293b;
+        --border: #e2e8f0;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        margin: 0;
+        padding: 2rem 1rem;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: var(--card-bg);
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow:
+          0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+      h1 {
+        color: var(--secondary);
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 0.5rem;
+        margin-top: 0;
+        font-size: 2.25rem;
+      }
+      h2 {
+        color: var(--secondary);
+        margin-top: 2rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.25rem;
+        font-size: 1.5rem;
+      }
+      h3 {
+        color: var(--primary);
+        font-size: 1.15rem;
+        margin-top: 1.5rem;
+      }
+      p {
+        margin: 0.5rem 0 1rem 0;
+      }
+      ul,
+      ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      li {
+        margin-bottom: 0.5rem;
+      }
+      .highlight {
+        background-color: #eff6ff;
+        border-left: 4px solid var(--primary);
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .warning {
+        background-color: #fff7ed;
+        border-left: 4px solid #f97316;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0 8px 8px 0;
+      }
+      code {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+          monospace;
+        background-color: #f1f5f9;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+      pre {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+          monospace;
+        background-color: #0f172a;
+        color: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.9em;
+        margin: 1rem 0;
+      }
+      .tech-flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        justify-content: space-between;
+      }
+      .flow-step {
+        flex: 1;
+        min-width: 180px;
+        background: #f1f5f9;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid var(--border);
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+      .strategy-box {
+        background-color: #f0fdf4;
+        border-left: 4px solid var(--accent);
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0 8px 8px 0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SaaS Product Brief: Local Rent Relief Assistant</h1>
+      <p>
+        <strong>Project Goal:</strong> Build a scalable web utility that uses an
+        interactive AI chat interface to pre-screen tenants facing financial
+        hardship, verify their local eligibility for municipal grant programs,
+        collect application data, process a checkout fee via Authorize.Net, and
+        output ready-to-file local grant PDFs.
+      </p>
 
-<div class="container">
-    <h1>SaaS Product Brief: Local Rent Relief Assistant</h1>
-    <p><strong>Project Goal:</strong> Build a scalable web utility that uses an interactive AI chat interface to pre-screen tenants facing financial hardship, verify their local eligibility for municipal grant programs, collect application data, process a checkout fee via Authorize.Net, and output ready-to-file local grant PDFs.</p>
+      <div class="highlight">
+        <strong>Core Legal Compliance Rule:</strong> This platform is strictly
+        an administrative document preparation and clerical utility. It does not
+        interface with court systems, draft legal defenses, or provide legal
+        advice. It maps user-provided strings onto public municipal financial
+        application forms.
+      </div>
 
-    <div class="highlight">
-        <strong>Core Legal Compliance Rule:</strong> This platform is strictly an administrative document preparation and clerical utility. It does not interface with court systems, draft legal defenses, or provide legal advice. It maps user-provided strings onto public municipal financial application forms.
-    </div>
+      <h2>1. System Architecture & Flow</h2>
+      <div class="tech-flow">
+        <div class="flow-step">1. AI Intake Chat &<br />Eligibility Engine</div>
+        <div class="flow-step">2. Authorize.Net<br />Accept.js Payment</div>
+        <div class="flow-step">3. Server-Side<br />PDF Form Filling</div>
+        <div class="flow-step">4. Secure Download<br />Delivery (Pro Se)</div>
+      </div>
 
-    <h2>1. System Architecture & Flow</h2>
-    <div class="tech-flow">
-        <div class="flow-step">1. AI Intake Chat &<br>Eligibility Engine</div>
-        <div class="flow-step">2. Authorize.Net<br>Accept.js Payment</div>
-        <div class="flow-step">3. Server-Side<br>PDF Form Filling</div>
-        <div class="flow-step">4. Secure Download<br>Delivery (Pro Se)</div>
-    </div>
+      <h3>Step 1: AI Chat Intake</h3>
+      <ul>
+        <li>
+          User interacts with a frontend chat widget linked via API to an
+          enterprise LLM provider (e.g., OpenAI or Anthropic API).
+        </li>
+        <li>
+          The backend must use API developer endpoints with data privacy
+          controls enabled (no data utilized for model training).
+        </li>
+        <li>
+          <strong>Data Collected:</strong> Zip Code/City/State, Household Size,
+          Gross Household Income, and Confirmation of Financial Hardship (e.g.,
+          past due rent statement).
+        </li>
+        <li>
+          The system queries an internal database to confirm if a local program
+          is active and if the user’s income falls below the target Area Median
+          Income (AMI) thresholds (typically 50% or 80%).
+        </li>
+      </ul>
 
-    <h3>Step 1: AI Chat Intake</h3>
-    <ul>
-        <li>User interacts with a frontend chat widget linked via API to an enterprise LLM provider (e.g., OpenAI or Anthropic API).</li>
-        <li>The backend must use API developer endpoints with data privacy controls enabled (no data utilized for model training).</li>
-        <li><strong>Data Collected:</strong> Zip Code/City/State, Household Size, Gross Household Income, and Confirmation of Financial Hardship (e.g., past due rent statement).</li>
-        <li>The system queries an internal database to confirm if a local program is active and if the user’s income falls below the target Area Median Income (AMI) thresholds (typically 50% or 80%).</li>
-    </ul>
-
-    <h3>Step 2: Paywall (Authorize.Net Integration)</h3>
-    <ul>
+      <h3>Step 2: Paywall (Authorize.Net Integration)</h3>
+      <ul>
         <li>If eligible, the UI displays a clean payment terminal.</li>
-        <li><strong>Security Standard:</strong> Rent Relief Assistant requires <code>Authorize.Net Accept Suite (Accept.js)</code>. Payment forms capture card data securely on the frontend and send it directly to Authorize.Net in exchange for a payment token.</li>
-        <li>The production server never processes, logs, or transmits raw credit card numbers, maintaining clean PCI compliance.</li>
-        <li>A successful payment transaction token webhooks back to trigger the PDF generation workflow.</li>
-    </ul>
+        <li>
+          <strong>Security Standard:</strong> Rent Relief Assistant requires
+          <code>Authorize.Net Accept Suite (Accept.js)</code>. Payment forms
+          capture card data securely on the frontend and send it directly to
+          Authorize.Net in exchange for a payment token.
+        </li>
+        <li>
+          The production server never processes, logs, or transmits raw credit
+          card numbers, maintaining clean PCI compliance.
+        </li>
+        <li>
+          A successful payment transaction token webhooks back to trigger the
+          PDF generation workflow.
+        </li>
+      </ul>
 
-    <h3>Step 3: Document Generation Engine</h3>
-    <ul>
-        <li>The application pulls raw textual answers saved from the chat logs (Names, Address, Overdue amounts, Landlord info).</li>
-        <li>Instead of an AI generating text, a server-side script maps these strict variable strings directly into static fillable fields on matching PDF templates using libraries like <code>pypdf</code> / <code>pdfminer</code> (Python) or <code>pdfform-fill</code> / <code>pdf-lib</code> (Node.js).</li>
-    </ul>
+      <h3>Step 3: Document Generation Engine</h3>
+      <ul>
+        <li>
+          The application pulls raw textual answers saved from the chat logs
+          (Names, Address, Overdue amounts, Landlord info).
+        </li>
+        <li>
+          Instead of an AI generating text, a server-side script maps these
+          strict variable strings directly into static fillable fields on
+          matching PDF templates using libraries like <code>pypdf</code> /
+          <code>pdfminer</code> (Python) or <code>pdfform-fill</code> /
+          <code>pdf-lib</code> (Node.js).
+        </li>
+      </ul>
 
-    <h3>Step 4: Secure Asset Delivery</h3>
-    <ul>
-        <li>The software packages the completed PDFs along with a structured checklist detailing where and how to upload the document to their local government portal.</li>
-        <li>Files are saved on an encrypted storage bucket (e.g., AWS S3) with short-lived presigned URLs and delivered securely to the user via email or web interface.</li>
-    </ul>
+      <h3>Step 4: Secure Asset Delivery</h3>
+      <ul>
+        <li>
+          The software packages the completed PDFs along with a structured
+          checklist detailing where and how to upload the document to their
+          local government portal.
+        </li>
+        <li>
+          Files are saved on an encrypted storage bucket (e.g., AWS S3) with
+          short-lived presigned URLs and delivered securely to the user via
+          email or web interface.
+        </li>
+      </ul>
 
-    <h2>2. Targeted Launch Strategy & Market Segments</h2>
-    <p>To maximize development efficiency, the database and form mapping will focus on two distinct structural playbooks:</p>
+      <h2>2. Targeted Launch Strategy & Market Segments</h2>
+      <p>
+        To maximize development efficiency, the database and form mapping will
+        focus on two distinct structural playbooks:
+      </p>
 
-    <h3>Playbook A: High-Value "One-Form" Centralized States</h3>
-    <p>These states utilize a single unified application and template state-wide. They provide maximum population coverage with minimum PDF layout mapping code.</p>
-    <ul>
-        <li><strong>Colorado:</strong> Centralized state program via the Colorado Department of Local Affairs (CERA framework), managing unified monthly application intakes.</li>
-        <li><strong>New Jersey:</strong> Single master portal for the State Rental Assistance Program (SRAP) managed by the NJ Department of Community Affairs.</li>
-        <li><strong>Illinois:</strong> Unified state intake platform operated under the Illinois Housing Help framework (IHDA).</li>
-        <li><strong>Minnesota:</strong> Unified "Bring It Home" Rental Assistance model run centrally by Minnesota Housing.</li>
-    </ul>
+      <h3>Playbook A: High-Value "One-Form" Centralized States</h3>
+      <p>
+        These states utilize a single unified application and template
+        state-wide. They provide maximum population coverage with minimum PDF
+        layout mapping code.
+      </p>
+      <ul>
+        <li>
+          <strong>Colorado:</strong> Centralized state program via the Colorado
+          Department of Local Affairs (CERA framework), managing unified monthly
+          application intakes.
+        </li>
+        <li>
+          <strong>New Jersey:</strong> Single master portal for the State Rental
+          Assistance Program (SRAP) managed by the NJ Department of Community
+          Affairs.
+        </li>
+        <li>
+          <strong>Illinois:</strong> Unified state intake platform operated
+          under the Illinois Housing Help framework (IHDA).
+        </li>
+        <li>
+          <strong>Minnesota:</strong> Unified "Bring It Home" Rental Assistance
+          model run centrally by Minnesota Housing.
+        </li>
+      </ul>
 
-    <h3>Playbook B: High-Eviction Metro Routing (Fractured States Like Texas)</h3>
-    <p>In highly populated states without a single form, the system will route users using geographical zip code validation, targeting localized cities with disproportionately high eviction filing rates per capita.</p>
-    
-    <div class="strategy-box">
-        <strong>Texas High-Volume Blueprint:</strong> By writing only four specific document packages, the software captures over 75% of the Texas eviction market.
+      <h3>
+        Playbook B: High-Eviction Metro Routing (Fractured States Like Texas)
+      </h3>
+      <p>
+        In highly populated states without a single form, the system will route
+        users using geographical zip code validation, targeting localized cities
+        with disproportionately high eviction filing rates per capita.
+      </p>
+
+      <div class="strategy-box">
+        <strong>Texas High-Volume Blueprint:</strong> By writing only four
+        specific document packages, the software captures over 75% of the Texas
+        eviction market.
         <ul>
-            <li><strong>Houston (Harris County):</strong> The highest volume market in Texas (77k+ annual filings, ~9% renter filing rate). Maps onto the Harris County Housing Authority and local municipal utility templates.</li>
-            <li><strong>Dallas & Fort Worth (Dallas/Tarrant Counties):</strong> Massive combined metro region. Focus on City of Dallas housing stability formats and Tarrant County community action programs.</li>
-            <li><strong>San Antonio (Bexar County):</strong> High per-capita filing area (~27k annual filings, affecting 9 out of 100 renters). Maps onto City of San Antonio Risk Mitigation portals.</li>
-            <li><strong>Austin (Travis County):</strong> Highest relative increase in text tracking metrics (~30% year-over-year surge). Maps onto Travis County Health & Human Services Emergency formats.</li>
+          <li>
+            <strong>Houston (Harris County):</strong> The highest volume market
+            in Texas (77k+ annual filings, ~9% renter filing rate). Maps onto
+            the Harris County Housing Authority and local municipal utility
+            templates.
+          </li>
+          <li>
+            <strong>Dallas & Fort Worth (Dallas/Tarrant Counties):</strong>
+            Massive combined metro region. Focus on City of Dallas housing
+            stability formats and Tarrant County community action programs.
+          </li>
+          <li>
+            <strong>San Antonio (Bexar County):</strong> High per-capita filing
+            area (~27k annual filings, affecting 9 out of 100 renters). Maps
+            onto City of San Antonio Risk Mitigation portals.
+          </li>
+          <li>
+            <strong>Austin (Travis County):</strong> Highest relative increase
+            in text tracking metrics (~30% year-over-year surge). Maps onto
+            Travis County Health & Human Services Emergency formats.
+          </li>
         </ul>
+      </div>
+
+      <h2>3. Preliminary Database Schema (PostgreSQL Example)</h2>
+      <p>
+        The database requires structured geographical mapping and a city/county
+        routing check to feed the AI chatbot logic gate before prompting
+        payment.
+      </p>
+      <pre>>
     </div>
-
-    <h2>3. Preliminary Database Schema (PostgreSQL Example)</h2>
-    <p>The database requires structured geographical mapping and a city/county routing check to feed the AI chatbot logic gate before prompting payment.</p>
-    <pre><code>CREATE TABLE local_grant_programs (
-    id SERIAL PRIMARY KEY,
-    state VARCHAR(2) NOT NULL,
-    county VARCHAR(100),
-    city VARCHAR(100),
-    program_name VARCHAR(255) NOT NULL,
-    portal_url TEXT NOT NULL,
-    income_limit_1_person INT,
-    income_limit_2_person INT,
-
+  </body>
+</html>

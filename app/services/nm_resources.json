@@ -1,0 +1,83 @@
+{
+  "state": "NM",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(505)827-4800"
+  },
+  "counties": {
+    "Bernalillo": {
+      "_region": "statewide"
+    },
+    "Chaves": {
+      "_region": "statewide"
+    },
+    "Curry": {
+      "_region": "statewide"
+    },
+    "Do\u00f1a Ana": {
+      "_region": "statewide"
+    },
+    "Eddy": {
+      "_region": "statewide"
+    },
+    "Grant": {
+      "_region": "statewide"
+    },
+    "Lea": {
+      "_region": "statewide"
+    },
+    "Lincoln": {
+      "_region": "statewide"
+    },
+    "Los Alamos": {
+      "_region": "statewide"
+    },
+    "Luna": {
+      "_region": "statewide"
+    },
+    "McKinley": {
+      "_region": "statewide"
+    },
+    "Otero": {
+      "_region": "statewide"
+    },
+    "Rio Arriba": {
+      "_region": "statewide"
+    },
+    "Roosevelt": {
+      "_region": "statewide"
+    },
+    "San Juan": {
+      "_region": "statewide"
+    },
+    "San Miguel": {
+      "_region": "statewide"
+    },
+    "Sandoval": {
+      "_region": "statewide"
+    },
+    "Santa Fe": {
+      "_region": "statewide"
+    },
+    "Taos": {
+      "_region": "statewide"
+    },
+    "Valencia": {
+      "_region": "statewide"
+    }
+  },
+  "regions": {
+    "statewide": {
+      "Legal Aid": "1-833-545-4357",
+      "Salvation Army": "(505)242-3112",
+      "Catholic Charities": "(505)724-4670",
+      "Housing Authority": "(505)764-3920",
+      "Housing Department": "(505)768-2860",
+      "Community Action": "(505)217-0222",
+      "Human Services": "(505)768-2860",
+      "Emergency Rental": "(505)768-2860"
+    }
+  }
+}

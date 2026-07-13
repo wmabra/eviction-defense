@@ -1,0 +1,113 @@
+{
+  "state": "IL",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(312)793-3250"
+  },
+  "counties": {
+    "Champaign": {
+      "_region": "central"
+    },
+    "Cook": {
+      "_region": "chicago"
+    },
+    "DuPage": {
+      "_region": "chicago"
+    },
+    "Kane": {
+      "_region": "chicago"
+    },
+    "Kankakee": {
+      "_region": "central"
+    },
+    "Kendall": {
+      "_region": "central"
+    },
+    "LaSalle": {
+      "_region": "central"
+    },
+    "Lake": {
+      "_region": "chicago"
+    },
+    "Macon": {
+      "_region": "central"
+    },
+    "Madison": {
+      "_region": "central"
+    },
+    "McHenry": {
+      "_region": "central"
+    },
+    "McLean": {
+      "_region": "central"
+    },
+    "Peoria": {
+      "_region": "central"
+    },
+    "Rock Island": {
+      "_region": "central"
+    },
+    "Sangamon": {
+      "_region": "central"
+    },
+    "St. Clair": {
+      "_region": "south"
+    },
+    "Tazewell": {
+      "_region": "central"
+    },
+    "Vermilion": {
+      "_region": "central"
+    },
+    "Will": {
+      "_region": "chicago"
+    },
+    "Winnebago": {
+      "_region": "north"
+    }
+  },
+  "regions": {
+    "central": {
+      "Legal Aid": "(877)342-7891",
+      "Salvation Army": "(217)525-4053",
+      "Catholic Charities": "(217)523-4554",
+      "Housing Authority": "(217)753-5757",
+      "Housing Department": "(217)789-0125",
+      "Community Action": "(217)789-0125",
+      "Human Services": "(217)789-0125",
+      "Emergency Rental": "(217)789-0125"
+    },
+    "south": {
+      "Legal Aid": "(618)457-6700",
+      "Salvation Army": "(618)529-3525",
+      "Catholic Charities": "(618)235-9601",
+      "Housing Authority": "(618)457-4835",
+      "Housing Department": "(618)457-3280",
+      "Community Action": "(618)457-3280",
+      "Human Services": "(618)457-3280",
+      "Emergency Rental": "(618)457-3280"
+    },
+    "chicago": {
+      "Legal Aid": "(312)341-1070",
+      "Salvation Army": "(773)205-3500",
+      "Catholic Charities": "(312)655-7700",
+      "Housing Authority": "(312)742-8500",
+      "Housing Department": "(312)744-3653",
+      "Community Action": "(312)738-4200",
+      "Human Services": "(312)744-5000",
+      "Emergency Rental": "(312)744-3653"
+    },
+    "north": {
+      "Legal Aid": "(815)965-2134",
+      "Salvation Army": "(815)963-4835",
+      "Catholic Charities": "(815)964-7075",
+      "Housing Authority": "(815)962-7074",
+      "Housing Department": "(815)987-5566",
+      "Community Action": "(815)987-5566",
+      "Human Services": "(815)987-5566",
+      "Emergency Rental": "(815)987-5566"
+    }
+  }
+}

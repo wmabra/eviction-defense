@@ -1,0 +1,103 @@
+{
+  "state": "LA",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(504)568-5745"
+  },
+  "counties": {
+    "Ascension": {
+      "_region": "batonrouge"
+    },
+    "Bossier": {
+      "_region": "shreveport"
+    },
+    "Caddo": {
+      "_region": "shreveport"
+    },
+    "Calcasieu": {
+      "_region": "batonrouge"
+    },
+    "East Baton Rouge": {
+      "_region": "batonrouge"
+    },
+    "Iberia": {
+      "_region": "batonrouge"
+    },
+    "Jefferson": {
+      "_region": "neworleans"
+    },
+    "Lafayette": {
+      "_region": "batonrouge"
+    },
+    "Lafourche": {
+      "_region": "batonrouge"
+    },
+    "Livingston": {
+      "_region": "batonrouge"
+    },
+    "Orleans": {
+      "_region": "neworleans"
+    },
+    "Ouachita": {
+      "_region": "batonrouge"
+    },
+    "Rapides": {
+      "_region": "batonrouge"
+    },
+    "St. Charles": {
+      "_region": "batonrouge"
+    },
+    "St. John the Baptist": {
+      "_region": "batonrouge"
+    },
+    "St. Landry": {
+      "_region": "batonrouge"
+    },
+    "St. Tammany": {
+      "_region": "neworleans"
+    },
+    "Tangipahoa": {
+      "_region": "neworleans"
+    },
+    "Terrebonne": {
+      "_region": "batonrouge"
+    },
+    "Vernon": {
+      "_region": "batonrouge"
+    }
+  },
+  "regions": {
+    "neworleans": {
+      "Legal Aid": "(504)529-1000",
+      "Salvation Army": "(504)899-4569",
+      "Catholic Charities": "(504)523-3755",
+      "Housing Authority": "(504)670-3300",
+      "Housing Department": "(504)658-4200",
+      "Community Action": "(504)524-7475",
+      "Human Services": "(504)658-2500",
+      "Emergency Rental": "(504)658-4200"
+    },
+    "batonrouge": {
+      "Legal Aid": "(504)529-1000",
+      "Salvation Army": "(225)355-4483",
+      "Catholic Charities": "(225)336-8700",
+      "Housing Authority": "(225)923-8100",
+      "Housing Department": "(225)389-3039",
+      "Community Action": "(225)389-3039",
+      "Human Services": "(225)389-3039",
+      "Emergency Rental": "(225)389-3039"
+    },
+    "shreveport": {
+      "Legal Aid": "(318)222-0711",
+      "Salvation Army": "(318)424-3200",
+      "Catholic Charities": "(318)865-0206",
+      "Housing Authority": "(318)221-6443",
+      "Housing Department": "(318)673-5900",
+      "Community Action": "(318)424-3200",
+      "Human Services": "(318)673-5900",
+      "Emergency Rental": "(318)673-5900"
+    }
+  }
+}

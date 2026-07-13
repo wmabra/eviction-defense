@@ -1,0 +1,103 @@
+{
+  "state": "CA",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(415)865-4200"
+  },
+  "counties": {
+    "Alameda": {
+      "_region": "bayarea"
+    },
+    "Contra Costa": {
+      "_region": "bayarea"
+    },
+    "Fresno": {
+      "_region": "centralvalley"
+    },
+    "Kern": {
+      "_region": "centralvalley"
+    },
+    "Los Angeles": {
+      "_region": "socal"
+    },
+    "Monterey": {
+      "_region": "bayarea"
+    },
+    "Orange": {
+      "_region": "socal"
+    },
+    "Riverside": {
+      "_region": "socal"
+    },
+    "Sacramento": {
+      "_region": "centralvalley"
+    },
+    "San Bernardino": {
+      "_region": "socal"
+    },
+    "San Diego": {
+      "_region": "socal"
+    },
+    "San Francisco": {
+      "_region": "bayarea"
+    },
+    "San Joaquin": {
+      "_region": "centralvalley"
+    },
+    "San Mateo": {
+      "_region": "bayarea"
+    },
+    "Santa Clara": {
+      "_region": "bayarea"
+    },
+    "Solano": {
+      "_region": "bayarea"
+    },
+    "Sonoma": {
+      "_region": "bayarea"
+    },
+    "Stanislaus": {
+      "_region": "centralvalley"
+    },
+    "Tulare": {
+      "_region": "centralvalley"
+    },
+    "Ventura": {
+      "_region": "socal"
+    }
+  },
+  "regions": {
+    "centralvalley": {
+      "Legal Aid": "(559)441-1611",
+      "Salvation Army": "(559)233-2065",
+      "Catholic Charities": "(559)237-0851",
+      "Housing Authority": "(559)443-8400",
+      "Housing Department": "(559)621-8000",
+      "Community Action": "(559)263-1000",
+      "Human Services": "(559)600-6300",
+      "Emergency Rental": "(559)263-1000"
+    },
+    "socal": {
+      "Legal Aid": "(213)624-3665",
+      "Salvation Army": "(562)264-3600",
+      "Catholic Charities": "(213)251-3400",
+      "Housing Authority": "(213)252-2500",
+      "Housing Department": "(866)557-7368",
+      "Community Action": "(213)738-2628",
+      "Human Services": "(213)738-2628",
+      "Emergency Rental": "(213)738-2628"
+    },
+    "bayarea": {
+      "Legal Aid": "(415)404-9093",
+      "Salvation Army": "(415)553-3500",
+      "Catholic Charities": "(415)972-1200",
+      "Housing Authority": "(415)715-3280",
+      "Housing Department": "(415)701-5500",
+      "Community Action": "(510)238-3641",
+      "Human Services": "(415)557-5000",
+      "Emergency Rental": "(415)557-5000"
+    }
+  }
+}

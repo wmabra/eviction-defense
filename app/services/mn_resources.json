@@ -1,0 +1,22 @@
+{
+  "state": "MN",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(651)296-2251"
+  },
+  "counties": {},
+  "regions": {
+    "statewide": {
+      "Legal Aid": "(612)334-5970",
+      "Salvation Army": "(651)746-3400",
+      "Catholic Charities": "(612)204-8500",
+      "Housing Authority": "(612)342-1400",
+      "Housing Department": "(612)673-5100",
+      "Community Action": "(651)645-6445",
+      "Human Services": "(612)348-4111",
+      "Emergency Rental": "(651)645-6445"
+    }
+  }
+}

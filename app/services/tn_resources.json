@@ -1,0 +1,103 @@
+{
+  "state": "TN",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(615)741-2687"
+  },
+  "counties": {
+    "Anderson": {
+      "_region": "central"
+    },
+    "Blount": {
+      "_region": "central"
+    },
+    "Bradley": {
+      "_region": "central"
+    },
+    "Cumberland": {
+      "_region": "central"
+    },
+    "Davidson": {
+      "_region": "central"
+    },
+    "Hamilton": {
+      "_region": "east"
+    },
+    "Knox": {
+      "_region": "east"
+    },
+    "Madison": {
+      "_region": "central"
+    },
+    "Maury": {
+      "_region": "central"
+    },
+    "Montgomery": {
+      "_region": "central"
+    },
+    "Putnam": {
+      "_region": "central"
+    },
+    "Robertson": {
+      "_region": "central"
+    },
+    "Rutherford": {
+      "_region": "central"
+    },
+    "Sevier": {
+      "_region": "central"
+    },
+    "Shelby": {
+      "_region": "west"
+    },
+    "Sullivan": {
+      "_region": "east"
+    },
+    "Sumner": {
+      "_region": "central"
+    },
+    "Washington": {
+      "_region": "central"
+    },
+    "Williamson": {
+      "_region": "central"
+    },
+    "Wilson": {
+      "_region": "central"
+    }
+  },
+  "regions": {
+    "central": {
+      "Legal Aid": "(615)244-6610",
+      "Salvation Army": "(615)242-0411",
+      "Catholic Charities": "(615)352-3087",
+      "Housing Authority": "(615)252-8400",
+      "Housing Department": "(615)862-6459",
+      "Community Action": "(615)862-6459",
+      "Human Services": "(615)862-6459",
+      "Emergency Rental": "(615)862-6459"
+    },
+    "west": {
+      "Legal Aid": "(901)523-8822",
+      "Salvation Army": "(901)543-8586",
+      "Catholic Charities": "(901)722-4793",
+      "Housing Authority": "(901)544-1100",
+      "Housing Department": "(901)636-7400",
+      "Community Action": "(901)272-0822",
+      "Human Services": "(901)222-4200",
+      "Emergency Rental": "(901)636-7400"
+    },
+    "east": {
+      "Legal Aid": "(865)637-0484",
+      "Salvation Army": "(865)525-5936",
+      "Catholic Charities": "(865)524-9896",
+      "Housing Authority": "(865)403-1234",
+      "Housing Department": "(865)215-2111",
+      "Community Action": "(865)546-3500",
+      "Human Services": "(865)215-2111",
+      "Emergency Rental": "(865)215-2111"
+    }
+  }
+}

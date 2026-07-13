@@ -1,0 +1,82 @@
+{
+  "state": "NC",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1"
+  },
+  "counties": {
+    "Alamance": {
+      "_region": "statewide"
+    },
+    "Buncombe": {
+      "_region": "statewide"
+    },
+    "Cabarrus": {
+      "_region": "statewide"
+    },
+    "Catawba": {
+      "_region": "statewide"
+    },
+    "Cumberland": {
+      "_region": "statewide"
+    },
+    "Davidson": {
+      "_region": "statewide"
+    },
+    "Durham": {
+      "_region": "statewide"
+    },
+    "Forsyth": {
+      "_region": "statewide"
+    },
+    "Gaston": {
+      "_region": "statewide"
+    },
+    "Guilford": {
+      "_region": "statewide"
+    },
+    "Iredell": {
+      "_region": "statewide"
+    },
+    "Johnston": {
+      "_region": "statewide"
+    },
+    "Mecklenburg": {
+      "_region": "statewide"
+    },
+    "New Hanover": {
+      "_region": "statewide"
+    },
+    "Onslow": {
+      "_region": "statewide"
+    },
+    "Orange": {
+      "_region": "statewide"
+    },
+    "Pitt": {
+      "_region": "statewide"
+    },
+    "Rowan": {
+      "_region": "statewide"
+    },
+    "Union": {
+      "_region": "statewide"
+    },
+    "Wake": {
+      "_region": "statewide"
+    }
+  },
+  "regions": {
+    "statewide": {
+      "Legal Aid": "Call 211 or visit website",
+      "Salvation Army": "Call 211 or visit website",
+      "Catholic Charities": "Call 211 or visit website",
+      "Housing Authority": "Call 211 or visit website",
+      "Housing Department": "Call 211 or visit website",
+      "Community Action": "Call 211 or visit website",
+      "Human Services": "Call 211 or visit website",
+      "Emergency Rental": "Call 211 or visit website"
+    }
+  }
+}

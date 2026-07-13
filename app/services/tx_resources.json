@@ -1,0 +1,134 @@
+{
+  "state": "TX",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(512) 463-1722",
+    "Eviction Legal Helpline": "1-833-NOEVICT"
+  },
+  "counties": {
+    "Harris": {
+      "_region": "houston"
+    },
+    "Fort Bend": {
+      "_region": "houston"
+    },
+    "Montgomery": {
+      "_region": "houston"
+    },
+    "Brazoria": {
+      "_region": "houston"
+    },
+    "Galveston": {
+      "_region": "houston"
+    },
+    "Dallas": {
+      "_region": "dfw"
+    },
+    "Collin": {
+      "_region": "dfw"
+    },
+    "Denton": {
+      "_region": "dfw"
+    },
+    "Tarrant": {
+      "_region": "dfw"
+    },
+    "Travis": {
+      "_region": "austin"
+    },
+    "Williamson": {
+      "_region": "austin"
+    },
+    "Bell": {
+      "_region": "austin"
+    },
+    "McLennan": {
+      "_region": "austin"
+    },
+    "Bexar": {
+      "_region": "sanantonio"
+    },
+    "Nueces": {
+      "_region": "sanantonio"
+    },
+    "Webb": {
+      "_region": "sanantonio"
+    },
+    "Cameron": {
+      "_region": "rgv"
+    },
+    "Hidalgo": {
+      "_region": "rgv"
+    },
+    "El Paso": {
+      "_region": "westtexas"
+    },
+    "Lubbock": {
+      "_region": "westtexas"
+    }
+  },
+  "regions": {
+    "houston": {
+      "Legal Aid": "1-800-733-8394",
+      "Salvation Army": "(713) 752-0677",
+      "Catholic Charities": "(713) 526-4611",
+      "Housing Authority": "(713) 260-0500",
+      "Housing Department": "(832) 394-6200",
+      "Community Action": "(713) 393-4700",
+      "Human Services": "(713) 393-4700",
+      "Emergency Rental": "(832) 394-6200"
+    },
+    "dfw": {
+      "Legal Aid": "1-800-733-8394",
+      "Salvation Army": "(214) 424-7050",
+      "Catholic Charities": "1-866-223-7500",
+      "Housing Authority": "(214) 951-8300",
+      "Housing Department": "(214) 670-4237",
+      "Community Action": "(214) 871-5065",
+      "Human Services": "(214) 871-5065",
+      "Emergency Rental": "(214) 670-4237"
+    },
+    "austin": {
+      "Legal Aid": "1-833-329-8752",
+      "Salvation Army": "(512) 476-1111",
+      "Catholic Charities": "(512) 651-6100",
+      "Housing Authority": "(512) 477-4488",
+      "Housing Department": "(512) 974-3100",
+      "Community Action": "(512) 392-1161",
+      "Human Services": "(512) 972-5000",
+      "Emergency Rental": "(512) 974-3100"
+    },
+    "sanantonio": {
+      "Legal Aid": "1-833-329-8752",
+      "Salvation Army": "(210) 352-2000",
+      "Catholic Charities": "(210) 222-1294",
+      "Housing Authority": "(210) 477-6000",
+      "Housing Department": "(210) 207-6459",
+      "Community Action": "(210) 362-5200",
+      "Human Services": "(210) 207-8191",
+      "Emergency Rental": "(210) 207-6459"
+    },
+    "rgv": {
+      "Legal Aid": "1-833-329-8752",
+      "Salvation Army": "(956) 682-1468",
+      "Catholic Charities": "(956) 541-0220",
+      "Housing Authority": "(956) 541-7931",
+      "Housing Department": "(956) 541-7931",
+      "Community Action": "(956) 383-6240",
+      "Human Services": "(956) 383-6240",
+      "Emergency Rental": "(956) 383-6240"
+    },
+    "westtexas": {
+      "Legal Aid": "1-833-329-8752",
+      "Salvation Army": "(915) 544-9811",
+      "Catholic Charities": "(915) 532-1722",
+      "Housing Authority": "(915) 849-3742",
+      "Housing Department": "(915) 212-1500",
+      "Community Action": "(806) 894-6104",
+      "Human Services": "(915) 212-1500",
+      "Emergency Rental": "(915) 212-1500"
+    }
+  }
+}

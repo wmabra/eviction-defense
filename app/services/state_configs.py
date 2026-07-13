@@ -40,31 +40,21 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": "User.Defendant",
             "phone": "User.PhoneName2",
             "address": "User.AddressName2",
-            "email": "User.CaseNo",
             "landlord_name": "User.Plaintiff",
-            "landlord_address": "User.CourtAddress",
             "case_number": "User.CaseNo",
             "court_name": "User.Court",
-            "trial_date": "User.TrialDate",
-            "trial_time": "User.TrialTime",
-            "file_date": "User.FileDate",
-            "bop_due_date": "User.BOPDueDate",
             "date": "User.Date3",
             "day": "User.Day",
             "month": "User.Month",
             "year": "User.Year",
         },
-        "defense_map": {
-            # Map defense keys to checkboxes
-            "CB1": "CB1",  # Generic checkbox — needs state-specific logic
-        },
         "defense_options": [
-            {"key": "def_not_owed", "label": "I do not owe the amount claimed"},
-            {"key": "def_landlord_breach", "label": "The landlord breached the rental agreement"},
-            {"key": "def_repairs", "label": "Landlord failed to maintain premises"},
-            {"key": "def_retaliation", "label": "The eviction is in retaliation"},
-            {"key": "def_discrimination", "label": "The eviction is discriminatory"},
-            {"key": "def_bad_notice", "label": "I did not receive proper notice"},
+            {"key": "def_not_owed", "label": "I do not owe the amount claimed", "field": "User.CB1"},
+            {"key": "def_landlord_breach", "label": "The landlord breached the rental agreement", "field": "User.CB1"},
+            {"key": "def_repairs", "label": "Landlord failed to maintain premises", "field": "User.CB1"},
+            {"key": "def_retaliation", "label": "The eviction is in retaliation", "field": "User.CB1"},
+            {"key": "def_discrimination", "label": "The eviction is discriminatory", "field": "User.CB1"},
+            {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "User.CB1"},
         ],
         "notes": "DC-442 Grounds of Defense — 26 fillable fields. Used in General District Court for unlawful detainer cases.",
     },
@@ -146,7 +136,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
 
     # ══════════════════════════════════════════
     # TEXAS — Eviction Answer (JP Court)
-    # 55 fillable fields
+    # 57 fillable fields across 3 pages (generic Text# field names)
     # ══════════════════════════════════════════
     "TX": {
         "name": "Texas",
@@ -160,17 +150,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": "Text8",
             "date": "Text9",
             "email": "Text277",
+            "address": "Text18",
+            "printed_name": "Text16",
+            "signature_date": "D signature date",
         },
         "checkbox_mapping": {
             "jp_court": "Check Box JP",
             "county_court": "Check CountyCourt",
-            "does_not_live": "Check Box Does Not Live",
+            "does_not_live": "Check Box50",
             "mitigate_damages": "Check Box Mitigate",
             "fair_housing": "Check BoxFHAM",
             "counterclaim": "Check BoxCD",
             "other_court": "Other Court",
         },
-        "notes": "TX JP Court eviction answer. Generic Text fields. Sequential mapping: Text1=defendant, Text2=plaintiff, Text3=case#.",
+        "notes": "TX JP Court eviction answer. Generic Text#/Check Box# field names — requires explicit mapping since auto-fill can't interpret numbered fields. 57 fillable fields across 3 pages.",
     },
 
     # ══════════════════════════════════════════
@@ -195,7 +188,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
 
     # ══════════════════════════════════════════
     # CONNECTICUT — JD-HM-5 Summary Process Answer
-    # 66 fillable fields
+    # 1 page, 62 fillable fields (defense/specialized fields only)
+    # No defendant name field — uses overlay for tenant data
     # ══════════════════════════════════════════
     "CT": {
         "name": "Connecticut",
@@ -222,7 +216,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "date_offered": "DATEOFFERED[0]",
             "eviction_type": "EVICTION[0]",
             "foreclosure": "FORECLOSE[0]",
-            "front": "FRONT[0]",
             "lease": "LEASE[0]",
             "lease_renewal": "LEASE[1]",
             "no_rent_due": "NORENTDUE[0]",
@@ -234,7 +227,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "rent_offered": "RENTOFFERED[0]",
             "rent_paid": "RENTPAID[0]",
         },
-        "notes": "CT JD-HM-5 form. 66 fields with array indexing [0]. Used in Summary Process (eviction) cases.",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 200, "w": 250, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
+            "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
+        },
+        "notes": "CT JD-HM-5 form — 62 fillable fields but NO defendant name/address field (form assumes case caption provides it). Tenant data (name, address, phone) uses overlay positions. Landlord info, docket number, and defenses use fillable fields.",
     },
 
     # ══════════════════════════════════════════
@@ -259,7 +257,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
 
     # ══════════════════════════════════════════
     # RHODE ISLAND — District Court Eviction Answer
-    # 51 fillable fields
+    # 4 pages, 51 fillable fields
     # ══════════════════════════════════════════
     "RI": {
         "name": "Rhode Island",
@@ -268,17 +266,29 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "District Court",
         "field_mapping": {
-            "full_name": "Defendant",
-            "landlord_name": "Plaintiff",
+            "full_name": "DefendantTenant",
+            "landlord_name": "PlaintiffLandlord",
             "case_number": "Civil Action File Number",
             "phone": "Telephone Number",
             "date": "Date",
+            "defendant_address": "Address of the DefendantTenants Attorney or the DefendantTenant",
+            "plaintiff_address": "Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord",
+            "bar_number": "Rhode Island Bar Number",
         },
+        "defense_options": [
+            {"key": "def_offered_refused", "label": "Offered rent but landlord refused", "field": "I have offered rent but the PlaintiffLandlord refused it I am still able and willing to pay"},
+            {"key": "def_failed_maintain", "label": "Defense — landlord failed to maintain premises", "field": "I have a defense for nonpayment because the PlaintiffLandlord has failed to maintain the"},
+            {"key": "def_justifiable", "label": "Legally justifiable defense for nonpayment", "field": "My rent has not been paid but I have a legally justifiable defense for not paying"},
+            {"key": "def_lease_not_expired", "label": "Written lease not yet expired", "field": "I have a written lease which does not expire until"},
+            {"key": "def_no_notice", "label": "Did not receive required notice", "field": "I have not received the required notice from the PlaintiffLandlord before this Complaint"},
+            {"key": "def_retaliation", "label": "Retaliation for exercising legal rights", "field": "The PlaintiffLandlord is trying to evict me because I have exercised my legal rights by"},
+        ],
+        "notes": "RI District Court eviction answer. 51 fields across 4 pages. Has explicit defendant/plaintiff fields on page 1, defense checkboxes on page 2, certification on pages 3-4.",
     },
 
     # ══════════════════════════════════════════
     # COLORADO — JDF 103 Eviction Answer
-    # 6 pages, 57 fillable fields
+    # 6 pages, 57 fillable fields (named form fields on page 1)
     # ══════════════════════════════════════════
     "CO": {
         "name": "Colorado",
@@ -287,19 +297,27 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "County Court",
         "field_mapping": {
-            "address": "5",
-            "case_number": "2",
-            "county": "3",
-            "full_name": "0",
-            "landlord_name": "1",
-            "phone": "4",
+            "full_name": "∆",
+            "landlord_name": "π",
+            "address": "Street address",
+            "city": "City",
+            "state": "State",
+            "zip": "Zip",
+            "phone": "Phone",
+            "email": "Email",
+            "case_number": "Case Number",
+            "division": "Division",
+            "courtroom": "Courtroom",
+            "county": "Court County",
+            "court_address": "Court Address",
         },
-        "notes": "JDF 103 Eviction Answer. 6 pages. Field names are numbered 0-56.",
+        "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Page 1 has 14 named fields (∆=defendant, π=plaintiff). Pages 2-6 are defense checkboxes and signature fields.",
     },
 
     # ══════════════════════════════════════════
     # LOUISIANA — Eviction Answer (LSBA form)
-    # 14 pages, 62 fillable fields (checkbox based)
+    # 14 pages, 62 fillable fields (checkbox/defense based)
+    # Data fields use overlay since the form has no Name/Case# text fields
     # ══════════════════════════════════════════
     "LA": {
         "name": "Louisiana",
@@ -307,23 +325,63 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "la_fee_waiver.pdf",
         "has_fillable_fields": True,
         "court_type": "District Court / City Court",
-        "field_mapping": {
-            "defendant_name": "",
-            "plaintiff_name": "",
+        "field_mapping": {},
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 72, "y": 230, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 400, "y": 90, "w": 200, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 260, "w": 300, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 72, "y": 170, "w": 200, "h": 20, "size": 11},
+            "phone": {"page": 1, "x": 72, "y": 290, "w": 200, "h": 20, "size": 11},
         },
         "defense_options": [
+            {"key": "def_continuance", "label": "Request continuance to reschedule hearing", "field": "I would like to request that the court grant a continuance and reschedule my hearing"},
+            {"key": "def_negotiate", "label": "Negotiate move-out plan or payment date", "field": "I would like to negotiate a moveout plan or payment date with my landlord to avoid"},
+            {"key": "def_exceptions", "label": "I have exceptions/defenses to the claims", "field": "I have exceptions andor defenses to the claims made in the eviction paperwork"},
+            {"key": "def_moved_out", "label": "Already moved out — case is moot", "field": "I have moved out of the rental property so this eviction case is moot"},
+            {"key": "def_no_written_notice", "label": "No written Notice to Vacate", "field": "The landlord did not issue a written Notice to Vacate that explains the reason for the"},
+            {"key": "def_timeline_errors", "label": "Timeline errors with notice/service", "field": "There were timeline errors with the Notice to Vacate andor Rule for Possession"},
+            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "The landlord accepted some payment of rent after issuing me a Notice to Vacate"},
+            {"key": "def_different_reasons", "label": "Notice and Rule state different reasons", "field": "The Notice to Vacate and the Rule for Possession state different reasons for"},
+            {"key": "def_too_vague", "label": "Notice/Rule too vague to understand", "field": "The Notice to Vacate andor Rule for Possession is too vague for me to know how to"},
+            {"key": "def_not_owner", "label": "Filer is not actual owner or agent", "field": "The person who filed the Rule for Possession is not the owner or the owners agent"},
+            {"key": "def_early_court", "label": "Court date too soon after service", "field": "My court date is sooner than the third day after service of the court papers"},
+            {"key": "def_early_notice", "label": "Notice to Vacate served too early", "field": "I was served a Notice to Vacate too early A longer notice period is required to"},
+            {"key": "def_early_rule", "label": "Rule for Possession filed too early", "field": "The Rule for Possession was filed too early It was filed on"},
+            {"key": "def_cure_required", "label": "Lease requires notice to cure violation", "field": "My lease requires that the landlord give me a notice to cure the violation or cease"},
+            {"key": "def_ownership_interest", "label": "I have ownership interest in property", "field": "I have an ownership interest in the property I am being evicted from"},
+            {"key": "def_lease_not_expired", "label": "Lease not expired, no reason given", "field": "My lease is not expired but my landlord did not provide a reason for eviction"},
+            {"key": "def_subsidy_requires_reason", "label": "Housing subsidy requires reason for termination", "field": "My housing subsidy program requires that my landlord have a reason for not"},
+            {"key": "def_other_exceptions", "label": "Other exceptions", "field": "Other exceptions"},
+            {"key": "def_section8_protection", "label": "Section 8 / public housing protections", "field": "I live in public housing or projectbased Section 8 housing and the federally required"},
+            {"key": "def_no_notice_section8", "label": "No notice — Section 8 voucher tenant", "field": "I did not receive a Notice to Vacate I have a tenantbased Section 8 voucher so"},
+            {"key": "def_public_housing_no_good_cause", "label": "Public housing — no good cause shown", "field": "I live in public housing or a projectbased Section 8 unit and my landlord did not"},
+            {"key": "def_need_time", "label": "Need time to prepare/gather evidence", "field": "I need time to prepare and gather evidence that I cannot reasonably obtain"},
+            {"key": "def_health_issue", "label": "Health/medical issues affecting presentation", "field": "There are healthmedical issues which impact my ability to present my case"},
+            {"key": "def_emergency", "label": "Emergency occurred", "field": "An emergency has occurred"},
+            {"key": "def_disaster", "label": "Experienced a disaster", "field": "Ive experienced a disaster"},
+            {"key": "def_seeking_lawyer", "label": "Trying to find a lawyer", "field": "Im trying to find a lawyer"},
+            {"key": "def_other_continuance", "label": "Other reason for continuance", "field": "Other reason explain"},
+            {"key": "def_want_moveout_plan", "label": "Want to negotiate move-out date", "field": "I would like to negotiate a moveout date with my landlord"},
+            {"key": "def_want_payment_plan", "label": "Want to negotiate payment plan", "field": "I would like to negotiate a payment plan with my landlord"},
+            {"key": "def_refused_rent", "label": "Landlord refused rent payments", "field": "My landlord refused my rent payments I have proof of my attempts to pay"},
+            {"key": "def_accepted_late", "label": "Landlord accepted late payments before", "field": "My landlord has accepted late payments in the past I have proof of my late"},
             {"key": "def_not_violate_lease", "label": "I did not commit the lease violations", "field": "I did not commit the lease violations stated by my landlord"},
-            {"key": "def_no_notice", "label": "I did not receive notice to vacate", "field": "I did not receive a Notice to Vacate I have a tenantbased Section 8 voucher so"},
-            {"key": "def_section8", "label": "Section 8 / government housing protections", "field": "I do not owe the rent because I am on Section 8 or another government housing"},
-            {"key": "def_ownership", "label": "I have ownership interest in the property", "field": "I have an ownership interest in the property I am being evicted from"},
-            {"key": "def_general", "label": "I have exceptions or defenses", "field": "I have exceptions andor defenses to the claims made in the eviction paperwork"},
+            {"key": "def_disability", "label": "Violation related to disability", "field": "The alleged violation of my lease is related to my physical or mental disability and I"},
+            {"key": "def_repairs", "label": "Used rent money for repairs landlord ignored", "field": "I used my rent money to make repairs that my landlord did not take care of"},
+            {"key": "def_domestic_violence", "label": "Eviction related to domestic violence", "field": "My eviction is related to domestic violence"},
+            {"key": "def_other_defenses", "label": "Other defenses", "field": "I have some other defenses"},
+            {"key": "def_no_notice", "label": "Did not receive Notice to Vacate", "field": "I did not receive a Notice to Vacate I have a tenantbased Section 8 voucher so"},
+            {"key": "def_section8", "label": "Section 8 — don't owe rent claimed", "field": "I do not owe the rent because I am on Section 8 or another government housing"},
+            {"key": "def_ownership", "label": "Ownership interest in property", "field": "I have an ownership interest in the property I am being evicted from"},
         ],
-        "notes": "LA LSBA eviction answer form. Has good checkbox-style defense fields with descriptive names.",
+        "notes": "LA LSBA eviction answer form — 14 pages of checkbox defense fields only. No fillable name/case# fields on form, so data fields use overlay positions on page 1. 39 defense options mapped.",
     },
 
     # ══════════════════════════════════════════
     # MISSISSIPPI — Justice Court Answer
-    # 2 pages, 9 fillable fields
+    # 2 pages, broken fillable fields ("undefined" names)
+    # Uses overlay positions for critical fields + auto-fill for the 2 named fields
     # ══════════════════════════════════════════
     "MS": {
         "name": "Mississippi",
@@ -332,12 +390,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Justice Court",
         "field_mapping": {
-            "full_name": "undefined",
-            "landlord_name": "undefined",
             "county": "COUNTY MISSISSIPPI",
             "court_name": "IN THE JUSTICE COURT OF",
         },
-        "notes": "MS Justice Court eviction answer. MS has undefined field names — needs form replacement.",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 630, "w": 250, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 72, "y": 670, "w": 250, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 400, "y": 90, "w": 200, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 700, "w": 300, "h": 20, "size": 11},
+            "phone": {"page": 1, "x": 72, "y": 720, "w": 200, "h": 20, "size": 11},
+        },
+        "notes": "MS Justice Court eviction answer. Most fillable fields have 'undefined' names — county and court are the only named widgets. Remaining tenant/landlord info uses overlay positions. Form needs a proper replacement (unknown if MS has an official fillable eviction answer form).",
     },
 
     # ══════════════════════════════════════════
@@ -375,6 +438,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # ══════════════════════════════════════════
     # CALIFORNIA — UD-105 Answer Unlawful Detainer
     # 4 pages, 154 fillable fields
+    # Fills attorney/party info section with defendant's data (pro se)
     # ══════════════════════════════════════════
     "CA": {
         "name": "California",
@@ -384,9 +448,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Superior Court",
         "field_mapping": {
             "case_number": "UD-105[0].Page1[0].P1Caption[0].CaptionSub[0].CaseNumber[0].CaseNumber[0]",
-            "attorney_bar_no": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyBarNo[0]",
-            "attorney_name": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Name[0]",
-            "attorney_firm": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyFirm[0]",
+            "full_name": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Name[0]",
             "address": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Street[0]",
             "city": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].City[0]",
             "state": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].State[0]",
@@ -394,8 +456,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Phone[0]",
             "email": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Email[0]",
             "county": "UD-105[0].Page1[0].P1Caption[0].CourtInfo[0].CrtCounty[0]",
+            "printed_name": "UD-105[0].Page4[0].Sign[0].PrintName1[0]",
         },
-        "notes": "CA UD-105 form. Field names use XFA dotted path notation (e.g., UD-105[0].Page1[0]...).",
+        "static_values": {
+            "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyFirm[0]": "In Pro Per",
+        },
+        "notes": "CA UD-105 — 154 fields, complex XFA dotted paths. Maps defendant (pro se) into AttyPartyInfo section — 'In Pro Per' goes in AttyFirm, defendant's name goes in AttyName, defendant's address in AttyStreet. Tenant self-represents.",
     },
 
     # ══════════════════════════════════════════
@@ -420,7 +486,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
 
     # ══════════════════════════════════════════
     # ARIZONA — Answer (LJEA00004F) + MHJCEA2I Instructions
-    # Answer form is 2 pages, scanned
+    # Answer form is 2 pages, scanned (overlay only)
     # ══════════════════════════════════════════
     "AZ": {
         "name": "Arizona",
@@ -433,8 +499,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
             "landlord_name": {"page": 1, "x": 72, "y": 420, "w": 300, "h": 20, "size": 11},
             "case_number": {"page": 2, "x": 130, "y": 37, "w": 200, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 440, "w": 300, "h": 20, "size": 10},
+            "phone": {"page": 1, "x": 72, "y": 460, "w": 200, "h": 20, "size": 10},
+            "county": {"page": 1, "x": 72, "y": 380, "w": 200, "h": 20, "size": 10},
+            "date": {"page": 1, "x": 400, "y": 460, "w": 150, "h": 20, "size": 10},
         },
-        "notes": "AZ answer form is scanned (no fillable fields). LJEA00004F is the official form. MHJCEA2I contains instructions.",
+        "notes": "AZ answer form (LJEA00004F) — scanned PDF, no fillable fields. Overlay positions cover all essential tenant/landlord/case fields. MHJCEA2I is the instructions companion PDF.",
     },
 
     # ══════════════════════════════════════════
@@ -447,12 +517,21 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "fl_fee_waiver.pdf",
         "has_fillable_fields": False,
         "court_type": "County Court",
-        "notes": "FL uses generated documents from the packet system rather than fillable PDFs. Fee waiver is scanned (fl_fee_waiver.pdf).",
+        "overlay_positions": {
+            "county": {"page": 1, "x": 54, "y": 72, "w": 250, "h": 20, "size": 10},
+            "case_number": {"page": 1, "x": 380, "y": 95, "w": 170, "h": 20, "size": 10},
+            "landlord_name": {"page": 1, "x": 54, "y": 175, "w": 300, "h": 22, "size": 11},
+            "full_name": {"page": 1, "x": 54, "y": 230, "w": 300, "h": 22, "size": 11},
+            "address": {"page": 1, "x": 54, "y": 260, "w": 350, "h": 20, "size": 10},
+            "phone": {"page": 2, "x": 54, "y": 700, "w": 200, "h": 20, "size": 10},
+            "email": {"page": 2, "x": 54, "y": 720, "w": 250, "h": 20, "size": 10},
+        },
+        "notes": "FL Form 1.947(b) Answer — Residential Eviction. Scanned form with overlay positions at estimated caption locations. The generator.py also creates a cleanly formatted version from scratch (superior output), but overlay fills the actual scanned official form.",
     },
 
     # ══════════════════════════════════════════
     # MINNESOTA — Housing Court Eviction Answer (HOU202)
-    # 4 pages, has text labels
+    # 4 pages, scanned (overlay only)
     # ══════════════════════════════════════════
     "MN": {
         "name": "Minnesota",
@@ -466,13 +545,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": {"page": 1, "x": 75, "y": 106, "w": 200, "h": 20, "size": 11},
             "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
             "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
+            "phone": {"page": 1, "x": 72, "y": 347, "w": 200, "h": 20, "size": 10},
+            "date": {"page": 1, "x": 400, "y": 347, "w": 150, "h": 20, "size": 10},
         },
-        "notes": "MN Housing Court eviction answer form (HOU202). Has text labels that can be used for positioning.",
+        "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Overlay positions for caption area fields + phone/date.",
     },
 
     # ══════════════════════════════════════════
-    # NEVADA — Summary Eviction Answer
-    # Scanned form — overlay needed
+    # NEVADA — Summary Eviction Answer (Nonpayment)
+    # 65 fillable fields across 4 pages
     # ══════════════════════════════════════════
     "NV": {
         "name": "Nevada",
@@ -480,13 +561,41 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "nv_fee_waiver.pdf",
         "has_fillable_fields": True,
         "court_type": "Justice Court",
-        "field_mapping": {},
-        "notes": "NV summary eviction answer form (nonpayment). 33 auto-filled fields.",
+        "field_mapping": {
+            "full_name": "Name",
+            "landlord_name": "s Name",
+            "case_number": "Case No",
+            "address": "Address",
+            "city_state_zip": "CityStateZip",
+            "phone": "Phone",
+            "email": "EMail",
+            "date": "Date",
+            "court_name": "CourtSelect",
+            "department": "Dept No",
+            "printed_name": "Print your name",
+        },
+        "defense_options": [
+            {"key": "def_moved_out", "label": "I moved out and returned keys", "field": "I moved out and gave my keys to the landlord"},
+            {"key": "def_disagree_amount", "label": "I disagree with the rent amount claimed", "field": "I disagree with the amount of rent the Landlord claims I owe"},
+            {"key": "def_rent_paid", "label": "My rent is paid in full", "field": "My rent is paid in full"},
+            {"key": "def_costs_not_rent", "label": "Amount includes costs/fees that are not rent", "field": "The rent amount in the notice includes costs or fees that are not regular rent or late fees"},
+            {"key": "def_tried_to_pay", "label": "I tried to pay rent but landlord refused", "field": "I tried to pay my full rent on insert date"},
+            {"key": "def_partial_payment", "label": "Landlord accepted partial payment", "field": "Landlord accepted partial payment of my rent on this date"},
+            {"key": "def_late_fee", "label": "Late fee exceeds 5% of rent", "field": "Landlord is charging a late fee more than 5 of regular rent"},
+            {"key": "def_no_free_pay", "label": "No free way to pay rent provided", "field": "Landlord has not provided a free way to pay the rent Landlord is required to provide a way for rent to be"},
+            {"key": "def_repairs", "label": "Corrected habitability problem, deducting from rent", "field": "I corrected a habitability problem at my rental unit and am removing the cost from my rent"},
+            {"key": "def_bad_notice", "label": "Notice was not properly served", "field": "Landlords notice was not served as required by law or the notice did not in other ways"},
+            {"key": "def_discrimination", "label": "Discrimination (Fair Housing Act)", "field": "Landlord is discriminating against me in violation of the Federal Fair Housing Act or"},
+            {"key": "def_retaliation", "label": "Retaliation for protected acts", "field": "Landlord is retaliating against me for taking part in certain protected acts"},
+            {"key": "def_foreclosure", "label": "Property foreclosed on — new owner issues", "field": "I am a tenant in a property that has been foreclosed on and sold  The new owner"},
+            {"key": "def_other", "label": "Other defenses (explain below)", "field": "Other explain below"},
+        ],
+        "notes": "NV Summary Eviction Answer — Nonpayment of Rent. 65 fields across 4 pages. Covers tenant info, defenses, interpreter request, and certificate of service.",
     },
 
     # ══════════════════════════════════════════
-    # OREGON — Eviction Answer
-    # Fillable form
+    # OREGON — Eviction Answer (FED Answer)
+    # 2 pages, scanned (overlay only)
     # ══════════════════════════════════════════
     "OR": {
         "name": "Oregon",
@@ -498,13 +607,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": {"page": 1, "x": 72, "y": 100, "w": 250, "h": 20, "size": 11},
             "landlord_name": {"page": 1, "x": 72, "y": 120, "w": 250, "h": 20, "size": 11},
             "case_number": {"page": 1, "x": 300, "y": 72, "w": 200, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 72, "y": 140, "w": 300, "h": 20, "size": 10},
+            "phone": {"page": 1, "x": 72, "y": 160, "w": 200, "h": 20, "size": 10},
+            "county": {"page": 1, "x": 72, "y": 80, "w": 200, "h": 20, "size": 10},
+            "date": {"page": 1, "x": 400, "y": 160, "w": 150, "h": 20, "size": 10},
         },
-        "notes": "OR FED Answer form. Scanned PDF - overlay positions for basic info.",
+        "notes": "OR FED Answer — scanned PDF. Overlay positions for essential fields on page 1 caption area.",
     },
 
     # ══════════════════════════════════════════
-    # MICHIGAN — Summary Eviction Answer
-    # Fillable form
+    # MICHIGAN — DC 111a Answer, Nonpayment of Rent
+    # 48 fillable fields across 2 pages (replaced landlord notice form)
     # ══════════════════════════════════════════
     "MI": {
         "name": "Michigan",
@@ -512,13 +625,77 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "mi_fee_waiver.pdf",
         "has_fillable_fields": True,
         "court_type": "District Court",
-        "field_mapping": {},
-        "notes": "MI form is the landlord's 7-day notice. 18 auto-filled fields including tenant/landlord info.",
+        "field_mapping": {
+            "county": "Judicial district",
+            "case_number": "Case number",
+            "court_name": "Court address",
+            "full_name": "Defendant name, address, and telephone number",
+            "landlord_name": "Plaintiff name, address, and telephone number",
+            "date": "Date",
+            "printed_name": "Enter defendant or attorney signature",
+        },
+        "defense_options": [
+            {"key": "def_jury_trial", "label": "I demand a jury trial", "field": "1. I demand a jury trial"},
+            {"key": "def_agree_3", "label": "Agree with paragraph 3", "field": "agree 3"},
+            {"key": "def_disagree_3", "label": "Disagree with paragraph 3", "field": "disagree 3"},
+            {"key": "def_agree_4", "label": "Agree with paragraph 4", "field": "agree 4"},
+            {"key": "def_disagree_4", "label": "Disagree with paragraph 4", "field": "disagree 4"},
+            {"key": "def_agree_5", "label": "Agree with paragraph 5", "field": "agree 5"},
+            {"key": "def_disagree_5", "label": "Disagree with paragraph 5", "field": "disagree 5"},
+            {"key": "def_agree_6", "label": "Agree with paragraph 6", "field": "agree 6"},
+            {"key": "def_disagree_6", "label": "Disagree with paragraph 6", "field": "disagree 6"},
+            {"key": "def_agree_7", "label": "Agree with paragraph 7", "field": "agree 7"},
+            {"key": "def_disagree_7", "label": "Disagree with paragraph 7", "field": "disagree 7"},
+            {"key": "def_agree_8", "label": "Agree with paragraph 8", "field": "8. I agree that"},
+            {"key": "def_disagree_8", "label": "Disagree with paragraph 8", "field": "8. disagree that"},
+            {"key": "def_agree_9", "label": "Agree with paragraph 9", "field": "9. I agree"},
+            {"key": "def_disagree_9", "label": "Disagree with paragraph 9", "field": "9. disagree"},
+            {"key": "def_agree_10", "label": "Agree with paragraph 10", "field": "10 I agree"},
+            {"key": "def_disagree_10", "label": "Disagree with paragraph 10", "field": "10 disagree"},
+        ],
+        "notes": "MI DC 111a Answer — Nonpayment of Rent. 48 fields across 2 pages with agree/disagree paragraph structure. Defendant and plaintiff fields are composite (name+address+phone in one field).",
+    },
+
+    # ══════════════════════════════════════════
+    # MASSACHUSETTS — Summary Process (Eviction) Answer
+    # 3 pages, 47 fillable fields — Housing Court
+    # ══════════════════════════════════════════
+    "MA": {
+        "name": "Massachusetts",
+        "answer_form": "ma_eviction_answer.pdf",
+        "fee_waiver_form": "ma_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "Housing Court",
+        "field_mapping": {
+            "case_number": "Docket#",
+            "county": "County",
+            "court_name": "HOUSING COURT DIVISION",
+            "landlord_name": "Plaintiff_Name",
+            "full_name": "Defendant_Name",
+            "submitted_name": "SubmittedBy_Name",
+            "court_date": "Trial_Date",
+            "address": "SubmittedBy_1Address",
+            "submitted_address2": "SubmittedBy_2Address",
+        },
+        "defense_options": [
+            {"key": "def_conditions", "label": "Poor conditions / landlord failed to repair", "field": "Check Box74"},
+            {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "Check Box75"},
+            {"key": "def_discrimination", "label": "Discrimination", "field": "Check Box76"},
+            {"key": "def_no_notice", "label": "Improper notice / no notice to quit", "field": "Check Box77"},
+            {"key": "def_rent_paid", "label": "Rent has been paid", "field": "Check Box78"},
+            {"key": "def_amount_wrong", "label": "Amount claimed is incorrect", "field": "Check Box79"},
+            {"key": "def_waiver", "label": "Landlord waived right to evict", "field": "Check Box80"},
+            {"key": "def_lease_violation", "label": "No lease violation", "field": "Check Box82"},
+            {"key": "def_cured", "label": "Lease violation already cured", "field": "Check Box83"},
+            {"key": "def_no_breach", "label": "No breach of lease", "field": "Check Box84"},
+            {"key": "def_other", "label": "Other defenses", "field": "Check Box86"},
+        ],
+        "notes": "MA Summary Process Answer — Housing Court. 47 fillable fields across 3 pages. Page 1: case caption. Page 2: defense checkboxes + explanations. Page 3: counterclaims and certificate of service.",
     },
 
     # ══════════════════════════════════════════
     # NEW MEXICO — 4-907 Answer to Petition for Restitution
-    # 1 page, has text labels
+    # 1 page, scanned (overlay only)
     # ══════════════════════════════════════════
     "NM": {
         "name": "New Mexico",
@@ -530,8 +707,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": {"page": 1, "x": 100, "y": 120, "w": 300, "h": 20, "size": 11},
             "landlord_name": {"page": 1, "x": 100, "y": 140, "w": 300, "h": 20, "size": 11},
             "case_number": {"page": 1, "x": 250, "y": 80, "w": 200, "h": 20, "size": 11},
+            "address": {"page": 1, "x": 100, "y": 160, "w": 300, "h": 20, "size": 10},
+            "phone": {"page": 1, "x": 100, "y": 180, "w": 200, "h": 20, "size": 10},
+            "county": {"page": 1, "x": 100, "y": 100, "w": 150, "h": 20, "size": 10},
+            "date": {"page": 1, "x": 350, "y": 180, "w": 150, "h": 20, "size": 10},
         },
-        "notes": "NM 4-907 Answer to Petition for Restitution. Metro Court form for eviction defense.",
+        "notes": "NM 4-907 Answer to Petition for Restitution — single-page scanned form. Overlay positions cover all essential fields.",
     },
 }
 

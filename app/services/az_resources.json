@@ -1,0 +1,93 @@
+{
+  "state": "AZ",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(602)452-3300"
+  },
+  "counties": {
+    "Apache": {
+      "_region": "phoenix"
+    },
+    "Cochise": {
+      "_region": "phoenix"
+    },
+    "Coconino": {
+      "_region": "phoenix"
+    },
+    "Gila": {
+      "_region": "phoenix"
+    },
+    "Glendale Market": {
+      "_region": "phoenix"
+    },
+    "Graham": {
+      "_region": "phoenix"
+    },
+    "Greenlee": {
+      "_region": "phoenix"
+    },
+    "La Paz": {
+      "_region": "phoenix"
+    },
+    "Maricopa": {
+      "_region": "phoenix"
+    },
+    "Mesa Market": {
+      "_region": "phoenix"
+    },
+    "Mohave": {
+      "_region": "phoenix"
+    },
+    "Navajo": {
+      "_region": "phoenix"
+    },
+    "Phoenix Market": {
+      "_region": "phoenix"
+    },
+    "Pima": {
+      "_region": "tucson"
+    },
+    "Pinal": {
+      "_region": "phoenix"
+    },
+    "Santa Cruz": {
+      "_region": "phoenix"
+    },
+    "Scottsdale Market": {
+      "_region": "phoenix"
+    },
+    "Tucson Market": {
+      "_region": "phoenix"
+    },
+    "Yavapai": {
+      "_region": "phoenix"
+    },
+    "Yuma": {
+      "_region": "phoenix"
+    }
+  },
+  "regions": {
+    "phoenix": {
+      "Legal Aid": "(602)258-3434",
+      "Salvation Army": "(602)267-4100",
+      "Catholic Charities": "(602)285-1999",
+      "Housing Authority": "(602)744-4500",
+      "Housing Department": "(602)262-6601",
+      "Community Action": "(602)506-5911",
+      "Human Services": "(602)506-5911",
+      "Emergency Rental": "(602)262-6601"
+    },
+    "tucson": {
+      "Legal Aid": "(520)623-9461",
+      "Salvation Army": "(520)795-9776",
+      "Catholic Charities": "(520)623-0344",
+      "Housing Authority": "(520)791-4171",
+      "Housing Department": "(520)791-4171",
+      "Community Action": "(520)724-2635",
+      "Human Services": "(520)724-2635",
+      "Emergency Rental": "(520)791-4171"
+    }
+  }
+}

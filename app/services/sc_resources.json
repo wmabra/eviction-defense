@@ -1,0 +1,22 @@
+{
+  "state": "SC",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(803)734-1800"
+  },
+  "counties": {},
+  "regions": {
+    "statewide": {
+      "Legal Aid": "(803)799-6653",
+      "Salvation Army": "(803)252-1732",
+      "Catholic Charities": "(803)254-9756",
+      "Housing Authority": "(803)253-6935",
+      "Housing Department": "(803)545-3373",
+      "Community Action": "(803)771-0888",
+      "Human Services": "(803)898-7601",
+      "Emergency Rental": "(803)771-0888"
+    }
+  }
+}

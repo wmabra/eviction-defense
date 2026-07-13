@@ -1,0 +1,74 @@
+{
+  "state": "VA",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(804) 916-2700",
+    "Eviction Legal Helpline": "1-833-NOEVICT"
+  },
+  "counties": {
+    "Alexandria": {"_region": "nova"},
+    "Arlington": {"_region": "nova"},
+    "Fairfax": {"_region": "nova"},
+    "Loudoun": {"_region": "nova"},
+    "Prince William": {"_region": "nova"},
+    "Stafford": {"_region": "nova"},
+    "Chesterfield": {"_region": "central"},
+    "Henrico": {"_region": "central"},
+    "Richmond City": {"_region": "central"},
+    "Albemarle": {"_region": "central"},
+    "Spotsylvania": {"_region": "central"},
+    "Chesapeake": {"_region": "hampton_roads"},
+    "Hampton": {"_region": "hampton_roads"},
+    "Newport News": {"_region": "hampton_roads"},
+    "Norfolk": {"_region": "hampton_roads"},
+    "Virginia Beach": {"_region": "hampton_roads"},
+    "Lynchburg": {"_region": "western"},
+    "Montgomery": {"_region": "western"},
+    "Roanoke City": {"_region": "western"},
+    "Rockingham": {"_region": "western"}
+  },
+  "regions": {
+    "nova": {
+      "Legal Aid": "(703) 778-6800",
+      "Salvation Army": "(703) 642-9270",
+      "Catholic Charities": "(703) 841-3830",
+      "Housing Authority": "(703) 246-5000",
+      "Housing Department": "(703) 246-5100",
+      "Community Action": "(703) 746-5700",
+      "Human Services": "(703) 746-5700",
+      "Emergency Rental": "(703) 746-5700"
+    },
+    "central": {
+      "Legal Aid": "(804) 648-1012",
+      "Salvation Army": "(804) 225-7470",
+      "Catholic Charities": "(804) 285-5900",
+      "Housing Authority": "(804) 780-4200",
+      "Housing Department": "(804) 646-6395",
+      "Community Action": "(804) 788-0050",
+      "Human Services": "(804) 646-6395",
+      "Emergency Rental": "(804) 646-6395"
+    },
+    "hampton_roads": {
+      "Legal Aid": "(757) 627-5423",
+      "Salvation Army": "(757) 543-8100",
+      "Catholic Charities": "(757) 456-2366",
+      "Housing Authority": "(757) 624-8615",
+      "Housing Department": "(757) 664-6510",
+      "Community Action": "(757) 664-6000",
+      "Human Services": "(757) 664-6000",
+      "Emergency Rental": "(757) 587-4202"
+    },
+    "western": {
+      "Legal Aid": "(276) 783-8300",
+      "Salvation Army": "(540) 343-5335",
+      "Catholic Charities": "(540) 342-7561",
+      "Housing Authority": "(540) 983-9283",
+      "Housing Department": "(540) 853-2000",
+      "Community Action": "(540) 985-0131",
+      "Human Services": "(540) 853-2000",
+      "Emergency Rental": "(540) 853-2000"
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "state": "MA",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(617)788-8130"
+  },
+  "counties": {
+    "Barnstable": {
+      "_region": "southeast"
+    },
+    "Berkshire": {
+      "_region": "western"
+    },
+    "Boston": {
+      "_region": "boston"
+    },
+    "Bristol": {
+      "_region": "southeast"
+    },
+    "Cambridge": {
+      "_region": "boston"
+    },
+    "Dukes": {
+      "_region": "southeast"
+    },
+    "Essex": {
+      "_region": "northeast"
+    },
+    "Franklin": {
+      "_region": "western"
+    },
+    "Hampden": {
+      "_region": "western"
+    },
+    "Hampshire": {
+      "_region": "western"
+    },
+    "Lowell": {
+      "_region": "boston"
+    },
+    "Middlesex": {
+      "_region": "boston"
+    },
+    "Nantucket": {
+      "_region": "southeast"
+    },
+    "New Bedford": {
+      "_region": "boston"
+    },
+    "Norfolk": {
+      "_region": "boston"
+    },
+    "Plymouth": {
+      "_region": "southeast"
+    },
+    "Springfield": {
+      "_region": "boston"
+    },
+    "Suffolk": {
+      "_region": "boston"
+    },
+    "Worcester": {
+      "_region": "boston"
+    },
+    "Worcester City": {
+      "_region": "boston"
+    }
+  },
+  "regions": {
+    "northeast": {
+      "Legal Aid": "(978) 458-1466",
+      "Salvation Army": "(978) 682-8030",
+      "Catholic Charities": "(978)535-7851",
+      "Housing Authority": "(978) 681-8600",
+      "Housing Department": "(978)794-5800",
+      "Community Action": "(978)681-4900",
+      "Human Services": "(978)794-5800",
+      "Emergency Rental": "(978)794-5800"
+    },
+    "southeast": {
+      "Legal Aid": "(508) 880-7900",
+      "Salvation Army": "(508) 997-7456",
+      "Catholic Charities": "(508)674-4681",
+      "Housing Authority": "(508) 999-4715",
+      "Housing Department": "(508)979-1400",
+      "Community Action": "(508)979-1400",
+      "Human Services": "(508)979-1400",
+      "Emergency Rental": "(508)979-1400"
+    },
+    "western": {
+      "Legal Aid": "(413) 781-7814",
+      "Salvation Army": "(413) 785-1921",
+      "Catholic Charities": "(413) 452-0600",
+      "Housing Authority": "(413) 785-4500",
+      "Housing Department": "(413)787-6500",
+      "Community Action": "(413)263-6500",
+      "Human Services": "(413)787-6500",
+      "Emergency Rental": "(413)787-6500"
+    },
+    "boston": {
+      "Legal Aid": "(617) 603-1700",
+      "Salvation Army": "(617) 542-5420",
+      "Catholic Charities": "(617) 464-8500",
+      "Housing Authority": "(617) 988-4000",
+      "Housing Department": "(617)635-3880",
+      "Community Action": "(617)348-6200",
+      "Human Services": "(617)534-5050",
+      "Emergency Rental": "(617)635-3880"
+    }
+  }
+}

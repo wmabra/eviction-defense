@@ -49,10 +49,14 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
 
     paths = {}
 
-    # 1. Form 1.947(b) Answer
-    answer_path = os.path.join(output_dir, "01_answer_residential_eviction.pdf")
-    _generate_answer_form(base, answer_path)
-    paths["answer"] = answer_path
+    # 1. Official Court Answer Form — NOT generated here.
+    #    The official form is filled via fill_answer_form() (fillable or overlay)
+    #    using the state's actual court PDF. This ensures court acceptance.
+    #    The generated answer form (below) is deprecated — it was the original
+    #    FL-only approach before we had working overlay for the scanned form.
+    #
+    # OLD: _generate_answer_form(base, answer_path)
+    # NEW: Use fill_answer_form(data, state, output_path) separately
 
     # 2. Motion to Determine Rent (conditional)
     defenses = base.get("defenses", {})
@@ -740,58 +744,216 @@ def _generate_efiling_instructions(data: dict, output_path: str):
 # ======================== RENTAL ASSISTANCE ========================
 
 def _generate_rental_assistance_sheet(data: dict, output_path: str):
-    """Generate county-specific rental assistance resources."""
+    """Generate county-specific rental assistance resources from state databases."""
     from docx import Document
+    import os
+    
     doc = Document()
+    state = data.get("state", "FL").upper()
     county = data.get("personal_info", {}).get("county", "your county")
+    full_name = data.get("personal_info", {}).get("full_name", "Tenant")
 
-    resources = {
-        "Miami-Dade": [
-            "Community Action Agency: (305) 403-4600",
-            "Our Kids, Inc. (families with children): (305) 424-6888",
-            "Camillus House: (305) 374-1065",
-        ],
-        "Broward": [
-            "Broward County Human Services: (954) 831-7511",
-            "Community Tax & Debt Relief: (954) 763-9805",
-        ],
-        "Duval": [
-            "Duval County Department of Human Services: (904) 630-2525",
-            "United Way of Northeast Florida: (904) 390-3200",
-        ],
-        "Orange": [
-            "Orange County Human Services: (407) 836-6500",
-            "Coalition for the Homeless: (407) 426-1250",
-        ],
-        "Hillsborough": [
-            "Hillsborough County Social Services: (813) 272-5140",
-            "Metropolitan Ministries: (813) 209-1000",
-        ],
+    # Load state database if available
+    db_dir = os.path.join(os.path.dirname(__file__), "..", "..", "databases")
+    resources = []
+    
+    # Map state codes to database filenames
+    db_files = {
+        "FL": "Florida_Eviction_Support_Verified_Resource_Database_200.xlsx",
+        "AZ": "Arizona_Eviction_Support_Database_Framework_200.xlsx",
+        "AR": "Arkansas_Eviction_Support_Database_Framework_200.xlsx",
+        "CA": "California_Eviction_Support_Database_Framework_200.xlsx",
+        "CO": "Colorado_Eviction_Support_Database_Framework_200.xlsx",
+        "CT": "Connecticut_Eviction_Support_Database_Framework_200.xlsx",
+        "GA": "Georgia_Eviction_Support_Database_Framework_200.xlsx",
+        "IL": "Illinois_Eviction_Support_Database_Framework_200.xlsx",
+        "LA": "Louisiana_Eviction_Support_Database_Framework_200.xlsx",
+        "MI": "Michigan_Eviction_Support_Database_Framework_200.xlsx",
+        "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
+        "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
+        "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",
+        "TN": "Tennessee_Eviction_Support_Database_Framework_200.xlsx",
+        "TX": "Texas_Eviction_Support_Database_Framework_200.xlsx",
+        "VA": "Virginia_Eviction_Support_Database_Framework_200.xlsx",
     }
+    
+    db_file = db_files.get(state)
+    if db_file:
+        db_path = os.path.join(db_dir, db_file)
+        if os.path.exists(db_path):
+            try:
+                import openpyxl
+                wb = openpyxl.load_workbook(db_path)
+                # Find the data sheet (may be 'Verified Resources' or the first sheet)
+                ws = wb['Verified Resources'] if 'Verified Resources' in wb.sheetnames else wb.active
+                # Auto-detect header row (look for 'Organization' in the first 5 rows)
+                header_row = 1
+                for r in range(1, min(6, ws.max_row + 1)):
+                    for c in range(1, ws.max_column + 1):
+                        val = str(ws.cell(r, c).value or '').strip()
+                        if val == 'Organization':
+                            header_row = r
+                            break
+                    if header_row > 1:
+                        break
+                # Build column index
+                col_map = {}
+                for c in range(1, ws.max_column + 1):
+                    hdr = str(ws.cell(header_row, c).value or '').strip()
+                    if 'county' in hdr.lower():
+                        col_map['county'] = c
+                    elif 'category' in hdr.lower():
+                        col_map['category'] = c
+                    elif 'organization' in hdr.lower():
+                        col_map['organization'] = c
+                    elif 'program' in hdr.lower() or 'service' in hdr.lower():
+                        col_map['program'] = c
+                    elif 'website' in hdr.lower():
+                        col_map['website'] = c
+                    elif 'phone' in hdr.lower():
+                        col_map['phone'] = c
+                    elif 'eligibility' in hdr.lower():
+                        col_map['eligibility'] = c
+                for row in range(header_row + 1, ws.max_row + 1):
+                    r_county = str(ws.cell(row, col_map.get('county', 1)).value or "").strip()
+                    if r_county.lower() == county.lower():
+                        resources.append({
+                            "category": str(ws.cell(row, col_map.get('category', 2)).value or ""),
+                            "organization": str(ws.cell(row, col_map.get('organization', 3)).value or ""),
+                            "program": str(ws.cell(row, col_map.get('program', 4)).value or ""),
+                            "website": str(ws.cell(row, col_map.get('website', 5)).value or ""),
+                            "phone": str(ws.cell(row, col_map.get('phone', 6)).value or ""),
+                            "eligibility": str(ws.cell(row, col_map.get('eligibility', 8)).value or ""),
+                        })
+                wb.close()
+            except Exception as e:
+                logger.warning(f"Could not load resource database: {e}")
 
-    doc.add_heading("Rental Assistance Resources", level=1)
-    doc.add_paragraph(f"For: {county} County, Florida")
+    # Phone number lookup — loads verified numbers from state resource JSON files.
+    # Falls back to national numbers. The customer pays $395; they should not
+    # have to research phone numbers themselves.
+    import json
+    resource_json = os.path.join(os.path.dirname(__file__), f"{state.lower()}_resources.json")
+    known_phones = {
+        "HUD": "1-800-569-4287",
+        "United Way": "2-1-1",
+        "211": "2-1-1",
+        "Eviction Legal Helpline": "1-833-NOEVICT",
+    }
+    if os.path.exists(resource_json):
+        try:
+            with open(resource_json) as f:
+                state_data = json.load(f)
+            # Merge statewide numbers
+            if "statewide" in state_data:
+                known_phones.update(state_data["statewide"])
+            # Get county-specific numbers by region
+            counties = state_data.get("counties", {})
+            regions = state_data.get("regions", {})
+            county_info = counties.get(county, {})
+            region = county_info.get("_region", "")
+            if region and region in regions:
+                known_phones.update(regions[region])
+        except Exception as e:
+            logger.warning(f"Could not load resource JSON: {e}")
+
+    # Substitute placeholder phone numbers with known real numbers
+    placeholder_phones = {"Research / verify", "Research/verify", "N/A", "None", "See website", "Find local office", ""}
+    for r in resources:
+        phone = r.get("phone", "").strip()
+        org = r.get("organization", "").strip()
+        cat = r.get("category", "").strip()
+        if phone in placeholder_phones:
+            found = None
+            # Try keyword matching against category and organization
+            search_text = (cat + " " + org).lower()
+            for keyword, num in known_phones.items():
+                if keyword.lower() in search_text:
+                    found = num
+                    break
+            # Fallback: map edge-case categories to closest match
+            if not found:
+                fallback_map = {
+                    "SHIP": "Housing Department",
+                    "Section 8": "Housing Authority",
+                    "Voucher": "Housing Authority",
+                    "Public Housing": "Housing Authority",
+                }
+                for fkw, target in fallback_map.items():
+                    if fkw.lower() in search_text and target in known_phones:
+                        found = known_phones[target]
+                        break
+            if found:
+                r["phone"] = found
+
+    # Document header
+    doc.add_heading("Rental Assistance & Eviction Support Resources", level=1)
+    doc.add_paragraph(f"Prepared for: {full_name}")
+    doc.add_paragraph(f"County: {county}, {state}")
     doc.add_paragraph("")
 
+    if resources:
+        # Group by category
+        from collections import defaultdict
+        by_category = defaultdict(list)
+        for r in resources:
+            by_category[r["category"]].append(r)
+
+        doc.add_heading(f"Resources in {county} County", level=2)
+        doc.add_paragraph(f"Found {len(resources)} verified resources. Contact these organizations as soon as possible — funds are limited.")
+        doc.add_paragraph("")
+
+        for category, items in by_category.items():
+            doc.add_heading(category, level=3)
+            for item in items:
+                org = item["organization"]
+                prog = item["program"]
+                phone = item["phone"]
+                web = item["website"]
+                elig = item["eligibility"]
+                
+                # Build bullet text
+                bullet = f"{org}"
+                if prog and prog != "None":
+                    bullet += f" — {prog}"
+                doc.add_paragraph(bullet, style="List Bullet")
+                
+                if phone and phone not in ("None", "N/A", "See website", "Find local office", "Research / verify", "Research/verify", ""):
+                    doc.add_paragraph(f"Phone: {phone}")
+                elif web and web not in ("None", "N/A"):
+                    doc.add_paragraph(f"Phone: Call 211 or visit website for current contact info")
+                if web and web not in ("None", "N/A"):
+                    doc.add_paragraph(f"Website: {web}")
+                if elig and elig not in ("None", "N/A"):
+                    p = doc.add_paragraph()
+                    p.add_run(f"Note: {elig[:200]}").italic = True
+                doc.add_paragraph("")
+    else:
+        # No database available — provide general guidance
+        doc.add_heading("How to Find Help", level=2)
+        doc.add_paragraph("Dial 211 from any phone — United Way's free referral service for rent, utility, food, and emergency assistance.")
+        doc.add_paragraph("")
+        doc.add_paragraph("Visit your county's official website and search for 'rental assistance' or 'housing programs.'")
+        doc.add_paragraph("")
+        doc.add_paragraph("Contact your local Legal Aid office — search online for '[your county] legal aid'.")
+
+    # Statewide resources (always included)
+    doc.add_paragraph("")
     doc.add_heading("Statewide Resources", level=2)
-    doc.add_paragraph("Florida Department of Children and Families: (850) 300-4323")
-    doc.add_paragraph("Florida Law Help: https://www.floridalawhelp.org")
-    doc.add_paragraph("Florida Bar Lawyer Referral Service: 1-800-342-8011")
-    doc.add_paragraph("United Way 2-1-1 — Dial 211 for local assistance")
-    doc.add_paragraph("")
+    doc.add_paragraph("United Way 2-1-1 — Dial 211 for local assistance referrals", style="List Bullet")
+    doc.add_paragraph("HUD-approved housing counselors: 1-800-569-4287 or hud.gov/counseling", style="List Bullet")
+    doc.add_paragraph("Legal Services Corporation — Find your local legal aid: lsc.gov", style="List Bullet")
 
-    doc.add_heading(f"Resources for {county} County", level=2)
-    county_resources = resources.get(county, ["Contact your local United Way by dialing 211."])
-    for r in county_resources:
-        doc.add_paragraph(r, style="List Bullet")
-
+    # Tips
     doc.add_paragraph("")
     doc.add_heading("Tips for Applying", level=2)
     tips = [
-        "Apply as soon as possible — funds are limited and run out quickly.",
-        "Have your lease, eviction notice, and ID ready.",
-        "Some programs can pay past due rent directly to your landlord.",
-        "If you have a pending application, tell the judge at your hearing.",
+        "Apply as soon as possible — funds are limited and programs close when money runs out.",
+        "Have these documents ready: lease, eviction notice/court papers, ID, proof of income.",
+        "Many programs can pay back rent directly to your landlord — ask about this option.",
+        "If you have a pending application, tell the judge at your eviction hearing.",
+        "Some programs require landlord cooperation — contact your landlord early.",
+        "Keep copies of all applications, emails, and reference numbers.",
     ]
     for tip in tips:
         doc.add_paragraph(tip, style="List Bullet")

@@ -63,7 +63,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     except Exception:
         pass
 
-    if has_fields:
+    has_overlay = bool(config.get("overlay_positions"))
+    
+    if has_fields and has_overlay:
+        # Hybrid: both fillable fields AND overlay positions (e.g., LA checkbox form + data overlay)
+        _fill_via_widgets(doc, data, config)
+        _fill_via_overlay(doc, data, config)
+    elif has_fields:
         # Use fillable field approach
         _fill_via_widgets(doc, data, config)
     else:
@@ -101,6 +107,11 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         _all_data["case_number"] = _all_data["case"]
     if "address" not in _all_data and "property_address" in _all_data:
         _all_data["address"] = _all_data["property_address"]
+    # Synthesize additional keys for forms that need them
+    if "full_name" in _all_data:
+        _all_data["submitted_name"] = _all_data["full_name"]
+    if "address" in _all_data:
+        _all_data["submitted_address2"] = _all_data["address"]
     
     values = {}
     
@@ -133,25 +144,47 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             if checked:
                 values[field_name] = "Yes"
     
+    # Static values: fixed text that doesn't come from user data
+    # Used for fields like CA's "In Pro Per" attorney firm notation
+    static_values = config.get("static_values", {})
+    for pdf_field, static_text in static_values.items():
+        values[pdf_field] = static_text
+
     # Smart auto-fill for common field names not in explicit mapping
+    # Uses word-boundary matching to avoid false positives:
+    #   "address" matches "AddressName2" but NOT "CourtAddress"
+    #   "date" matches "Date3" but NOT "TrialDate" or "BOPDueDate"
     auto_fill_rules = [
         ("defendant", p.get("full_name", "")),
         ("plaintiff", l.get("landlord_name", "")),
         ("tenant", p.get("full_name", "")),
         ("landlord", l.get("landlord_name", "")),
+        ("party1", l.get("landlord_name", "")),
+        ("party2", p.get("full_name", "")),
+        ("applicant", p.get("full_name", "")),
         ("case number", c.get("case_number", "")),
         ("case no", c.get("case_number", "")),
         ("file number", c.get("case_number", "")),
+        ("docket", c.get("case_number", "")),
         ("phone", p.get("phone", "")),
         ("telephone", p.get("phone", "")),
         ("email", p.get("email", "")),
-        ("address", p.get("property_address", "")),
         ("county", p.get("county", "")),
         ("property", p.get("property_address", "")),
-        ("date", today.strftime("%m/%d/%Y")),
+        ("street", p.get("property_address", "")),
+        ("city or town", p.get("property_city", "")),
         ("signature", "/s/"),
         ("signed", today.strftime("%m/%d/%Y")),
     ]
+    # Word-boundary-only rules: match "Date" or "Date3" but not "TrialDate" or "BOPDueDate"
+    # Also skip "Court Address" — that's the court's address, not the tenant's
+    import re
+    word_boundary_rules = [
+        (re.compile(r'(?<![a-zA-Z])address(?![a-zA-Z])', re.IGNORECASE), p.get("property_address", "")),
+        (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])', re.IGNORECASE), today.strftime("%m/%d/%Y")),
+    ]
+    # Field names that should NOT receive auto-fill
+    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney).*(address|date)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
@@ -165,12 +198,25 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                 widget.update()
                 continue
             
-            # 2. Try auto-fill rules on field name
+            # 2. Try auto-fill rules on field name (substring match)
             if not field_name:
                 continue
+            # Skip fields that shouldn't get auto-filled (court/trial/attorney address/date)
+            if auto_fill_skip.search(field_name):
+                continue
             fn_lower = field_name.lower()
+            matched = False
             for keyword, value in auto_fill_rules:
                 if value and keyword in fn_lower:
+                    widget.field_value = str(value)
+                    widget.update()
+                    matched = True
+                    break
+            if matched:
+                continue
+            # 3. Try word-boundary rules (exact word match, not substring)
+            for pattern, value in word_boundary_rules:
+                if value and pattern.search(field_name):
                     widget.field_value = str(value)
                     widget.update()
                     break

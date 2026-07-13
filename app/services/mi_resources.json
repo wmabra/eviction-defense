@@ -1,0 +1,103 @@
+{
+  "state": "MI",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(517)373-0128"
+  },
+  "counties": {
+    "Bay": {
+      "_region": "central"
+    },
+    "Berrien": {
+      "_region": "central"
+    },
+    "Calhoun": {
+      "_region": "central"
+    },
+    "Eaton": {
+      "_region": "central"
+    },
+    "Genesee": {
+      "_region": "central"
+    },
+    "Ingham": {
+      "_region": "central"
+    },
+    "Isabella": {
+      "_region": "central"
+    },
+    "Jackson": {
+      "_region": "central"
+    },
+    "Kalamazoo": {
+      "_region": "central"
+    },
+    "Kent": {
+      "_region": "west"
+    },
+    "Livingston": {
+      "_region": "central"
+    },
+    "Macomb": {
+      "_region": "detroit"
+    },
+    "Monroe": {
+      "_region": "central"
+    },
+    "Muskegon": {
+      "_region": "central"
+    },
+    "Oakland": {
+      "_region": "detroit"
+    },
+    "Ottawa": {
+      "_region": "west"
+    },
+    "Saginaw": {
+      "_region": "central"
+    },
+    "St. Clair": {
+      "_region": "central"
+    },
+    "Washtenaw": {
+      "_region": "detroit"
+    },
+    "Wayne": {
+      "_region": "detroit"
+    }
+  },
+  "regions": {
+    "central": {
+      "Legal Aid": "(517)394-3121",
+      "Salvation Army": "(517)484-4415",
+      "Catholic Charities": "(517)323-4734",
+      "Housing Authority": "(517)323-6890",
+      "Housing Department": "(517)483-4000",
+      "Community Action": "(517)394-3121",
+      "Human Services": "(517)483-4000",
+      "Emergency Rental": "(517)483-4000"
+    },
+    "west": {
+      "Legal Aid": "(616)774-0672",
+      "Salvation Army": "(616)454-5840",
+      "Catholic Charities": "(616)456-1443",
+      "Housing Authority": "(616)235-2600",
+      "Housing Department": "(616)456-3000",
+      "Community Action": "(616)456-3000",
+      "Human Services": "(616)456-3000",
+      "Emergency Rental": "(616)456-3000"
+    },
+    "detroit": {
+      "Legal Aid": "(313)964-4100",
+      "Salvation Army": "(248)443-5500",
+      "Catholic Charities": "(313)883-2100",
+      "Housing Authority": "(313)877-8000",
+      "Housing Department": "(313)224-3460",
+      "Community Action": "(313)822-4500",
+      "Human Services": "(313)224-0500",
+      "Emergency Rental": "(313)224-3460"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "state": "NV",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(702)486-9300"
+  },
+  "counties": {
+    "Carson City": {
+      "_region": "north"
+    },
+    "Churchill": {
+      "_region": "north"
+    },
+    "Clark": {
+      "_region": "south"
+    },
+    "Douglas": {
+      "_region": "north"
+    },
+    "Elko": {
+      "_region": "north"
+    },
+    "Eureka": {
+      "_region": "north"
+    },
+    "Henderson Market": {
+      "_region": "north"
+    },
+    "Humboldt": {
+      "_region": "north"
+    },
+    "Lander": {
+      "_region": "north"
+    },
+    "Lincoln": {
+      "_region": "north"
+    },
+    "Lyon": {
+      "_region": "north"
+    },
+    "Mesquite Market": {
+      "_region": "north"
+    },
+    "Mineral": {
+      "_region": "north"
+    },
+    "North Las Vegas Market": {
+      "_region": "north"
+    },
+    "Nye": {
+      "_region": "south"
+    },
+    "Pershing": {
+      "_region": "north"
+    },
+    "Sparks Market": {
+      "_region": "north"
+    },
+    "Storey": {
+      "_region": "north"
+    },
+    "Washoe": {
+      "_region": "north"
+    },
+    "White Pine": {
+      "_region": "north"
+    }
+  },
+  "regions": {
+    "north": {
+      "Legal Aid": "(775)284-3491",
+      "Salvation Army": "(775)688-4555",
+      "Catholic Charities": "(775)322-7073",
+      "Housing Authority": "(775)329-3630",
+      "Housing Department": "(775)334-2263",
+      "Community Action": "(775)786-6023",
+      "Human Services": "(775)684-7200",
+      "Emergency Rental": "(775)334-2263"
+    },
+    "south": {
+      "Legal Aid": "(702)386-1070",
+      "Salvation Army": "(702)649-8240",
+      "Catholic Charities": "(702)385-2662",
+      "Housing Authority": "(702)477-3100",
+      "Housing Department": "(702)229-6321",
+      "Community Action": "(702)455-4270",
+      "Human Services": "(702)455-4270",
+      "Emergency Rental": "(702)455-4270"
+    }
+  }
+}

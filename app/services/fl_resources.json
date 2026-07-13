@@ -1,0 +1,124 @@
+{
+  "state": "FL",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(850) 488-0125",
+    "Eviction Legal Helpline": "1-833-NOEVICT"
+  },
+  "counties": {
+    "Miami-Dade": {
+      "_region": "southeast"
+    },
+    "Broward": {
+      "_region": "southeast"
+    },
+    "Palm Beach": {
+      "_region": "southeast"
+    },
+    "Hillsborough": {
+      "_region": "tampabay"
+    },
+    "Pinellas": {
+      "_region": "tampabay"
+    },
+    "Pasco": {
+      "_region": "tampabay"
+    },
+    "Polk": {
+      "_region": "tampabay"
+    },
+    "Sarasota": {
+      "_region": "tampabay"
+    },
+    "Manatee": {
+      "_region": "tampabay"
+    },
+    "Orange": {
+      "_region": "central"
+    },
+    "Seminole": {
+      "_region": "central"
+    },
+    "Osceola": {
+      "_region": "central"
+    },
+    "Volusia": {
+      "_region": "central"
+    },
+    "Lake": {
+      "_region": "central"
+    },
+    "Brevard": {
+      "_region": "central"
+    },
+    "Lee": {
+      "_region": "southwest"
+    },
+    "Collier": {
+      "_region": "southwest"
+    },
+    "Duval": {
+      "_region": "northeast"
+    },
+    "St. Lucie": {
+      "_region": "northeast"
+    },
+    "Martin": {
+      "_region": "northeast"
+    }
+  },
+  "regions": {
+    "southeast": {
+      "Legal Aid": "(305) 576-0080",
+      "Salvation Army": "(305) 573-4200",
+      "Catholic Charities": "(305) 754-2444",
+      "Housing Authority": "(305) 643-7400",
+      "Housing Department": "(786) 469-4100",
+      "Community Action": "(786) 469-4600",
+      "Human Services": "(786) 469-4600",
+      "Emergency Rental": "(786) 469-4100"
+    },
+    "tampabay": {
+      "Legal Aid": "(813) 232-1343",
+      "Salvation Army": "(813) 226-0055",
+      "Catholic Charities": "(813) 631-4370",
+      "Housing Authority": "(813) 341-9101",
+      "Housing Department": "(813) 274-6600",
+      "Community Action": "(813) 272-5220",
+      "Human Services": "(813) 272-5220",
+      "Emergency Rental": "(813) 274-6600"
+    },
+    "central": {
+      "Legal Aid": "(407) 841-8310",
+      "Salvation Army": "(407) 423-8581",
+      "Catholic Charities": "(407) 658-1818",
+      "Housing Authority": "(407) 895-3300",
+      "Housing Department": "(407) 246-2708",
+      "Community Action": "(407) 836-6500",
+      "Human Services": "(407) 836-6500",
+      "Emergency Rental": "(407) 836-6500"
+    },
+    "southwest": {
+      "Legal Aid": "(239) 334-4554",
+      "Salvation Army": "(239) 278-1551",
+      "Catholic Charities": "(239) 334-4007",
+      "Housing Authority": "(239) 344-3220",
+      "Housing Department": "(239) 533-8580",
+      "Community Action": "(239) 533-8580",
+      "Human Services": "(239) 533-8580",
+      "Emergency Rental": "(239) 533-8580"
+    },
+    "northeast": {
+      "Legal Aid": "(904) 356-8371",
+      "Salvation Army": "(904) 356-8641",
+      "Catholic Charities": "(904) 354-4846",
+      "Housing Authority": "(904) 366-3400",
+      "Housing Department": "(904) 255-8200",
+      "Community Action": "(904) 362-2512",
+      "Human Services": "(904) 362-2512",
+      "Emergency Rental": "(904) 255-8200"
+    }
+  }
+}

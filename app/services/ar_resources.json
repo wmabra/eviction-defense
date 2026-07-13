@@ -1,0 +1,50 @@
+{
+  "state": "AR",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Court": "(501)682-9400"
+  },
+  "counties": {
+    "County Resources": {
+      "_region": "statewide"
+    },
+    "County Targets": {
+      "_region": "statewide"
+    },
+    "Important Note": {
+      "_region": "statewide"
+    },
+    "Intake Fields": {
+      "_region": "statewide"
+    },
+    "Key Sources": {
+      "_region": "statewide"
+    },
+    "Matching Rules": {
+      "_region": "statewide"
+    },
+    "Priority Tags": {
+      "_region": "statewide"
+    },
+    "Purpose": {
+      "_region": "statewide"
+    },
+    "Sheets Included": {
+      "_region": "statewide"
+    }
+  },
+  "regions": {
+    "statewide": {
+      "Legal Aid": "1-800-952-9243",
+      "Salvation Army": "(501)374-9296",
+      "Catholic Charities": "(501)664-0340",
+      "Housing Authority": "(501)340-4821",
+      "Housing Department": "(501)370-9537",
+      "Community Action": "(501)372-0807",
+      "Human Services": "(501)682-1001",
+      "Emergency Rental": "(501)370-9537"
+    }
+  }
+}
