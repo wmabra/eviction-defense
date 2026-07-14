@@ -110,13 +110,20 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     # Synthesize additional keys for forms that need them
     if "full_name" in _all_data:
         _all_data["submitted_name"] = _all_data["full_name"]
+        _all_data["printed_name"] = _all_data["full_name"]
     if "address" in _all_data:
         _all_data["submitted_address2"] = _all_data["address"]
-    
+
     values = {}
     
     # Map each field_mapping key to a value from our data
     for map_key, pdf_field in mapping.items():
+        if map_key in _all_data:
+            values[pdf_field] = str(_all_data[map_key])
+    
+    # Also apply fee_waiver_mapping if present (different field names for fee waivers)
+    fw_mapping = config.get("fee_waiver_mapping", {})
+    for map_key, pdf_field in fw_mapping.items():
         if map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
     
@@ -177,14 +184,16 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         ("signed", today.strftime("%m/%d/%Y")),
     ]
     # Word-boundary-only rules: match "Date" or "Date3" but not "TrialDate" or "BOPDueDate"
-    # Also skip "Court Address" — that's the court's address, not the tenant's
+    # Also handles camelCase like "ResidenceAddress" → "address"
     import re
     word_boundary_rules = [
-        (re.compile(r'(?<![a-zA-Z])address(?![a-zA-Z])', re.IGNORECASE), p.get("property_address", "")),
-        (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])', re.IGNORECASE), today.strftime("%m/%d/%Y")),
+        (re.compile(r'(?<![a-zA-Z])address|(?<=[a-z])Address', re.IGNORECASE), p.get("property_address", "")),
+        (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])|(?<=[a-z])Date$', re.IGNORECASE), today.strftime("%m/%d/%Y")),
+        (re.compile(r'(?<![a-zA-Z])court(?![a-zA-Z])', re.IGNORECASE), c.get("court_name", "")),
+        (re.compile(r'(?<![a-zA-Z])city', re.IGNORECASE), p.get("property_city", "")),
     ]
-    # Field names that should NOT receive auto-fill
-    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney).*(address|date)', re.IGNORECASE)
+    # Field names that should NOT receive auto-fill from substring rules
+    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):

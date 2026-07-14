@@ -107,10 +107,9 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     _generate_hearing_script(base, hearing_path)
     paths["hearing_script"] = hearing_path
 
-    seq += 1
-    fee_waiver_path = os.path.join(output_dir, f"{seq:02d}_fee_waiver.pdf")
-    _generate_fee_waiver(base, fee_waiver_path)
-    paths["fee_waiver"] = fee_waiver_path
+    # Fee Waiver form is NOT generated here — the actual court form is filled
+    # separately by fill_fee_waiver() and included in the package as
+    # 02_COURT_FORM_Fee_Waiver_FILE_THIS.pdf
 
     seq += 1
     rental_path = os.path.join(output_dir, f"{seq:02d}_rental_assistance.pdf")
