@@ -128,6 +128,72 @@ class Preferences(BaseModel):
     bankruptcy_attorney_email: Optional[str] = None
 
 
+class FinancialInfo(BaseModel):
+    """Financial information for fee waiver applications (all 20 states)."""
+    # Income
+    monthly_gross_income: Optional[float] = None
+    monthly_net_income: Optional[float] = None
+    employment_income: Optional[float] = None
+    self_employment_income: Optional[float] = None
+    social_security_income: Optional[float] = None
+    ssi_income: Optional[float] = None
+    unemployment_income: Optional[float] = None
+    pension_income: Optional[float] = None
+    disability_income: Optional[float] = None
+    veterans_benefits: Optional[float] = None
+    child_support_income: Optional[float] = None
+    alimony_income: Optional[float] = None
+    other_income: Optional[float] = None
+    other_income_description: Optional[str] = None
+    
+    # Expenses
+    rent_or_mortgage: Optional[float] = None
+    utilities_expense: Optional[float] = None
+    food_expense: Optional[float] = None
+    transportation_expense: Optional[float] = None
+    medical_expense: Optional[float] = None
+    child_care_expense: Optional[float] = None
+    debt_payments: Optional[float] = None
+    other_expenses: Optional[float] = None
+    total_monthly_expenses: Optional[float] = None
+    
+    # Assets
+    cash_on_hand: Optional[float] = None
+    checking_balance: Optional[float] = None
+    savings_balance: Optional[float] = None
+    vehicle_make_model: Optional[str] = None
+    vehicle_value: Optional[float] = None
+    vehicle_loan_owed: Optional[float] = None
+    owns_real_estate: bool = False
+    real_estate_value: Optional[float] = None
+    real_estate_loan_owed: Optional[float] = None
+    other_assets_description: Optional[str] = None
+    other_assets_value: Optional[float] = None
+    
+    # Household
+    household_adults: int = 1
+    household_children: int = 0
+    total_dependents: int = 0
+    
+    # Public benefits (checkbox-style)
+    receives_public_benefits: bool = False
+    receives_snap: bool = False
+    receives_ssi: bool = False
+    receives_medicaid: bool = False
+    receives_tanf: bool = False
+    receives_section8: bool = False
+    receives_public_housing: bool = False
+    receives_county_assistance: bool = False
+    receives_energy_assistance: bool = False
+    receives_veterans_benefits: bool = False
+    receives_child_care_assistance: bool = False
+    
+    # Additional
+    unable_to_pay_fees: bool = True
+    has_requested_fee_waiver_before: bool = False
+    previous_fee_waiver_case: Optional[str] = None
+
+
 class CompleteIntake(BaseModel):
     """All intake sections together."""
     personal_info: PersonalInfo
@@ -136,3 +202,4 @@ class CompleteIntake(BaseModel):
     rent_payment: RentPayment
     defenses: Defenses
     preferences: Preferences
+    financial_info: Optional[FinancialInfo] = None

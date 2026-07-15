@@ -127,9 +127,19 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Also apply fee_waiver_mapping if present (different field names for fee waivers)
     fw_mapping = config.get("fee_waiver_mapping", {})
+    financial = data.get("financial_info", {})
     for map_key, pdf_field in fw_mapping.items():
-        if map_key in _all_data:
+        # Handle financial boolean fields as checkboxes
+        if map_key.startswith("receives_") or map_key in ("income_below_threshold", "unable_to_pay_fees"):
+            val = _get_financial_value(map_key, data)
+            if val:
+                values[pdf_field] = "Yes"
+        elif map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
+        else:
+            val = _get_financial_value(map_key, data)
+            if val:
+                values[pdf_field] = str(val)
     
     # Date
     if "date" in mapping:
@@ -209,6 +219,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             if field_name in values:
                 widget.field_value = values[field_name]
                 widget.update()
+                continue
+            
+            # 1b. Skip auto-fill for fields that have any explicit mapping
+            if field_name in mapping.values() or field_name in fw_mapping.values():
                 continue
             
             # 2. Try auto-fill rules on field name (substring match)
@@ -360,6 +374,58 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         return None
     
     return mapper.get(key)
+
+
+def _get_financial_value(key: str, data: dict) -> Optional[str]:
+    """Get a value from the FinancialInfo section for fee waiver forms.
+    
+    Returns formatted string for text fields, or "Yes" for boolean checkboxes.
+    """
+    financial = data.get("financial_info", {})
+    if not financial:
+        return None
+    
+    # Boolean checkbox fields
+    bool_fields = ["receives_public_benefits", "receives_snap", "receives_ssi", "receives_medicaid",
+                   "receives_tanf", "receives_section8", "receives_public_housing",
+                   "receives_county_assistance", "receives_energy_assistance",
+                   "receives_veterans_benefits", "receives_child_care_assistance",
+                   "income_below_threshold", "unable_to_pay_fees", "owns_real_estate",
+                   "has_requested_fee_waiver_before"]
+    if key in bool_fields:
+        val = financial.get(key, False)
+        return "Yes" if val else None
+    
+    # Numeric fields — format as dollar amounts
+    dollar_fields = ["monthly_gross_income", "monthly_net_income", "employment_income",
+                     "self_employment_income", "social_security_income", "ssi_income",
+                     "unemployment_income", "pension_income", "disability_income",
+                     "veterans_benefits", "child_support_income", "alimony_income",
+                     "other_income", "rent_or_mortgage", "utilities_expense",
+                     "food_expense", "transportation_expense", "medical_expense",
+                     "child_care_expense", "debt_payments", "other_expenses",
+                     "total_monthly_expenses", "cash_on_hand", "checking_balance",
+                     "savings_balance", "vehicle_value", "vehicle_loan_owed",
+                     "real_estate_value", "real_estate_loan_owed", "other_assets_value"]
+    if key in dollar_fields:
+        val = financial.get(key)
+        if val is not None and val != 0:
+            return f"${float(val):,.2f}"
+        return None
+    
+    # Text fields
+    text_fields = ["vehicle_make_model", "other_income_description", "other_assets_description",
+                   "previous_fee_waiver_case"]
+    if key in text_fields:
+        val = financial.get(key)
+        return str(val) if val else None
+    
+    # Household numbers
+    if key in ["household_adults", "household_children", "total_dependents"]:
+        val = financial.get(key)
+        return str(val) if val is not None else None
+    
+    return None
 
 
 def _build_defense_narrative(defenses: dict) -> str:

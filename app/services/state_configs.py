@@ -480,6 +480,43 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": "UD-105[0].Page1[0].P1Caption[0].CourtInfo[0].CrtCounty[0]",
             "printed_name": "UD-105[0].Page4[0].Sign[0].PrintName1[0]",
         },
+        "fee_waiver_mapping": {
+            # Page 1 — Personal Info
+            "case_number": "FW-001[0].Page1[0].RightCaption[0].CaseNumber[0]",
+            "full_name": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerName1[0]",
+            "address": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerStrAddress[0]",
+            "city": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerCity[0]",
+            "state_short": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerState[0]",
+            "zip": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerZip[0]",
+            "phone": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerTel[0]",
+            # Public Benefits (checkboxes)
+            "receives_public_benefits": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitReceived[0]",
+            "receives_snap": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitSNAP[0]",
+            "receives_ssi": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitSSI[0]",
+            "receives_medicaid": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitMediCal[0]",
+            "receives_tanf": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitCalWORKSTANF[0]",
+            "receives_county_assistance": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitCtyGA[0]",
+            # Income threshold (checkbox — income below 200% FPL)
+            "income_below_threshold": "FW-001[0].Page1[0].List5[0].Lib[0].GrossMonthIncomeLess[0]",
+            # Page 2 — Financial Data
+            "cash_on_hand": "FW-001[0].Page2[0].List10[0].Lia[0].Cash[0]",
+            "monthly_gross_income": "FW-001[0].Page2[0].List8[0].Lib[0].TotalIncome[0]",
+            "rent_or_mortgage": "FW-001[0].Page2[0].List11[0].Lib[0].ExpenseHousing[0]",
+            "food_expense": "FW-001[0].Page2[0].List11[0].Lic[0].ExpenseFoodSupplies[0]",
+            "utilities_expense": "FW-001[0].Page2[0].List11[0].Lid[0].ExpenseUtilitiesPhone[0]",
+            "transportation_expense": "FW-001[0].Page2[0].List11[0].Lik[0].ExpenseTransportation[0]",
+            "medical_expense": "FW-001[0].Page2[0].List11[0].Lig[0].ExpenseMedicalDental[0]",
+            "child_care_expense": "FW-001[0].Page2[0].List11[0].Lii[0].ExpenseSchoolChildCare[0]",
+            "total_monthly_expenses": "FW-001[0].Page2[0].List11[0].Total[0].Totalmonthlyexpenses[0]",
+            "debt_payments": "FW-001[0].Page2[0].List11[0].Lil[0].InstallmentPaymentAmount1[0]",
+            # Vehicle info
+            "vehicle_make_model": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleMakeYr1[0]",
+            "vehicle_value": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleFairMarketVal1[0]",
+            "vehicle_loan_owed": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleAmountOwed1[0]",
+            # Signature
+            "date": "FW-001[0].Page1[0].Sign[0].SigDate[0]",
+            "printed_name": "FW-001[0].Page1[0].Sign[0].PetitionerName[0]",
+        },
         "static_values": {
             "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyFirm[0]": "In Pro Per",
         },
