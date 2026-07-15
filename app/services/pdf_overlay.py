@@ -113,6 +113,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         _all_data["printed_name"] = _all_data["full_name"]
     if "address" in _all_data:
         _all_data["submitted_address2"] = _all_data["address"]
+    
+    # Auto-generate defense narrative for states with narrative text areas (TN, etc.)
+    if "defense_narrative" in mapping:
+        _all_data["defense_narrative"] = _build_defense_narrative(defenses)
 
     values = {}
     
@@ -301,8 +305,9 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
 def _get_field_value(key: str, data: dict) -> Optional[str]:
     """Get a value from the nested data dict by key path.
     
-    Handles both regular data fields and defense checkbox overlay keys.
-    When key starts with 'def_', returns '☑' if the defense is checked.
+    Handles regular data fields, defense checkbox overlay keys, and narrative text.
+    When key starts with 'def_', returns 'X' if the defense is checked (triggers checkmark).
+    When key is 'defense_narrative', returns formatted defense explanation text.
     """
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
@@ -327,6 +332,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
     }
     
+    # Handle defense narrative text generation
+    if key == "defense_narrative":
+        return _build_defense_narrative(defenses)
+    
     # Handle defense checkbox overlay keys
     if key.startswith("def_"):
         # Map aliases for state-specific defense keys
@@ -341,6 +350,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             "def_moved_out": "def_other",
             "def_foreclosure": "def_other",
             "def_pre_termination": "def_other",
+            "def_other2": "def_other",
         }
         lookup_key = DEFENSE_ALIASES.get(key, key)
         def_data = defenses.get(lookup_key, {})
@@ -350,3 +360,68 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         return None
     
     return mapper.get(key)
+
+
+def _build_defense_narrative(defenses: dict) -> str:
+    """Build a formatted paragraph of defense explanations from checked defenses.
+    Used for narrative court forms (AR, NM, TN) that have blank text areas.
+    """
+    DEFENSE_LABELS = {
+        "def_repairs": "The landlord failed to make necessary repairs to the property despite being notified. "
+                       "This includes [describe specific repair issues].",
+        "def_did_repairs": "I made repairs to the property that the landlord should have made, "
+                          "and I am entitled to deduct these costs from rent.",
+        "def_amount": "I dispute the amount of rent the landlord claims I owe. "
+                      "I believe the correct amount is [state amount and reason].",
+        "def_paid": "I have already paid the rent that the landlord claims is owed. "
+                    "I have proof of payment including [describe receipts, bank statements, etc.].",
+        "def_attempted_pay": "I tried to pay my rent but the landlord refused to accept payment. "
+                           "I made a good faith effort to pay on [date(s)].",
+        "def_retaliation": "The landlord is evicting me in retaliation for exercising my legal rights. "
+                         "Specifically, after I [complained to code enforcement / requested repairs / etc.], "
+                         "the landlord filed this eviction.",
+        "def_discrimination": "The eviction is discriminatory and violates fair housing laws. "
+                             "I believe I am being treated differently because of [protected characteristic].",
+        "def_bad_notice": "The landlord did not provide proper legal notice before filing this eviction. "
+                         "The notice was [defective / not served properly / missing required information].",
+        "def_landlord_breach": "The landlord breached the rental agreement by [describe violation].",
+        "def_not_owner": "The person or company suing me is not the actual owner of the property.",
+        "def_waived": "The landlord waived the right to evict by [accepting rent after notice / telling me I could stay / etc.].",
+        "def_accepted_rent": "The landlord accepted my rent payment after sending the eviction notice, "
+                            "which cancels the eviction.",
+        "def_corrected": "I corrected the lease violation that the landlord complained about before the deadline.",
+        "def_other": "I have additional reasons why I should not be evicted. [Describe here].",
+        "def_contest": "This court does not have proper jurisdiction over this case.",
+        "def_dismiss": "The complaint should be dismissed because [state reason].",
+    }
+    
+    checked = []
+    for key, label in DEFENSE_LABELS.items():
+        d = defenses.get(key, {})
+        if isinstance(d, dict) and d.get("checked"):
+            explanation = d.get("explanation", "")
+            text = label
+            if explanation:
+                # Replace placeholder with actual explanation
+                text = text.replace("[describe specific repair issues]", explanation)
+                text = text.replace("[state amount and reason]", explanation)
+                text = text.replace("[describe receipts, bank statements, etc.]", explanation)
+                text = text.replace("[date(s)]", explanation)
+                text = text.replace("[complained to code enforcement / requested repairs / etc.]", explanation)
+                text = text.replace("[protected characteristic]", explanation)
+                text = text.replace("[defective / not served properly / missing required information]", explanation)
+                text = text.replace("[describe violation]", explanation)
+                text = text.replace("[accepting rent after notice / telling me I could stay / etc.]", explanation)
+                text = text.replace("[Describe here]", explanation)
+                text = text.replace("[state reason]", explanation)
+            checked.append(text)
+    
+    if not checked:
+        return "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."
+    
+    # Number the defenses
+    lines = []
+    for i, def_text in enumerate(checked, 1):
+        lines.append(f"{i}. {def_text}")
+    
+    return "\n\n".join(lines)

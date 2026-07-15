@@ -452,17 +452,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "hearing_at_3": "at the hearing 3",
             "hearing_at_4": "at the hearing 4",
             "certification_1": "cert_1",
-            "certification_2": "cert_2",
+            "defense_narrative": "at the hearing 1",
         },
-        "field_mapping_defense_explanation": {
-            "hearing_statement1": "at the hearing 1",
-            "hearing_statement2": "at the hearing 2",
-            "hearing_statement3": "at the hearing 3",
-            "hearing_statement4": "at the hearing 4",
-            "certification1": "cert_1",
-            "certification2": "cert_2",
-        },
-        "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Tenant writes narrative defenses in 'at the hearing' text areas. Defense explanations can be filled into these fields via field_mapping_defense_explanation.",
+        "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and pre-filled into 'at the hearing 1' text area. Tenant can edit before filing.",
     },
 
     # ══════════════════════════════════════════
@@ -523,8 +515,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": {"page": 9, "x": 90, "y": 650, "w": 300, "h": 20, "size": 11},
             "address": {"page": 10, "x": 110, "y": 81, "w": 300, "h": 20, "size": 11},
             "phone": {"page": 10, "x": 360, "y": 134, "w": 150, "h": 20, "size": 11},
+            # Defense narrative text area (page 8, between DEFENSES header and COUNTERCLAIM)
+            "defense_narrative": {"page": 8, "x": 90, "y": 355, "w": 430, "h": 190, "size": 9},
         },
-        "notes": "AR unlawful detainer answer packet from Arkansas Justice. 11 pages including instructions.",
+        "notes": "AR unlawful detainer answer packet — 11 pages. Page 8 has narrative defense text area where tenant writes reasons. We pre-fill this with formatted defense explanations based on intake answers. Remaining pages are instructions (1-5) and signature pages (9-11).",
     },
 
     # ══════════════════════════════════════════
@@ -794,8 +788,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": {"page": 1, "x": 100, "y": 180, "w": 200, "h": 20, "size": 10},
             "county": {"page": 1, "x": 100, "y": 100, "w": 150, "h": 20, "size": 10},
             "date": {"page": 1, "x": 350, "y": 180, "w": 150, "h": 20, "size": 10},
+            # Defense narrative text area — fills the "because:" blank lines
+            "defense_narrative": {"page": 1, "x": 36, "y": 210, "w": 540, "h": 350, "size": 9},
         },
-        "notes": "NM 4-907 Answer to Petition for Restitution — single-page scanned form. Overlay positions cover all essential fields.",
+        "notes": "NM 4-907 Answer to Petition for Restitution — single-page form. Overlay fills data fields and pre-fills defense narrative in the 'because:' blank area (lines 1-5).",
     },
 }
 
