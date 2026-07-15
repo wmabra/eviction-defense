@@ -1,8 +1,14 @@
-"""Payment API endpoints — Authorize.net."""
+"""Payment API endpoints — Authorize.net (optional)."""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services.payment import charge_card, PaymentResult
+try:
+    from app.services.payment import charge_card, PaymentResult
+    PAYMENT_AVAILABLE = True
+except ImportError:
+    PAYMENT_AVAILABLE = False
+    charge_card = None
+    PaymentResult = None
 
 router = APIRouter(prefix="/api/v1/payment", tags=["payment"])
 
@@ -24,6 +30,8 @@ class PaymentResponse(BaseModel):
 @router.post("/charge", response_model=PaymentResponse)
 def process_payment(req: PaymentRequest):
     """Process a payment via Authorize.net."""
+    if not PAYMENT_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Payment processing is not available. Please try again later.")
     if not req.opaque_data.get("dataDescriptor") or not req.opaque_data.get("dataValue"):
         raise HTTPException(status_code=400, detail="Invalid payment data. Please try again.")
     
