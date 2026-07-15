@@ -212,6 +212,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Texas",
         "answer_form": "tx_eviction_answer.pdf",
         "fee_waiver_form": "tx_fee_waiver.pdf",
+        "overlay_positions": {
+            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
+        },
         "has_fillable_fields": True,
         "court_type": "Justice of the Peace Court",
         "field_mapping": {
@@ -617,6 +620,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Tennessee",
         "answer_form": "tn_eviction_answer.pdf",
         "fee_waiver_form": "tn_fee_waiver.pdf",
+        "overlay_positions": {
+            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
+        },
+
         "has_fillable_fields": True,
         "court_type": "General Sessions Court",
         "field_mapping": {
@@ -803,6 +810,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Florida",
         "answer_form": "answer_form_917.pdf",
         "fee_waiver_form": "fl_fee_waiver.pdf",
+        "overlay_positions": {
+            "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
+            "financial_summary": {"page": 1, "x": 50, "y": 500, "w": 500, "h": 200, "size": 9},
+        },
         "has_fillable_fields": True,
         "court_type": "County Court",
         "field_mapping": {
@@ -857,6 +868,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "def_other": {"page": 2, "x": 93, "y": 705, "w": 14, "h": 14, "size": 10},
             "def_repairs": {"page": 3, "x": 95, "y": 162, "w": 14, "h": 14, "size": 10},
             "def_other2": {"page": 3, "x": 101, "y": 288, "w": 14, "h": 14, "size": 10},
+        
+            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
         },
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
     },
@@ -959,6 +972,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "def_rental_assistance": {"page": 1, "x": 109, "y": 436, "w": 14, "h": 14, "size": 10},
             "def_bad_notice": {"page": 1, "x": 91, "y": 448, "w": 14, "h": 14, "size": 10},
             "def_other": {"page": 1, "x": 91, "y": 461, "w": 14, "h": 14, "size": 10},
+        
+            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
         },
         "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption area.",
     },
@@ -1088,6 +1103,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "date": {"page": 1, "x": 350, "y": 180, "w": 150, "h": 20, "size": 10},
             # Defense narrative text area — fills the "because:" blank lines
             "defense_narrative": {"page": 1, "x": 36, "y": 210, "w": 540, "h": 350, "size": 9},
+        
+            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
         },
         "notes": "NM 4-907 Answer to Petition for Restitution — single-page form. Overlay fills data fields and pre-fills defense narrative in the 'because:' blank area (lines 1-5).",
     },

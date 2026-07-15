@@ -350,6 +350,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "defense_narrative":
         return _build_defense_narrative(defenses)
     
+    # Handle financial summary for overlay fee waiver forms
+    if key == "financial_summary":
+        return _build_financial_summary(data.get("financial_info", {}))
+    
     # Handle defense checkbox overlay keys
     if key.startswith("def_"):
         # Map aliases for state-specific defense keys
@@ -426,6 +430,62 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         return str(val) if val is not None else None
     
     return None
+
+
+def _build_financial_summary(financial: dict) -> str:
+    """Build a formatted summary of financial data for overlay fee waiver forms."""
+    if not financial:
+        return ""
+    
+    lines = []
+    
+    # Income
+    income = financial.get('monthly_gross_income')
+    if income:
+        lines.append(f"Monthly Gross Income: ${float(income):,.2f}")
+    emp = financial.get('employment_income')
+    if emp:
+        lines.append(f"Employment: ${float(emp):,.2f}")
+    
+    # Household
+    adults = financial.get('household_adults', 1)
+    children = financial.get('household_children', 0)
+    lines.append(f"Household: {adults} adult(s), {children} child(ren)")
+    
+    # Benefits
+    benefits = []
+    if financial.get('receives_snap'): benefits.append('SNAP')
+    if financial.get('receives_ssi'): benefits.append('SSI')
+    if financial.get('receives_medicaid'): benefits.append('Medicaid')
+    if financial.get('receives_tanf'): benefits.append('TANF')
+    if financial.get('receives_section8'): benefits.append('Section 8')
+    if benefits:
+        lines.append(f"Public Benefits: {', '.join(benefits)}")
+    
+    # Expenses
+    rent = financial.get('rent_or_mortgage')
+    if rent:
+        lines.append(f"Rent/Mortgage: ${float(rent):,.2f}")
+    total_exp = financial.get('total_monthly_expenses')
+    if total_exp:
+        lines.append(f"Total Monthly Expenses: ${float(total_exp):,.2f}")
+    
+    # Assets
+    cash_val = financial.get('cash_on_hand')
+    if cash_val:
+        lines.append(f"Cash on Hand: ${float(cash_val):,.2f}")
+    checking = financial.get('checking_balance')
+    if checking:
+        lines.append(f"Checking: ${float(checking):,.2f}")
+    savings = financial.get('savings_balance')
+    if savings:
+        lines.append(f"Savings: ${float(savings):,.2f}")
+    vehicle = financial.get('vehicle_make_model')
+    if vehicle:
+        vehicle_val = financial.get('vehicle_value')
+        lines.append(f"Vehicle: {vehicle} (${float(vehicle_val):,.2f})" if vehicle_val else f"Vehicle: {vehicle}")
+    
+    return '\n'.join(lines)
 
 
 def _build_defense_narrative(defenses: dict) -> str:
