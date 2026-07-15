@@ -112,6 +112,20 @@ class Preferences(BaseModel):
     needs_filing_fee_waiver: bool = False
     has_eviction_defense_attorney: bool = False
     additional_notes: Optional[str] = None
+    # Motions
+    needs_continuance: bool = False
+    continuance_reason: Optional[str] = None
+    needs_emergency_stay: bool = False
+    emergency_stay_reason: Optional[str] = None
+    facing_writ_possession: bool = False
+    filing_bankruptcy: bool = False
+    bankruptcy_case_number: Optional[str] = None
+    bankruptcy_court: Optional[str] = None
+    bankruptcy_chapter: Optional[str] = None
+    bankruptcy_filing_date: Optional[str] = None
+    bankruptcy_attorney_name: Optional[str] = None
+    bankruptcy_attorney_phone: Optional[str] = None
+    bankruptcy_attorney_email: Optional[str] = None
 
 
 class CompleteIntake(BaseModel):

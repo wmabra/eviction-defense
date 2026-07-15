@@ -1,18 +1,28 @@
 """
 PDF Document Generator — produces the complete self-help paperwork packet.
 
-Generates up to 11 documents from confirmed customer data:
+Generates up to 16 documents from confirmed customer data:
   01. Cover Page & Document Index
-  02. Filing Checklist (state-specific)
-  03. Court Hearing Checklist
-  04. Hearing Script — What to Say in Court (personalized)
-  05. Fee Waiver Instructions (state-specific)
-  06. E-Filing Instructions (state-specific)
-  07. Rental Assistance Resource Sheet (county-specific)
+  02. Emergency Action Plan
+  03. Eviction Process Timeline (state-specific)
+  04. Defenses Explained (plain-English guide)
+  05. Evidence Gathering Guide
+  06. Income & Expense Worksheet
+  07. Filing Checklist (state-specific)
+  08. Court Hearing Checklist
+  09. Hearing Script — What to Say in Court (personalized)
+  10. Rental Assistance Resource Sheet (county-specific)
+  --- Always-present motions ---
+  11. Motion for Hearing (state-specific)
   --- Conditional documents (appended when applicable) ---
-  08. Landlord Payment-Plan Letter
-  09. Hardship / Extension Letter
-  10. Motion to Determine Rent
+  12. Demand Letter to Landlord
+  13. Motion to Determine Rent
+  14. Landlord Payment-Plan Letter
+  15. Hardship / Extension Letter
+  16. Motion of Continuance (state-specific)
+  17. Emergency Motion to Stay Eviction (state-specific)
+  18. Emergency Motion to Stay Writ of Possession (state-specific)
+  19. Notice of Automatic Stay — Bankruptcy (federal)
 
 Court answer form and fee waiver form are filled via form_filler.py
 using each state's official court PDF for guaranteed court acceptance.
@@ -36,6 +46,95 @@ from reportlab.platypus import (
 from reportlab.pdfgen import canvas
 
 logger = logging.getLogger(__name__)
+
+
+# ── State-specific court captions & terminology ──
+
+STATE_COURT_CAPTIONS = {
+    "FL": "IN THE COUNTY COURT, IN AND FOR {county} COUNTY, FLORIDA",
+    "CA": "SUPERIOR COURT OF THE STATE OF CALIFORNIA, COUNTY OF {county}",
+    "TX": "IN THE JUSTICE COURT, {county} COUNTY, TEXAS",
+    "GA": "IN THE MAGISTRATE COURT OF {county} COUNTY, GEORGIA",
+    "IL": "IN THE CIRCUIT COURT OF {county} COUNTY, ILLINOIS",
+    "MI": "IN THE DISTRICT COURT, {county} COUNTY, MICHIGAN",
+    "NV": "IN THE JUSTICE COURT, {county} TOWNSHIP, NEVADA",
+    "OR": "IN THE CIRCUIT COURT OF THE STATE OF OREGON, COUNTY OF {county}",
+    "MN": "IN THE DISTRICT COURT, {county} COUNTY, MINNESOTA",
+    "CO": "IN THE COUNTY COURT, {county} COUNTY, COLORADO",
+    "CT": "IN THE HOUSING COURT, {county} JUDICIAL DISTRICT, CONNECTICUT",
+    "RI": "IN THE DISTRICT COURT, {county} COUNTY, RHODE ISLAND",
+    "SC": "IN THE MAGISTRATES COURT, {county} COUNTY, SOUTH CAROLINA",
+    "TN": "IN THE GENERAL SESSIONS COURT, {county} COUNTY, TENNESSEE",
+    "LA": "IN THE {court_name} COURT, PARISH OF {county}, LOUISIANA",
+    "AR": "IN THE DISTRICT COURT, {county} COUNTY, ARKANSAS",
+    "AZ": "IN THE JUSTICE COURT, {county} COUNTY, ARIZONA",
+    "VA": "IN THE GENERAL DISTRICT COURT, {county} COUNTY, VIRGINIA",
+    "MA": "IN THE HOUSING COURT, {county} DIVISION, MASSACHUSETTS",
+    "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
+}
+
+WRIT_TERMS = {
+    "FL": "Writ of Possession",
+    "CA": "Writ of Possession",
+    "TX": "Writ of Possession",
+    "GA": "Writ of Possession",
+    "IL": "Order of Possession",
+    "MI": "Order of Eviction",
+    "NV": "Order for Summary Eviction",
+    "OR": "Notice of Restitution",
+    "MN": "Writ of Recovery",
+    "CO": "Writ of Restitution",
+    "CT": "Execution",
+    "RI": "Execution for Possession",
+    "SC": "Writ of Ejectment",
+    "TN": "Writ of Possession",
+    "LA": "Warrant of Eviction",
+    "AR": "Writ of Possession",
+    "AZ": "Writ of Restitution",
+    "VA": "Writ of Possession",
+    "MA": "Execution",
+    "NM": "Writ of Restitution",
+}
+
+EVICTION_LAW_CHAPTERS = {
+    "FL": "Florida Statutes Chapter 83",
+    "CA": "California Code of Civil Procedure § 1161 et seq.",
+    "TX": "Texas Property Code Chapter 24",
+    "GA": "O.C.G.A. Title 44, Chapter 7",
+    "IL": "735 ILCS 5, Article IX (Forcible Entry and Detainer)",
+    "MI": "MCL 600.5701 et seq. (Summary Proceedings)",
+    "NV": "NRS Chapter 40 (Forcible Entry and Unlawful Detainer)",
+    "OR": "ORS Chapter 105 (Forcible Entry and Detainer)",
+    "MN": "Minnesota Statutes Chapter 504B",
+    "CO": "C.R.S. Title 13, Article 40 (Forcible Entry and Detainer)",
+    "CT": "Connecticut General Statutes Chapter 832 (Summary Process)",
+    "RI": "R.I. Gen. Laws Chapter 34-18 (Residential Landlord and Tenant Act)",
+    "SC": "S.C. Code Ann. Title 27, Chapter 37 (Ejectment)",
+    "TN": "Tennessee Code Annotated § 29-18-101 et seq.",
+    "LA": "Louisiana Code of Civil Procedure, Articles 4701-4735",
+    "AR": "Arkansas Code Annotated § 18-60-301 et seq.",
+    "AZ": "A.R.S. Title 33, Chapter 10 (Forcible Entry and Detainer)",
+    "VA": "Virginia Code § 8.01-124 et seq. (Unlawful Detainer)",
+    "MA": "M.G.L. Chapter 239 (Summary Process)",
+    "NM": "NMSA 1978 § 35-10-1 et seq. (Forcible Entry and Detainer)",
+}
+
+
+def _court_caption(state: str, county: str, court_name: str = "") -> str:
+    """Generate the correct court caption header for a state."""
+    template = STATE_COURT_CAPTIONS.get(state.upper(),
+        "IN THE COURT OF {county} COUNTY")
+    return template.format(county=county or "[COUNTY]", court_name=court_name or "[COURT]")
+
+
+def _writ_term(state: str) -> str:
+    """Get the correct term for a post-judgment eviction order."""
+    return WRIT_TERMS.get(state.upper(), "Writ of Possession")
+
+
+def _eviction_law(state: str) -> str:
+    """Get the primary eviction law citation for a state."""
+    return EVICTION_LAW_CHAPTERS.get(state.upper(), "applicable state law")
 
 
 def generate_packet(case_data: dict, output_dir: str) -> dict:
@@ -146,6 +245,43 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
         hardship_path = os.path.join(output_dir, f"{cond_seq:02d}_hardship_letter.pdf")
         _generate_hardship_letter(base, hardship_path)
         paths["hardship_letter"] = hardship_path
+
+    # ── New Motions (5 from competitive gap analysis) ──
+    pref = base.get("preferences", {})
+
+    # Motion for Hearing — always generated (tenant's right to be heard)
+    cond_seq += 1
+    hearing_motion_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_for_hearing.pdf")
+    _generate_motion_for_hearing(base, hearing_motion_path)
+    paths["motion_for_hearing"] = hearing_motion_path
+
+    # Motion of Continuance — if tenant needs to push back a hearing date
+    if pref.get("needs_continuance"):
+        cond_seq += 1
+        continuance_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_of_continuance.pdf")
+        _generate_motion_of_continuance(base, continuance_path)
+        paths["motion_of_continuance"] = continuance_path
+
+    # Emergency Motion to Stay Eviction — pre-judgment emergency stay
+    if pref.get("needs_emergency_stay"):
+        cond_seq += 1
+        stay_eviction_path = os.path.join(output_dir, f"{cond_seq:02d}_emergency_motion_stay_eviction.pdf")
+        _generate_emergency_motion_stay_eviction(base, stay_eviction_path)
+        paths["emergency_motion_stay_eviction"] = stay_eviction_path
+
+    # Emergency Motion to Stay Writ — post-judgment, facing lockout
+    if pref.get("facing_writ_possession"):
+        cond_seq += 1
+        stay_writ_path = os.path.join(output_dir, f"{cond_seq:02d}_emergency_motion_stay_writ.pdf")
+        _generate_emergency_motion_stay_writ(base, stay_writ_path)
+        paths["emergency_motion_stay_writ"] = stay_writ_path
+
+    # Notice of Automatic Stay — Bankruptcy
+    if pref.get("filing_bankruptcy"):
+        cond_seq += 1
+        bankruptcy_path = os.path.join(output_dir, f"{cond_seq:02d}_notice_automatic_stay_bankruptcy.pdf")
+        _generate_notice_automatic_stay_bankruptcy(base, bankruptcy_path)
+        paths["notice_automatic_stay_bankruptcy"] = bankruptcy_path
 
     # Cover page — generated last so it knows all included documents
     cover_path = os.path.join(output_dir, "01_cover_page.pdf")
@@ -1717,6 +1853,573 @@ def _generate_demand_letter(data: dict, output_path: str):
     doc.build(elements)
 
 
+# ======================== MOTION FOR HEARING ========================
+
+def _generate_motion_for_hearing(data: dict, output_path: str):
+    """Generate a state-specific Motion for Hearing — ensures tenant gets their day in court."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    state = data.get("state", "FL").upper()
+    county = p.get("county", "[COUNTY]")
+    today = date.today().strftime("%B %d, %Y")
+    caption = _court_caption(state, county, c.get("court_name", ""))
+
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
+        f"vs.<br/>"
+        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("MOTION FOR HEARING", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(f"Date: {today}", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph(
+        f"COMES NOW the Defendant, {p.get('full_name', '[DEFENDANT]')}, appearing pro se, "
+        f"and respectfully moves this Honorable Court to schedule a hearing in the above-captioned "
+        f"matter, and in support thereof states as follows:", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    facts = [
+        f"1. The Defendant is the tenant residing at {p.get('property_address', '[ADDRESS]')}, "
+        f"{p.get('property_city', '')}, {state}.",
+        f"2. The Plaintiff, {l.get('landlord_name', '[LANDLORD]')}, is the landlord/owner of the subject property.",
+        f"3. The Defendant has received an eviction notice and/or summons regarding the property "
+        f"and wishes to exercise the right to be heard on all matters related to this dispute.",
+        f"4. The Defendant requests that this Court schedule a hearing in accordance with "
+        f"{_eviction_law(state)} so that the Defendant may present defenses, evidence, "
+        f"and testimony regarding the allegations made by the Plaintiff.",
+        f"5. The Defendant seeks to ensure due process and a full and fair opportunity to be "
+        f"heard on all matters related to this eviction dispute, including but not limited to "
+        f"the amount of rent allegedly owed, the condition of the premises, and any defenses "
+        f"available under {state} law.",
+        f"6. The Defendant is willing to appear at any hearing scheduled by this Court at a time "
+        f"and date convenient to the Court's calendar.",
+    ]
+    for fact in facts:
+        elements.append(Paragraph(fact, S["Body"]))
+        elements.append(Spacer(1, 4))
+
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        f"WHEREFORE, the Defendant, {p.get('full_name', '[DEFENDANT]')}, respectfully requests "
+        f"that this Honorable Court schedule a hearing in this matter at the earliest possible date, "
+        f"grant the Defendant an opportunity to present evidence and argument, and for such other "
+        f"and further relief as the Court deems just and proper.", S["Body"]))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("Respectfully submitted,", S["Body"]))
+    elements.append(Spacer(1, 18))
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '[DEFENDANT]')}", S["Body"]))
+    elements.append(Paragraph(f"Address: {p.get('property_address', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 12))
+
+    # Certificate of Service
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Hearing was "
+        f"delivered to {l.get('landlord_name', '[PLAINTIFF]')} "
+        f"on ______, by ☐ Hand Delivery ☐ U.S. Mail ☐ Email.", S["BodySmall"]))
+
+    doc.build(elements)
+
+
+# ======================== MOTION OF CONTINUANCE ========================
+
+def _generate_motion_of_continuance(data: dict, output_path: str):
+    """Generate a state-specific Motion for Continuance — to push back a hearing date."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    pref = data.get("preferences", {})
+    state = data.get("state", "FL").upper()
+    county = p.get("county", "[COUNTY]")
+    today = date.today().strftime("%B %d, %Y")
+    caption = _court_caption(state, county, c.get("court_name", ""))
+    reason = pref.get("continuance_reason", "the need for additional time to prepare for the hearing")
+
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
+        f"vs.<br/>"
+        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"Case No.: {c.get('case_number', '[CASE NO.]')}<br/>"
+        f"Division: ______", S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("DEFENDANT'S MOTION FOR CONTINUANCE", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(
+        f"COMES NOW, {p.get('full_name', '[DEFENDANT]')}, Defendant in the above-styled matter, "
+        f"and respectfully moves this Court for a continuance of the hearing currently scheduled "
+        f"in this eviction proceeding, and in support thereof states as follows:", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    facts = [
+        f"1. The Defendant is {p.get('full_name', '[TENANT]')}, residing at "
+        f"{p.get('property_address', '[ADDRESS]')}, {p.get('property_city', '')}, {state}. "
+        f"The Defendant is the tenant in an eviction action brought by Plaintiff "
+        f"{l.get('landlord_name', '[LANDLORD]')}.",
+        f"2. A hearing in this matter is currently scheduled for ______ at ______ (time).",
+        f"3. The Defendant respectfully requests a continuance of the scheduled hearing for "
+        f"the following reasons: {reason}.",
+        f"4. The Defendant needs additional time to: (check all that apply)",
+        f"&nbsp;&nbsp;&nbsp;☐ Secure legal representation or consult with an attorney",
+        f"&nbsp;&nbsp;&nbsp;☐ Gather necessary documents and evidence to present to the Court",
+        f"&nbsp;&nbsp;&nbsp;☐ Arrange for funds to pay the amount owed or negotiate a payment arrangement",
+        f"&nbsp;&nbsp;&nbsp;☐ Address personal or family circumstances that prevent readiness for the hearing",
+        f"&nbsp;&nbsp;&nbsp;☐ Other: ________________________________________________",
+        f"5. The Defendant is not seeking this continuance for purposes of delay or to prejudice "
+        f"the Plaintiff, but rather to ensure adequate time to prepare a proper response and "
+        f"defense to the eviction action and to address the circumstances giving rise to this matter.",
+        f"6. The Defendant respectfully requests that this Court grant a continuance to a date "
+        f"approximately _____ days from the current hearing date, or to such other date as the "
+        f"Court deems appropriate.",
+        f"7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
+        f"motion by: _________ on _________ (date), and the Plaintiff's position on this motion "
+        f"is: ☐ Consents ☐ Does not oppose ☐ Opposes ☐ Unknown.",
+    ]
+    for fact in facts:
+        elements.append(Paragraph(fact, S["Body"]))
+        elements.append(Spacer(1, 4))
+
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
+        f"this Honorable Court grant this Motion for Continuance and reschedule the hearing in "
+        f"this matter to a later date, and for such other and further relief as this Court deems "
+        f"just and proper.", S["Body"]))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Spacer(1, 14))
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(p.get('full_name', '[DEFENDANT]'), S["Body"]))
+    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
+    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 12))
+
+    # Certificate of Service
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Continuance "
+        f"was delivered to {l.get('landlord_name', '[PLAINTIFF]')} "
+        f"by ☐ Hand Delivery ☐ U.S. Mail ☐ Email on this _____ day of __________, 20____.",
+        S["BodySmall"]))
+
+    doc.build(elements)
+
+
+# ======================== EMERGENCY MOTION TO STAY EVICTION (PRE-JUDGMENT) ========================
+
+def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
+    """Generate Emergency Motion to Stay Eviction — pre-judgment emergency stay."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    pref = data.get("preferences", {})
+    state = data.get("state", "FL").upper()
+    county = p.get("county", "[COUNTY]")
+    today = date.today().strftime("%B %d, %Y")
+    caption = _court_caption(state, county, c.get("court_name", ""))
+    stay_reason = pref.get("emergency_stay_reason",
+        "Defendant has experienced unforeseen financial difficulties and requires additional "
+        "time to address rental arrears, secure rental assistance, or make alternative housing "
+        "arrangements.")
+
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
+        f"vs.<br/>"
+        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("EMERGENCY MOTION TO STAY EVICTION", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(
+        f"COMES NOW the Defendant, {p.get('full_name', '[DEFENDANT]')}, appearing pro se, "
+        f"and respectfully moves this Honorable Court for an emergency order staying the eviction "
+        f"proceedings currently pending against Defendant, and in support thereof states as follows:",
+        S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    sections = [
+        ("1. PARTIES AND JURISDICTION", [
+            f"Defendant {p.get('full_name', '[DEFENDANT]')} is the tenant residing at "
+            f"{p.get('property_address', '[ADDRESS]')}, {p.get('property_city', '')}, {state}. "
+            f"Plaintiff {l.get('landlord_name', '[LANDLORD]')} is the landlord of the subject property. "
+            f"This Court has jurisdiction over this eviction matter pursuant to {_eviction_law(state)}.",
+        ]),
+        ("2. GROUNDS FOR EMERGENCY STAY", [
+            f"a. Financial Hardship and Good Faith Effort: {stay_reason}",
+            f"b. Need for Additional Time: Defendant requires additional time to arrange payment, "
+            f"explore rental assistance programs, or secure alternative housing. An immediate eviction "
+            f"would cause substantial hardship and potential homelessness.",
+            f"c. Preservation of the Status Quo: A temporary stay will preserve the status quo and "
+            f"allow Defendant the opportunity to present a full defense to the Court, explore "
+            f"settlement options with Plaintiff, and avoid the irreparable harm of displacement "
+            f"without adequate time to prepare.",
+            f"d. Minimal Prejudice to Plaintiff: Granting a brief stay will not substantially "
+            f"prejudice Plaintiff. Defendant is committed to maintaining the property in good "
+            f"condition during any stay period. The Court may impose conditions on the stay, "
+            f"including requiring Defendant to pay ongoing rent or deposit funds into the court "
+            f"registry, to protect Plaintiff's interests.",
+        ]),
+        ("3. IRREPARABLE HARM", [
+            f"Without an emergency stay, Defendant faces the imminent threat of displacement "
+            f"from the home. Defendant has limited resources and would suffer irreparable harm, "
+            f"including potential homelessness, loss of personal property, disruption of employment, "
+            f"and severe emotional and financial distress. The harm to Defendant far outweighs any "
+            f"temporary inconvenience to Plaintiff.",
+        ]),
+        ("4. RELIEF REQUESTED", [
+            f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
+            f"this Honorable Court:",
+            f"A. Grant an emergency stay of all eviction proceedings for a period of _____ days, "
+            f"or such other period as the Court deems just and appropriate;",
+            f"B. Schedule an expedited hearing on this Motion to allow Defendant to present evidence "
+            f"and explore resolution options;",
+            f"C. Impose any conditions on the stay that the Court deems appropriate to protect the "
+            f"interests of both parties;",
+            f"D. Grant such other and further relief as the Court deems just and proper.",
+        ]),
+    ]
+
+    for heading, items in sections:
+        elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
+        for item in items:
+            elements.append(Paragraph(item, S["Body"]))
+            elements.append(Spacer(1, 3))
+        elements.append(Spacer(1, 6))
+
+    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Spacer(1, 14))
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(p.get('full_name', '[DEFENDANT]'), S["Body"]))
+    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
+    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Paragraph("Pro Se Defendant", S["BodySmall"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
+        f"Eviction was furnished to {l.get('landlord_name', '[PLAINTIFF]')} "
+        f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
+        S["BodySmall"]))
+
+    doc.build(elements)
+
+
+# ======================== EMERGENCY MOTION TO STAY WRIT (POST-JUDGMENT) ========================
+
+def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
+    """Generate Emergency Motion to Stay Writ of Possession — post-judgment lockout prevention."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    state = data.get("state", "FL").upper()
+    county = p.get("county", "[COUNTY]")
+    today = date.today().strftime("%B %d, %Y")
+    caption = _court_caption(state, county, c.get("court_name", ""))
+    writ_term = _writ_term(state)
+    eviction_law = _eviction_law(state)
+
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
+        f"vs.<br/>"
+        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph(f"EMERGENCY MOTION TO STAY THE {writ_term.upper()}", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(f"Date: {today}", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph(
+        f"COMES NOW, the Defendant, {p.get('full_name', '[DEFENDANT]')}, appearing pro se, "
+        f"and respectfully moves this Honorable Court for an Emergency Stay of the {writ_term} "
+        f"issued in the above-styled case, and in support thereof states as follows:", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    sections = [
+        ("1. JURISDICTION AND PARTIES", [
+            f"This Court has jurisdiction over this matter pursuant to {eviction_law}. "
+            f"Plaintiff {l.get('landlord_name', '[LANDLORD]')} is the landlord of the subject "
+            f"property located at {p.get('property_address', '[ADDRESS]')}. "
+            f"Defendant {p.get('full_name', '[DEFENDANT]')} is the tenant currently residing "
+            f"at the subject property.",
+        ]),
+        ("2. GROUNDS FOR EMERGENCY STAY", [
+            f"a. Immediate and Irreparable Harm: Defendant will suffer immediate and irreparable "
+            f"harm if the eviction proceeds under the {writ_term} without additional time. "
+            f"Defendant requires additional time to secure alternative housing, arrange for the "
+            f"safe relocation of personal belongings, and make necessary arrangements for family "
+            f"members and dependents who reside at the property. Immediate eviction would result "
+            f"in homelessness and the potential loss or damage of personal property.",
+            f"b. Good Faith Effort to Resolve: Defendant has been working in good faith to address "
+            f"the rental arrears and communicate with Plaintiff. Defendant seeks additional time "
+            f"to arrange payment, explore available resources, and work toward a resolution that "
+            f"would allow Defendant to either cure the default or transition out of the property "
+            f"in an orderly manner.",
+            f"c. Equitable Considerations: A brief stay of the {writ_term} would serve the "
+            f"interests of justice and equity. The stay would provide Defendant with a reasonable "
+            f"opportunity to vacate the premises voluntarily, preserve the dignity of all parties, "
+            f"and avoid the trauma and disruption associated with a forced lockout. Granting a stay "
+            f"would not prejudice Plaintiff's rights, as Plaintiff retains the judgment and the right "
+            f"to possession, and the stay would merely delay execution for a limited period.",
+        ]),
+        ("3. RELIEF REQUESTED", [
+            f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
+            f"this Honorable Court grant this Emergency Motion to Stay the {writ_term} and:",
+            f"a. Issue an immediate stay of the {writ_term} to prevent the scheduled eviction and lockout;",
+            f"b. Grant Defendant additional time of _____ days to vacate the premises voluntarily or "
+            f"to cure the default;",
+            f"c. Schedule an emergency hearing on this Motion at the earliest possible date;",
+            f"d. Grant such other and further relief as this Court deems just and proper.",
+        ]),
+        ("4. REQUEST FOR EXPEDITED CONSIDERATION", [
+            f"Due to the emergency nature of this matter and the imminent threat of eviction, "
+            f"Defendant respectfully requests that this Motion be considered on an expedited basis "
+            f"and that the Court schedule an emergency hearing as soon as practicable.",
+        ]),
+    ]
+
+    for heading, items in sections:
+        elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
+        for item in items:
+            elements.append(Paragraph(item, S["Body"]))
+            elements.append(Spacer(1, 3))
+        elements.append(Spacer(1, 6))
+
+    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Spacer(1, 14))
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '[DEFENDANT]')}", S["Body"]))
+    elements.append(Paragraph(f"Address: {p.get('property_address', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
+        f"the {writ_term} has been furnished to {l.get('landlord_name', '[PLAINTIFF]')} "
+        f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
+        S["BodySmall"]))
+
+    doc.build(elements)
+
+
+# ======================== NOTICE OF AUTOMATIC STAY — BANKRUPTCY ========================
+
+def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
+    """Generate Notice of Automatic Stay Due to Bankruptcy Filing (Federal — 11 U.S.C. § 362)."""
+    doc = SimpleDocTemplate(output_path, pagesize=letter,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch)
+    S = _get_styles()
+    elements = []
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    pref = data.get("preferences", {})
+    state = data.get("state", "FL").upper()
+    county = p.get("county", "[COUNTY]")
+    today = date.today().strftime("%B %d, %Y")
+    caption = _court_caption(state, county, c.get("court_name", ""))
+
+    bk_case = pref.get("bankruptcy_case_number", "[PENDING — FILE IMMEDIATELY]")
+    bk_court = pref.get("bankruptcy_court", "United States Bankruptcy Court")
+    bk_chapter = pref.get("bankruptcy_chapter", "7")
+    bk_date = pref.get("bankruptcy_filing_date", "[FILE DATE]")
+    bk_attorney = pref.get("bankruptcy_attorney_name", "Pro Se")
+    bk_atty_phone = pref.get("bankruptcy_attorney_phone", "")
+    bk_atty_email = pref.get("bankruptcy_attorney_email", "")
+
+    elements.append(Paragraph(caption, S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff/Landlord,<br/>"
+        f"vs.<br/>"
+        f"{p.get('full_name', '[DEFENDANT]')}, Defendant/Tenant.", S["Caption"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
+    elements.append(HRFlowable(width="100%", thickness=1))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("NOTICE OF AUTOMATIC STAY<br/>DUE TO BANKRUPTCY FILING", S["FormTitle"]))
+    elements.append(Spacer(1, 12))
+
+    # TO / FROM block
+    elements.append(Paragraph(f"<b>TO:</b> {l.get('landlord_name', '[LANDLORD]')}, Landlord", S["Body"]))
+    elements.append(Paragraph(f"<b>AND TO:</b> The Court", S["Body"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(f"<b>FROM:</b> {p.get('full_name', '[TENANT]')}, Tenant", S["Body"]))
+    elements.append(Paragraph(f"<b>ADDRESS:</b> {p.get('property_address', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"<b>PHONE:</b> {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"<b>EMAIL:</b> {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f"<b>PROPERTY:</b> {p.get('property_address', '')}", S["Body"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(
+        f"PLEASE TAKE NOTICE that the undersigned tenant, {p.get('full_name', '[TENANT]')}, "
+        f"has filed a voluntary petition for bankruptcy relief under Title 11 of the United States "
+        f"Code in the United States Bankruptcy Court.", S["Body"]))
+    elements.append(Spacer(1, 12))
+
+    # Bankruptcy case info
+    elements.append(Paragraph("<b>1. BANKRUPTCY FILING INFORMATION</b>", S["BodyBold"]))
+    elements.append(Paragraph(f"Debtor Name: {p.get('full_name', '[TENANT]')}", S["Body"]))
+    elements.append(Paragraph(f"Bankruptcy Court: {bk_court}", S["Body"]))
+    elements.append(Paragraph(f"Case Number: {bk_case}", S["Body"]))
+    elements.append(Paragraph(f"Chapter: {bk_chapter}", S["Body"]))
+    elements.append(Paragraph(f"Date of Filing: {bk_date}", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>2. AUTOMATIC STAY IN EFFECT</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"Pursuant to 11 U.S.C. § 362(a), the filing of the bankruptcy petition operates as an "
+        f"automatic stay of any judicial, administrative, or other action or proceeding against "
+        f"the debtor or the debtor's property, including but not limited to the commencement or "
+        f"continuation of eviction proceedings, enforcement of judgments, and any act to obtain "
+        f"possession of property from the debtor.", S["Body"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        f"The automatic stay took effect immediately upon the filing of the bankruptcy petition. "
+        f"This stay applies to all collection activities, including the eviction action concerning "
+        f"the property located at {p.get('property_address', '')}.", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>3. EFFECT ON PENDING EVICTION PROCEEDINGS</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"Any eviction proceedings currently pending against {p.get('full_name', '[TENANT]')} for "
+        f"the above-referenced property are automatically stayed and must be immediately suspended. "
+        f"No further action may be taken to prosecute the eviction, obtain possession of the "
+        f"property, or otherwise proceed against the debtor or the property without first obtaining "
+        f"relief from the automatic stay from the United States Bankruptcy Court.", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>4. NOTICE TO LANDLORD</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"{l.get('landlord_name', '[LANDLORD]')}, as landlord and creditor in this matter, is "
+        f"hereby notified of the bankruptcy filing and the automatic stay. Any willful violation "
+        f"of the automatic stay may result in sanctions, including damages and attorney's fees, "
+        f"pursuant to 11 U.S.C. § 362(k). The landlord is listed as a creditor in the bankruptcy "
+        f"schedules. All communications regarding this matter should be directed to:", S["Body"]))
+    elements.append(Spacer(1, 6))
+    if bk_attorney and bk_attorney != "Pro Se":
+        elements.append(Paragraph(f"<b>Bankruptcy Attorney:</b> {bk_attorney}", S["Body"]))
+        if bk_atty_phone:
+            elements.append(Paragraph(f"<b>Phone:</b> {bk_atty_phone}", S["BodySmall"]))
+        if bk_atty_email:
+            elements.append(Paragraph(f"<b>Email:</b> {bk_atty_email}", S["BodySmall"]))
+    else:
+        elements.append(Paragraph(f"<b>Debtor Pro Se:</b> {p.get('full_name', '[TENANT]')}", S["Body"]))
+        elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+        elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>5. RELIEF FROM STAY</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"If the landlord or any other party wishes to proceed with the eviction or take any "
+        f"action against the debtor or the property, they must first file a motion for relief "
+        f"from the automatic stay in the United States Bankruptcy Court where the bankruptcy case "
+        f"is pending. No action may be taken in state court or otherwise until such relief is "
+        f"granted by the bankruptcy court.", S["Body"]))
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph("<b>6. NOTICE TO THE COURT</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"The Court is hereby notified that the defendant/tenant in this eviction action has filed "
+        f"for bankruptcy protection. All proceedings in this eviction matter are stayed by operation "
+        f"of federal law and should be suspended pending further order of the bankruptcy court or "
+        f"relief from the automatic stay.", S["Body"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(
+        f"I hereby certify that the information contained in this Notice is true and correct to the "
+        f"best of my knowledge and belief. I further certify that a bankruptcy petition has been "
+        f"filed in the United States Bankruptcy Court as indicated above, and that the automatic "
+        f"stay under 11 U.S.C. § 362 is currently in effect.", S["Body"]))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph(f"Dated: {today}", S["Body"]))
+    elements.append(Spacer(1, 14))
+    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
+    elements.append(Paragraph(p.get('full_name', '[TENANT]'), S["Body"]))
+    elements.append(Paragraph("Printed Name", S["BodySmall"]))
+    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
+    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
+    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.append(Spacer(1, 14))
+
+    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Notice of Automatic Stay "
+        f"Due to Bankruptcy Filing was furnished to:", S["BodySmall"]))
+    elements.append(Paragraph(
+        f"• {l.get('landlord_name', '[LANDLORD]')}, Landlord — "
+        f"☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email", S["BodySmall"]))
+    elements.append(Paragraph(
+        f"• Clerk of Court — ☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email",
+        S["BodySmall"]))
+    elements.append(Paragraph("• Landlord's Attorney (if applicable) — ☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email",
+        S["BodySmall"]))
+
+    doc.build(elements)
+
+
 def _generate_cover_page(data: dict, paths: dict, output_path: str):
     """Generate a cover page with document index for the packet."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
@@ -1765,17 +2468,24 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
         "hearing_script": ("Hearing Script", "What to say to the judge — personalized for your case"),
         "fee_waiver": ("Fee Waiver Instructions", "How to file your case for free if you can't afford the fee"),
         "rental_assistance": ("Rental Assistance Resources", "Local organizations that can help with rent and housing"),
+        "motion_for_hearing": ("Motion for Hearing", "Formal request to the court to schedule your hearing"),
         "demand_letter": ("Demand Letter to Landlord", "Formal written demand for repairs — critical for building your case"),
+        "motion_to_determine_rent": ("Motion to Determine Rent", "Court motion to dispute the amount of rent claimed"),
         "payment_plan_letter": ("Payment Plan Letter", "Formal request to your landlord to set up a payment plan"),
         "hardship_letter": ("Hardship Letter", "Request for more time due to financial hardship"),
-        "motion_to_determine_rent": ("Motion to Determine Rent", "Court motion to dispute the amount of rent claimed"),
+        "motion_of_continuance": ("Motion of Continuance", "Request to reschedule your hearing to a later date"),
+        "emergency_motion_stay_eviction": ("Emergency Motion to Stay Eviction", "Emergency request to pause eviction proceedings (pre-judgment)"),
+        "emergency_motion_stay_writ": ("Emergency Motion to Stay Writ of Possession", "Emergency request to stop lockout (post-judgment)"),
+        "notice_automatic_stay_bankruptcy": ("Notice of Automatic Stay — Bankruptcy", "Federal bankruptcy filing notice — stops all proceedings under 11 U.S.C. § 362"),
     }
 
     ALWAYS_DOCS = ["emergency_action_plan", "eviction_timeline", "defenses_explained",
                    "evidence_guide", "income_expense_worksheet", "filing_checklist",
                    "court_checklist", "hearing_script", "fee_waiver",
-                   "rental_assistance"]
-    COND_DOCS = ["demand_letter", "motion_to_determine_rent", "payment_plan_letter", "hardship_letter"]
+                   "rental_assistance", "motion_for_hearing"]
+    COND_DOCS = ["demand_letter", "motion_to_determine_rent", "payment_plan_letter",
+                 "hardship_letter", "motion_of_continuance", "emergency_motion_stay_eviction",
+                 "emergency_motion_stay_writ", "notice_automatic_stay_bankruptcy"]
 
     doc_num = 1
     for key in ALWAYS_DOCS:

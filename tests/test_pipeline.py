@@ -64,6 +64,7 @@ def test_full_pipeline():
         },
         "rent_payment": {
             "monthly_rent": 1425.00,
+            "rent_due_day": 1,
             "agree_with_amount": False,
             "amount_tenant_believes_owed": 1425.00,
             "why_disagree": "I paid half before the notice.",
