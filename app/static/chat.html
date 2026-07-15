@@ -9,40 +9,45 @@
 body{font-family:-apple-system,sans-serif;background:#f8f9fa;display:flex;flex-direction:column;height:100vh}
 .header{background:#1a1a2e;color:#fff;padding:14px 20px;text-align:center;font-size:16px;font-weight:600}
 .header span{color:#e94560}
+.served-states{font-size:10px;color:#888;margin-top:2px}
 .chat-container{flex:1;overflow-y:auto;padding:20px;max-width:700px;width:100%;margin:0 auto}
-.message{max-width:80%;margin-bottom:16px;padding:12px 16px;border-radius:12px;line-height:1.5;font-size:15px}
+.message{max-width:80%;margin-bottom:12px;padding:10px 14px;border-radius:12px;line-height:1.45;font-size:14px}
 .message.user{background:#e94560;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
 .message.ai{background:#e8e8f0;color:#1a1a2e;border-bottom-left-radius:4px}
-.message.loading{opacity:0.6}
-.typing{display:flex;gap:6px;padding:12px 16px}
-.typing span{width:8px;height:8px;border-radius:50%;background:#999;animation:bounce 1.4s infinite}
+.typing{display:flex;gap:6px;padding:10px 14px}
+.typing span{width:7px;height:7px;border-radius:50%;background:#999;animation:bounce 1.4s infinite}
 .typing span:nth-child(2){animation-delay:.2s}
 .typing span:nth-child(3){animation-delay:.4s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
-.input-bar{background:#fff;border-top:1px solid #e0e0e0;padding:14px 20px;display:flex;gap:10px}
-.input-bar input{flex:1;padding:12px 16px;border:2px solid #e0e0e0;border-radius:24px;font-size:15px;outline:none}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+.input-bar{background:#fff;border-top:1px solid #e0e0e0;padding:12px 20px;display:flex;gap:10px}
+.input-bar input{flex:1;padding:10px 14px;border:2px solid #e0e0e0;border-radius:20px;font-size:14px;outline:none}
 .input-bar input:focus{border-color:#e94560}
-.input-bar button{background:#e94560;color:#fff;border:none;border-radius:24px;padding:12px 24px;font-weight:700;cursor:pointer;font-size:15px}
+.input-bar button{background:#e94560;color:#fff;border:none;border-radius:20px;padding:10px 20px;font-weight:700;cursor:pointer;font-size:14px}
 .input-bar button:disabled{background:#ccc;cursor:not-allowed}
-.eligibility-banner{background:#d4edda;border:2px solid #28a745;border-radius:8px;padding:16px;margin:16px 0;text-align:center}
-.eligibility-banner h3{color:#155724;margin-bottom:4px}
-.eligibility-banner button{background:#28a745;color:#fff;border:none;margin-top:8px;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer}
-.eligibility-banner.rejected{background:#fff3cd;border-color:#ffc107}
-.eligibility-banner.rejected h3{color:#856404}
-.reset-btn{display:block;margin:12px auto;background:none;border:1px solid #ccc;padding:6px 16px;border-radius:12px;font-size:12px;cursor:pointer;color:#888}
+.intake-complete{background:#d4edda;border:2px solid #28a745;border-radius:8px;padding:16px;margin:16px 0;text-align:center}
+.intake-complete h3{color:#155724;margin-bottom:8px}
+.intake-complete .data-preview{text-align:left;font-size:12px;margin:12px 0;color:#555;background:#f8f9fa;padding:12px;border-radius:8px;max-height:300px;overflow-y:auto}
+.intake-complete button{background:#28a745;color:#fff;border:none;margin-top:8px;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer;font-size:15px}
+.intake-complete.ineligible{background:#fff3cd;border-color:#ffc107}
+.intake-complete.ineligible h3{color:#856404}
+.reset-btn{display:block;margin:10px auto;background:none;border:1px solid #ccc;padding:4px 14px;border-radius:12px;font-size:11px;cursor:pointer;color:#888}
+.phase-indicator{text-align:center;font-size:10px;color:#bbb;padding:4px}
 </style>
 </head>
 <body>
-<div class="header">Eviction Defense — <span>AI Intake Chat</span></div>
+<div class="header">
+  Eviction Defense — <span>AI Intake Chat</span>
+  <div class="served-states">Serving AR · AZ · CA · CO · CT · FL · GA · IL · LA · MA · MI · MN · NM · NV · OR · RI · SC · TN · TX · VA</div>
+</div>
 
 <div class="chat-container" id="chat">
   <div class="message ai">
-    Hi, I'm here to help you prepare your eviction defense paperwork for Florida. I'll ask you a few questions to get started — it should only take a couple of minutes.<br><br>
-    First, what's your full name?
+    Hi, I'm here to help you prepare your eviction defense paperwork. I serve tenants in 20 states across the US.<br><br>
+    To get started — what state is your eviction case in? (For example: Florida, Texas, California...)
   </div>
 </div>
 
-<div id="eligibility" style="display:none"></div>
+<div id="intake-status" style="display:none"></div>
 
 <div class="input-bar">
   <input type="text" id="userInput" placeholder="Type your response..." onkeypress="if(event.key==='Enter')sendMessage()">
@@ -50,11 +55,11 @@ body{font-family:-apple-system,sans-serif;background:#f8f9fa;display:flex;flex-d
 </div>
 <button class="reset-btn" onclick="resetChat()">Start Over</button>
 
-<script src="https://js.authorize.net/v3/AcceptUI.js" charset="utf-8"></script>
 <script>
 const API = '/api/v1/chat/send';
 let messages = [];
 let appData = null;
+let caseId = 'CHAT-' + Date.now().toString(36).toUpperCase();
 
 function addMessage(role, text) {
   const div = document.createElement('div');
@@ -94,7 +99,7 @@ async function sendMessage() {
     const resp = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages })
+      body: JSON.stringify({ messages, case_id: caseId })
     });
     const data = await resp.json();
     hideTyping();
@@ -104,9 +109,9 @@ async function sendMessage() {
       messages.push({ role: 'assistant', content: data.message });
     }
 
-    if (data.ready_for_eligibility && data.extracted_data) {
-      appData = data.extracted_data;  // Save for payment
-      showEligibilityButton(data.extracted_data);
+    if (data.ready_for_intake && data.extracted_data) {
+      appData = data.extracted_data;
+      showIntakeComplete(data.extracted_data);
     }
   } catch (e) {
     hideTyping();
@@ -116,166 +121,82 @@ async function sendMessage() {
   btn.disabled = false;
 }
 
-function showEligibilityButton(data) {
-  const el = document.getElementById('eligibility');
+function showIntakeComplete(data) {
+  const el = document.getElementById('intake-status');
   el.style.display = 'block';
+
+  const p = data.personal_info || {};
+  const l = data.landlord_info || {};
+  const c = data.case_details || {};
+  const r = data.rent_payment || {};
+  const defs = data.defenses || {};
+  const pref = data.preferences || {};
+  const fin = data.financial_info || {};
+  const state = data.state || 'FL';
+
+  const checkedDefenses = Object.entries(defs)
+    .filter(([k,v]) => v && v.checked)
+    .map(([k]) => k.replace('def_','').replace(/_/g,' '));
+
   el.innerHTML = `
-    <div class="eligibility-banner">
-      <h3>Ready to proceed!</h3>
-      <p>Please confirm these details before we prepare your packet:</p>
-      <div style="text-align:left;font-size:13px;margin:12px 0;color:#555;background:#f8f9fa;padding:12px;border-radius:8px">
-        <strong>Name:</strong> ${data.full_name || '—'}<br>
-        <strong>Phone:</strong> ${data.phone || '—'}<br>
-        <strong>Email:</strong> ${data.email || '—'}<br>
-        <strong>Property:</strong> ${data.property_address || '—'}<br>
-        <strong>County:</strong> ${data.county || '—'}<br>
-        <strong>Landlord:</strong> ${data.landlord_name || '—'}<br>
-        <strong>Case #:</strong> ${data.case_number || '—'}<br>
-        <strong>Has notice:</strong> ${data.has_eviction_notice ? 'Yes' : 'No'} | <strong>Tenant:</strong> ${data.is_tenant ? 'Yes' : 'No'}<br>
-        <strong>Served:</strong> ${data.received_court_papers ? 'Yes' : 'No'}
+    <div class="intake-complete">
+      <h3>✅ Intake Complete — Ready to Generate Your Packet</h3>
+      <p style="font-size:13px;margin-bottom:8px">Please review the information below:</p>
+      <div class="data-preview">
+        <strong>Name:</strong> ${p.full_name || '—'}<br>
+        <strong>State:</strong> ${state} | <strong>County:</strong> ${p.county || '—'}<br>
+        <strong>Property:</strong> ${p.property_address || '—'}<br>
+        <strong>Phone:</strong> ${p.phone || '—'} | <strong>Email:</strong> ${p.email || '—'}<br>
+        <strong>Landlord:</strong> ${l.landlord_name || '—'}<br>
+        <strong>Case #:</strong> ${c.case_number || '—'} | <strong>Court:</strong> ${c.court_name || '—'}<br>
+        <strong>Rent:</strong> $${r.monthly_rent || '—'}/mo | <strong>Amount Claimed:</strong> $${c.complaint_amount_claimed || '—'}<br>
+        <strong>Defenses:</strong> ${checkedDefenses.length ? checkedDefenses.join(', ') : 'None checked'}<br>
+        <strong>Trial by:</strong> ${pref.trial_by || 'judge'} |
+        <strong>Payment plan:</strong> ${pref.wants_payment_plan ? 'Yes' : 'No'} |
+        <strong>Fee waiver:</strong> ${fin.receives_public_benefits ? 'Yes (benefits)' : (fin.monthly_gross_income ? 'Yes (low income)' : 'No')}<br>
       </div>
-      <p>Your packet includes:</p>
-      <div style="text-align:left;font-size:12px;margin:8px 0;color:#555">
-        📄 Official Court Answer Form (filled)<br>
-        📋 Filing Checklist (step-by-step)<br>
-        🎤 Court Hearing Script (what to say)<br>
-        💸 Fee Waiver Form (save $295)<br>
-        🏛️ Court Hearing Guide<br>
-        ✉️ Landlord Letter<br>
-        💰 Rental Assistance List<br>
-        📱 SMS Court Reminders
-      </div>
-      <p>One-time payment: $395</p>
-      <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
-      <button type="button" class="AcceptUI"
-        data-billingAddressOptions='{"show":false, "required":false}'
-        data-apiLoginID="5KP3u95bQpv"
-        data-clientKey="3jBc8v9fY2xM5wQr"
-        data-acceptUIFormBtnTxt="Pay $395 — Get My Packet"
-        data-acceptUIFormHeaderTxt="Eviction Defense Packet"
-        data-paymentOptions='{"showCreditCard": true, "showBankAccount": false}'
-        data-responseHandler="handlePaymentResponse">
-      </button>
+      <p>Your packet includes: court answer form, fee waiver, filing checklist, hearing script, rental assistance resources, and relevant legal motions — all pre-filled with your information.</p>
+      <p style="font-weight:700;margin-top:10px;font-size:18px">One-time payment: $395</p>
+      <div id="payment-container"></div>
     </div>`;
 
-async function runEligibility() {
-  const btn = document.querySelector('.eligibility-banner button');
-  btn.textContent = 'Checking...';
-  btn.disabled = true;
+  // Save intake data to server
+  saveIntakeData(data, state);
+}
 
+async function saveIntakeData(data, state) {
   try {
-    const resp = await fetch('/api/v1/intake/pre-screen', {
+    const resp = await fetch(`/api/v1/intake/submit?case_id=${caseId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        state: 'FL',
-        county: 'Miami-Dade',
-        is_tenant: true,
-        is_residential: true,
-        received_court_papers: true,
-        has_writ_or_sheriff: false,
-        is_section_8: false,
-        is_active_military: false,
-        has_bankruptcy: false
+        personal_info: data.personal_info || {},
+        landlord_info: data.landlord_info || {},
+        case_details: data.case_details || {},
+        rent_payment: data.rent_payment || {},
+        defenses: data.defenses || {},
+        preferences: data.preferences || {},
+        financial_info: data.financial_info || null,
       })
     });
-    const result = await resp.json();
-    const el = document.querySelector('.eligibility-banner');
-
-    if (result.eligible) {
-      el.className = 'eligibility-banner';
-      el.innerHTML = `<h3>${result.message}</h3>
-        <p>Your paperwork packet: $395</p>
-        <p style="font-size:12px;margin-top:4px">Secure payment via Authorize.net</p>
-        <button type="button" class="AcceptUI"
-          data-billingAddressOptions='{\"show\":false, \"required\":false}'
-          data-apiLoginID="5KP3u95bQpv"
-          data-clientKey="3jBc8v9fY2xM5wQr"
-          data-acceptUIFormBtnTxt="Pay $395 — Get My Packet"
-          data-acceptUIFormHeaderTxt="Eviction Defense Packet"
-          data-paymentOptions='{\"showCreditCard\": true, \"showBankAccount\": false}'
-          data-responseHandler="handlePaymentResponse">
-        </button>`;
-    } else {
-      el.className = 'eligibility-banner rejected';
-      el.innerHTML = `<h3>${result.message}</h3><p style="font-size:13px">${result.reason || ''}</p>`;
+    if (resp.ok) {
+      console.log('Intake data saved for case:', caseId);
     }
   } catch (e) {
-    addMessage('ai', 'Sorry, could not check eligibility. Please try again.');
+    console.error('Failed to save intake:', e);
   }
 }
 
 async function resetChat() {
   messages = [];
+  caseId = 'CHAT-' + Date.now().toString(36).toUpperCase();
   document.getElementById('chat').innerHTML = `
     <div class="message ai">
-      Hi, I'm here to help you prepare your eviction defense paperwork for Florida. I'll ask you a few questions to get started — it should only take a couple of minutes.<br><br>
-      First, what's your full name?
+      Hi, I'm here to help you prepare your eviction defense paperwork. I serve tenants in 20 states across the US.<br><br>
+      To get started — what state is your eviction case in? (For example: Florida, Texas, California...)
     </div>`;
-  document.getElementById('eligibility').style.display = 'none';
-  await fetch('/api/v1/chat/reset', { method: 'POST' });
-}
-
-async function handlePaymentResponse(response) {
-  if (response.messages.resultCode === 'Error') {
-    const errors = response.messages.message.map(m => m.text).join(', ');
-    document.getElementById('eligibility').innerHTML = `
-      <div class="eligibility-banner rejected">
-        <h3>Payment Failed</h3><p>${errors}</p>
-        <button onclick="location.reload()">Try Again</button>
-      </div>`;
-    return;
-  }
-  
-  // Payment successful — send to server
-  document.getElementById('eligibility').innerHTML = `
-    <div class="eligibility-banner"><h3>Processing payment...</h3></div>`;
-  
-  try {
-    const resp = await fetch('/api/v1/payment/charge', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        opaque_data: response.opaqueData,
-        order_id: 'EV-' + Date.now().toString(36).toUpperCase(),
-        customer_email: appData?.email || 'test@example.com',
-        customer_name: appData?.full_name || 'Test Customer',
-        customer_phone: appData?.phone || ''
-      })
-    });
-    
-    const result = await resp.json();
-    if (result.success) {
-      document.getElementById('eligibility').innerHTML = `
-        <div class="eligibility-banner">
-          <h3>Payment Successful!</h3>
-          <p>Transaction ID: ${result.transaction_id}</p>
-          <p>Your eviction defense packet is being generated and downloaded. It includes your official court answer form, filing checklist, hearing guide, landlord letter, and rental assistance resources.</p>
-          <p style="font-size:12px;margin-top:8px">📱 SMS reminders will be sent to ${appData?.phone || 'your phone'}</p>
-        </div>`;
-      
-      // Generate and download the packet
-      const d = appData || {};
-      const downloadUrl = '/api/v1/documents/generate-packet?' +
-        'full_name=' + encodeURIComponent(d.full_name || 'Tenant') +
-        '&county=' + encodeURIComponent(d.county || 'Miami-Dade') +
-        '&property_address=' + encodeURIComponent(d.property_address || '') +
-        '&landlord_name=' + encodeURIComponent(d.landlord_name || '') +
-        '&case_number=' + encodeURIComponent(d.case_number || '') +
-        '&phone=' + encodeURIComponent(d.phone || '') +
-        '&email=' + encodeURIComponent(d.email || '');
-      
-      window.location.href = downloadUrl;
-    } else {
-      throw new Error(resp.status === 402 ? JSON.parse(await resp.text()).detail : 'Payment failed');
-    }
-  } catch(e) {
-    document.getElementById('eligibility').innerHTML = `
-      <div class="eligibility-banner rejected">
-        <h3>Payment Error</h3><p>${e.message}</p>
-        <button onclick="location.reload()">Try Again</button>
-      </div>`;
-  }
+  document.getElementById('intake-status').style.display = 'none';
+  await fetch(`/api/v1/chat/reset?case_id=${caseId}`, { method: 'POST' });
 }
 </script>
 </body>
