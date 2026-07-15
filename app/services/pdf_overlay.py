@@ -235,6 +235,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
     """Overlay text on scanned/non-fillable PDFs using coordinate positions.
     
     Uses position_config from state config to place text at correct locations.
+    For defense checkboxes, draws an actual checkmark symbol.
     Falls back to stamping info at the top of the form.
     """
     p = data.get("personal_info", {})
@@ -252,7 +253,29 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
                 if pos.get("page", 1) - 1 != page_num:
                     continue
                 value = _get_field_value(key, data)
-                if value:
+                if not value:
+                    continue
+                
+                # Check if this is a defense checkbox (small overlay rect)
+                is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
+                
+                if is_checkbox:
+                    # Draw a proper checkmark (✓) using lines
+                    cx = pos["x"]
+                    cy = pos["y"]
+                    s = pos.get("h", 14)  # use height as scale
+                    # Draw the checkmark as two lines: \ and /
+                    page.draw_line(
+                        fitz.Point(cx, cy + s * 0.5),
+                        fitz.Point(cx + s * 0.35, cy + s * 0.9),
+                        color=(0, 0, 0), width=1.5
+                    )
+                    page.draw_line(
+                        fitz.Point(cx + s * 0.35, cy + s * 0.9),
+                        fitz.Point(cx + s * 0.8, cy + s * 0.15),
+                        color=(0, 0, 0), width=1.5
+                    )
+                else:
                     rect = fitz.Rect(pos["x"], pos["y"], pos["x"] + pos.get("w", 200), pos["y"] + pos.get("h", 20))
                     page.insert_textbox(
                         rect, str(value),
@@ -276,10 +299,15 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
 
 
 def _get_field_value(key: str, data: dict) -> Optional[str]:
-    """Get a value from the nested data dict by key path."""
+    """Get a value from the nested data dict by key path.
+    
+    Handles both regular data fields and defense checkbox overlay keys.
+    When key starts with 'def_', returns '☑' if the defense is checked.
+    """
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
+    defenses = data.get("defenses", {})
     
     mapper = {
         "full_name": p.get("full_name"),
@@ -298,4 +326,27 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "monthly_rent": str(c.get("monthly_rent", "")),
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
     }
+    
+    # Handle defense checkbox overlay keys
+    if key.startswith("def_"):
+        # Map aliases for state-specific defense keys
+        DEFENSE_ALIASES = {
+            "def_not_owner2": "def_not_owner",
+            "def_victim_status": "def_other",
+            "def_rental_assistance": "def_other",
+            "def_dismiss": "def_other",
+            "def_counterclaim": "def_other",
+            "def_failure_mitigate": "def_other",
+            "def_wrong_reason": "def_bad_notice",
+            "def_moved_out": "def_other",
+            "def_foreclosure": "def_other",
+            "def_pre_termination": "def_other",
+        }
+        lookup_key = DEFENSE_ALIASES.get(key, key)
+        def_data = defenses.get(lookup_key, {})
+        checked = def_data.get("checked", False) if isinstance(def_data, dict) else False
+        if checked:
+            return "X"  # triggers overlay to draw checkmark lines
+        return None
+    
     return mapper.get(key)

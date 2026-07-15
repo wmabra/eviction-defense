@@ -504,8 +504,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": {"page": 1, "x": 72, "y": 460, "w": 200, "h": 20, "size": 10},
             "county": {"page": 1, "x": 72, "y": 380, "w": 200, "h": 20, "size": 10},
             "date": {"page": 1, "x": 400, "y": 460, "w": 150, "h": 20, "size": 10},
+            # Defense checkbox overlay positions (OCR-verified at 300 DPI)
+            "def_dismiss": {"page": 1, "x": 73, "y": 526, "w": 14, "h": 14, "size": 10},
+            "def_contest": {"page": 1, "x": 109, "y": 544, "w": 14, "h": 14, "size": 10},
+            "def_not_owner": {"page": 1, "x": 109, "y": 561, "w": 14, "h": 14, "size": 10},
+            "def_not_owner2": {"page": 1, "x": 109, "y": 595, "w": 14, "h": 14, "size": 10},
+            "def_bad_notice": {"page": 1, "x": 109, "y": 630, "w": 14, "h": 14, "size": 10},
+            "def_other": {"page": 1, "x": 73, "y": 653, "w": 14, "h": 14, "size": 10},
+            "def_repairs": {"page": 2, "x": 73, "y": 187, "w": 14, "h": 14, "size": 10},
         },
-        "notes": "AZ answer form (LJEA00004F) — scanned PDF, no fillable fields. Overlay positions cover all essential tenant/landlord/case fields. MHJCEA2I is the instructions companion PDF.",
+        "notes": "AZ answer form (LJEA00004F) — scanned PDF, no fillable fields. Overlay positions cover all essential tenant/landlord/case fields plus 7 defense checkboxes (OCR-verified). MHJCEA2I is the instructions companion PDF.",
     },
 
     # ══════════════════════════════════════════
@@ -628,8 +636,18 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": {"page": 1, "x": 72, "y": 160, "w": 200, "h": 20, "size": 10},
             "county": {"page": 1, "x": 72, "y": 80, "w": 200, "h": 20, "size": 10},
             "date": {"page": 1, "x": 400, "y": 160, "w": 150, "h": 20, "size": 10},
+            # Defense checkbox overlay (OCR-verified at 600 DPI)
+            "def_repairs": {"page": 1, "x": 91, "y": 293, "w": 14, "h": 14, "size": 10},
+            "def_corrected": {"page": 1, "x": 91, "y": 336, "w": 14, "h": 14, "size": 10},
+            "def_retaliation": {"page": 1, "x": 91, "y": 348, "w": 14, "h": 14, "size": 10},
+            "def_victim_status": {"page": 1, "x": 91, "y": 373, "w": 14, "h": 14, "size": 10},
+            "def_paid": {"page": 1, "x": 91, "y": 399, "w": 14, "h": 14, "size": 10},
+            "def_attempted_pay": {"page": 1, "x": 91, "y": 411, "w": 14, "h": 14, "size": 10},
+            "def_rental_assistance": {"page": 1, "x": 109, "y": 436, "w": 14, "h": 14, "size": 10},
+            "def_bad_notice": {"page": 1, "x": 91, "y": 448, "w": 14, "h": 14, "size": 10},
+            "def_other": {"page": 1, "x": 91, "y": 461, "w": 14, "h": 14, "size": 10},
         },
-        "notes": "OR FED Answer — scanned PDF. Overlay positions for essential fields on page 1 caption area.",
+        "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption area.",
     },
 
     # ══════════════════════════════════════════
