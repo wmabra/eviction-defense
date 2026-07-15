@@ -198,7 +198,28 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": "9 - Case Number",
             "property_address": "10 - Property Address",
         },
-        "notes": "IL Circuit Court eviction answer. 189 field widgets across 6 pages with admit/deny paragraph structure.",
+        "defense_options": [
+            # IL uses paragraph admit/deny/do-not-know triads.
+            # When tenant has any defense, DENY all complaint paragraphs.
+            {"key": "def_repairs", "label": "Deny complaint paragraphs (all)", "field": "14 - Admit/Deny/Do Not Know"},
+            # Set second widget of each triad = Deny
+            {"key": "def_retaliation", "label": "", "field": "17 - Admit/Deny/Do Not Know"},
+            {"key": "def_bad_notice", "label": "", "field": "20 - Admit/Deny/Do Not Know"},
+            {"key": "def_amount", "label": "", "field": "23 - Admit/Deny/Do Not Know"},
+            {"key": "def_paid", "label": "", "field": "26 - Admit/Deny/Do Not Know"},
+            {"key": "def_waived", "label": "", "field": "29 - Admit/Deny/Do Not Know"},
+            {"key": "def_accepted_rent", "label": "", "field": "32 - Admit/Deny/Do Not Know"},
+            {"key": "def_discrimination", "label": "", "field": "35 - Admit/Deny/Do Not Know"},
+            {"key": "def_other", "label": "", "field": "38 - Admit/Deny/Do Not Know"},
+            {"key": "def_other", "label": "", "field": "41 - Admit/Deny/Do Not Know"},
+            # Specific defense checkboxes (pages 2-3)
+            {"key": "def_repairs", "label": "Conditions/repairs defense", "field": "43 - Checkbox"},
+            {"key": "def_retaliation", "label": "Retaliation lockout defense", "field": "44 - Checkbox"},
+            {"key": "def_bad_notice", "label": "Improper notice defense", "field": "45 - Checkbox"},
+            {"key": "def_discrimination", "label": "Fair housing defense", "field": "46 - Checkbox"},
+            {"key": "def_other", "label": "Other defense", "field": "52 - Checkbox"},
+        ],
+        "notes": "IL Circuit Court eviction answer. 189 field widgets across 6 pages. Uses paragraph admit/deny triads mapped to common defenses (any checked defense → Deny that paragraph). Plus specific numbered defense checkboxes mapped on pages 2-3.",
     },
 
     # ══════════════════════════════════════════
@@ -433,7 +454,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "certification_1": "cert_1",
             "certification_2": "cert_2",
         },
-        "notes": "TN Sworn Denial form. Has clean field names (court, county, file_number, etc.).",
+        "field_mapping_defense_explanation": {
+            "hearing_statement1": "at the hearing 1",
+            "hearing_statement2": "at the hearing 2",
+            "hearing_statement3": "at the hearing 3",
+            "hearing_statement4": "at the hearing 4",
+            "certification1": "cert_1",
+            "certification2": "cert_2",
+        },
+        "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Tenant writes narrative defenses in 'at the hearing' text areas. Defense explanations can be filled into these fields via field_mapping_defense_explanation.",
     },
 
     # ══════════════════════════════════════════
@@ -462,7 +491,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "static_values": {
             "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyFirm[0]": "In Pro Per",
         },
-        "notes": "CA UD-105 — 154 fields, complex XFA dotted paths. Maps defendant (pro se) into AttyPartyInfo section — 'In Pro Per' goes in AttyFirm, defendant's name goes in AttyName, defendant's address in AttyStreet. Tenant self-represents.",
+        "defense_options": [
+            # Section 3 — Affirmative Defenses (CA UD-105)
+            {"key": "def_bad_notice", "label": "Notice to quit is not proper (3a)", "field": "UD-105[0].Page1[0].List3[0].Lia[0].Check8[0]"},
+            {"key": "def_bad_notice", "label": "Service of notice was not proper (3b)", "field": "UD-105[0].Page1[0].List3[0].Lib[0].Check9[0]"},
+            {"key": "def_waived", "label": "Plaintiff waived/changed/canceled notice (3c)", "field": "UD-105[0].Page1[0].List3[0].Lic[0].Check10[0]"},
+            {"key": "def_attempted_pay", "label": "Tendered payment of rent demanded (3d)", "field": "UD-105[0].Page1[0].List3[0].li3d[0].Check8[0]"},
+            {"key": "def_retaliation", "label": "Eviction is retaliatory (3e)", "field": "UD-105[0].Page1[0].List3[0].Lie[0].Check11[0]"},
+            {"key": "def_discrimination", "label": "Eviction is discriminatory (3f)", "field": "UD-105[0].Page1[0].List3[0].Lif[0].Check12[0]"},
+            {"key": "def_repairs", "label": "Breach of warranty of habitability (3g)", "field": "UD-105[0].Page2[0].List3[0].Lig[0].Check13[0]"},
+            {"key": "def_did_repairs", "label": "Repair and deduct (3k)", "field": "UD-105[0].Page2[0].List3[0].Lij[0].Check21[0]"},
+            {"key": "def_accepted_rent", "label": "Landlord accepted rent (3k2)", "field": "UD-105[0].Page2[0].List3[0].Lik[0].Check22[0]"},
+            {"key": "def_other", "label": "Other affirmative defenses (3l)", "field": "UD-105[0].Page2[0].List3[0].l3il[0].Check23[0]"},
+        ],
+        "notes": "CA UD-105 — 154 fields, complex XFA dotted paths. Maps defendant (pro se) into AttyPartyInfo section. 10 defense checkboxes mapped from Sections 3a-3l for improper notice, improper service, waiver, tender, retaliation, discrimination, habitability, repair-and-deduct, accepted rent, and other.",
     },
 
     # ══════════════════════════════════════════
@@ -572,8 +614,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
             "phone": {"page": 1, "x": 72, "y": 347, "w": 200, "h": 20, "size": 10},
             "date": {"page": 1, "x": 400, "y": 347, "w": 150, "h": 20, "size": 10},
+            # Defense checkbox overlay (OCR-verified at 600 DPI)
+            "def_amount": {"page": 2, "x": 93, "y": 470, "w": 14, "h": 14, "size": 10},
+            "def_bad_notice": {"page": 2, "x": 93, "y": 519, "w": 14, "h": 14, "size": 10},
+            "def_other": {"page": 2, "x": 93, "y": 705, "w": 14, "h": 14, "size": 10},
+            "def_repairs": {"page": 3, "x": 95, "y": 162, "w": 14, "h": 14, "size": 10},
+            "def_other2": {"page": 3, "x": 101, "y": 288, "w": 14, "h": 14, "size": 10},
         },
-        "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Overlay positions for caption area fields + phone/date.",
+        "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
     },
 
     # ══════════════════════════════════════════
