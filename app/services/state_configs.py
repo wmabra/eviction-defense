@@ -740,6 +740,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": "COUNTY OF",
             "date": "day of",
             "full_name": "IN RE PETITION OF",
+            "cash_on_hand": "has the sum of",
         },
         "has_fillable_fields": False,
         "court_type": "District Court",
@@ -812,6 +813,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "fl_fee_waiver.pdf",
         "overlay_positions": {
             "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
             "financial_summary": {"page": 1, "x": 50, "y": 500, "w": 500, "h": 200, "size": 9},
         },
         "has_fillable_fields": True,
@@ -840,7 +842,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_bad_notice", "label": "No notice or legally incorrect notice", "field": "I did not receive the notice to terminate or the notice was legally incorrect"},
             {"key": "def_other", "label": "Other defenses", "field": "Other defenses l"},
         ],
-        "overlay_positions": {},
         "notes": "FL Form 1.947(b) Answer — Residential Eviction. 54 fillable fields across 2 pages (Miami-Dade clerk version). Covers all 12 defenses with explanation fields, jury trial selection, and signature block.",
     },
 
