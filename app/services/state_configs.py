@@ -165,16 +165,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "printed_name": "Text16",
             "signature_date": "D signature date",
         },
-        "checkbox_mapping": {
-            "jp_court": "Check Box JP",
-            "county_court": "Check CountyCourt",
-            "does_not_live": "Check Box50",
-            "mitigate_damages": "Check Box Mitigate",
-            "fair_housing": "Check BoxFHAM",
-            "counterclaim": "Check BoxCD",
-            "other_court": "Other Court",
-        },
-        "notes": "TX JP Court eviction answer. Generic Text#/Check Box# field names — requires explicit mapping since auto-fill can't interpret numbered fields. 57 fillable fields across 3 pages.",
+        "defense_options": [
+            {"key": "def_paid", "label": "I paid all rent owed", "field": "Check Box6"},
+            {"key": "def_repairs", "label": "Landlord failed to maintain/repair premises", "field": "Check Box7"},
+            {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "Check Box9"},
+            {"key": "def_bad_notice", "label": "Improper notice or no notice", "field": "Check Box10"},
+            {"key": "def_amount", "label": "Amount claimed is incorrect", "field": "Check Box54"},
+            {"key": "def_moved_out", "label": "I no longer live at the property", "field": "Check Box Does Not Live"},
+            {"key": "def_failure_mitigate", "label": "Landlord failed to mitigate damages", "field": "Check Box Mitigate"},
+            {"key": "def_discrimination", "label": "Fair Housing Act / discrimination", "field": "Check BoxFHAM"},
+            {"key": "def_counterclaim", "label": "Counterclaim against landlord", "field": "Check BoxCD"},
+            {"key": "def_other", "label": "Other defenses (Check Box2)", "field": "Check Box2"},
+            {"key": "def_other2", "label": "Other defenses (Check Box4)", "field": "Check Box4"},
+        ],
+        "notes": "TX JP Court eviction answer. 57 fillable fields across 3 pages. Defense checkboxes mapped: Box6=paid, Box7=repairs, Box9=retaliation, Box10=notice, Box54=amount dispute, DoesNotLive=moved out, Mitigate=failure to mitigate, FHAM=discrimination, CD=counterclaim. Box2 and Box4 are catch-all other defenses.",
     },
 
     # ══════════════════════════════════════════
@@ -243,7 +247,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
             "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
         },
-        "notes": "CT JD-HM-5 form — 62 fillable fields but NO defendant name/address field (form assumes case caption provides it). Tenant data (name, address, phone) uses overlay positions. Landlord info, docket number, and defenses use fillable fields.",
+        "defense_options": [
+            {"key": "def_paid", "label": "I paid the rent", "field": "form1[0].FRONT[0].RENTPAID[0]"},
+            {"key": "def_attempted_pay", "label": "I offered to pay but landlord refused", "field": "form1[0].FRONT[0].RENTOFFERED[0]"},
+            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "form1[0].FRONT[0].RENTACCEPTED[0]"},
+            {"key": "def_not_owed", "label": "I do not owe the rent claimed", "field": "form1[0].FRONT[0].NORENTDUE[0]"},
+            {"key": "def_repairs", "label": "Landlord failed to fix conditions / I notified them", "field": "form1[0].FRONT[0].NOTIFIED[0]"},
+            {"key": "def_foreclosure", "label": "Property in foreclosure", "field": "form1[0].FRONT[0].FORECLOSE[0]"},
+            {"key": "def_pre_termination", "label": "Pre-termination mediation required", "field": "form1[0].FRONT[0].PRETERMINATION[0]"},
+        ],
+        "notes": "CT JD-HM-5 form — 62 fillable fields but NO defendant name/address field (form assumes case caption provides it). Tenant data (name, address, phone) uses overlay positions. Landlord info, docket number, and defense checkboxes use fillable fields (full XFA dotted paths).",
     },
 
     # ══════════════════════════════════════════
@@ -304,7 +317,27 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": "Court County",
             "court_address": "Court Address",
         },
-        "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Page 1 has 14 named fields (∆=defendant, π=plaintiff). Pages 2-6 are defense checkboxes and signature fields.",
+        "defense_options": [
+            # Section 7A — Non-Payment Defenses
+            {"key": "def_paid", "label": "I paid all rent owed", "field": "7A.1"},
+            {"key": "def_attempted_pay", "label": "I tried to pay but landlord refused", "field": "7A.2"},
+            {"key": "def_amount", "label": "I disagree with the amount claimed", "field": "7A.3"},
+            {"key": "def_other", "label": "Other reasons rent not paid", "field": "7A.4"},
+            # Section 7B — Habitability / Condition Defenses
+            {"key": "def_repairs", "label": "Premises uninhabitable — landlord failed to maintain", "field": "7B.1"},
+            {"key": "def_did_repairs", "label": "I paid for repairs landlord should have made", "field": "7B.2"},
+            {"key": "def_landlord_breach", "label": "Landlord breached the rental agreement", "field": "7B.3"},
+            # Section 7C — Notice Defenses
+            {"key": "def_bad_notice", "label": "Improper or no notice", "field": "7C.1"},
+            {"key": "def_wrong_reason", "label": "Wrong termination reason in notice", "field": "7C.2"},
+            # Section 7D — Retaliation / Discrimination
+            {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "7D.1"},
+            {"key": "def_discrimination", "label": "Discriminatory eviction", "field": "7D.2"},
+            # Section 7E — Other Defenses
+            {"key": "def_corrected", "label": "I corrected the lease violation", "field": "7E.1"},
+            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "7E.2"},
+        ],
+        "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Page 1 has 14 named fields (∆=defendant, π=plaintiff). Pages 2-4 have structured defense sections 7A-7E with checkboxes for non-payment, habitability, notice, retaliation/discrimination, and other defenses.",
     },
 
     # ══════════════════════════════════════════
