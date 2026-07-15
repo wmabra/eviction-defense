@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     # App
     secret_key: str = "change-me"
     database_url: str = "sqlite:///./eviction_defense.db"
-    app_url: str = "http://localhost:8000"
+    app_url: str = "https://evictions.help"
     debug: bool = True
 
     # Stripe

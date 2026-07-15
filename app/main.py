@@ -10,15 +10,20 @@ from app.routers import chat
 from app.routers import payment
 
 app = FastAPI(
-    title="Eviction Defense API",
-    description="Self-help eviction paperwork preparation for Florida tenants",
+    title="Eviction Defense — Automated Self-Help Paperwork",
+    description="AI-powered eviction defense document preparation. Supports 20 states with official court forms, legal motions, checklists, hearing scripts, and rental assistance resources.",
     version="0.1.0",
 )
 
 # CORS - allow frontend to connect
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],  # Frontend dev servers
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "https://evictions.help",
+        "https://www.evictions.help",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

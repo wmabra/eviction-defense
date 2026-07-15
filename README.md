@@ -1,10 +1,10 @@
 # Eviction Defense — Automated Self-Help Paperwork
 
-AI-powered document preparation for Florida tenants facing eviction.
+AI-powered document preparation for tenants facing eviction in 20 states.
 
 **Price:** $395 flat fee  
-**Model:** No-touch software workflow — customer answers, uploads, confirms, and receives a ready-to-file paperwork packet.  
-**Target:** Florida tenants who have been served with an eviction complaint (Chapter 83).
+**Domain:** evictions.help  
+**Model:** No-touch software workflow — customer answers, uploads, confirms, and receives a ready-to-file paperwork packet.
 
 ## What's Included ($395 Packet)
 
