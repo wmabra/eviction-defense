@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eviction Defense — AI Intake Chat</title>
+    <title>Eviction Defense — AI Intake</title>
     <style>
       * {
         margin: 0;
@@ -33,6 +33,7 @@
         color: #888;
         margin-top: 2px;
       }
+
       .chat-container {
         flex: 1;
         overflow-y: auto;
@@ -60,6 +61,7 @@
         color: #1a1a2e;
         border-bottom-left-radius: 4px;
       }
+
       .typing {
         display: flex;
         gap: 6px;
@@ -88,6 +90,7 @@
           transform: translateY(-7px);
         }
       }
+
       .input-bar {
         background: #fff;
         border-top: 1px solid #e0e0e0;
@@ -120,47 +123,6 @@
         background: #ccc;
         cursor: not-allowed;
       }
-      .intake-complete {
-        background: #d4edda;
-        border: 2px solid #28a745;
-        border-radius: 8px;
-        padding: 16px;
-        margin: 16px 0;
-        text-align: center;
-      }
-      .intake-complete h3 {
-        color: #155724;
-        margin-bottom: 8px;
-      }
-      .intake-complete .data-preview {
-        text-align: left;
-        font-size: 12px;
-        margin: 12px 0;
-        color: #555;
-        background: #f8f9fa;
-        padding: 12px;
-        border-radius: 8px;
-        max-height: 300px;
-        overflow-y: auto;
-      }
-      .intake-complete button {
-        background: #28a745;
-        color: #fff;
-        border: none;
-        margin-top: 8px;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 15px;
-      }
-      .intake-complete.ineligible {
-        background: #fff3cd;
-        border-color: #ffc107;
-      }
-      .intake-complete.ineligible h3 {
-        color: #856404;
-      }
       .reset-btn {
         display: block;
         margin: 10px auto;
@@ -172,35 +134,187 @@
         cursor: pointer;
         color: #888;
       }
-      .phase-indicator {
+
+      /* Intake complete summary */
+      .summary-box {
+        background: #d4edda;
+        border: 2px solid #28a745;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
         text-align: center;
-        font-size: 10px;
-        color: #bbb;
-        padding: 4px;
+      }
+      .summary-box h3 {
+        color: #155724;
+        margin-bottom: 8px;
+      }
+      .summary-box .data-preview {
+        text-align: left;
+        font-size: 12px;
+        margin: 12px 0;
+        color: #555;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .summary-box button {
+        background: #e94560;
+        color: #fff;
+        border: none;
+        margin-top: 8px;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .summary-box button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .summary-box .email-input {
+        padding: 10px 14px;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        width: 260px;
+        margin: 10px 0;
+        text-align: center;
+      }
+
+      /* Download screen */
+      .download-box {
+        text-align: center;
+        padding: 30px;
+        background: #fff;
+        border-radius: 8px;
+        max-width: 700px;
+        margin: 20px auto;
+      }
+      .download-box h2 {
+        font-size: 22px;
+        margin-bottom: 8px;
+      }
+      .download-box p {
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      .download-box ul {
+        list-style: none;
+        text-align: left;
+        display: inline-block;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+      .download-box .btn-success {
+        background: #28a745;
+        color: #fff;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .download-box .btn-success:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .download-footer {
+        text-align: left;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+        font-size: 13px;
+      }
+
+      .hidden {
+        display: none !important;
       }
     </style>
   </head>
   <body>
     <div class="header">
-      Eviction Defense — <span>AI Intake Chat</span>
+      Eviction Defense — <span>evictions.help</span>
       <div class="served-states">
-        Serving AR · AZ · CA · CO · CT · FL · GA · IL · LA · MA · MI · MN · NM ·
-        NV · OR · RI · SC · TN · TX · VA
+        AR · AZ · CA · CO · CT · FL · GA · IL · LA · MA · MI · MN · NM · NV · OR
+        · RI · SC · TN · TX · VA
       </div>
     </div>
 
+    <!-- CHAT -->
     <div class="chat-container" id="chat">
       <div class="message ai">
-        Hi, I'm here to help you prepare your eviction defense paperwork. I
-        serve tenants in 20 states across the US.<br /><br />
+        Hi, I'm here to help you prepare your eviction defense paperwork.<br /><br />
         To get started — what state is your eviction case in? (For example:
         Florida, Texas, California...)
       </div>
     </div>
 
-    <div id="intake-status" style="display: none"></div>
+    <!-- PAYMENT + DOWNLOAD (hidden until intake complete) -->
+    <div id="post-intake" class="hidden">
+      <div id="summary-container"></div>
 
-    <div class="input-bar">
+      <!-- Download screen -->
+      <div class="download-box" id="download-screen" style="display: none">
+        <div style="font-size: 3rem; margin-bottom: 12px">🎉</div>
+        <h2>Your Packet Is Ready!</h2>
+        <p>Download your complete court packet now.</p>
+        <ul>
+          <li>✓ Official Court Answer Form (pre-filled)</li>
+          <li>✓ Fee Waiver Application (if eligible)</li>
+          <li>✓ Motion to Determine Rent</li>
+          <li>✓ Payment Plan & Hardship Letters</li>
+          <li>✓ Filing & Court Checklists</li>
+          <li>✓ Personalized Hearing Script</li>
+          <li>✓ Rental Assistance Directory</li>
+        </ul>
+        <button
+          class="btn-success"
+          id="btn-download"
+          onclick="downloadPacket()"
+        >
+          📥 Download My Packet (ZIP)
+        </button>
+        <p style="font-size: 12px; color: #888; margin-top: 12px">
+          Case reference: <span id="ready-case-id">—</span>
+        </p>
+        <div class="download-footer">
+          <strong>Next steps:</strong>
+          <ol style="margin-top: 6px; padding-left: 20px; line-height: 2">
+            <li>Review all documents in the packet</li>
+            <li>Sign where indicated (blue or black ink)</li>
+            <li>Make 3 copies of everything</li>
+            <li>File with the court (instructions included)</li>
+            <li>Serve a copy on your landlord</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-bar" id="input-bar">
       <input
         type="text"
         id="userInput"
@@ -209,13 +323,32 @@
       />
       <button id="sendBtn" onclick="sendMessage()">Send</button>
     </div>
-    <button class="reset-btn" onclick="resetChat()">Start Over</button>
+    <button class="reset-btn" id="reset-btn" onclick="resetChat()">
+      Start Over
+    </button>
+
+    <!-- Authorize.net Accept.js (sandbox) -->
+    <script
+      src="https://jstest.authorize.net/v3/AcceptUI.js"
+      charset="utf-8"
+    ></script>
 
     <script>
       const API = "/api/v1/chat/send";
       let messages = [];
       let appData = null;
       let caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
+      let _packetDownloadUrl = null;
+
+      function esc(s) {
+        if (!s) return "—";
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      // ===== CHAT =====
 
       function addMessage(role, text) {
         const div = document.createElement("div");
@@ -269,7 +402,7 @@
 
           if (data.ready_for_intake && data.extracted_data) {
             appData = data.extracted_data;
-            showIntakeComplete(data.extracted_data);
+            showSummary(appData);
           }
         } catch (e) {
           hideTyping();
@@ -278,13 +411,17 @@
             "Sorry, I had trouble connecting. Please try again.",
           );
         }
-
         btn.disabled = false;
       }
 
-      function showIntakeComplete(data) {
-        const el = document.getElementById("intake-status");
-        el.style.display = "block";
+      // ===== INTAKE COMPLETE → SHOW SUMMARY + PAYMENT =====
+
+      function showSummary(data) {
+        document.getElementById("input-bar").classList.add("hidden");
+        document.getElementById("reset-btn").classList.add("hidden");
+
+        const el = document.getElementById("post-intake");
+        el.classList.remove("hidden");
 
         const p = data.personal_info || {};
         const l = data.landlord_info || {};
@@ -299,35 +436,43 @@
           .filter(([k, v]) => v && v.checked)
           .map(([k]) => k.replace("def_", "").replace(/_/g, " "));
 
-        el.innerHTML = `
-    <div class="intake-complete">
-      <h3>✅ Intake Complete — Ready to Generate Your Packet</h3>
-      <p style="font-size:13px;margin-bottom:8px">Please review the information below:</p>
-      <div class="data-preview">
-        <strong>Name:</strong> ${p.full_name || "—"}<br>
-        <strong>State:</strong> ${state} | <strong>County:</strong> ${p.county || "—"}<br>
-        <strong>Property:</strong> ${p.property_address || "—"}<br>
-        <strong>Phone:</strong> ${p.phone || "—"} | <strong>Email:</strong> ${p.email || "—"}<br>
-        <strong>Landlord:</strong> ${l.landlord_name || "—"}<br>
-        <strong>Case #:</strong> ${c.case_number || "—"} | <strong>Court:</strong> ${c.court_name || "—"}<br>
-        <strong>Rent:</strong> $${r.monthly_rent || "—"}/mo | <strong>Amount Claimed:</strong> $${c.complaint_amount_claimed || "—"}<br>
-        <strong>Defenses:</strong> ${checkedDefenses.length ? checkedDefenses.join(", ") : "None checked"}<br>
-        <strong>Trial by:</strong> ${pref.trial_by || "judge"} |
-        <strong>Payment plan:</strong> ${pref.wants_payment_plan ? "Yes" : "No"} |
-        <strong>Fee waiver:</strong> ${fin.receives_public_benefits ? "Yes (benefits)" : fin.monthly_gross_income ? "Yes (low income)" : "No"}<br>
-      </div>
-      <p>Your packet includes: court answer form, fee waiver, filing checklist, hearing script, rental assistance resources, and relevant legal motions — all pre-filled with your information.</p>
-      <p style="font-weight:700;margin-top:10px;font-size:18px">One-time payment: $395</p>
-      <div id="payment-container"></div>
-    </div>`;
+        document.getElementById("summary-container").innerHTML = `
+          <div class="summary-box">
+            <h3>✅ Intake Complete — Here's What We Have</h3>
+            <div class="data-preview">
+              <strong>Name:</strong> ${esc(p.full_name)} &nbsp;|&nbsp;
+              <strong>State:</strong> ${esc(state)} &nbsp;|&nbsp;
+              <strong>County:</strong> ${esc(p.county)}<br>
+              <strong>Property:</strong> ${esc(p.property_address)}<br>
+              <strong>Phone:</strong> ${esc(p.phone)} &nbsp;|&nbsp;
+              <strong>Email:</strong> ${esc(p.email)}<br>
+              <strong>Landlord:</strong> ${esc(l.landlord_name)} &nbsp;|&nbsp;
+              <strong>Case #:</strong> ${esc(c.case_number)}<br>
+              <strong>Court:</strong> ${esc(c.court_name)} &nbsp;|&nbsp;
+              <strong>Amount claimed:</strong> $${c.complaint_amount_claimed || "—"}<br>
+              <strong>Monthly rent:</strong> $${r.monthly_rent || "—"} &nbsp;|&nbsp;
+              <strong>Defenses:</strong> ${checkedDefenses.length ? esc(checkedDefenses.join(", ")) : "None"}
+            </div>
+            <p style="font-size:13px;margin:8px 0">Your packet includes: answer form, fee waiver, motions, letters, checklists, hearing script, and rental assistance resources.</p>
+            <p style="font-weight:700;font-size:18px;margin-top:10px">One-time payment: $395</p>
+            <input type="email" id="payment-email" class="email-input" 
+              placeholder="Email for receipt & delivery" value="${esc(p.email)}" />
+            <br>
+            <button id="btn-pay" onclick="startPayment()" style="margin-top:8px">
+              Pay $395 & Download My Packet
+            </button>
+            <p style="font-size:11px;color:#888;margin-top:6px">
+              Secure payment via Authorize.net. You'll see your packet before paying.
+            </p>
+          </div>`;
 
-        // Save intake data to server
+        // Save intake data to backend
         saveIntakeData(data, state);
       }
 
       async function saveIntakeData(data, state) {
         try {
-          const resp = await fetch(`/api/v1/intake/submit?case_id=${caseId}`, {
+          await fetch(`/api/v1/intake/submit?case_id=${caseId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -340,23 +485,122 @@
               financial_info: data.financial_info || null,
             }),
           });
-          if (resp.ok) {
-            console.log("Intake data saved for case:", caseId);
-          }
         } catch (e) {
-          console.error("Failed to save intake:", e);
+          console.error("Save intake failed:", e);
         }
       }
 
+      // ===== PAYMENT (Authorize.net Accept.js) =====
+
+      function startPayment() {
+        const btn = document.getElementById("btn-pay");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+        if (typeof Accept === "undefined") {
+          // Dev mode — skip payment
+          generateAndDownload();
+          return;
+        }
+
+        Accept.dispatchData({
+          authData: {
+            apiLoginID: "7wM69L5k7q2p",
+            clientKey:
+              "4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42",
+          },
+          paymentData: {
+            amount: 395.0,
+            description: "Eviction Defense Packet",
+          },
+          callback: (response) => {
+            if (response.messages.resultCode === "Error") {
+              btn.disabled = false;
+              btn.textContent = "Payment Failed — Try Again";
+              return;
+            }
+            submitPayment(response.opaqueData);
+          },
+        });
+      }
+
+      async function submitPayment(opaqueData) {
+        try {
+          const email = document.getElementById("payment-email").value || "";
+          const res = await fetch("/api/v1/payment/charge", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              opaque_data: opaqueData,
+              order_id: "order-" + Date.now(),
+              customer_email: email,
+              customer_name:
+                (appData &&
+                  appData.personal_info &&
+                  appData.personal_info.full_name) ||
+                "Tenant",
+            }),
+          });
+          if (!res.ok)
+            throw new Error((await res.json()).detail || "Payment failed");
+          generateAndDownload();
+        } catch (e) {
+          const btn = document.getElementById("btn-pay");
+          btn.disabled = false;
+          btn.textContent = "Payment Failed — Try Again";
+        }
+      }
+
+      // ===== GENERATE PACKET & DOWNLOAD =====
+
+      function generateAndDownload() {
+        document.getElementById("summary-container").style.display = "none";
+        document.getElementById("download-screen").style.display = "block";
+        document.getElementById("ready-case-id").textContent = caseId;
+
+        const p = (appData && appData.personal_info) || {};
+        const c = (appData && appData.case_details) || {};
+        const l = (appData && appData.landlord_info) || {};
+        const state = (appData && appData.state) || "FL";
+
+        const params = new URLSearchParams({
+          full_name: p.full_name || "Tenant",
+          county: p.county || "",
+          state: state,
+          property_address: p.property_address || "",
+          landlord_name: l.landlord_name || "",
+          case_number: c.case_number || "",
+          phone: p.phone || "",
+          email: p.email || "",
+        });
+        _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
+      }
+
+      function downloadPacket() {
+        if (_packetDownloadUrl) {
+          window.location.href = _packetDownloadUrl;
+        } else {
+          alert("Still preparing your packet. Please wait a moment.");
+        }
+      }
+
+      // ===== RESET =====
+
       async function resetChat() {
         messages = [];
+        appData = null;
+        _packetDownloadUrl = null;
         caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
-        document.getElementById("chat").innerHTML = `
-    <div class="message ai">
-      Hi, I'm here to help you prepare your eviction defense paperwork. I serve tenants in 20 states across the US.<br><br>
-      To get started — what state is your eviction case in? (For example: Florida, Texas, California...)
-    </div>`;
-        document.getElementById("intake-status").style.display = "none";
+
+        document.getElementById("chat").innerHTML = `<div class="message ai">
+          Hi, I'm here to help you prepare your eviction defense paperwork.<br><br>
+          To get started — what state is your eviction case in?</div>`;
+        document.getElementById("post-intake").classList.add("hidden");
+        document.getElementById("summary-container").innerHTML = "";
+        document.getElementById("download-screen").style.display = "none";
+        document.getElementById("input-bar").classList.remove("hidden");
+        document.getElementById("reset-btn").classList.remove("hidden");
+
         await fetch(`/api/v1/chat/reset?case_id=${caseId}`, { method: "POST" });
       }
     </script>

@@ -32,7 +32,7 @@ Landing Page → Pre-Screen → Payment → Questionnaire → Upload Docs
 - **Database:** SQLite (dev) / PostgreSQL (prod)
 - **OCR:** Google Document AI
 - **AI Extraction:** OpenAI API (structured outputs)
-- **Payments:** Stripe
+- **Payments:** Authorize.net
 - **Automation:** n8n or custom
 - **SMS:** Twilio
 - **Email:** SendGrid / Postmark
