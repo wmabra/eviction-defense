@@ -1689,6 +1689,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     S = _get_styles()
     elements = []
     p = data.get("personal_info", {})
+    fin = data.get("financial_info", {}) or {}
 
     elements.append(Paragraph("INCOME & EXPENSE WORKSHEET", S["FormTitle"]))
     elements.append(Spacer(1, 6))
@@ -1701,64 +1702,88 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     ))
     elements.append(Spacer(1, 12))
 
+    # Helper to format dollar amounts or show blank
+    def fmt(val):
+        if val is not None and val != 0:
+            return f"${float(val):,.2f}"
+        return "$___________"
+
+    def fmt_text(val):
+        return str(val) if val else "_______________"
+
     # Income section
     elements.append(Paragraph("<b>MONTHLY INCOME</b>", S["BodyBold"]))
-    income_items = [
-        "Wages / salary (after taxes):  $___________",
-        "Self-employment income:         $___________",
-        "Social Security / SSI / SSDI:   $___________",
-        "Unemployment benefits:           $___________",
-        "Child support / alimony:         $___________",
-        "SNAP (food stamps):              $___________",
-        "TANF / cash assistance:          $___________",
-        "Other income:                    $___________",
-        "",
-        "<b>TOTAL MONTHLY INCOME:          $___________</b>",
-    ]
-    for item in income_items:
-        if item:
-            elements.append(Paragraph(item, S["Body"]))
-        else:
-            elements.append(Spacer(1, 3))
+    
+    # Calculate total income
+    wages = fin.get("employment_income") or fin.get("monthly_gross_income")
+    self_emp = fin.get("self_employment_income")
+    ss = fin.get("social_security_income") or fin.get("ssi_income")
+    unemp = fin.get("unemployment_income")
+    child_support = fin.get("child_support_income") or fin.get("alimony_income")
+    pension = fin.get("pension_income")
+    other = fin.get("other_income")
+    
+    total_income = (wages or 0) + (self_emp or 0) + (ss or 0) + (unemp or 0) + (child_support or 0) + (other or 0)
+    if not total_income and fin.get("monthly_gross_income"):
+        total_income = fin.get("monthly_gross_income")
+
+    elements.append(Paragraph(f"Wages / salary (after taxes):  {fmt(wages)}", S["Body"]))
+    elements.append(Paragraph(f"Self-employment income:         {fmt(self_emp)}", S["Body"]))
+    elements.append(Paragraph(f"Social Security / SSI / SSDI:   {fmt(ss)}", S["Body"]))
+    elements.append(Paragraph(f"Unemployment benefits:           {fmt(unemp)}", S["Body"]))
+    elements.append(Paragraph(f"Child support / alimony:         {fmt(child_support)}", S["Body"]))
+    elements.append(Paragraph(f"SNAP (food stamps):              {'✅ Receives' if fin.get('receives_snap') else '❌ Does not receive'}", S["Body"]))
+    elements.append(Paragraph(f"TANF / cash assistance:          {'✅ Receives' if fin.get('receives_tanf') else '❌ Does not receive'}", S["Body"]))
+    elements.append(Paragraph(f"SSI:                              {'✅ Receives' if fin.get('receives_ssi') else '❌ Does not receive'}", S["Body"]))
+    elements.append(Paragraph(f"Medicaid:                         {'✅ Receives' if fin.get('receives_medicaid') else '❌ Does not receive'}", S["Body"]))
+    elements.append(Paragraph(f"Other income:                    {fmt(other)}", S["Body"]))
+    elements.append(Paragraph(f"<b>TOTAL MONTHLY INCOME:          {fmt(total_income if total_income else None)}</b>", S["Body"]))
 
     elements.append(Spacer(1, 16))
 
     # Expenses section
     elements.append(Paragraph("<b>MONTHLY EXPENSES</b>", S["BodyBold"]))
-    expense_items = [
-        "Rent / mortgage:                 $___________",
-        "Utilities (electric, gas, water):$___________",
-        "Phone / internet:                 $___________",
-        "Food / groceries:                 $___________",
-        "Transportation (gas, bus, car):   $___________",
-        "Car payment:                      $___________",
-        "Car insurance:                    $___________",
-        "Health insurance / medical:       $___________",
-        "Child care:                       $___________",
-        "Credit card / loan payments:      $___________",
-        "Other expenses:                   $___________",
-        "",
-        "<b>TOTAL MONTHLY EXPENSES:         $___________</b>",
-    ]
-    for item in expense_items:
-        if item:
-            elements.append(Paragraph(item, S["Body"]))
-        else:
-            elements.append(Spacer(1, 3))
+    rent = fin.get("rent_or_mortgage")
+    utils = fin.get("utilities_expense")
+    food = fin.get("food_expense")
+    transport = fin.get("transportation_expense")
+    medical = fin.get("medical_expense")
+    childcare = fin.get("child_care_expense")
+    debt = fin.get("debt_payments")
+    other_exp = fin.get("other_expenses")
+    
+    total_expenses = (rent or 0) + (utils or 0) + (food or 0) + (transport or 0) + (medical or 0) + (childcare or 0) + (debt or 0) + (other_exp or 0)
+
+    elements.append(Paragraph(f"Rent / mortgage:                 {fmt(rent)}", S["Body"]))
+    elements.append(Paragraph(f"Utilities (electric, gas, water):{fmt(utils)}", S["Body"]))
+    elements.append(Paragraph(f"Food / groceries:                 {fmt(food)}", S["Body"]))
+    elements.append(Paragraph(f"Transportation (gas, bus, car):   {fmt(transport)}", S["Body"]))
+    elements.append(Paragraph(f"Health insurance / medical:       {fmt(medical)}", S["Body"]))
+    elements.append(Paragraph(f"Child care:                       {fmt(childcare)}", S["Body"]))
+    elements.append(Paragraph(f"Credit card / loan payments:      {fmt(debt)}", S["Body"]))
+    elements.append(Paragraph(f"Other expenses:                   {fmt(other_exp)}", S["Body"]))
+    elements.append(Paragraph(f"<b>TOTAL MONTHLY EXPENSES:         {fmt(total_expenses if total_expenses else None)}</b>", S["Body"]))
 
     elements.append(Spacer(1, 16))
 
     elements.append(Paragraph("<b>ASSETS</b>", S["BodyBold"]))
-    elements.append(Paragraph("Cash on hand:                     $___________", S["Body"]))
-    elements.append(Paragraph("Bank account(s) balance:          $___________", S["Body"]))
-    elements.append(Paragraph("Vehicle (make/model/year):        _______________", S["Body"]))
-    elements.append(Paragraph("Other assets:                     _______________", S["Body"]))
+    cash = fin.get("cash_on_hand")
+    checking = fin.get("checking_balance")
+    savings = fin.get("savings_balance")
+    vehicle = fin.get("vehicle_make_model")
+    vehicle_val = fin.get("vehicle_value")
+    elements.append(Paragraph(f"Cash on hand:                     {fmt(cash)}", S["Body"]))
+    elements.append(Paragraph(f"Bank account(s) balance:          {fmt((checking or 0) + (savings or 0) if (checking or savings) else None)}", S["Body"]))
+    elements.append(Paragraph(f"Vehicle (make/model/year):        {fmt_text(vehicle)}", S["Body"]))
+    elements.append(Paragraph(f"Vehicle value:                    {fmt(vehicle_val)}", S["Body"]))
+    elements.append(Paragraph(f"Other assets:                     {fmt_text(fin.get('other_assets_description'))}", S["Body"]))
     elements.append(Spacer(1, 12))
 
     elements.append(Paragraph("<b>HOUSEHOLD INFORMATION</b>", S["BodyBold"]))
-    elements.append(Paragraph("Number of adults in home:         _______________", S["Body"]))
-    elements.append(Paragraph("Number of children in home:       _______________", S["Body"]))
-    elements.append(Paragraph("Dependents claimed on taxes:      _______________", S["Body"]))
+    adults = fin.get("household_adults")
+    children = fin.get("household_children")
+    elements.append(Paragraph(f"Number of adults in home:         {fmt_text(adults)}", S["Body"]))
+    elements.append(Paragraph(f"Number of children in home:       {fmt_text(children)}", S["Body"]))
 
     elements.append(Spacer(1, 16))
     elements.append(Paragraph(

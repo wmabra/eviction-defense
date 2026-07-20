@@ -572,8 +572,15 @@
           if (resp.ok) {
             const blob = await resp.blob();
             _packetBlob = blob;
-            _packetFilename = "eviction_defense_packet_" + 
-              ((appData && appData.personal_info && appData.personal_info.full_name) || "Tenant").replace(/ /g, "_") + ".zip";
+            _packetFilename =
+              "eviction_defense_packet_" +
+              (
+                (appData &&
+                  appData.personal_info &&
+                  appData.personal_info.full_name) ||
+                "Tenant"
+              ).replace(/ /g, "_") +
+              ".zip";
           } else {
             // Fallback to GET with basic params
             const p = (appData && appData.personal_info) || {};
@@ -581,11 +588,14 @@
             const l = (appData && appData.landlord_info) || {};
             const state = (appData && appData.state) || "FL";
             const params = new URLSearchParams({
-              full_name: p.full_name || "Tenant", county: p.county || "",
-              state: state, property_address: p.property_address || "",
+              full_name: p.full_name || "Tenant",
+              county: p.county || "",
+              state: state,
+              property_address: p.property_address || "",
               landlord_name: l.landlord_name || "",
               case_number: c.case_number || "",
-              phone: p.phone || "", email: p.email || "",
+              phone: p.phone || "",
+              email: p.email || "",
             });
             _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
           }
@@ -596,11 +606,14 @@
           const c = (appData && appData.case_details) || {};
           const state = (appData && appData.state) || "FL";
           const params = new URLSearchParams({
-            full_name: p.full_name || "Tenant", county: p.county || "",
-            state: state, property_address: p.property_address || "",
+            full_name: p.full_name || "Tenant",
+            county: p.county || "",
+            state: state,
+            property_address: p.property_address || "",
             landlord_name: l.landlord_name || "",
             case_number: c.case_number || "",
-            phone: p.phone || "", email: p.email || "",
+            phone: p.phone || "",
+            email: p.email || "",
           });
           _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
         }
