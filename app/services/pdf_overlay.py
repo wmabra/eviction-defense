@@ -250,7 +250,14 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                 widget.update()
                 continue
             
-            # 1b. Skip auto-fill for fields that have any explicit mapping
+            # 1b. UNIVERSAL DEFAULTS: checkboxes that should always be set for pro se tenants
+            fn_lower = field_name.lower()
+            if 'generally denies' in fn_lower or 'general denial' in fn_lower:
+                widget.field_value = "Yes"
+                widget.update()
+                continue
+            
+            # 1c. Skip auto-fill for fields that have any explicit mapping
             if field_name in mapping.values() or field_name in fw_mapping.values():
                 continue
             
