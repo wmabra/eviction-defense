@@ -265,10 +265,12 @@
 
     <!-- CHAT -->
     <div class="chat-container" id="chat">
-      <div class="message ai">
-        Hi, I'm here to help you prepare your eviction defense paperwork.<br /><br />
-        To get started — what state is your eviction case in? (For example:
-        Florida, Texas, California...)
+      <div class="message ai" id="first-message">
+        Welcome! I'm your AI intake specialist for <strong>evictions.help</strong>.<br /><br />
+        <strong>⏱ Please allow 10-15 minutes</strong> to answer all my questions.
+        At the end, you'll download your ready-to-file court packet immediately.<br /><br />
+        Let's get started — what is your <strong>full legal name</strong>, exactly as
+        it appears on your eviction notice or lease?
       </div>
     </div>
 
@@ -326,12 +328,6 @@
     <button class="reset-btn" id="reset-btn" onclick="resetChat()">
       Start Over
     </button>
-
-    <!-- Authorize.net Accept.js (sandbox) -->
-    <script
-      src="https://jstest.authorize.net/v3/AcceptUI.js"
-      charset="utf-8"
-    ></script>
 
     <script>
       const API = "/api/v1/chat/send";
@@ -454,16 +450,9 @@
               <strong>Defenses:</strong> ${checkedDefenses.length ? esc(checkedDefenses.join(", ")) : "None"}
             </div>
             <p style="font-size:13px;margin:8px 0">Your packet includes: answer form, fee waiver, motions, letters, checklists, hearing script, and rental assistance resources.</p>
-            <p style="font-weight:700;font-size:18px;margin-top:10px">One-time payment: $395</p>
-            <input type="email" id="payment-email" class="email-input" 
-              placeholder="Email for receipt & delivery" value="${esc(p.email)}" />
-            <br>
-            <button id="btn-pay" onclick="startPayment()" style="margin-top:8px">
-              Pay $395 & Download My Packet
+            <button id="btn-generate" onclick="generateAndDownload()" style="background:#e94560;color:#fff;border:none;margin-top:8px;padding:12px 24px;border-radius:6px;font-weight:700;cursor:pointer;font-size:16px">
+              Generate & Download My Packet →
             </button>
-            <p style="font-size:11px;color:#888;margin-top:6px">
-              Secure payment via Authorize.net. You'll see your packet before paying.
-            </p>
           </div>`;
 
         // Save intake data to backend
@@ -487,67 +476,6 @@
           });
         } catch (e) {
           console.error("Save intake failed:", e);
-        }
-      }
-
-      // ===== PAYMENT (Authorize.net Accept.js) =====
-
-      function startPayment() {
-        const btn = document.getElementById("btn-pay");
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Processing...';
-
-        if (typeof Accept === "undefined") {
-          // Dev mode — skip payment
-          generateAndDownload();
-          return;
-        }
-
-        Accept.dispatchData({
-          authData: {
-            apiLoginID: "7wM69L5k7q2p",
-            clientKey:
-              "4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42",
-          },
-          paymentData: {
-            amount: 395.0,
-            description: "Eviction Defense Packet",
-          },
-          callback: (response) => {
-            if (response.messages.resultCode === "Error") {
-              btn.disabled = false;
-              btn.textContent = "Payment Failed — Try Again";
-              return;
-            }
-            submitPayment(response.opaqueData);
-          },
-        });
-      }
-
-      async function submitPayment(opaqueData) {
-        try {
-          const email = document.getElementById("payment-email").value || "";
-          const res = await fetch("/api/v1/payment/charge", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              opaque_data: opaqueData,
-              order_id: "order-" + Date.now(),
-              customer_email: email,
-              customer_name:
-                (appData &&
-                  appData.personal_info &&
-                  appData.personal_info.full_name) ||
-                "Tenant",
-            }),
-          });
-          if (!res.ok)
-            throw new Error((await res.json()).detail || "Payment failed");
-          generateAndDownload();
-        } catch (e) {
-          const btn = document.getElementById("btn-pay");
-          btn.disabled = false;
-          btn.textContent = "Payment Failed — Try Again";
         }
       }
 
@@ -650,8 +578,10 @@
         caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
 
         document.getElementById("chat").innerHTML = `<div class="message ai">
-          Hi, I'm here to help you prepare your eviction defense paperwork.<br><br>
-          To get started — what state is your eviction case in?</div>`;
+          Welcome! I'm your AI intake specialist for <strong>evictions.help</strong>.<br><br>
+          <strong>⏱ Please allow 10-15 minutes</strong> to answer all my questions.
+          At the end, you'll download your ready-to-file court packet immediately.<br><br>
+          Let's get started — what is your <strong>full legal name</strong>?</div>`;
         document.getElementById("post-intake").classList.add("hidden");
         document.getElementById("summary-container").innerHTML = "";
         document.getElementById("download-screen").style.display = "none";

@@ -3,335 +3,107 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Evictions.help — Same-Day Court Paperwork, $395 Flat</title>
+    <title>evictions.help — Same-Day Eviction Court Paperwork, $395</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      :root {
-        --primary: #e94560;
-        --dark: #1a1a2e;
-        --gray: #6b7280;
-        --light: #f8f9fa;
-        --white: #fff;
-        --radius: 8px;
-      }
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: var(--dark);
-        line-height: 1.6;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root { --primary: #e94560; --dark: #1a1a2e; --gray: #6b7280; --light: #f8f9fa; --white: #fff; --radius: 8px; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--dark); line-height: 1.6; }
+      .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
 
-      /* Hero */
-      .hero {
-        text-align: center;
-        padding: 60px 24px 40px;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        color: #fff;
-      }
-      .hero-badge {
-        display: inline-block;
-        background: rgba(233, 69, 96, 0.15);
-        color: var(--primary);
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 16px;
-      }
-      .hero h1 {
-        font-size: 36px;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 12px;
-      }
-      .hero h1 span {
-        color: var(--primary);
-      }
-      .hero p {
-        font-size: 17px;
-        color: #94a3b8;
-        max-width: 560px;
-        margin: 0 auto 20px;
-      }
-      .hero-price {
-        font-size: 42px;
-        font-weight: 800;
-        color: #fff;
-        margin-bottom: 20px;
-      }
-      .hero-price small {
-        font-size: 14px;
-        color: #94a3b8;
-        font-weight: 400;
-      }
-      .btn-cta {
-        display: inline-block;
-        background: var(--primary);
-        color: #fff;
-        font-size: 18px;
-        font-weight: 700;
-        padding: 16px 40px;
-        border-radius: var(--radius);
-        text-decoration: none;
-        transition: background 0.2s;
-        cursor: pointer;
-        border: none;
-      }
-      .btn-cta:hover {
-        background: #d63851;
-      }
-      .hero-disclaimer {
-        margin-top: 16px;
-        font-size: 12px;
-        color: #64748b;
-      }
+      .hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; }
+      .hero-badge { display: inline-block; background: rgba(233,69,96,0.15); color: var(--primary); padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+      .hero h1 { font-size: 36px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+      .hero h1 span { color: var(--primary); }
+      .hero p { font-size: 17px; color: #94a3b8; max-width: 560px; margin: 0 auto 20px; }
+      .hero-price { font-size: 42px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+      .hero-price small { font-size: 14px; color: #94a3b8; font-weight: 400; }
+      .btn-cta { display: inline-block; background: var(--primary); color: #fff; font-size: 18px; font-weight: 700; padding: 16px 40px; border-radius: var(--radius); text-decoration: none; cursor: pointer; border: none; }
+      .btn-cta:hover { background: #d63851; }
+      .hero-disclaimer { margin-top: 16px; font-size: 12px; color: #64748b; }
 
-      /* Section */
-      .section {
-        padding: 60px 0;
-      }
-      .section h2 {
-        text-align: center;
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 12px;
-      }
-      .section-subtitle {
-        text-align: center;
-        color: var(--gray);
-        font-size: 16px;
-        margin-bottom: 40px;
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
-      }
+      .section { padding: 60px 0; }
+      .section h2 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+      .section-subtitle { text-align: center; color: var(--gray); font-size: 16px; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto; }
 
-      /* Includes */
-      .includes-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-      .include-item {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        padding: 16px;
-        background: var(--light);
-        border-radius: var(--radius);
-      }
-      .include-item .icon {
-        font-size: 22px;
-        flex-shrink: 0;
-      }
-      .include-item h3 {
-        font-size: 15px;
-        margin-bottom: 2px;
-      }
-      .include-item p {
-        font-size: 13px;
-        color: var(--gray);
-      }
+      .includes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .include-item { display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: var(--light); border-radius: var(--radius); }
+      .include-item .icon { font-size: 22px; flex-shrink: 0; }
+      .include-item h3 { font-size: 15px; margin-bottom: 2px; }
+      .include-item p { font-size: 13px; color: var(--gray); }
 
-      /* Steps */
-      .steps {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 24px;
-      }
-      .step {
-        text-align: center;
-        padding: 24px 16px;
-        background: var(--light);
-        border-radius: var(--radius);
-      }
-      .step-num {
-        display: inline-block;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: var(--primary);
-        color: #fff;
-        font-weight: 800;
-        font-size: 20px;
-        line-height: 42px;
-        margin-bottom: 12px;
-      }
-      .step h3 {
-        font-size: 16px;
-        margin-bottom: 6px;
-      }
-      .step p {
-        font-size: 13px;
-        color: var(--gray);
-      }
+      .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+      .step { text-align: center; padding: 24px 16px; background: var(--light); border-radius: var(--radius); }
+      .step-num { display: inline-block; width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 800; font-size: 20px; line-height: 42px; margin-bottom: 12px; }
+      .step h3 { font-size: 16px; margin-bottom: 6px; }
+      .step p { font-size: 13px; color: var(--gray); }
 
-      /* Trust */
-      .trust-bar {
-        text-align: center;
-        padding: 40px 24px;
-        border-top: 1px solid #e5e7eb;
-      }
-      .trust-bar p {
-        color: var(--gray);
-        font-size: 14px;
-        margin-bottom: 8px;
-      }
-      .trust-bar .checks {
-        display: flex;
-        justify-content: center;
-        gap: 32px;
-        font-size: 13px;
-        font-weight: 600;
-      }
+      /* Eligibility Form */
+      .eligibility-card { background: #fff; border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 32px; margin-bottom: 40px; }
+      .eligibility-card h2 { font-size: 24px; margin-bottom: 8px; }
+      .form-group { margin-bottom: 18px; }
+      .form-label { display: block; font-weight: 600; font-size: 14px; color: var(--dark); margin-bottom: 6px; }
+      .form-input, .form-select { width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: var(--radius); font-size: 15px; font-family: inherit; transition: border-color 0.2s; }
+      .form-input:focus, .form-select:focus { border-color: var(--primary); outline: none; }
+      .radio-group { display: flex; gap: 24px; }
+      .radio-label { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; padding: 8px 0; }
+      .radio-label input { accent-color: var(--primary); width: 18px; height: 18px; }
+      .btn-block { width: 100%; padding: 14px; border-radius: var(--radius); border: none; font-weight: 700; font-size: 16px; cursor: pointer; }
+      .btn-primary { background: var(--primary); color: #fff; }
+      .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+      .btn-success { background: #16a34a; color: #fff; }
+      .alert { padding: 14px; border-radius: var(--radius); margin-bottom: 16px; font-size: 14px; }
+      .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+      .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+      .alert-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+      .hidden { display: none !important; }
 
-      /* States */
-      .states-bar {
-        text-align: center;
-        padding: 20px 24px;
-        font-size: 12px;
-        color: var(--gray);
-        border-top: 1px solid #e5e7eb;
-      }
+      /* Payment section */
+      .payment-box { text-align: center; padding: 30px; background: var(--light); border-radius: var(--radius); }
+      .payment-box h3 { font-size: 20px; margin-bottom: 12px; }
+      .payment-box .email-input { padding: 10px 14px; border: 2px solid #ccc; border-radius: 6px; font-size: 14px; width: 280px; margin: 10px 0; text-align: center; }
+      .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+      @keyframes spin { to { transform: rotate(360deg); } }
 
-      /* Bottom CTA */
-      .cta-section {
-        text-align: center;
-        padding: 40px 24px 60px;
-      }
-      .cta-section h2 {
-        font-size: 24px;
-        margin-bottom: 16px;
-      }
-
-      /* Footer */
-      footer {
-        text-align: center;
-        padding: 32px 24px;
-        font-size: 12px;
-        color: #9ca3af;
-        background: var(--light);
-      }
+      .trust-bar { text-align: center; padding: 40px 24px; border-top: 1px solid #e5e7eb; }
+      .trust-bar p { color: var(--gray); font-size: 14px; margin-bottom: 8px; }
+      .trust-bar .checks { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 600; flex-wrap: wrap; }
+      .states-bar { text-align: center; padding: 20px 24px; font-size: 12px; color: var(--gray); border-top: 1px solid #e5e7eb; }
+      footer { text-align: center; padding: 32px 24px; font-size: 12px; color: #9ca3af; background: var(--light); }
 
       @media (max-width: 640px) {
-        .hero h1 {
-          font-size: 28px;
-        }
-        .includes-grid,
-        .steps {
-          grid-template-columns: 1fr;
-        }
+        .hero h1 { font-size: 28px; }
+        .includes-grid, .steps { grid-template-columns: 1fr; }
+        .radio-group { flex-direction: column; gap: 4px; }
       }
     </style>
   </head>
   <body>
+
     <!-- Hero -->
     <div class="hero">
-      <a href="/" style="text-decoration: none; color: inherit"
-        ><div
-          style="
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 12px;
-            color: #fff;
-          "
-        >
-          evictions.help
-        </div></a
-      >
+      <div style="font-size:28px;font-weight:800;margin-bottom:12px;color:#fff">evictions.help</div>
       <div class="hero-badge">Serving 20 States</div>
-      <h1>Eviction Court Paperwork<br />Prepared <span>Same Day</span></h1>
+      <h1>Eviction Court Paperwork<br>Prepared <span>Same Day — $395</span></h1>
       <p>
-        Chat with our AI intake specialist. Answer questions about your
-        situation. Get a complete, ready-to-file court paperwork packet — no
-        forms to fill out.
+        Answer 5 quick questions to check eligibility. Pay once. Chat with our AI to prepare your paperwork. Download a complete, ready-to-file packet.
       </p>
-      <div class="hero-price">$395 <small>flat fee</small></div>
-      <a href="/chat" class="btn-cta">Start Your Free Intake →</a>
-      <p class="hero-disclaimer">
-        No charge until your packet is ready to download. Self-help document
-        preparation. Not a law firm. Not legal advice.
-      </p>
+      <div class="hero-price">$395 <small>flat fee — no hidden costs</small></div>
+      <a href="#eligibility" class="btn-cta">Check Eligibility →</a>
+      <p class="hero-disclaimer">Self-help document preparation. Not a law firm. Not legal advice.</p>
     </div>
 
     <!-- What's Included -->
     <div class="section">
       <div class="container">
         <h2>What's Included in Your Packet</h2>
-        <p class="section-subtitle">
-          One $395 payment. Everything you need to respond to an eviction —
-          personalized for your state and county.
-        </p>
+        <p class="section-subtitle">One $395 payment. Everything you need to respond to an eviction.</p>
         <div class="includes-grid">
-          <div class="include-item">
-            <div class="icon">📋</div>
-            <div>
-              <h3>Official Court Answer Form</h3>
-              <p>
-                Pre-filled with your case details, defenses, and signature lines
-                — ready to file.
-              </p>
-            </div>
-          </div>
-          <div class="include-item">
-            <div class="icon">💰</div>
-            <div>
-              <h3>Fee Waiver Application</h3>
-              <p>
-                If you can't afford the court filing fee, we include a completed
-                fee waiver form.
-              </p>
-            </div>
-          </div>
-          <div class="include-item">
-            <div class="icon">📄</div>
-            <div>
-              <h3>Legal Motions</h3>
-              <p>
-                Motion to Determine Rent, Demand Letter for Repairs, Payment
-                Plan & Hardship Letters.
-              </p>
-            </div>
-          </div>
-          <div class="include-item">
-            <div class="icon">✅</div>
-            <div>
-              <h3>Filing & Court Checklists</h3>
-              <p>
-                Step-by-step instructions: where to file, what to bring, what to
-                say to the judge.
-              </p>
-            </div>
-          </div>
-          <div class="include-item">
-            <div class="icon">🏛️</div>
-            <div>
-              <h3>Hearing Script</h3>
-              <p>
-                Personalized script for your court hearing — exactly what to say
-                and how to say it.
-              </p>
-            </div>
-          </div>
-          <div class="include-item">
-            <div class="icon">🆘</div>
-            <div>
-              <h3>Rental Assistance Directory</h3>
-              <p>
-                County-specific list of organizations that can help with rent,
-                utilities, and housing.
-              </p>
-            </div>
-          </div>
+          <div class="include-item"><div class="icon">📋</div><div><h3>Official Court Answer Form</h3><p>Pre-filled with your case details, defenses, and signature lines — ready to file.</p></div></div>
+          <div class="include-item"><div class="icon">💰</div><div><h3>Fee Waiver Application</h3><p>If you can't afford the court filing fee, we include a completed fee waiver form.</p></div></div>
+          <div class="include-item"><div class="icon">📄</div><div><h3>Legal Motions & Letters</h3><p>Motion to Determine Rent, Demand Letter, Payment Plan & Hardship Letters — all pre-filled.</p></div></div>
+          <div class="include-item"><div class="icon">✅</div><div><h3>Filing & Court Checklists</h3><p>Step-by-step instructions: where to file, what to bring, what to say to the judge.</p></div></div>
+          <div class="include-item"><div class="icon">🏛️</div><div><h3>Personalized Hearing Script</h3><p>Exactly what to say in court — written for your specific case and defenses.</p></div></div>
+          <div class="include-item"><div class="icon">🆘</div><div><h3>Rental Assistance Directory</h3><p>County-specific organizations that help with rent, utilities, and housing.</p></div></div>
         </div>
       </div>
     </div>
@@ -340,75 +112,113 @@
     <div class="section" style="background: var(--light)">
       <div class="container">
         <h2>How It Works</h2>
-        <p class="section-subtitle">
-          Three steps. No forms to fill out. No lawyers to call.
-        </p>
+        <p class="section-subtitle">Three simple steps.</p>
         <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <h3>Chat with Our AI</h3>
-            <p>
-              Answer questions conversationally about your eviction — just like
-              texting a friend. Takes about 10 minutes.
-            </p>
+          <div class="step"><div class="step-num">1</div><h3>Check Eligibility</h3><p>Answer 5 quick questions to make sure we can help. Takes 30 seconds.</p></div>
+          <div class="step"><div class="step-num">2</div><h3>Pay $395</h3><p>Secure payment via Authorize.net. One-time fee, no surprises.</p></div>
+          <div class="step"><div class="step-num">3</div><h3>Chat & Download</h3><p>Talk with our AI intake specialist (~10-15 min). Download your packet immediately.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELIGIBILITY + PAYMENT -->
+    <div class="section" id="eligibility">
+      <div class="container">
+        <div class="eligibility-card">
+          <h2>Check Your Eligibility</h2>
+          <p style="color:var(--gray);margin-bottom:20px">5 quick questions. Takes 30 seconds.</p>
+
+          <div id="eligibility-form">
+            <div class="form-group">
+              <label class="form-label">1. What state is your eviction case in?</label>
+              <select id="el-state" class="form-select">
+                <option value="">Select your state</option>
+                <option value="FL">Florida</option><option value="AL">Alabama</option>
+                <option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+                <option value="CA">California</option><option value="CO">Colorado</option>
+                <option value="CT">Connecticut</option><option value="GA">Georgia</option>
+                <option value="IL">Illinois</option><option value="LA">Louisiana</option>
+                <option value="MA">Massachusetts</option><option value="MI">Michigan</option>
+                <option value="MN">Minnesota</option><option value="NV">Nevada</option>
+                <option value="NM">New Mexico</option><option value="OR">Oregon</option>
+                <option value="RI">Rhode Island</option><option value="SC">South Carolina</option>
+                <option value="TN">Tennessee</option><option value="TX">Texas</option><option value="VA">Virginia</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">2. What county is your case in?</label>
+              <select id="el-county" class="form-select"><option value="">First select your state</option></select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">3. Are you the tenant named in the eviction?</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="el-tenant" value="yes"> Yes</label>
+                <label class="radio-label"><input type="radio" name="el-tenant" value="no"> No</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">4. Have you received court papers (summons + complaint)?</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="el-served" value="yes"> Yes, I've been served</label>
+                <label class="radio-label"><input type="radio" name="el-served" value="no"> Not yet</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">5. Is this a residential rental (not commercial or business)?</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="el-residential" value="yes"> Yes</label>
+                <label class="radio-label"><input type="radio" name="el-residential" value="no"> No</label>
+              </div>
+            </div>
+
+            <div id="el-result" class="hidden"></div>
+
+            <button class="btn-block btn-primary" id="btn-check" onclick="checkEligibility()">Check Eligibility</button>
           </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <h3>Pay $395</h3>
-            <p>
-              Secure payment via Authorize.net. Only after your packet is ready
-              — you see what's in it first.
-            </p>
+
+          <!-- Payment (hidden until eligible) -->
+          <div id="payment-section" class="hidden">
+            <div class="alert alert-success" style="text-align:center">
+              <strong>✅ You're eligible!</strong> Complete your payment below to begin.
+            </div>
+            <div class="payment-box">
+              <h3>One-Time Payment — $395</h3>
+              <p style="color:var(--gray);font-size:14px;margin-bottom:12px">Your packet includes all listed documents, pre-filled and ready to file.</p>
+              <input type="email" id="pay-email" class="email-input" placeholder="Email for receipt & delivery" />
+              <br>
+              <button class="btn-block btn-primary" id="btn-pay" onclick="startPayment()" style="margin-top:12px">
+                Pay $395 & Continue →
+              </button>
+              <p style="font-size:12px;color:var(--gray);margin-top:8px">Secure payment via Authorize.net. 24-hour money-back guarantee.</p>
+            </div>
           </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <h3>Download & File</h3>
-            <p>
-              Download your complete packet as a ZIP. Print, review, sign, and
-              file with the court.
-            </p>
-          </div>
+
         </div>
       </div>
     </div>
 
     <!-- Trust Bar -->
     <div class="trust-bar">
-      <p>Trusted across 20 states</p>
+      <p>Available in 20 states</p>
       <div class="checks">
-        <span>✓ AR</span><span>✓ AZ</span><span>✓ CA</span><span>✓ CO</span
-        ><span>✓ CT</span> <span>✓ FL</span><span>✓ GA</span><span>✓ IL</span
-        ><span>✓ LA</span><span>✓ MA</span> <span>✓ MI</span><span>✓ MN</span
-        ><span>✓ NM</span><span>✓ NV</span><span>✓ OR</span> <span>✓ RI</span
-        ><span>✓ SC</span><span>✓ TN</span><span>✓ TX</span><span>✓ VA</span>
+        <span>✓ AR</span><span>✓ AZ</span><span>✓ CA</span><span>✓ CO</span><span>✓ CT</span>
+        <span>✓ FL</span><span>✓ GA</span><span>✓ IL</span><span>✓ LA</span><span>✓ MA</span>
+        <span>✓ MI</span><span>✓ MN</span><span>✓ NM</span><span>✓ NV</span><span>✓ OR</span>
+        <span>✓ RI</span><span>✓ SC</span><span>✓ TN</span><span>✓ TX</span><span>✓ VA</span>
       </div>
     </div>
 
-    <!-- Bottom CTA -->
-    <div class="cta-section">
-      <div class="container">
-        <h2>Ready to fight your eviction?</h2>
-        <p style="color: var(--gray); margin-bottom: 20px">
-          Chat with our AI now. No charge until you're ready to download your
-          packet.
-        </p>
-        <a href="/chat" class="btn-cta">Start Your Free Intake →</a>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--gray)">
-          $395 flat fee. Self-help service. Not legal advice or representation.
-        </p>
-      </div>
-    </div>
-
-    <!-- States Bar -->
-    <div class="states-bar">
-      Serving AR · AZ · CA · CO · CT · FL · GA · IL · LA · MA · MI · MN · NM ·
-      NV · OR · RI · SC · TN · TX · VA
-    </div>
-
+    <div class="states-bar">AR · AZ · CA · CO · CT · FL · GA · IL · LA · MA · MI · MN · NM · NV · OR · RI · SC · TN · TX · VA</div>
     <footer>
-      Eviction Defense — Self-help document preparation. Not a law firm. Not
-      legal advice.<br />
-      <strong>evictions.help</strong> &copy; 2026. All rights reserved.
+      <strong>evictions.help</strong> — Self-help document preparation. Not a law firm. Not legal advice.<br>
+      &copy; 2026. All rights reserved.
     </footer>
+
+    <script src="/static/js/app.js"></script>
+    <script src="https://jstest.authorize.net/v3/AcceptUI.js" charset="utf-8"></script>
   </body>
 </html>
