@@ -220,10 +220,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_mapping": {
             "case_number": "Text1",
             "full_name": "Text5",
+            "landlord_name": "Text2",
+            "court_name": "Other Court",
             "phone": "Text8",
             "date": "Text9",
             "email": "Text277",
             "address": "Text18",
+            "county": "Text3",
             "printed_name": "Text16",
             "signature_date": "D signature date",
         },
@@ -383,6 +386,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "overlay_positions": {
             "full_name": {"page": 1, "x": 72, "y": 200, "w": 250, "h": 20, "size": 11},
+            "landlord_name": {"page": 1, "x": 72, "y": 175, "w": 250, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 425, "y": 93, "w": 130, "h": 20, "size": 10},
             "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
             "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
         },
@@ -744,15 +749,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": False,
         "court_type": "District Court",
-        "overlay_positions": {
-            "full_name": {"page": 9, "x": 90, "y": 620, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 7, "x": 300, "y": 45, "w": 200, "h": 20, "size": 11},
-            "landlord_name": {"page": 9, "x": 90, "y": 650, "w": 300, "h": 20, "size": 11},
-            "address": {"page": 10, "x": 110, "y": 81, "w": 300, "h": 20, "size": 11},
-            "phone": {"page": 10, "x": 360, "y": 134, "w": 150, "h": 20, "size": 11},
-            # Defense narrative text area (page 8, between DEFENSES header and COUNTERCLAIM)
-            "defense_narrative": {"page": 8, "x": 90, "y": 355, "w": 430, "h": 190, "size": 9},
-        },
+        "overlay_positions": {},
         "notes": "AR unlawful detainer answer packet — 11 pages. Page 8 has narrative defense text area where tenant writes reasons. We pre-fill this with formatted defense explanations based on intake answers. Remaining pages are instructions (1-5) and signature pages (9-11).",
     },
 
