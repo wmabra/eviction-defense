@@ -553,31 +553,73 @@
 
       // ===== GENERATE PACKET & DOWNLOAD =====
 
-      function generateAndDownload() {
+      async function generateAndDownload() {
         document.getElementById("summary-container").style.display = "none";
         document.getElementById("download-screen").style.display = "block";
         document.getElementById("ready-case-id").textContent = caseId;
 
-        const p = (appData && appData.personal_info) || {};
-        const c = (appData && appData.case_details) || {};
-        const l = (appData && appData.landlord_info) || {};
-        const state = (appData && appData.state) || "FL";
+        // POST full intake data (including defenses, preferences, financial info)
+        // so the packet includes conditional documents and the filled court form
+        const body = appData || {};
+        body.case_id = caseId;
 
-        const params = new URLSearchParams({
-          full_name: p.full_name || "Tenant",
-          county: p.county || "",
-          state: state,
-          property_address: p.property_address || "",
-          landlord_name: l.landlord_name || "",
-          case_number: c.case_number || "",
-          phone: p.phone || "",
-          email: p.email || "",
-        });
-        _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
+        try {
+          const resp = await fetch("/api/v1/documents/generate-packet", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (resp.ok) {
+            const blob = await resp.blob();
+            _packetBlob = blob;
+            _packetFilename = "eviction_defense_packet_" + 
+              ((appData && appData.personal_info && appData.personal_info.full_name) || "Tenant").replace(/ /g, "_") + ".zip";
+          } else {
+            // Fallback to GET with basic params
+            const p = (appData && appData.personal_info) || {};
+            const c = (appData && appData.case_details) || {};
+            const l = (appData && appData.landlord_info) || {};
+            const state = (appData && appData.state) || "FL";
+            const params = new URLSearchParams({
+              full_name: p.full_name || "Tenant", county: p.county || "",
+              state: state, property_address: p.property_address || "",
+              landlord_name: l.landlord_name || "",
+              case_number: c.case_number || "",
+              phone: p.phone || "", email: p.email || "",
+            });
+            _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
+          }
+        } catch (_err) {
+          // Network error — fallback
+          const p = (appData && appData.personal_info) || {};
+          const l = (appData && appData.landlord_info) || {};
+          const c = (appData && appData.case_details) || {};
+          const state = (appData && appData.state) || "FL";
+          const params = new URLSearchParams({
+            full_name: p.full_name || "Tenant", county: p.county || "",
+            state: state, property_address: p.property_address || "",
+            landlord_name: l.landlord_name || "",
+            case_number: c.case_number || "",
+            phone: p.phone || "", email: p.email || "",
+          });
+          _packetDownloadUrl = "/api/v1/documents/generate-packet?" + params;
+        }
       }
 
+      let _packetBlob = null;
+      let _packetFilename = null;
+
       function downloadPacket() {
-        if (_packetDownloadUrl) {
+        if (_packetBlob) {
+          const url = URL.createObjectURL(_packetBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = _packetFilename || "eviction_defense_packet.zip";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } else if (_packetDownloadUrl) {
           window.location.href = _packetDownloadUrl;
         } else {
           alert("Still preparing your packet. Please wait a moment.");
@@ -590,6 +632,8 @@
         messages = [];
         appData = null;
         _packetDownloadUrl = null;
+        _packetBlob = null;
+        _packetFilename = null;
         caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
 
         document.getElementById("chat").innerHTML = `<div class="message ai">

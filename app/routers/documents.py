@@ -5,7 +5,7 @@ import logging
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 
@@ -380,7 +380,55 @@ def _merge_intake_and_extraction(intake_data: dict, extraction_result: dict) -> 
 
 
 @router.get("/generate-packet")
-def generate_packet(
+async def generate_packet_get(
+    full_name: str = "",
+    county: str = "",
+    state: str = "FL",
+    property_address: str = "",
+    landlord_name: str = "",
+    case_number: str = "",
+    phone: str = "",
+    email: str = "",
+):
+    """Generate packet from URL params (legacy)."""
+    return _build_and_return_packet(full_name, county, state, property_address, landlord_name, case_number, phone, email)
+
+
+@router.post("/generate-packet")
+async def generate_packet_post(request: Request):
+    """Generate packet from full JSON body (used by chat intake flow)."""
+    import json as json_mod
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    
+    p = body.get("personal_info", {})
+    l = body.get("landlord_info", {})
+    c = body.get("case_details", {})
+    
+    full_name = body.get("full_name") or p.get("full_name", "Tenant")
+    county = body.get("county") or p.get("county", "")
+    state = body.get("state", "FL")
+    
+    data = {
+        "state": state.upper(),
+        "personal_info": p,
+        "landlord_info": l,
+        "case_details": c,
+        "rent_payment": body.get("rent_payment", {}),
+        "defenses": body.get("defenses", {}),
+        "preferences": body.get("preferences", {}),
+        "financial_info": body.get("financial_info"),
+    }
+    
+    return _build_and_return_packet(full_name, county, state, 
+        p.get("property_address", ""), l.get("landlord_name", ""),
+        c.get("case_number", ""), p.get("phone", ""), p.get("email", ""),
+        extra_data=data)
+
+
+def _build_and_return_packet(
     full_name: str,
     county: str,
     state: str = "FL",
@@ -389,35 +437,15 @@ def generate_packet(
     case_number: str = "",
     phone: str = "",
     email: str = "",
+    extra_data: dict = None,
 ):
     """Generate a complete eviction defense packet with all documents."""
     import tempfile, zipfile
     
-    data = {
-        "state": state.upper(),
-        "personal_info": {
-            "full_name": full_name,
-            "property_address": property_address,
-            "property_city": "",
-            "county": county,
-            "phone": phone,
-            "email": email,
-        },
-        "landlord_info": {
-            "landlord_name": landlord_name,
-            "landlord_address": "",
-            "landlord_phone": "",
-            "landlord_email": "",
-        },
-        "case_details": {
-            "case_number": case_number,
-            "court_name": county,
-            "complaint_amount_claimed": "",
-        },
-        "rent_payment": {"monthly_rent": ""},
-        "defenses": {},
-        "preferences": {"trial_by": "judge"},
-    }
+    if extra_data:
+        data = extra_data
+    else:
+        data = _build_data_from_params(full_name, county, state, property_address, landlord_name, case_number, phone, email)
     
     # Generate all documents to a temp dir
     tmpdir = tempfile.mkdtemp()
@@ -456,6 +484,35 @@ def generate_packet(
         media_type="application/zip",
         filename=f"eviction_defense_packet_{safe_name}.zip"
     )
+
+
+def _build_data_from_params(full_name, county, state, property_address, landlord_name, case_number, phone, email):
+    """Build the data dict from URL parameters (fallback when no case_id)."""
+    return {
+        "state": state.upper(),
+        "personal_info": {
+            "full_name": full_name,
+            "property_address": property_address,
+            "property_city": "",
+            "county": county,
+            "phone": phone,
+            "email": email,
+        },
+        "landlord_info": {
+            "landlord_name": landlord_name,
+            "landlord_address": "",
+            "landlord_phone": "",
+            "landlord_email": "",
+        },
+        "case_details": {
+            "case_number": case_number,
+            "court_name": county,
+            "complaint_amount_claimed": "",
+        },
+        "rent_payment": {"monthly_rent": ""},
+        "defenses": {},
+        "preferences": {"trial_by": "judge"},
+    }
 
 
 def _build_intake_dict(case: Case) -> dict:
