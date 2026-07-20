@@ -156,14 +156,43 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Handle defense checkboxes
     defense_opts = config.get("defense_options", [])
+    
+    # Defense key aliases — maps chatbot's standard keys to state-specific keys used in configs
+    DEFENSE_ALIASES = {
+        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability"],
+        "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount"],
+        "def_attempted_pay": ["def_attempted_pay", "def_offered_pay", "def_offered_refused", "def_tried_to_pay", "def_refused_payment", "def_refused_rent"],
+        "def_paid": ["def_paid", "def_rent_paid", "def_rent_paid_full"],
+        "def_waived": ["def_waived", "def_waiver"],
+        "def_retaliation": ["def_retaliation"],
+        "def_fair_housing": ["def_fair_housing", "def_discrimination"],
+        "def_accepted_rent": ["def_accepted_rent", "def_accepted_late"],
+        "def_corrected": ["def_corrected", "def_cured", "def_did_repairs", "def_moved_out"],
+        "def_not_owner": ["def_not_owner", "def_landlord_not_entitled", "def_ownership"],
+        "def_bad_notice": ["def_bad_notice", "def_no_notice", "def_invalid", "def_improper_notice"],
+        "def_other": ["def_other", "def_other2", "def_other_defenses", "def_admit_all", "def_admit_partial", "def_deny_all", "def_contest", "def_jury_trial", "def_no_breach", "def_lease_violation", "def_justifiable"],
+    }
+    
     for opt in defense_opts:
         def_key = opt.get("key", "")
         field_name = opt.get("field", "")
         if def_key and field_name:
-            def_data = defenses.get(def_key, {})
-            checked = def_data.get("checked", False) if isinstance(def_data, dict) else False
-            if checked:
-                values[field_name] = "Yes"
+            # Check if any of our defense data matches this config key (or an alias)
+            found_checked = False
+            for standard_key, aliases in DEFENSE_ALIASES.items():
+                if def_key in aliases:
+                    def_data = defenses.get(standard_key, {})
+                    checked = def_data.get("checked", False) if isinstance(def_data, dict) else False
+                    if checked:
+                        values[field_name] = "Yes"
+                        found_checked = True
+                    break
+            # Also check direct match (for keys not in alias list)
+            if not found_checked:
+                def_data = defenses.get(def_key, {})
+                checked = def_data.get("checked", False) if isinstance(def_data, dict) else False
+                if checked:
+                    values[field_name] = "Yes"
     
     # Static values: fixed text that doesn't come from user data
     # Used for fields like CA's "In Pro Per" attorney firm notation

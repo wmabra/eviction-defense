@@ -156,7 +156,7 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None) -> di
         model=model,
         messages=full_messages,
         temperature=0.7,
-        max_tokens=800,
+        max_tokens=4096,
     )
 
     content = response.choices[0].message.content

@@ -427,11 +427,21 @@ def generate_packet(
     # Also fill the official court form if available
     try:
         from app.services.form_filler import fill_answer_form
-        court_pdf = os.path.join(tmpdir, "00_court_answer_form.pdf")
-        fill_answer_form(data, county, court_pdf)
+        from app.services.pdf_overlay import fill_fee_waiver
+        
+        state_code = data.get("state", state.upper())
+        court_pdf = os.path.join(tmpdir, "01_COURT_FORM_Answer_FILE_THIS.pdf")
+        fill_answer_form(data, state_code, court_pdf)
         paths["court_form"] = court_pdf
-    except:
-        pass
+        
+        # Also fill fee waiver if tenant has financial info
+        if data.get("financial_info"):
+            fee_waiver_pdf = os.path.join(tmpdir, "02_COURT_FORM_Fee_Waiver_FILE_THIS.pdf")
+            fill_fee_waiver(data, state_code, fee_waiver_pdf)
+            paths["fee_waiver"] = fee_waiver_pdf
+    except Exception as e:
+        import logging
+        logging.warning(f"Court form fill skipped: {e}")
     
     # Create zip file
     zip_path = tempfile.mktemp(suffix=".zip")
