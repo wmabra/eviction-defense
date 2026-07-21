@@ -1,110 +1,79 @@
 /* evictions.help — Eligibility + Payment */
-const COUNTY_DATA = {
-  "AR": ["Benton","Columbia","Craighead","Crawford","Faulkner","Garland","Greene","Hempstead","Independence","Jefferson","Lonoke","Miller","Mississippi","Ouachita","Pulaski","Saline","Sebastian","Union","Washington","White"],
-  "AZ": ["Apache","Cochise","Coconino","Gila","Glendale Market","Graham","Greenlee","La Paz","Maricopa","Mesa Market","Mohave","Navajo","Phoenix Market","Pima","Pinal","Santa Cruz","Scottsdale Market","Tucson Market","Yavapai","Yuma"],
-  "CA": ["Alameda","Contra Costa","Fresno","Kern","Los Angeles","Monterey","Orange","Riverside","Sacramento","San Bernardino","San Diego","San Francisco","San Joaquin","San Mateo","Santa Clara","Solano","Sonoma","Stanislaus","Tulare","Ventura"],
-  "CO": ["Adams","Arapahoe","Boulder","Broomfield","Denver","Douglas","Eagle","El Paso","Fremont","Garfield","Jefferson","La Plata","Larimer","Mesa","Montrose","Morgan","Pueblo","Routt","Summit","Weld"],
-  "CT": ["Fairfield","Hartford","Litchfield","Middlesex","New Haven","New London","Tolland","Windham"],
-  "FL": ["Brevard","Broward","Collier","Duval","Hillsborough","Lake","Lee","Manatee","Martin","Miami-Dade","Orange","Osceola","Palm Beach","Pasco","Pinellas","Polk","Sarasota","Seminole","St. Lucie","Volusia"],
-  "GA": ["Bibb","Chatham","Cherokee","Clarke","Clayton","Cobb","Columbia","Coweta","DeKalb","Douglas","Fayette","Forsyth","Fulton","Gwinnett","Hall","Henry","Houston","Muscogee","Paulding","Richmond"],
-  "IL": ["Champaign","Cook","DuPage","Kane","Kankakee","Kendall","LaSalle","Lake","Macon","Madison","McHenry","McLean","Peoria","Rock Island","Sangamon","St. Clair","Tazewell","Vermilion","Will","Winnebago"],
-  "LA": ["Ascension","Bossier","Caddo","Calcasieu","East Baton Rouge","Iberia","Jefferson","Lafayette","Lafourche","Livingston","Orleans","Ouachita","Rapides","St. Charles","St. John the Baptist","St. Landry","St. Tammany","Tangipahoa","Terrebonne","Vernon"],
-  "MA": ["Barnstable","Berkshire","Boston","Bristol","Cambridge","Dukes","Essex","Franklin","Hampden","Hampshire","Lowell","Middlesex","Nantucket","New Bedford","Norfolk","Plymouth","Springfield","Suffolk","Worcester","Worcester City"],
-  "MI": ["Bay","Berrien","Calhoun","Eaton","Genesee","Ingham","Isabella","Jackson","Kalamazoo","Kent","Livingston","Macomb","Monroe","Muskegon","Oakland","Ottawa","Saginaw","St. Clair","Washtenaw","Wayne"],
-  "MN": ["Anoka","Beltrami","Blue Earth","Carver","Clay","Crow Wing","Dakota","Hennepin","Kandiyohi","Olmsted","Otter Tail","Ramsey","Rice","Scott","Sherburne","St. Louis","Stearns","Washington","Winona","Wright"],
-  "NM": ["Bernalillo","Chaves","Curry","Doña Ana","Eddy","Grant","Lea","Los Alamos","Luna","McKinley","Otero","Rio Arriba","Roosevelt","San Juan","San Miguel","Sandoval","Santa Fe","Taos","Torrance","Valencia"],
-  "NV": ["Carson City","Churchill","Clark","Douglas","Elko","Eureka","Henderson Market","Humboldt","Lander","Lincoln","Lyon","Mesquite Market","Mineral","North Las Vegas Market","Nye","Pershing","Sparks Market","Storey","Washoe","White Pine"],
-  "OR": ["Baker","Benton","Clackamas","Coos","Crook","Deschutes","Douglas","Jackson","Josephine","Klamath","Lane","Linn","Malheur","Marion","Multnomah","Polk","Umatilla","Union","Washington","Yamhill"],
-  "RI": ["Bristol","Kent","Newport","Providence","Washington"],
-  "SC": ["Aiken","Anderson","Beaufort","Berkeley","Charleston","Dorchester","Florence","Georgetown","Greenville","Greenwood","Horry","Kershaw","Lexington","Oconee","Orangeburg","Pickens","Richland","Spartanburg","Sumter","York"],
-  "TN": ["Anderson","Blount","Bradley","Cumberland","Davidson","Hamilton","Knox","Madison","Maury","Montgomery","Putnam","Robertson","Rutherford","Sevier","Shelby","Sullivan","Sumner","Washington","Williamson","Wilson"],
-  "TX": ["Bell","Bexar","Brazoria","Cameron","Collin","Dallas","Denton","El Paso","Fort Bend","Galveston","Harris","Hidalgo","Lubbock","McLennan","Montgomery","Nueces","Tarrant","Travis","Webb","Williamson"],
-  "VA": ["Albemarle","Alexandria","Arlington","Chesapeake","Chesterfield","Fairfax","Hampton","Henrico","Loudoun","Lynchburg","Montgomery","Newport News","Norfolk","Prince William","Richmond City","Roanoke City","Rockingham","Spotsylvania","Stafford","Virginia Beach"]
-};
+const SUPPORTED_STATES = ["AL","AZ","AR","CA","CO","CT","FL","GA","IL","LA","MA","MI","MN","NV","NM","OR","RI","SC","TN","TX","VA"];
+const appState = { state: "" };
 
-const SUPPORTED_STATES = Object.keys(COUNTY_DATA);
-const appState = { state: "", county: "" };
-
-// Dynamic county dropdown
-function updateCounties() {
-  const state = document.getElementById("el-state").value;
-  const select = document.getElementById("el-county");
-  const counties = COUNTY_DATA[state] || [];
-  select.innerHTML = '<option value="">Select your county</option>' +
-    counties.map(c => '<option value="' + c + '">' + c + '</option>').join('');
-  appState.state = state;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("el-state").addEventListener("change", updateCounties);
-});
-
-// Eligibility check
+// Eligibility check — 7 questions
 function checkEligibility() {
-  const btn = document.getElementById("btn-check");
   const state = document.getElementById("el-state").value;
-  const county = document.getElementById("el-county").value;
   const isTenant = document.querySelector('input[name="el-tenant"]:checked');
   const isServed = document.querySelector('input[name="el-served"]:checked');
   const isResidential = document.querySelector('input[name="el-residential"]:checked');
+  const isSection8 = document.querySelector('input[name="el-section8"]:checked');
+  const isMilitary = document.querySelector('input[name="el-military"]:checked');
+  const isBankruptcy = document.querySelector('input[name="el-bankruptcy"]:checked');
 
   const result = document.getElementById("el-result");
 
-  // Validate all fields
-  if (!state || !county || !isTenant || !isServed || !isResidential) {
-    result.className = "alert alert-error";
-    result.textContent = "Please answer all 5 questions.";
-    result.classList.remove("hidden");
+  // Validate all answered
+  if (!state || !isTenant || !isServed || !isResidential || !isSection8 || !isMilitary || !isBankruptcy) {
+    showResult("error", "Please answer all 7 questions.");
     return;
   }
 
-  // State check
+  // 1. State check — hard block
   if (!SUPPORTED_STATES.includes(state)) {
-    result.className = "alert alert-error";
-    result.textContent = "We don't serve your state yet. We currently cover 20 states: " + SUPPORTED_STATES.join(", ") + ".";
-    result.classList.remove("hidden");
+    showResult("error", "We don't serve " + (state || "that state") + " yet. We currently cover 20 states: " + SUPPORTED_STATES.join(", ") + ".");
     return;
   }
 
-  // County check
-  if (!COUNTY_DATA[state].includes(county)) {
-    result.className = "alert alert-error";
-    result.textContent = "We don't have " + county + " county available yet. We're expanding county by county.";
-    result.classList.remove("hidden");
-    return;
-  }
-
-  // Tenant check
+  // 2. Tenant check — hard block
   if (isTenant.value === "no") {
-    result.className = "alert alert-error";
-    result.textContent = "This service is for tenants named in the eviction. If you're not the tenant, we can't prepare your paperwork.";
-    result.classList.remove("hidden");
+    showResult("error", "This service is only for tenants named in the eviction. We cannot prepare paperwork for anyone else.");
     return;
   }
 
-  // Served check
-  if (isServed.value === "no") {
-    result.className = "alert alert-info";
-    result.textContent = "You need to have been served with court papers before we can prepare your answer. Please come back once you've received your summons.";
-    result.classList.remove("hidden");
-    return;
-  }
+  // 3. Served check — SOFT warning (pre-eviction docs available)
+  const wasServed = isServed.value === "yes";
 
-  // Residential check
+  // 4. Residential check — hard block
   if (isResidential.value === "no") {
-    result.className = "alert alert-error";
-    result.textContent = "We only handle residential evictions, not commercial. This service is not right for your situation.";
-    result.classList.remove("hidden");
+    showResult("error", "This service is for residential evictions only. Commercial evictions have different rules and require an attorney.");
     return;
   }
 
-  // ALL CHECKS PASSED — show payment
+  // 5. Section 8 check — hard block
+  if (isSection8.value === "yes") {
+    showResult("error", "Section 8 and public housing evictions have special federal rules. You need an attorney or legal aid — self-help paperwork is not appropriate for these cases.");
+    return;
+  }
+
+  // 6. Military check — hard block
+  if (isMilitary.value === "yes") {
+    showResult("error", "Active military personnel have special protections under the SCRA. Please contact your base legal assistance office — they can help you at no cost.");
+    return;
+  }
+
+  // 7. Bankruptcy check — hard block
+  if (isBankruptcy.value === "yes") {
+    showResult("error", "Bankruptcy triggers an automatic stay that affects eviction proceedings. Please contact your bankruptcy attorney before filing anything.");
+    return;
+  }
+
+  // ALL CHECKS PASSED
   appState.state = state;
-  appState.county = county;
-  result.classList.add("hidden");
   document.getElementById("eligibility-form").classList.add("hidden");
   document.getElementById("payment-section").classList.remove("hidden");
   document.getElementById("pay-email").focus();
+
+  // Store whether served (used when redirecting to chat)
+  appState.wasServed = wasServed;
+}
+
+function showResult(type, msg) {
+  const result = document.getElementById("el-result");
+  result.className = "alert alert-" + type;
+  result.textContent = msg;
+  result.classList.remove("hidden");
 }
 
 // Payment via Authorize.net
@@ -114,13 +83,11 @@ function startPayment() {
     alert("Please enter your email address for your receipt.");
     return;
   }
-
   const btn = document.getElementById("btn-pay");
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Processing...';
 
   if (typeof Accept === "undefined") {
-    // Dev mode — skip payment
     redirectToChat(email);
     return;
   }
@@ -157,14 +124,16 @@ async function submitPayment(opaqueData, email) {
     if (!res.ok) throw new Error("Payment failed");
     redirectToChat(email);
   } catch (e) {
-    const btn = document.getElementById("btn-pay");
-    btn.disabled = false;
-    btn.textContent = "Payment Failed — Try Again";
+    document.getElementById("btn-pay").disabled = false;
+    document.getElementById("btn-pay").textContent = "Payment Failed — Try Again";
   }
 }
 
 function redirectToChat(email) {
-  window.location.href = "/chat?state=" + encodeURIComponent(appState.state) +
-    "&county=" + encodeURIComponent(appState.county) +
+  var url = "/chat?state=" + encodeURIComponent(appState.state) +
     "&email=" + encodeURIComponent(email);
+  if (appState.wasServed !== undefined) {
+    url += "&served=" + (appState.wasServed ? "yes" : "no");
+  }
+  window.location.href = url;
 }

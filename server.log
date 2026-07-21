@@ -127,3 +127,19 @@ INFO:     127.0.0.1:39416 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:39422 - "GET /chat HTTP/1.1" 200 OK
 INFO:     127.0.0.1:44792 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:39312 - "GET / HTTP/1.1" 200 OK
+INFO:     80.94.92.7:0 - "GET / HTTP/1.1" 200 OK
+INFO:     94.154.43.177:0 - "GET /.env HTTP/1.1" 404 Not Found
+INFO:     94.154.43.187:0 - "GET / HTTP/1.1" 200 OK
+INFO:     147.185.132.88:0 - "GET / HTTP/1.1" 200 OK
+INFO:     74.7.230.44:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     74.7.242.63:0 - "GET / HTTP/1.1" 200 OK
+INFO:     74.7.242.63:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     205.210.31.37:0 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     Started server process [3447792]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:48904 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48918 - "GET /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53848 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
