@@ -379,7 +379,7 @@ def _add_widget(page, field_name, position):
     h = position.get("h", 20)
     
     # Defense fields are always checkboxes; everything else is text
-    is_defense = field_name.startswith("defense_")
+    is_defense = field_name.startswith("defense_") and field_name != "defense_narrative"
     
     if is_defense:
         widget = fitz.Widget()

@@ -246,3 +246,11 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:38784 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45962 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58540 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [3959189]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42102 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46966 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
