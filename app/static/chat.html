@@ -333,6 +333,12 @@
 
     <script>
       const API = "/api/v1/chat/send";
+      
+      // Read state from URL params (passed from landing page eligibility)
+      const urlParams = new URLSearchParams(window.location.search);
+      const preState = urlParams.get("state") || "";
+      const preEmail = urlParams.get("email") || "";
+      const preServed = urlParams.get("served") || "";
       let messages = [];
       let appData = null;
       let caseId = "CHAT-" + Date.now().toString(36).toUpperCase();

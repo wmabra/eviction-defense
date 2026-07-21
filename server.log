@@ -143,3 +143,75 @@ INFO:     127.0.0.1:48904 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:48918 - "GET /chat HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53848 - "GET / HTTP/1.1" 200 OK
 INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "GET / HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "GET /chat?state=FL&email=mdkreischer17%40gmail.com&served=no HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/intake/submit?case_id=CHAT-MRUXSVP8 HTTP/1.1" 422 Unprocessable Content
+INFO:     2600:1700:1ce0:b270:2c88:e6a4:7e89:1a8c:0 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [3495065]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36526 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39866 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     94.154.43.229:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
