@@ -333,7 +333,7 @@
 
     <script>
       const API = "/api/v1/chat/send";
-      
+
       // Read state from URL params (passed from landing page eligibility)
       const urlParams = new URLSearchParams(window.location.search);
       const preState = urlParams.get("state") || "";
@@ -406,6 +406,11 @@
 
           if (data.ready_for_intake && data.extracted_data) {
             appData = data.extracted_data;
+            // Inject state and email from URL params (landing page already captured these)
+            if (preState && !appData.state) appData.state = preState;
+            if (preEmail && appData.personal_info && !appData.personal_info.email) {
+              appData.personal_info.email = preEmail;
+            }
             showSummary(appData);
           }
         } catch (e) {

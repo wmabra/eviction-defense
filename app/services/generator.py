@@ -820,7 +820,7 @@ def _generate_court_checklist(data: dict, output_path: str):
 # ======================== HEARING SCRIPT ========================
 
 def _generate_hearing_script(data: dict, output_path: str):
-    """Generate a personalized hearing script based on the tenant's actual defenses."""
+    """Generate a hearing preparation guide — what to bring, what to expect, how to prepare."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
@@ -829,90 +829,105 @@ def _generate_hearing_script(data: dict, output_path: str):
     defenses = data.get("defenses", {})
     full_name = p.get('full_name', '[YOUR NAME]')
     
-    elements.append(Paragraph("YOUR COURT HEARING SCRIPT", S["FormTitle"]))
+    elements.append(Paragraph("HEARING PREPARATION GUIDE", S["FormTitle"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         f"<b>Prepared for:</b> {full_name}<br/>"
-        "This script helps you speak to the judge. You can bring this paper with you.",
+        "This guide helps you prepare for your eviction court hearing. It is not legal advice.",
         S["Body"]
     ))
     elements.append(Spacer(1, 14))
     
-    # Gather checked defenses
+    elements.append(Paragraph("<b>WHAT TO BRING TO COURT</b>", S["BodyBold"]))
+    items = [
+        "&#10003; This entire packet (your filed Answer, checklists, and all documents)",
+        "&#10003; Photo ID (driver's license, state ID, or passport)",
+        "&#10003; Copies of all evidence (photos, receipts, emails, text messages, letters)",
+        "&#10003; Copy of your lease or rental agreement",
+        "&#10003; Proof of any payments you made (bank statements, money order receipts, canceled checks)",
+        "&#10003; Written repair requests you sent to the landlord (keep a copy for yourself)",
+        "&#10003; Inspection reports, if any",
+        "&#10003; Witness contact information, if applicable",
+        "&#10003; Pen and notepad to take notes",
+    ]
+    for item in items:
+        elements.append(Paragraph(item, S["Body"]))
+        elements.append(Spacer(1, 3))
+    
+    elements.append(Spacer(1, 14))
+    elements.append(Paragraph("<b>YOUR DEFENSES (for your reference)</b>", S["BodyBold"]))
+    elements.append(Paragraph(
+        "You raised the following defenses when you filed your Answer. Be prepared to discuss them.",
+        S["BodySmall"]
+    ))
+    
     DEFENSE_LABELS = {
-        "def_repairs": "The landlord failed to make necessary repairs despite being notified.",
-        "def_amount": "I dispute the amount of rent the landlord claims I owe.",
-        "def_attempted_pay": "I tried to pay the rent but the landlord refused to accept it.",
-        "def_paid": "I have already paid the rent that the landlord claims is owed.",
+        "def_repairs": "Landlord failed to make necessary repairs.",
+        "def_amount": "You dispute the amount of rent claimed.",
+        "def_attempted_pay": "You tried to pay but the landlord refused.",
+        "def_paid": "You already paid the rent demanded.",
         "def_waived": "The landlord waived or canceled the eviction notice.",
-        "def_retaliation": "The landlord is evicting me in retaliation for exercising my rights.",
-        "def_fair_housing": "The eviction violates fair housing laws (discrimination).",
-        "def_accepted_rent": "The landlord accepted my rent after sending the eviction notice.",
-        "def_corrected": "I already fixed the problem the landlord complained about.",
-        "def_not_owner": "The person suing me is not the actual owner of the property.",
-        "def_bad_notice": "I did not receive proper legal notice of the eviction.",
-        "def_not_owed": "I do not owe the amount the landlord claims.",
-        "def_landlord_breach": "The landlord broke the rental agreement.",
-        "def_discrimination": "The eviction is discriminatory.",
-        "def_other": "I have another legal defense to this eviction.",
+        "def_retaliation": "The eviction is retaliatory.",
+        "def_fair_housing": "The eviction violates fair housing laws.",
+        "def_accepted_rent": "The landlord accepted rent after sending the notice.",
+        "def_corrected": "You already fixed the problem.",
+        "def_not_owner": "The person suing you is not the owner.",
+        "def_bad_notice": "You did not receive proper legal notice.",
+        "def_other": "You have another legal defense.",
     }
     
     checked = []
     for key, label in DEFENSE_LABELS.items():
         d = defenses.get(key, {})
         if isinstance(d, dict) and d.get("checked"):
-            checked.append(label)
+            checked.append(f"&#10003; {label}")
     
-    # Build personalized defense statement
     if checked:
-        defense_lines = ["<b>YOUR DEFENSES (tell the judge):</b>"]
-        for i, defense in enumerate(checked, 1):
-            defense_lines.append(f"{i}. {defense}")
-        rent_dispute = any(d in ["def_amount", "def_not_owed"] for d in 
-            [k for k, v in defenses.items() if isinstance(v, dict) and v.get("checked")])
+        for c in checked:
+            elements.append(Paragraph(c, S["Body"]))
+            elements.append(Spacer(1, 2))
     else:
-        defense_lines = ["<b>YOUR DEFENSE:</b> Tell the judge briefly why you should not be evicted."]
-        defense_lines.append("(Examples: Landlord refused repairs / Retaliation / Improper notice / Already paid)")
-        rent_dispute = False
+        elements.append(Paragraph(
+            "(You did not select specific defenses. Think about why you should not be evicted.)",
+            S["BodySmall"]
+        ))
     
-    script_lines = [
-        ("<b>WHEN YOUR CASE IS CALLED:</b> Walk to the front of the courtroom.", False),
-        (f"<b>You:</b> Good morning/afternoon, Your Honor. My name is {full_name}.", True),
-        ("<b>Judge:</b> Do you have an attorney?", False),
-        ("<b>You:</b> No, Your Honor. I am representing myself.", True),
-        ("<b>Judge:</b> Have you filed your Answer?", False),
-        ("<b>You:</b> Yes, Your Honor. Here is a copy. (hand judge a copy of your Answer)", True),
-        ("<b>Judge:</b> Do you owe the rent?", False),
+    elements.append(Spacer(1, 14))
+    elements.append(Paragraph("<b>WHAT TO EXPECT AT THE HEARING</b>", S["BodyBold"]))
+    expect = [
+        "<b>Arrive early.</b> Plan to arrive at least 30 minutes before your scheduled time. Find your courtroom.",
+        "<b>Check in.</b> Tell the court clerk or bailiff you are present for your case.",
+        "<b>Wait for your case to be called.</b> The judge will call cases one at a time. Listen for your name.",
+        "<b>Stand when your case is called.</b> Walk to the front of the courtroom when you hear your name.",
+        "<b>You will be asked questions.</b> The judge will ask about the eviction. Answer honestly and briefly.",
+        "<b>The landlord will also speak.</b> Do not interrupt. Wait your turn.",
+        "<b>The judge will make a decision.</b> This may happen immediately or after a short recess.",
     ]
-    
-    if rent_dispute:
-        script_lines.append(
-            ("<b>You:</b> Your Honor, I dispute the amount claimed. I would like to explain why.", True)
-        )
-    else:
-        script_lines.append(
-            ("<b>You:</b> I have deposited the rent with the court, Your Honor.", True)
-        )
-    
-    script_lines.append(("<b>EXPLAIN YOUR DEFENSE:</b> Now tell the judge:", False))
-    for line in defense_lines:
-        script_lines.append((line, False))
-    script_lines.extend([
-        ("<b>IF YOU NEED MORE TIME:</b>", False),
-        ("<b>You:</b> Your Honor, I respectfully request additional time to resolve this matter.", True),
-        ("<b>CLOSING:</b>", False),
-        ("<b>You:</b> Thank you for hearing me, Your Honor.", True),
-    ])
-    
-    for text, _ in script_lines:
-        elements.append(Paragraph(text, S["Body"]))
+    for line in expect:
+        elements.append(Paragraph(line, S["Body"]))
         elements.append(Spacer(1, 6))
     
     elements.append(Spacer(1, 14))
+    elements.append(Paragraph("<b>TIPS FOR COURT</b>", S["BodyBold"]))
+    tips = [
+        "Dress neatly and cleanly. You don't need a suit, but avoid shorts, flip-flops, or pajamas.",
+        "Turn off your phone or set it to silent before entering the courtroom.",
+        "Do not interrupt anyone — wait for your turn to speak.",
+        "Speak clearly and respectfully. Address the judge as 'Your Honor'.",
+        "Stick to the facts. Explain what happened without getting emotional or angry.",
+        "If you don't understand a question, politely ask the judge to repeat or clarify.",
+        "Bring someone with you for support if you want (they may need to wait outside).",
+        "If you need an interpreter, contact the court clerk BEFORE your hearing date to arrange one.",
+    ]
+    for tip in tips:
+        elements.append(Paragraph(tip, S["Body"]))
+        elements.append(Spacer(1, 3))
+    
+    elements.append(Spacer(1, 14))
     elements.append(Paragraph(
-        "<b>TIPS:</b> Dress neatly. Turn off your phone. Do not interrupt. "
-        "Bring all documents. Speak clearly and respectfully. "
-        "If you don't understand a question, ask the judge to repeat it.",
+        "<b>IMPORTANT:</b> This guide is provided for informational purposes only. It is not legal "
+        "advice. If you need legal advice, contact a licensed attorney or your local legal aid organization. "
+        "You are responsible for your own case and what you say in court.",
         S["BodySmall"]
     ))
     
