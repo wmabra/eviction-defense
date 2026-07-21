@@ -301,3 +301,21 @@ INFO:     127.0.0.1:35740 - "POST /api/v1/documents/generate-packet HTTP/1.1" 20
 INFO:     127.0.0.1:35750 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     127.0.0.1:35760 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     127.0.0.1:35768 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [4099961]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42634 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [4100614]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:44636 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44652 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44656 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44658 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44660 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44664 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44674 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42858 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53072 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK

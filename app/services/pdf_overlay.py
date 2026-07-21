@@ -80,6 +80,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         pass
 
     has_overlay = bool(config.get("overlay_positions"))
+    # For fee waiver forms, also check fee_waiver_overlay
+    if form_key == "fee_waiver_form":
+        has_overlay = has_overlay or bool(config.get("fee_waiver_overlay"))
+    # Also check fee_waiver_mapping for fillable fee waiver PDFs
+    if form_key == "fee_waiver_form" and config.get("fee_waiver_mapping"):
+        has_fields = True  # Treat as fillable if mapping exists
     
     if has_fields and has_overlay:
         # Hybrid: both fillable fields AND overlay positions (e.g., LA checkbox form + data overlay)
@@ -342,7 +348,9 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     
-    positions = config.get("overlay_positions", {})
+    # Merge overlay_positions and fee_waiver_overlay
+    positions = dict(config.get("overlay_positions", {}))
+    positions.update(config.get("fee_waiver_overlay", {}))
     
     for page_num in range(len(doc)):
         page = doc[page_num]

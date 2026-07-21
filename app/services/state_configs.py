@@ -275,7 +275,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_other2", "label": "Other defenses (Check Box4)", "field": "Check Box4"},
         ],
         "notes": "TX JP Court eviction answer. 57 fillable fields across 3 pages. Defense checkboxes mapped: Box6=paid, Box7=repairs, Box9=retaliation, Box10=notice, Box54=amount dispute, DoesNotLive=moved out, Mitigate=failure to mitigate, FHAM=discrimination, CD=counterclaim. Box2 and Box4 are catch-all other defenses.",
-    },
+    
+        "fee_waiver_overlay": {
+            "address": {"page": 1, "x": 120, "y": 160, "w": 350, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 350, "y": 80, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 120, "y": 100, "w": 200, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 120, "y": 120, "w": 300, "h": 20, "size": 11},
+            "phone": {"page": 1, "x": 120, "y": 180, "w": 200, "h": 20, "size": 11}
+        }},
 
     # ══════════════════════════════════════════
     # ILLINOIS — Statewide eviction answer
@@ -745,7 +752,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "defense_narrative": "at the hearing 1",
         },
         "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and pre-filled into 'at the hearing 1' text area. Tenant can edit before filing.",
-    },
+    
+        "fee_waiver_overlay": {
+            "address": {"page": 1, "x": 120, "y": 210, "w": 350, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 200, "y": 120, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 200, "y": 100, "w": 200, "h": 20, "size": 11},
+            "date": {"page": 2, "x": 400, "y": 600, "w": 150, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 120, "y": 180, "w": 300, "h": 20, "size": 11},
+            "phone": {"page": 1, "x": 120, "y": 240, "w": 200, "h": 20, "size": 11}
+        }},
 
     # ══════════════════════════════════════════
     # CALIFORNIA — UD-105 Answer Unlawful Detainer
@@ -989,7 +1004,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_other", "label": "Other defenses", "field": "Other defenses l"},
         ],
         "notes": "FL Form 1.947(b) Answer — Residential Eviction. 54 fillable fields across 2 pages (Miami-Dade clerk version). Covers all 12 defenses with explanation fields, jury trial selection, and signature block.",
-    },
+    
+        "fee_waiver_overlay": {
+            "case_number": {"page": 1, "x": 350, "y": 200, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 72, "y": 230, "w": 200, "h": 20, "size": 11},
+            "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
+        }},
 
     # ══════════════════════════════════════════
     # MINNESOTA — Housing Court Eviction Answer (HOU202)
@@ -1028,7 +1049,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "defense_repairs": {"page": 3, "x": 94, "y": 158, "w": 14, "h": 14, "size": 10},
             "defense_narrative": {"page": 3, "x": 72, "y": 250, "w": 450, "h": 200, "size": 9}},
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
-    },
+    
+        "fee_waiver_overlay": {
+            "case_number": {"page": 1, "x": 350, "y": 100, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 300, "y": 100, "w": 200, "h": 20, "size": 11},
+            "date": {"page": 6, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
+        }},
 
     # ══════════════════════════════════════════
     # NEVADA — Summary Eviction Answer (Nonpayment)
@@ -1160,7 +1187,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "defense_paid": {"page": 1, "x": 84, "y": 395, "w": 14, "h": 14, "size": 10},
             "defense_narrative": {"page": 1, "x": 72, "y": 490, "w": 450, "h": 120, "size": 9}},
         "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption area.",
-    },
+    
+        "fee_waiver_overlay": {
+            "case_number": {"page": 1, "x": 350, "y": 100, "w": 200, "h": 20, "size": 11},
+            "county": {"page": 1, "x": 72, "y": 80, "w": 200, "h": 20, "size": 10},
+            "full_name": {"page": 1, "x": 72, "y": 100, "w": 300, "h": 20, "size": 11}
+        }},
 
     # ══════════════════════════════════════════
     # MICHIGAN — DC 111a Answer, Nonpayment of Rent
@@ -1306,7 +1338,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "printed_name": {"page": 1, "x": 136, "y": 729, "w": 200, "h": 16, "size": 10},
             "signature": {"page": 1, "x": 460, "y": 473, "w": 200, "h": 20, "size": 10}},
         "notes": "NM 4-907 Answer to Petition for Restitution — single-page form. Overlay fills data fields and pre-fills defense narrative in the 'because:' blank area (lines 1-5).",
-    },
+    
+        "fee_waiver_overlay": {
+            "county": {"page": 1, "x": 300, "y": 120, "w": 200, "h": 20, "size": 11},
+            "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
+            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
+        }},
 }
 
 
