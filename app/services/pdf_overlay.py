@@ -17,6 +17,17 @@ from app.services.state_configs import get_state_config
 logger = logging.getLogger(__name__)
 
 FORMS_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "counties")
+REBUILT_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "rebuilt")
+
+
+def _get_form_path(form_filename, state_code=""):
+    """Get the best form to use — rebuilt version if available, otherwise original."""
+    if state_code:
+        rebuilt_name = f"{state_code.lower()}_answer_rebuilt.pdf"
+        rebuilt_path = os.path.join(REBUILT_DIR, rebuilt_name)
+        if os.path.exists(rebuilt_path):
+            return rebuilt_path
+    return os.path.join(FORMS_DIR, form_filename)
 
 
 def fill_answer_form(data: dict, state: str, output_path: str) -> bool:
@@ -42,7 +53,8 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         logger.warning(f"No form configured for {state_code} ({form_key})")
         return False
 
-    form_path = os.path.join(FORMS_DIR, form_filename)
+    # Use rebuilt form if available (clean standardized fields)
+    form_path = _get_form_path(form_filename, state_code if form_key == "answer_form" else "")
     if not os.path.exists(form_path):
         logger.error(f"Form not found: {form_path}")
         return False
@@ -91,34 +103,64 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     defenses = data.get("defenses", {})
     today = date.today()
     
-    # Build values from data using flexible key resolution
+    values = {}
+    
+    # === UNIFIED MAPPING FOR REBUILT FORMS (standardized field names) ===
+    # These work for ALL states with rebuilt forms — predictable, clean field names
+    UNIFIED_MAP = {
+        "defendant_name": p.get("full_name", ""),
+        "plaintiff_name": l.get("landlord_name", ""),
+        "case_number": c.get("case_number", ""),
+        "court_name": c.get("court_name", ""),
+        "county": p.get("county", ""),
+        "property_address": p.get("property_address", ""),
+        "phone": p.get("phone", ""),
+        "email": p.get("email", ""),
+        "date": today.strftime("%m/%d/%Y"),
+        "printed_name": p.get("full_name", ""),
+        "signature": "/s/",
+        "rent_amount": str(c.get("monthly_rent", "")),
+        "amount_claimed": str(c.get("complaint_amount_claimed", "")),
+    }
+    
+    # Defense checkboxes — universal names
+    DEFENSE_UNIFIED = {
+        "def_repairs": "defense_repairs",
+        "def_amount": "defense_amount",
+        "def_attempted_pay": "defense_attempted_pay",
+        "def_paid": "defense_paid",
+        "def_waived": "defense_waived",
+        "def_retaliation": "defense_retaliation",
+        "def_fair_housing": "defense_discrimination",
+        "def_accepted_rent": "defense_accepted_rent",
+        "def_corrected": "defense_corrected",
+        "def_not_owner": "defense_not_owner",
+        "def_bad_notice": "defense_bad_notice",
+        "def_other": "defense_other",
+    }
+    
+    for chatbot_key, std_name in DEFENSE_UNIFIED.items():
+        d = defenses.get(chatbot_key, {})
+        checked = d.get("checked", False) if isinstance(d, dict) else False
+        if checked:
+            values[std_name] = "Yes"
+    
+    for std_name, val in UNIFIED_MAP.items():
+        if val:
+            values[std_name] = str(val)
+    
+    # Defense narrative
+    if defenses:
+        values["defense_narrative"] = _build_defense_narrative(defenses)
+    
+    # === LEGACY: Build _all_data for non-rebuilt forms that use field_mapping ===
     _all_data = {}
     for section in [p, l, c]:
         for k, v in section.items():
             if v:
                 _all_data[k] = str(v)
-    
-    # Add common aliases
     if "full_name" not in _all_data and "name" in _all_data:
         _all_data["full_name"] = _all_data["name"]
-    if "landlord_name" not in _all_data and "landlord" in _all_data:
-        _all_data["landlord_name"] = _all_data["landlord"]
-    if "case_number" not in _all_data and "case" in _all_data:
-        _all_data["case_number"] = _all_data["case"]
-    if "address" not in _all_data and "property_address" in _all_data:
-        _all_data["address"] = _all_data["property_address"]
-    # Synthesize additional keys for forms that need them
-    if "full_name" in _all_data:
-        _all_data["submitted_name"] = _all_data["full_name"]
-        _all_data["printed_name"] = _all_data["full_name"]
-    if "address" in _all_data:
-        _all_data["submitted_address2"] = _all_data["address"]
-    
-    # Auto-generate defense narrative for states with narrative text areas (TN, etc.)
-    if "defense_narrative" in mapping:
-        _all_data["defense_narrative"] = _build_defense_narrative(defenses)
-
-    values = {}
     
     # Map each field_mapping key to a value from our data
     for map_key, pdf_field in mapping.items():

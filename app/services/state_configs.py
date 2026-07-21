@@ -749,7 +749,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": False,
         "court_type": "District Court",
-        "overlay_positions": {},
+        "overlay_positions": {
+            "county": {"page": 6, "x": 300, "y": 148, "w": 200, "h": 20, "size": 11},
+            "court_name": {"page": 6, "x": 300, "y": 170, "w": 250, "h": 20, "size": 11},
+            "plaintiff_name": {"page": 6, "x": 300, "y": 192, "w": 250, "h": 20, "size": 11},
+            "case_number": {"page": 6, "x": 300, "y": 218, "w": 200, "h": 20, "size": 11},
+            "defendant_name": {"page": 6, "x": 300, "y": 244, "w": 250, "h": 20, "size": 11},
+        },
         "notes": "AR unlawful detainer answer packet — 11 pages. Page 8 has narrative defense text area where tenant writes reasons. We pre-fill this with formatted defense explanations based on intake answers. Remaining pages are instructions (1-5) and signature pages (9-11).",
     },
 
