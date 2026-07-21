@@ -372,19 +372,16 @@ def _map_checkbox_to_standard(field_name, assigned):
 
 
 def _add_widget(page, field_name, position):
-    """Add a standardized widget to a page."""
+    """Add a standardized widget to a page. Defense fields are checkboxes."""
     x = position.get("x", 50)
     y = position.get("y", 50)
     w = position.get("w", 200)
     h = position.get("h", 20)
     
-    rect = fitz.Rect(x, y, x + w, y + h)
+    # Defense fields are always checkboxes; everything else is text
+    is_defense = field_name.startswith("defense_")
     
-    # Determine widget type
-    field_info = STANDARD_FIELDS.get(field_name, {"type": "text"})
-    is_checkbox = field_info.get("type") == "checkbox" or h < 20
-    
-    if is_checkbox:
+    if is_defense:
         widget = fitz.Widget()
         widget.field_name = field_name
         widget.field_type = fitz.PDF_WIDGET_TYPE_CHECKBOX
@@ -395,6 +392,12 @@ def _add_widget(page, field_name, position):
         widget = fitz.Widget()
         widget.field_name = field_name
         widget.field_type = fitz.PDF_WIDGET_TYPE_TEXT
+        # Ensure text fields are wide enough
+        if w < 50:
+            w = 200
+        if h < 14:
+            h = 18
+        rect = fitz.Rect(x, y, x + w, y + h)
         widget.rect = rect
         widget.field_value = ""
         widget.text_fontsize = position.get("size", 10)
