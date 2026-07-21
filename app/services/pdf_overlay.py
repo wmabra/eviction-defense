@@ -21,12 +21,16 @@ REBUILT_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "rebuil
 
 
 def _get_form_path(form_filename, state_code=""):
-    """Get the best form to use — rebuilt version if available, otherwise original."""
+    """Get the best form to use — rebuilt version for overlay states, original for fillable."""
     if state_code:
         rebuilt_name = f"{state_code.lower()}_answer_rebuilt.pdf"
         rebuilt_path = os.path.join(REBUILT_DIR, rebuilt_name)
         if os.path.exists(rebuilt_path):
-            return rebuilt_path
+            # Only use rebuilt form if the original has NO fillable widgets (overlay/scanned)
+            from app.services.state_configs import STATE_CONFIGS
+            cfg = STATE_CONFIGS.get(state_code, {})
+            if not cfg.get("has_fillable_fields", True):
+                return rebuilt_path
     return os.path.join(FORMS_DIR, form_filename)
 
 
