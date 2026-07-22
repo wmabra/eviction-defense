@@ -144,8 +144,14 @@ function startPayment() {
 	const county = document.getElementById("pay-county").value.trim();
 	const zip = document.getElementById("pay-zip").value.trim();
 
-	if (!email) { alert("Please enter your email address."); return; }
-	if (!address || !city || !county) { alert("Please fill in your address, city, and county."); return; }
+	if (!email) {
+		alert("Please enter your email address.");
+		return;
+	}
+	if (!address || !city || !county) {
+		alert("Please fill in your address, city, and county.");
+		return;
+	}
 
 	appState.email = email;
 	appState.address = address;

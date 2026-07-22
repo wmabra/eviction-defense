@@ -268,10 +268,11 @@
       <div class="message ai" id="first-message">
         Welcome! I'm your AI intake specialist for
         <strong>evictions.help</strong>.<br /><br />
-        I can see you're in <strong id="welcome-county">your county</strong>, <strong id="welcome-state">your state</strong> at
+        I can see you're in <strong id="welcome-county">your county</strong>,
+        <strong id="welcome-state">your state</strong> at
         <strong id="welcome-address">your address</strong>.
-        <strong>⏱ Please allow 10-15 minutes</strong> to answer my questions.
-        At the end, you'll download your ready-to-file court packet immediately.<br /><br />
+        <strong>⏱ Please allow 10-15 minutes</strong> to answer my questions. At
+        the end, you'll download your ready-to-file court packet immediately.<br /><br />
         Let's get started — what is your <strong>full legal name</strong>,
         exactly as it appears on your eviction notice or lease?
       </div>
@@ -345,10 +346,17 @@
       const preCounty = urlParams.get("county") || "";
       const preZip = urlParams.get("zip") || "";
       // Populate welcome message with user's actual location
-      if (preCounty) document.getElementById("welcome-county").textContent = preCounty + " County";
-      if (preState) document.getElementById("welcome-state").textContent = preState;
-      if (preAddress) document.getElementById("welcome-address").textContent = preAddress + (preCity ? ", " + preCity : "") + (preZip ? " " + preZip : "");
-      
+      if (preCounty)
+        document.getElementById("welcome-county").textContent =
+          preCounty + " County";
+      if (preState)
+        document.getElementById("welcome-state").textContent = preState;
+      if (preAddress)
+        document.getElementById("welcome-address").textContent =
+          preAddress +
+          (preCity ? ", " + preCity : "") +
+          (preZip ? " " + preZip : "");
+
       let messages = [];
       let appData = null;
       let caseId = "CHAT-" + Date.now().toString(36).toUpperCase();

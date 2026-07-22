@@ -640,36 +640,78 @@
           <!-- Payment (hidden until eligible) -->
           <div id="payment-section" class="hidden">
             <div class="alert alert-success" style="text-align: center">
-              <strong>✅ You're eligible!</strong> Just a few more details to get started.
+              <strong>✅ You're eligible!</strong> Just a few more details to
+              get started.
             </div>
             <div class="form-group">
-              <label class="form-label">Your full street address (where you're being evicted from)</label>
-              <input type="text" id="pay-address" class="form-input" placeholder="123 Main St, Apt 4" />
+              <label class="form-label"
+                >Your full street address (where you're being evicted
+                from)</label
+              >
+              <input
+                type="text"
+                id="pay-address"
+                class="form-input"
+                placeholder="123 Main St, Apt 4"
+              />
             </div>
             <div class="form-group">
               <label class="form-label">City</label>
-              <input type="text" id="pay-city" class="form-input" placeholder="City" />
+              <input
+                type="text"
+                id="pay-city"
+                class="form-input"
+                placeholder="City"
+              />
             </div>
-            <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div
+              class="form-group"
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+            >
               <div>
                 <label class="form-label">County</label>
-                <input type="text" id="pay-county" class="form-input" placeholder="County" />
+                <input
+                  type="text"
+                  id="pay-county"
+                  class="form-input"
+                  placeholder="County"
+                />
               </div>
               <div>
                 <label class="form-label">ZIP Code</label>
-                <input type="text" id="pay-zip" class="form-input" placeholder="12345" />
+                <input
+                  type="text"
+                  id="pay-zip"
+                  class="form-input"
+                  placeholder="12345"
+                />
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Email (for receipt & packet delivery)</label>
-              <input type="email" id="pay-email" class="form-input" placeholder="you@email.com" />
+              <label class="form-label"
+                >Email (for receipt & packet delivery)</label
+              >
+              <input
+                type="email"
+                id="pay-email"
+                class="form-input"
+                placeholder="you@email.com"
+              />
             </div>
             <div class="payment-box">
               <h3>One-Time Payment — $395</h3>
-              <p style="color: var(--gray); font-size: 14px; margin-bottom: 12px">
-                Your packet includes all listed documents, pre-filled and ready to file.
+              <p
+                style="color: var(--gray); font-size: 14px; margin-bottom: 12px"
+              >
+                Your packet includes all listed documents, pre-filled and ready
+                to file.
               </p>
-              <button class="btn-block btn-primary" id="btn-pay" onclick="startPayment()" style="margin-top: 12px">
+              <button
+                class="btn-block btn-primary"
+                id="btn-pay"
+                onclick="startPayment()"
+                style="margin-top: 12px"
+              >
                 Pay $395 & Continue →
               </button>
               <p style="font-size: 12px; color: var(--gray); margin-top: 8px">

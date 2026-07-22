@@ -443,3 +443,8 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:36008 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:36018 - "GET /chat?state=TX&county=Harris&address=123+Main&city=Houston&zip=77001&email=t@t.com HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57124 - "GET /chat?state=TX&county=Harris&address=123+Main+St&city=Houston&zip=77001&email=t@t.com HTTP/1.1" 200 OK
+INFO:     Started server process [715835]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:37994 - "GET /health HTTP/1.1" 200 OK

@@ -64,10 +64,10 @@ e. Email address (to receive completed packet) — REQUIRED
 f. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
 
 === PHASE 2: LANDLORD & CASE INFO ===
-a. Landlord or company name EXACTLY as on eviction notice/summons
-b. Landlord's address (if known)
-c. Landlord's phone/email (if known)
-d. Landlord's attorney name (if any, from court papers)
+a. Landlord or company name EXACTLY as on eviction notice/summons — THIS IS THE ONLY LANDLORD FIELD THAT MATTERS
+b. Landlord's address — optional, ask briefly
+c. Landlord's phone/email — optional, skip if unknown
+d. Landlord's attorney name — ONLY if listed on the summons. Accept "no" or "I don't know" immediately and move on. This is NOT required.
 e. Case number (from summons/complaint — this is on the top of court papers)
 f. Court name (which courthouse — usually on the summons)
 g. Have you been served with court papers (summons and complaint)? (yes/no)
