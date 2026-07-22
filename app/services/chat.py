@@ -57,11 +57,12 @@ CRITICAL RULES:
 === PHASE 1: PERSONAL & LOCATION INFO ===
 Collect these fields in order:
 a. Full legal name (exactly as on eviction notice or lease)
-b. County (where the eviction case is filed) — DO NOT ask about state, the user already passed state eligibility
-c. Property address being evicted from (street, city, zip)
-d. Cell phone number — REQUIRED (for your records)
-e. Email address (to receive completed packet) — REQUIRED
-f. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
+b. Date of birth (MM/DD/YYYY) — REQUIRED for fee waiver and court identification
+c. County (where the eviction case is filed) — DO NOT ask about state, the user already passed state eligibility
+d. Property address being evicted from (street, city, zip)
+e. Cell phone number — REQUIRED (for your records)
+f. Email address (to receive completed packet) — REQUIRED
+g. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
 
 === PHASE 2: LANDLORD & CASE INFO ===
 a. Landlord or company name EXACTLY as on eviction notice/summons — THIS IS THE ONLY LANDLORD FIELD THAT MATTERS

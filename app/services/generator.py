@@ -249,11 +249,12 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     # ── New Motions (5 from competitive gap analysis) ──
     pref = base.get("preferences", {})
 
-    # Motion for Hearing — always generated (tenant's right to be heard)
-    cond_seq += 1
-    hearing_motion_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_for_hearing.pdf")
-    _generate_motion_for_hearing(base, hearing_motion_path)
-    paths["motion_for_hearing"] = hearing_motion_path
+    # Motion for Hearing — only if tenant doesn't have a hearing date already
+    if not base.get("case_details", {}).get("court_date"):
+        cond_seq += 1
+        hearing_motion_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_for_hearing.pdf")
+        _generate_motion_for_hearing(base, hearing_motion_path)
+        paths["motion_for_hearing"] = hearing_motion_path
 
     # Motion of Continuance — if tenant needs to push back a hearing date
     if pref.get("needs_continuance"):
@@ -469,6 +470,7 @@ def _generate_answer_form(data: dict, output_path: str):
         S["BodySmall"]
     ))
 
+    _add_disclaimer(elements, styles)
     doc.build(elements)
 
 
@@ -553,6 +555,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     elements.append(Paragraph(f"{p.get('phone', '')}", S["Body"]))
     elements.append(Paragraph(f"{p.get('email', '')}", S["Body"]))
 
+    _add_disclaimer(elements, styles)
     doc.build(elements)
 
 
@@ -617,6 +620,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
     elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
     
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -670,6 +674,7 @@ def _generate_hardship_letter(data: dict, output_path: str):
     elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
     elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
     
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -757,6 +762,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         elements.append(Paragraph(desc, S["BodySmall"]))
         elements.append(Spacer(1, 6))
 
+    _add_disclaimer(elements, styles)
     doc.build(elements)
 
 
@@ -813,6 +819,7 @@ def _generate_court_checklist(data: dict, output_path: str):
     for exp in expectations:
         elements.append(Paragraph(f"• {exp}", S["BodySmall"]))
 
+    _add_disclaimer(elements, styles)
     doc.build(elements)
 
 
@@ -930,6 +937,7 @@ def _generate_hearing_script(data: dict, output_path: str):
         S["BodySmall"]
     ))
     
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1003,6 +1011,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
         "Even if the waiver is denied, you must still file on time.",
         S["BodyWarning"]))
     
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 # ======================== RENTAL ASSISTANCE ========================
@@ -1219,6 +1228,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         elements.append(Paragraph(f"• {tip}", S["BodySmall"]))
         elements.append(Spacer(1, 2))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1290,6 +1300,7 @@ def _generate_emergency_action_plan(data: dict, output_path: str):
         S["BodyWarning"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1500,6 +1511,7 @@ def _generate_eviction_timeline(data: dict, output_path: str):
         S["BodyWarning"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1628,6 +1640,7 @@ def _generate_defenses_explained(data: dict, output_path: str):
                 elements.append(Paragraph(line.strip(), S["BodySmall"]))
         elements.append(Spacer(1, 6))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1693,6 +1706,7 @@ def _generate_evidence_guide(data: dict, output_path: str):
         S["BodyWarning"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1806,6 +1820,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         S["BodySmall"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1889,6 +1904,7 @@ def _generate_demand_letter(data: dict, output_path: str):
         S["BodySmall"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -1976,6 +1992,7 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
         f"delivered to {l.get('landlord_name', '[PLAINTIFF]')} "
         f"on ______, by ☐ Hand Delivery ☐ U.S. Mail ☐ Email.", S["BodySmall"]))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2073,6 +2090,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"by ☐ Hand Delivery ☐ U.S. Mail ☐ Email on this _____ day of __________, 20____.",
         S["BodySmall"]))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2185,6 +2203,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
         f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
         S["BodySmall"]))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2296,6 +2315,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
         f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
         S["BodySmall"]))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2456,6 +2476,7 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.append(Paragraph("• Landlord's Attorney (if applicable) — ☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email",
         S["BodySmall"]))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2575,6 +2596,7 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
         S["BodySmall"]
     ))
 
+    _add_disclaimer(elements, S)
     doc.build(elements)
 
 
@@ -2613,5 +2635,24 @@ def _get_styles():
         "BodyWarning", parent=styles["Body"],
         textColor=colors.red, fontSize=10, leading=14,
     ))
+    styles.add(ParagraphStyle(
+        "Disclaimer", parent=styles["Body"],
+        fontSize=7, leading=9, alignment=TA_CENTER,
+        textColor=colors.HexColor("#94a3b8"),
+        borderPadding=6,
+    ))
 
     return styles
+
+
+def _add_disclaimer(elements, S):
+    """Add a small disclaimer footer to a generated document."""
+    elements.append(Spacer(1, 24))
+    elements.append(HRFlowable(width="80%", thickness=0.5, color=colors.HexColor("#e5e7eb")))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        "IMPORTANT: This document is provided for informational purposes only. It is not legal advice. "
+        "If you need legal advice, contact a licensed attorney. You are responsible for your own case "
+        "and what you say in court.",
+        S["Disclaimer"]
+    ))
