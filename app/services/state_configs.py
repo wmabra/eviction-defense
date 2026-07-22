@@ -562,7 +562,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "courtroom": "Courtroom",
             "county": "Court County",
             "court_address": "Court Address",
-        },
+        
+            "cos_mail": "CoS_Mail"},
         "defense_options": [
             # Section 7A — Non-Payment Defenses
             {"key": "def_paid", "label": "I paid all rent owed", "field": "7A.1"},

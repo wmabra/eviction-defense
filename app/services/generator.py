@@ -488,7 +488,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     r = data.get("rent_payment", {})
 
     caption = (
-        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, FLORIDA\n"
+        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, {data.get('state', 'FLORIDA')}\n"
         f"CASE NO.: {c.get('case_number', '_______________')}\n\n"
         f"{l.get('landlord_name', 'Plaintiff')},\n"
         f"vs.\n"
@@ -503,14 +503,14 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     elements.append(Paragraph(
         f"Defendant, {p.get('full_name', '_________________')}, by and through this self-help filing, "
         f"respectfully requests this Court to determine the amount of rent to be deposited "
-        f"into the Court Registry pursuant to Florida Statute §83.60(2).", S["Body"]
+        f"into the Court Registry.", S["Body"]
     ))
     elements.append(Spacer(1, 8))
 
     elements.append(Paragraph("<b>FACTUAL BACKGROUND</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"1. Defendant resides at {p.get('property_address', '_________________')}, "
-        f"{p.get('property_city', '')}, Florida.", S["Body"]
+        f"{p.get('property_city', '')}, {data.get('state', '')}.", S["Body"]
     ))
     elements.append(Paragraph(
         f"2. Plaintiff filed a complaint for eviction claiming ${c.get('complaint_amount_claimed', '0')} "
@@ -531,9 +531,8 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
 
     elements.append(Paragraph("<b>ARGUMENT</b>", S["BodyBold"]))
     elements.append(Paragraph(
-        "Florida Statute §83.60(2) provides that when a tenant disputes the amount of rent "
-        "alleged in the complaint, the Court shall determine the correct amount to be deposited "
-        "into the Court Registry.", S["Body"]
+        "The Court should determine the correct amount of rent owed and set the required "
+        "deposit amount accordingly.", S["Body"]
     ))
     elements.append(Spacer(1, 8))
 

@@ -169,8 +169,36 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         for k, v in section.items():
             if v:
                 _all_data[k] = str(v)
-    if "full_name" not in _all_data and "name" in _all_data:
-        _all_data["full_name"] = _all_data["name"]
+    
+    # Synthesize aliases — field_mapping keys must match _all_data keys
+    aliases = {
+        "full_name": ["name", "defendant_name", "printed_name"],
+        "property_address": ["address", "street", "mailing_address", "property"],
+        "property_city": ["city", "town"],
+        "property_zip": ["zip", "postal_code"],
+        "court_name": ["court_address", "courthouse", "court"],
+        "landlord_name": ["plaintiff", "plaintiff_name", "landlord"],
+        "phone": ["telephone", "phone_number", "cell"],
+        "email": ["e_mail", "email_address"],
+        "county": ["county_name"],
+    }
+    for source_key, target_keys in aliases.items():
+        if source_key in _all_data:
+            for tk in target_keys:
+                if tk not in _all_data:
+                    _all_data[tk] = _all_data[source_key]
+    
+    # Also add state-level data
+    state_code = data.get("state", "")
+    if state_code:
+        _all_data["state"] = state_code
+        _all_data["state_code"] = state_code
+    
+    # Certificate of Service mailing address — use property address as default
+    if "cos_mail" not in _all_data and "property_address" in _all_data:
+        _all_data["cos_mail"] = _all_data["property_address"]
+    if "mailing_address" not in _all_data and "property_address" in _all_data:
+        _all_data["mailing_address"] = _all_data["property_address"]
     
     # Map each field_mapping key to a value from our data
     for map_key, pdf_field in mapping.items():
