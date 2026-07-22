@@ -322,3 +322,117 @@ INFO:     127.0.0.1:53072 - "POST /api/v1/documents/generate-packet HTTP/1.1" 20
 INFO:     157.143.3.35:0 - "GET / HTTP/1.1" 200 OK
 INFO:     74.7.230.44:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
 INFO:     103.24.234.15:0 - "GET / HTTP/1.1" 200 OK
+INFO:     103.24.235.6:0 - "GET / HTTP/1.1" 200 OK
+INFO:     198.235.24.194:0 - "GET / HTTP/1.1" 200 OK
+INFO:     205.210.31.222:0 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     100.75.214.47:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET /static/js/app.js HTTP/1.1" 304 Not Modified
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET /static/js/app.js HTTP/1.1" 304 Not Modified
+INFO:     79.127.187.203:0 - "GET / HTTP/1.1" 200 OK
+INFO:     79.127.187.203:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     79.127.187.203:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     100.75.214.47:0 - "GET / HTTP/1.1" 200 OK
+INFO:     13.219.67.125:0 - "GET / HTTP/1.1" 200 OK
+INFO:     98.91.173.173:0 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52574 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52576 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52594 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52604 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52618 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52626 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52630 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52638 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52650 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52652 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52666 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52674 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52678 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41260 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41274 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41290 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41306 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41314 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41318 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41330 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "GET / HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "GET /chat?state=CO&email=mdkreischer17%40gmail.com&served=yes HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/intake/submit?case_id=CHAT-MRWES6D6 HTTP/1.1" 422 Unprocessable Content
+INFO:     2600:1700:1ce0:b270:6d2f:aac7:651f:3559:0 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "GET /static/js/app.js HTTP/1.1" 304 Not Modified
+INFO:     100.75.214.47:0 - "GET /chat?state=TX&email=wmabra%40gmail.com&served=yes HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     100.75.214.47:0 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
+INFO:     Started server process [542964]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36666 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53744 - "POST /api/v1/chat/send HTTP/1.1" 200 OK
