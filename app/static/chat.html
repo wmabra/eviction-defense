@@ -268,9 +268,10 @@
       <div class="message ai" id="first-message">
         Welcome! I'm your AI intake specialist for
         <strong>evictions.help</strong>.<br /><br />
-        <strong>⏱ Please allow 10-15 minutes</strong> to answer all my
-        questions. At the end, you'll download your ready-to-file court packet
-        immediately.<br /><br />
+        I can see you're in <strong id="welcome-county">your county</strong>, <strong id="welcome-state">your state</strong> at
+        <strong id="welcome-address">your address</strong>.
+        <strong>⏱ Please allow 10-15 minutes</strong> to answer my questions.
+        At the end, you'll download your ready-to-file court packet immediately.<br /><br />
         Let's get started — what is your <strong>full legal name</strong>,
         exactly as it appears on your eviction notice or lease?
       </div>
@@ -339,6 +340,15 @@
       const preState = urlParams.get("state") || "";
       const preEmail = urlParams.get("email") || "";
       const preServed = urlParams.get("served") || "";
+      const preAddress = urlParams.get("address") || "";
+      const preCity = urlParams.get("city") || "";
+      const preCounty = urlParams.get("county") || "";
+      const preZip = urlParams.get("zip") || "";
+      // Populate welcome message with user's actual location
+      if (preCounty) document.getElementById("welcome-county").textContent = preCounty + " County";
+      if (preState) document.getElementById("welcome-state").textContent = preState;
+      if (preAddress) document.getElementById("welcome-address").textContent = preAddress + (preCity ? ", " + preCity : "") + (preZip ? " " + preZip : "");
+      
       let messages = [];
       let appData = null;
       let caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
@@ -415,6 +425,16 @@
             ) {
               appData.personal_info.email = preEmail;
             }
+            // Inject address, city, county, zip from landing page
+            if (!appData.personal_info) appData.personal_info = {};
+            if (preAddress && !appData.personal_info.property_address)
+              appData.personal_info.property_address = preAddress;
+            if (preCity && !appData.personal_info.property_city)
+              appData.personal_info.property_city = preCity;
+            if (preCounty && !appData.personal_info.county)
+              appData.personal_info.county = preCounty;
+            if (preZip && !appData.personal_info.property_zip)
+              appData.personal_info.property_zip = preZip;
             showSummary(appData);
           }
         } catch (e) {

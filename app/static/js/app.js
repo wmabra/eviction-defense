@@ -138,11 +138,20 @@ function showResult(type, msg) {
 
 // Payment via Authorize.net
 function startPayment() {
-	const email = document.getElementById("pay-email").value;
-	if (!email) {
-		alert("Please enter your email address for your receipt.");
-		return;
-	}
+	const email = document.getElementById("pay-email").value.trim();
+	const address = document.getElementById("pay-address").value.trim();
+	const city = document.getElementById("pay-city").value.trim();
+	const county = document.getElementById("pay-county").value.trim();
+	const zip = document.getElementById("pay-zip").value.trim();
+
+	if (!email) { alert("Please enter your email address."); return; }
+	if (!address || !city || !county) { alert("Please fill in your address, city, and county."); return; }
+
+	appState.email = email;
+	appState.address = address;
+	appState.city = city;
+	appState.county = county;
+	appState.zip = zip;
 	const btn = document.getElementById("btn-pay");
 	btn.disabled = true;
 	btn.innerHTML = '<span class="spinner"></span> Processing...';
@@ -196,9 +205,16 @@ function redirectToChat(email) {
 		"/chat?state=" +
 		encodeURIComponent(appState.state) +
 		"&email=" +
-		encodeURIComponent(email);
-	if (appState.wasServed !== undefined) {
-		url += "&served=" + (appState.wasServed ? "yes" : "no");
-	}
+		encodeURIComponent(email) +
+		"&address=" +
+		encodeURIComponent(appState.address || "") +
+		"&city=" +
+		encodeURIComponent(appState.city || "") +
+		"&county=" +
+		encodeURIComponent(appState.county || "") +
+		"&zip=" +
+		encodeURIComponent(appState.zip || "") +
+		"&served=" +
+		(appState.wasServed ? "yes" : "no");
 	window.location.href = url;
 }
