@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eviction Defense — Developer Documentation</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a2e; line-height: 1.7; max-width: 960px; margin: 0 auto; padding: 40px 24px; background: #f8f9fa; }
+  h1 { font-size: 32px; border-bottom: 3px solid #e94560; padding-bottom: 12px; margin-bottom: 24px; }
+  h2 { font-size: 22px; margin-top: 40px; margin-bottom: 12px; color: #e94560; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+  h3 { font-size: 17px; margin-top: 24px; margin-bottom: 8px; }
+  p { margin-bottom: 12px; }
+  code { background: #e8e8f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  pre { background: #1a1a2e; color: #f8f9fa; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 12px 0; }
+  pre .kw { color: #e94560; }
+  pre .str { color: #4ade80; }
+  pre .cmt { color: #94a3b8; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th { background: #1a1a2e; color: #fff; padding: 10px 12px; text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  ul, ol { margin: 8px 0 16px 24px; }
+  li { margin-bottom: 4px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-right: 4px; }
+  .badge-ok { background: #d4edda; color: #155724; }
+  .badge-warn { background: #fff3cd; color: #856404; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .flow-step { display: inline-block; background: #e94560; color: #fff; padding: 8px 16px; border-radius: 6px; margin: 4px; font-weight: 600; font-size: 14px; }
+  .flow-arrow { color: #94a3b8; font-size: 20px; margin: 0 4px; }
+</style>
+</head>
+<body>
+
+<h1>🏛️ Eviction Defense — Developer Documentation</h1>
+
+<p><strong>Last updated:</strong> July 22, 2026 &nbsp;|&nbsp; <strong>Version:</strong> 0.1.0 &nbsp;|&nbsp; <strong>Repo:</strong> github.com/wmabra/eviction-defense</p>
+
+<hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb">
+
+<h2>Overview</h2>
+<p><strong>evictions.help</strong> is an AI-powered self-help document preparation service for tenants facing eviction. Users answer eligibility questions, pay a $395 flat fee, chat with an AI intake specialist, and receive a complete ready-to-file court paperwork packet — including the official state court answer form, fee waiver, legal motions, checklists, hearing preparation guide, and rental assistance directory.</p>
+
+<p><strong>Supported states:</strong> AR, AZ, CA, CO, CT, FL, GA, IL, LA, MA, MI, MN, NM, NV, OR, RI, SC, TN, TX, VA (20 states)</p>
+
+<table>
+  <tr><th>Component</th><th>Technology</th></tr>
+  <tr><td>Backend</td><td>Python 3.11+, FastAPI, Uvicorn</td></tr>
+  <tr><td>PDF Generation</td><td>ReportLab (custom docs), PyMuPDF/fitz (court form filling)</td></tr>
+  <tr><td>AI Intake</td><td>DeepSeek API (deepseek-chat), OpenAI-compatible</td></tr>
+  <tr><td>Payment</td><td>Authorize.net (Accept.js + Python SDK)</td></tr>
+  <tr><td>Database</td><td>SQLite (dev) / PostgreSQL (prod-ready)</td></tr>
+  <tr><td>OCR</td><td>Google Document AI (optional) / PyMuPDF text extraction</td></tr>
+  <tr><td>Frontend</td><td>Vanilla HTML/JS/CSS (no framework)</td></tr>
+  <tr><td>Public Access</td><td>Tailscale Funnel (HTTPS tunnel)</td></tr>
+</table>
+
+<h2>User Flow</h2>
+<p style="margin:16px 0">
+  <span class="flow-step">1. Landing Page</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">2. Eligibility (7 questions)</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">3. Address + Email</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">4. Payment ($395)</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">5. AI Chatbot Intake</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">6. Summary + Download</span>
+</p>
+
+<h3>Step 1: Landing Page (<code>/</code>)</h3>
+<p>Serves <code>app/static/index.html</code>. Hero section with pricing, what's included, how it works. Below the fold, 7 eligibility questions (all yes/no except state dropdown):</p>
+<ol>
+  <li>State (20-state dropdown)</li>
+  <li>Are you the tenant? (yes/no)</li>
+  <li>Have you been served? (yes/no — soft warning if no)</li>
+  <li>Residential rental? (yes/no)</li>
+  <li>Section 8 / public housing? (yes/no — hard block)</li>
+  <li>Active military? (yes/no — hard block)</li>
+  <li>Bankruptcy? (yes/no — hard block)</li>
+</ol>
+<p>If all pass → address fields appear (street, city, county, zip, email).</p>
+
+<h3>Step 2: Payment</h3>
+<p>Authorize.net Accept.js hosted payment form. Card data goes directly to Authorize.net (PCI SAQ-A compliant). Backend processes via <code>app/services/payment.py</code>. Sandbox credentials in <code>.env</code>. After payment → redirects to <code>/chat?state=TX&amp;email=...&amp;address=...&amp;county=...</code></p>
+
+<h3>Step 3: AI Chatbot Intake (<code>/chat</code>)</h3>
+<p>The chatbot uses DeepSeek (deepseek-chat) via OpenAI-compatible API. 7 conversational phases collect all data:</p>
+<ol>
+  <li><strong>Personal & Location</strong> — name, county, address, phone, email</li>
+  <li><strong>Landlord & Case Info</strong> — landlord name, case number, court, service date, amount claimed</li>
+  <li><strong>Risk Screening</strong> — writ of possession, Section 8, military, bankruptcy (hard stops)</li>
+  <li><strong>Rent & Payment</strong> — monthly rent, disputes, repair notices, rental assistance</li>
+  <li><strong>Defenses</strong> — 12 standard defenses with explanations</li>
+  <li><strong>Preferences</strong> — judge/jury, time extension, payment plan</li>
+  <li><strong>Financial</strong> — income, expenses, assets, benefits (for fee waiver)</li>
+</ol>
+<p>At completion, outputs structured JSON with all collected data. The system injects state/address/email from URL params if the chatbot didn't collect them.</p>
+
+<h3>Step 4: Packet Download</h3>
+<p>Chatbot shows summary → user clicks "Generate & Download" → POSTs full intake data to <code>/api/v1/documents/generate-packet</code> → receives ZIP with 15-18 PDFs.</p>
+
+<h2>Packet Contents</h2>
+<table>
+  <tr><th>Document</th><th>Always?</th><th>Description</th></tr>
+  <tr><td>Official Court Answer Form</td><td>✅</td><td>Pre-filled with case data + defenses (uses state's actual court PDF)</td></tr>
+  <tr><td>Fee Waiver Application</td><td>✅</td><td>If financial data provided — official state fee waiver form</td></tr>
+  <tr><td>Cover Page</td><td>✅</td><td>Case summary + document index</td></tr>
+  <tr><td>Emergency Action Plan</td><td>✅</td><td>24-hour step-by-step plan</td></tr>
+  <tr><td>Eviction Process Timeline</td><td>✅</td><td>State-specific timeline from notice to judgment</td></tr>
+  <tr><td>Defenses Explained</td><td>✅</td><td>Plain-English guide to defenses</td></tr>
+  <tr><td>Evidence Guide</td><td>✅</td><td>What to collect and organize</td></tr>
+  <tr><td>Income & Expense Worksheet</td><td>✅</td><td>Filled with user's financial data</td></tr>
+  <tr><td>Filing Checklist</td><td>✅</td><td>Step-by-step court filing instructions</td></tr>
+  <tr><td>Court Checklist</td><td>✅</td><td>What to bring to hearing</td></tr>
+  <tr><td>Hearing Preparation Guide</td><td>✅</td><td>What to expect, tips (not legal advice)</td></tr>
+  <tr><td>Rental Assistance Directory</td><td>✅</td><td>County-specific organizations</td></tr>
+  <tr><td>Motion for Hearing</td><td>✅</td><td>Tenant's right to be heard</td></tr>
+  <tr><td>Demand Letter (Repairs)</td><td>Conditional</td><td>If repairs defense checked</td></tr>
+  <tr><td>Motion to Determine Rent</td><td>Conditional</td><td>If amount disputed</td></tr>
+  <tr><td>Payment Plan Letter</td><td>Conditional</td><td>If payment plan requested</td></tr>
+  <tr><td>Hardship Letter</td><td>Conditional</td><td>If more time needed</td></tr>
+</table>
+
+<h2>Architecture</h2>
+<pre>
+eviction-defense/
+├── app/
+│   ├── main.py              <span class="cmt"># FastAPI entry point</span>
+│   ├── config.py            <span class="cmt"># Settings via pydantic-settings</span>
+│   ├── database/
+│   │   └── models.py        <span class="cmt"># SQLAlchemy models (Case, Document)</span>
+│   ├── routers/
+│   │   ├── intake.py        <span class="cmt"># Eligibility + intake submit</span>
+│   │   ├── documents.py     <span class="cmt"># Upload, extraction, packet generation</span>
+│   │   ├── chat.py          <span class="cmt"># AI chatbot API</span>
+│   │   └── payment.py       <span class="cmt"># Authorize.net payment</span>
+│   ├── services/
+│   │   ├── chat.py          <span class="cmt"># Chat system prompt + DeepSeek client</span>
+│   │   ├── generator.py     <span class="cmt"># PDF generation (11 doc types, 140KB)</span>
+│   │   ├── pdf_overlay.py   <span class="cmt"># Court form filling (widgets + overlay)</span>
+│   │   ├── form_rebuilder.py<span class="cmt"># Rebuilds scanned forms as fillable PDFs</span>
+│   │   ├── state_configs.py <span class="cmt"># Per-state configs (forms, defenses, overlays)</span>
+│   │   ├── eligibility.py   <span class="cmt"># 20-state eligibility engine</span>
+│   │   ├── payment.py       <span class="cmt"># Authorize.net SDK integration</span>
+│   │   └── *_resources.json <span class="cmt"># 20 state rental assistance databases</span>
+│   ├── static/
+│   │   ├── index.html       <span class="cmt"># Landing page + eligibility + payment</span>
+│   │   ├── chat.html        <span class="cmt"># AI chatbot + download page</span>
+│   │   ├── js/app.js        <span class="cmt"># Frontend logic</span>
+│   │   └── css/style.css    <span class="cmt"># Shared styles</span>
+│   ├── templates/counties/  <span class="cmt"># Official court form PDFs (answer + fee waiver)</span>
+│   └── templates/rebuilt/   <span class="cmt"># Rebuilt forms with standard field names</span>
+├── databases/               <span class="cmt"># County-level resource databases (Excel)</span>
+├── schema/                  <span class="cmt"># Design docs (intake questionnaire, zero-touch flow)</span>
+└── requirements.txt
+</pre>
+
+<h2>API Endpoints</h2>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td>GET</td><td><code>/</code></td><td>Landing page (index.html)</td></tr>
+  <tr><td>GET</td><td><code>/chat</code></td><td>AI chatbot page (chat.html)</td></tr>
+  <tr><td>GET</td><td><code>/health</code></td><td>Health check</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/intake/pre-screen</code></td><td>Eligibility check (7-question pre-screen)</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/intake/submit</code></td><td>Submit complete intake data (from chatbot)</td></tr>
+  <tr><td>GET</td><td><code>/api/v1/intake/status/{case_id}</code></td><td>Get case status</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/documents/upload/{case_id}</code></td><td>Upload eviction document (PDF/JPG/PNG)</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/documents/extract/{case_id}</code></td><td>AI extraction pipeline (OCR → LLM → fields)</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/documents/confirm/{case_id}</code></td><td>Confirm extracted data</td></tr>
+  <tr><td>GET</td><td><code>/api/v1/documents/generate-packet</code></td><td>Generate ZIP (GET, basic params)</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/documents/generate-packet</code></td><td>Generate ZIP (POST, full intake JSON)</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/chat/send</code></td><td>Send message to AI chatbot</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/chat/reset</code></td><td>Reset chat session</td></tr>
+  <tr><td>POST</td><td><code>/api/v1/payment/charge</code></td><td>Process Authorize.net payment</td></tr>
+</table>
+
+<h2>Court Form System</h2>
+
+<h3>Two Filling Approaches</h3>
+<table>
+  <tr><th>Method</th><th>States</th><th>How It Works</th></tr>
+  <tr><td><strong>Widget Fill</strong></td><td>CA, CO, CT, FL, GA, IL, MA, MI, NV, RI, SC, TN, TX, VA</td><td>Original PDF has AcroForm fields. Auto-fill detects field names (defendant, plaintiff, case number, etc.) and sets values. Defense checkboxes mapped via <code>defense_options</code> in state config.</td></tr>
+  <tr><td><strong>Rebuilt + Overlay</strong></td><td>AR, AZ, MN, NM, OR</td><td>Original is scanned/non-fillable. Rebuilt version renders form as background image with standardized widget names. Text overlay for positioning. Defense narrative paragraph lists all defenses.</td></tr>
+  <tr><td><strong>Hybrid</strong></td><td>LA</td><td>Both widget fill + overlay for complex 14-page form.</td></tr>
+</table>
+
+<h3>Universal Field Mapping</h3>
+<p>Rebuilt forms use standardized field names across all states:</p>
+<table>
+  <tr><th>Standard Name</th><th>Data Source</th><th>Type</th></tr>
+  <tr><td><code>defendant_name</code></td><td>personal_info.full_name</td><td>text</td></tr>
+  <tr><td><code>plaintiff_name</code></td><td>landlord_info.landlord_name</td><td>text</td></tr>
+  <tr><td><code>case_number</code></td><td>case_details.case_number</td><td>text</td></tr>
+  <tr><td><code>court_name</code></td><td>case_details.court_name</td><td>text</td></tr>
+  <tr><td><code>county</code></td><td>personal_info.county</td><td>text</td></tr>
+  <tr><td><code>property_address</code></td><td>personal_info.property_address</td><td>text</td></tr>
+  <tr><td><code>phone</code></td><td>personal_info.phone</td><td>text</td></tr>
+  <tr><td><code>email</code></td><td>personal_info.email</td><td>text</td></tr>
+  <tr><td><code>date</code></td><td>Today's date</td><td>text</td></tr>
+  <tr><td><code>signature</code></td><td>/s/ (tenant signs physically)</td><td>text</td></tr>
+  <tr><td><code>defense_repairs</code></td><td>defenses.def_repairs.checked</td><td>checkbox</td></tr>
+  <tr><td><code>defense_amount</code></td><td>defenses.def_amount.checked</td><td>checkbox</td></tr>
+  <tr><td colspan="3"><em>... (12 total defense checkboxes)</em></td></tr>
+</table>
+
+<h2>State Config Structure</h2>
+<p>Each state in <code>state_configs.py</code> has this structure:</p>
+<pre>
+"TX": {
+    "name": "Texas",
+    "answer_form": "tx_eviction_answer.pdf",      <span class="cmt">// Official court form</span>
+    "fee_waiver_form": "tx_fee_waiver.pdf",        <span class="cmt">// Fee waiver form</span>
+    "has_fillable_fields": True,                    <span class="cmt">// Has AcroForm widgets?</span>
+    "court_type": "Justice of the Peace Court",
+    "field_mapping": {                              <span class="cmt">// Data key → PDF widget name</span>
+        "case_number": "Text1",
+        "full_name": "Text5",
+        ...
+    },
+    "defense_options": [                            <span class="cmt">// Defense → checkbox widget</span>
+        {"key": "def_repairs", "field": "Check Box1", "label": "..."},
+        ...
+    ],
+    "overlay_positions": {                          <span class="cmt">// Coordinate overlay (scanned forms)</span>
+        "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
+        ...
+    },
+    "fee_waiver_mapping": { ... },                  <span class="cmt">// Fee waiver field mapping</span>
+    "fee_waiver_overlay": { ... },                  <span class="cmt">// Fee waiver overlay positions</span>
+}
+</pre>
+
+<h2>Configuration</h2>
+<p>All config in <code>.env</code> (based on <code>.env.example</code>):</p>
+<pre>
+<span class="cmt"># App</span>
+SECRET_KEY=change-me
+DATABASE_URL=sqlite:///./eviction_defense.db
+
+<span class="cmt"># Authorize.net (sandbox)</span>
+AUTHORIZE_LOGIN_ID=...
+AUTHORIZE_TRANSACTION_KEY=...
+AUTHORIZE_SANDBOX=true
+
+<span class="cmt"># DeepSeek (chatbot)</span>
+LLM_API_KEY=sk-...
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+
+<span class="cmt"># Google Cloud Document AI (optional OCR)</span>
+GOOGLE_APPLICATION_CREDENTIALS=
+
+<span class="cmt"># Twilio / SendGrid (not yet active)</span>
+TWILIO_ACCOUNT_SID=
+SENDGRID_API_KEY=
+</pre>
+
+<h2>Running Locally</h2>
+<pre>
+<span class="cmt"># Install</span>
+cd eviction-defense
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env  <span class="cmt"># Edit with your keys</span>
+
+<span class="cmt"># Run</span>
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+<span class="cmt"># Public access via Tailscale</span>
+tailscale funnel 8000
+<span class="cmt"># → https://williamkm-ser.tail68995b.ts.net/</span>
+</pre>
+
+<h2>Testing</h2>
+<pre>
+<span class="cmt"># Automated 20-state verification</span>
+python3 -c "
+import urllib.request, json, io, zipfile
+<span class="cmt"># POST full intake data to generate-packet, verify court form + fee waiver</span>
+for s in ['AR','AZ','CA',...]:
+    body = {'state': s, 'personal_info': {...}, ...}
+    r = urllib.request.urlopen(...)
+    z = zipfile.ZipFile(io.BytesIO(r.read()))
+    assert any('COURT_FORM_Answer' in n for n in z.namelist())
+    assert any('Fee_Waiver' in n for n in z.namelist())
+print('All 20 states pass')
+"
+</pre>
+
+<h2>Deployment</h2>
+<p>The app is a single Uvicorn process. Deploy on any VPS (DigitalOcean, Hetzner, Railway, Render):</p>
+<ol>
+  <li>Clone repo: <code>git clone github.com/wmabra/eviction-defense</code></li>
+  <li>Set up <code>.env</code> with production keys</li>
+  <li>Run behind Nginx reverse proxy with Let's Encrypt SSL</li>
+  <li>Point <code>evictions.help</code> DNS to server</li>
+  <li>Swap Authorize.net sandbox keys → live in <code>.env</code></li>
+  <li>Change Accept.js URL from <code>jstest.authorize.net</code> → <code>accept.authorize.net</code></li>
+</ol>
+
+<h2>Key Files Reference</h2>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><code>app/services/chat.py</code></td><td>~200</td><td>DeepSeek client, system prompt (7 phases), session management</td></tr>
+  <tr><td><code>app/services/generator.py</code></td><td>~2600</td><td>PDF generation for all document types</td></tr>
+  <tr><td><code>app/services/pdf_overlay.py</code></td><td>~600</td><td>Court form filling: widget auto-fill, coordinate overlay, unified mapping</td></tr>
+  <tr><td><code>app/services/state_configs.py</code></td><td>~1100</td><td>Per-state form configs, defense options, overlay positions</td></tr>
+  <tr><td><code>app/services/form_rebuilder.py</code></td><td>~270</td><td>Rebuilds scanned court forms as fillable PDFs with standard fields</td></tr>
+  <tr><td><code>app/services/eligibility.py</code></td><td>~100</td><td>20-state eligibility rules with county-level support</td></tr>
+  <tr><td><code>app/static/index.html</code></td><td>~700</td><td>Landing page: hero, features, eligibility, address fields, payment</td></tr>
+  <tr><td><code>app/static/chat.html</code></td><td>~630</td><td>AI chatbot UI, summary display, download</td></tr>
+  <tr><td><code>app/routers/documents.py</code></td><td>~500</td><td>Upload, extraction, packet generation API</td></tr>
+</table>
+
+<h2>Known Limitations</h2>
+<ul>
+  <li><strong>SMS reminders not active:</strong> Twilio not yet configured. Chatbot no longer promises SMS.</li>
+  <li><strong>5 overlay states:</strong> AR, AZ, MN, NM, OR use rebuilt forms with defense narrative for overflow defenses. Individual checkbox positions being added per-state.</li>
+  <li><strong>Payment sandbox:</strong> Authorize.net test mode. Swap to live for production.</li>
+  <li><strong>No email delivery:</strong> SendGrid not configured. Packet delivered via instant download only.</li>
+</ul>
+
+<hr style="margin:30px 0;border:none;border-top:1px solid #e5e7eb">
+<p style="color:#94a3b8;font-size:12px">evictions.help — Self-help document preparation. Not a law firm. Not legal advice.</p>
+
+</body>
+</html>
