@@ -275,18 +275,18 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Defense key aliases — maps chatbot's standard keys to state-specific keys used in configs
     DEFENSE_ALIASES = {
-        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability"],
-        "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount"],
-        "def_attempted_pay": ["def_attempted_pay", "def_offered_pay", "def_offered_refused", "def_tried_to_pay", "def_refused_payment", "def_refused_rent"],
-        "def_paid": ["def_paid", "def_rent_paid", "def_rent_paid_full"],
+        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability", "def_disagree_6", "def_agree_6", "box 6.", "def_no_free_pay", "def_costs_not_rent"],
+        "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount", "def_disagree_5", "def_disagree_8", "8. disagree that", "def_admit_partial", "def_deny_all"],
+        "def_attempted_pay": ["def_attempted_pay", "def_offered_pay", "def_offered_refused", "def_tried_to_pay", "def_refused_payment", "def_refused_rent", "def_partial_payment"],
+        "def_paid": ["def_paid", "def_rent_paid", "def_rent_paid_full", "def_admit_all"],
         "def_waived": ["def_waived", "def_waiver"],
-        "def_retaliation": ["def_retaliation"],
+        "def_retaliation": ["def_retaliation", "def_disagree_7", "def_contest"],
         "def_fair_housing": ["def_fair_housing", "def_discrimination"],
-        "def_accepted_rent": ["def_accepted_rent", "def_accepted_late"],
+        "def_accepted_rent": ["def_accepted_rent", "def_accepted_late", "def_foreclosure"],
         "def_corrected": ["def_corrected", "def_cured", "def_did_repairs", "def_moved_out"],
-        "def_not_owner": ["def_not_owner", "def_landlord_not_entitled", "def_ownership"],
-        "def_bad_notice": ["def_bad_notice", "def_no_notice", "def_invalid", "def_improper_notice"],
-        "def_other": ["def_other", "def_other2", "def_other_defenses", "def_admit_all", "def_admit_partial", "def_deny_all", "def_contest", "def_jury_trial", "def_no_breach", "def_lease_violation", "def_justifiable"],
+        "def_not_owner": ["def_not_owner", "def_landlord_not_entitled", "def_ownership", "def_disagree_4"],
+        "def_bad_notice": ["def_bad_notice", "def_no_notice", "def_invalid", "def_improper_notice", "def_disagree_3", "def_late_fee"],
+        "def_other": ["def_other", "def_other2", "def_other_defenses", "def_admit_all", "def_partial", "def_deny_all", "def_contest", "def_jury_trial", "def_no_breach", "def_lease_violation", "def_justifiable", "def_disagree_9", "def_disagree_10", "9. disagree", "10 disagree", "def_costs_not_rent", "def_no_free_pay", "def_late_fee", "def_foreclosure", "def_moved_out", "def_partial_payment", "def_discrimination"],
     }
     
     for opt in defense_opts:

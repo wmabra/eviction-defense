@@ -110,7 +110,7 @@ def has_defense(widget_values, defense_count):
     defense_yes = 0
     for name, value in widget_values.items():
         fn = name.lower()
-        if value.lower() == "yes" or value == "1":
+        if value.lower() in ("yes", "on", "1", "true"):
             if any(kw in fn for kw in defense_keywords):
                 defense_yes += 1
     return defense_yes
