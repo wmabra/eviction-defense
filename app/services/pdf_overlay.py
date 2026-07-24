@@ -198,6 +198,44 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     if "mailing_address" not in _all_data and "property_address" in _all_data:
         _all_data["mailing_address"] = _all_data["property_address"]
     
+    # Certificate fields for CT, LA, and other states — derive from existing data
+    cert_synthesis = {
+        "cert_name": "full_name",
+        "cert_address": "property_address", 
+        "cert_date_signed": None,
+        "cert_date": None,
+        "cert_mail": "property_address",
+        "cert_phone": "phone",
+        "note": None,
+        "notified": None,
+        "code_violation": None,
+        "date_offered": None,
+        "date_note": None,
+        "date_increase": None,
+        "lease": None,
+        "lease_renewal": None,
+        "no_rent_due": None,
+        "rent_increase": None,
+        "rent_offered": None,
+        "rent_paid": None,
+        "rent_accepted": None,
+        "status": None,
+        "additional_info": None,
+        "additional_reasons": None,
+    }
+    for cert_key, source_key in cert_synthesis.items():
+        if cert_key not in _all_data:
+            if source_key and source_key in _all_data:
+                _all_data[cert_key] = _all_data[source_key]
+            elif source_key is None:
+                _all_data[cert_key] = ""
+    
+    # Set certificate dates to today
+    today_str = date.today().strftime("%m/%d/%Y")
+    for k in ["cert_date", "cert_date_signed"]:
+        if k not in _all_data or not _all_data.get(k):
+            _all_data[k] = today_str
+    
     # Map each field_mapping key to a value from our data
     for map_key, pdf_field in mapping.items():
         if map_key in _all_data:
@@ -335,7 +373,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                 widget.update()
                 continue
             
-            # 1c. Skip auto-fill for fields that have any explicit mapping
+            # 1c. Try partial name matching for long XFA widget names
+            # e.g., "form1[0].FRONT[0].CERTNAME[0]" should match values["CERTNAME[0]"]
+            parts = field_name.rsplit('.', 1)
+            if len(parts) == 2:
+                short_name = parts[1]
+                if short_name in values:
+                    widget.field_value = values[short_name]
+                    widget.update()
+                    continue
+            
+            # 1d. Skip auto-fill for fields that have any explicit mapping
             if field_name in mapping.values() or field_name in fw_mapping.values():
                 continue
             
@@ -382,6 +430,42 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
     
     for page_num in range(len(doc)):
         page = doc[page_num]
+        
+        # For fee waiver forms, ALWAYS stamp financial info on first page
+        if form_key == "fee_waiver_form" and page_num == 0:
+            fin = data.get("financial_info")
+            if fin:
+                fin_lines = []
+                income = fin.get("monthly_gross_income") or fin.get("employment_income")
+                if income: fin_lines.append(f"Monthly Income: ${float(income):,.2f}")
+                adults = fin.get("household_adults")
+                children = fin.get("household_children")
+                if adults or children:
+                    hh = f"Household: {adults or 0} adult(s)"
+                    if children: hh += f", {children} child(ren)"
+                    fin_lines.append(hh)
+                benefits = []
+                if fin.get("receives_snap"): benefits.append("SNAP")
+                if fin.get("receives_medicaid"): benefits.append("Medicaid")
+                if fin.get("receives_ssi"): benefits.append("SSI")
+                if fin.get("receives_tanf"): benefits.append("TANF")
+                if benefits: fin_lines.append(f"Benefits: {', '.join(benefits)}")
+                vehicle = fin.get("vehicle_make_model")
+                vehicle_val = fin.get("vehicle_value")
+                if vehicle:
+                    vtext = f"Vehicle: {vehicle}"
+                    if vehicle_val: vtext += f" (${float(vehicle_val):,.2f})"
+                    fin_lines.append(vtext)
+                checking = fin.get("checking_balance")
+                savings = fin.get("savings_balance")
+                cash = fin.get("cash_on_hand")
+                if checking or savings or cash:
+                    total = (checking or 0) + (savings or 0) + (cash or 0)
+                    fin_lines.append(f"Bank/Cash: ${float(total):,.2f}")
+                if fin_lines:
+                    fin_text = "\n".join(fin_lines)
+                    fin_rect = fitz.Rect(50, 250, 550, 400)
+                    page.insert_textbox(fin_rect, fin_text, fontname="helv", fontsize=9, color=(0, 0, 0))
         
         if positions:
             # Use precise coordinates for this state

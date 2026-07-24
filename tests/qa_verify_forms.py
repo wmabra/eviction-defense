@@ -93,17 +93,25 @@ def has_value(text, widget_values, *terms):
 
 
 def has_defense(widget_values, defense_count):
-    """Check if defense checkboxes have been set to Yes."""
-    yes_count = sum(1 for v in widget_values.values() if v.lower() == "yes" or v == "1")
-    # Count how many widget names contain defense-related keywords and have Yes value
+    """Check if defense checkboxes have been set to Yes by searching widget values."""
+    defense_keywords = [
+        "defense", "repair", "amount", "paid", "retaliat", 
+        "notice", "waive", "offer", "refuse", "discriminat", "correct", 
+        "owner", "condition", "habitability", "other",
+        "7a", "7b", "7c", "7d", "7e",  # CO defense groups
+        "check", "group7", "group6", "group8",
+        "dismiss", "contest", "deny", "admit",  # SC/LA defenses
+        "notified", "violation", "foreclose",  # CT defenses
+        "jurisdiction", "responsible",  # SC defenses
+        "failed", "disagree", "improper",  # Generic
+        "norrentdue", "rentoffered", "rentpaid", "rentaccepted",  # CT XFA
+        "form1",  # CT XFA prefix
+    ]
     defense_yes = 0
     for name, value in widget_values.items():
         fn = name.lower()
         if value.lower() == "yes" or value == "1":
-            if any(kw in fn for kw in ["defense", "repair", "amount", "paid", "retaliat", 
-                    "notice", "waive", "offer", "refuse", "discriminat", "correct", 
-                    "owner", "condition", "habitability", "other", "7a", "7b", "7c", "7d", "7e",
-                    "check", "group7", "group6"]):
+            if any(kw in fn for kw in defense_keywords):
                 defense_yes += 1
     return defense_yes
 
