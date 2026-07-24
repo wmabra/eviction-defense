@@ -88,15 +88,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         has_fields = True  # Treat as fillable if mapping exists
     
     if has_fields and has_overlay:
-        # Hybrid: both fillable fields AND overlay positions (e.g., LA checkbox form + data overlay)
+        # Hybrid: both fillable fields AND overlay positions
         _fill_via_widgets(doc, data, config)
-        _fill_via_overlay(doc, data, config)
+        _fill_via_overlay(doc, data, config, form_key)
     elif has_fields:
-        # Use fillable field approach
         _fill_via_widgets(doc, data, config)
     else:
-        # Use coordinate overlay approach for scanned forms
-        _fill_via_overlay(doc, data, config)
+        _fill_via_overlay(doc, data, config, form_key)
 
     doc.save(output_path, deflate=True)
     doc.close()
@@ -365,20 +363,22 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                     break
 
 
-def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
+def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: str = "answer_form"):
     """Overlay text on scanned/non-fillable PDFs using coordinate positions.
     
-    Uses position_config from state config to place text at correct locations.
-    For defense checkboxes, draws an actual checkmark symbol.
-    Falls back to stamping info at the top of the form.
+    For fee waivers, uses fee_waiver_overlay if available, otherwise falls back
+    to overlay_positions. Falls back to stamping info at the top of the form.
     """
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     
-    # Merge overlay_positions and fee_waiver_overlay
-    positions = dict(config.get("overlay_positions", {}))
-    positions.update(config.get("fee_waiver_overlay", {}))
+    # For fee waivers, use fee_waiver_overlay ONLY — don't fall back to answer form positions
+    if form_key == "fee_waiver_form":
+        positions = dict(config.get("fee_waiver_overlay", {}))
+    else:
+        positions = dict(config.get("overlay_positions", {}))
+        positions.update(config.get("fee_waiver_overlay", {}))
     
     for page_num in range(len(doc)):
         page = doc[page_num]
@@ -429,8 +429,39 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict):
                 if p.get("phone"): text_lines.append(f"Phone: {p['phone']}")
                 text_lines.append(f"Date: {date.today().strftime('%m/%d/%Y')}")
                 
+                # Include financial summary when financial_info is present (fee waivers)
+                fin = data.get("financial_info")
+                if fin:
+                    text_lines.append("")
+                    income = fin.get("monthly_gross_income") or fin.get("employment_income")
+                    if income: text_lines.append(f"Monthly Income: ${float(income):,.2f}")
+                    adults = fin.get("household_adults")
+                    children = fin.get("household_children")
+                    if adults or children:
+                        hh = f"Household: {adults or 0} adult(s)"
+                        if children: hh += f", {children} child(ren)"
+                        text_lines.append(hh)
+                    benefits = []
+                    if fin.get("receives_snap"): benefits.append("SNAP")
+                    if fin.get("receives_medicaid"): benefits.append("Medicaid")
+                    if fin.get("receives_ssi"): benefits.append("SSI")
+                    if fin.get("receives_tanf"): benefits.append("TANF")
+                    if benefits: text_lines.append(f"Benefits: {', '.join(benefits)}")
+                    vehicle = fin.get("vehicle_make_model")
+                    vehicle_val = fin.get("vehicle_value")
+                    if vehicle:
+                        vtext = f"Vehicle: {vehicle}"
+                        if vehicle_val: vtext += f" (${float(vehicle_val):,.2f})"
+                        text_lines.append(vtext)
+                    checking = fin.get("checking_balance")
+                    savings = fin.get("savings_balance")
+                    cash = fin.get("cash_on_hand")
+                    if checking or savings or cash:
+                        total = (checking or 0) + (savings or 0) + (cash or 0)
+                        text_lines.append(f"Bank/Cash: ${float(total):,.2f}")
+                
                 text = "\n".join(text_lines)
-                rect = fitz.Rect(50, 50, 550, 150)
+                rect = fitz.Rect(50, 50, 550, 300)
                 page.insert_textbox(rect, text, fontname="helv", fontsize=10, color=(0, 0, 0))
 
 
