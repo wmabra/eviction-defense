@@ -352,7 +352,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         (re.compile(r'(?<![a-zA-Z])city', re.IGNORECASE), p.get("property_city", "")),
     ]
     # Field names that should NOT receive auto-fill from substring rules
-    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)', re.IGNORECASE)
+    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)|'
+                                r'landlord.*(accepted|date|payment|partial)|'
+                                r'(notice|amount|date).*(landlord)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
@@ -646,6 +648,9 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                      "real_estate_value", "real_estate_loan_owed", "other_assets_value"]
     if key in dollar_fields:
         val = financial.get(key)
+        # Fallback: employment_income from monthly_gross_income
+        if val is None and key == "employment_income":
+            val = financial.get("monthly_gross_income")
         if val is not None and val != 0:
             return f"${float(val):,.2f}"
         return None

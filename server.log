@@ -1123,3 +1123,62 @@ INFO:     Started server process [1428665]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     104.210.140.139:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     104.210.140.139:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     147.185.132.177:0 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     74.7.228.60:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     207.199.188.110:0 - "GET / HTTP/1.1" 200 OK
+INFO:     94.154.43.186:0 - "GET /.env HTTP/1.1" 404 Not Found
+INFO:     94.154.43.183:0 - "GET / HTTP/1.1" 200 OK
+INFO:     81.171.74.60:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     81.171.74.60:0 - "POST / HTTP/1.1" 405 Method Not Allowed
+INFO:     81.171.74.60:0 - "GET / HTTP/1.1" 200 OK
+INFO:     81.171.74.60:0 - "GET /.svn/wc.db HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /_vti_pvt/service.pwd HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /phpinfo.php HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /storage/logs/laravel.log HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /docker-compose.yml HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /user_secrets.yml HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.env.production HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /etc/ssl/private/server.key HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /server.key HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /config/production.json HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.vscode/sftp.json HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /secrets.json HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.npmrc HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.bash_history HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.ssh/id_ed25519 HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /backup.tar.gz HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.ssh/id_ecdsa HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.ssh/id_rsa HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /backup.sql HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /config.php HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /dump.sql HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /config.xml HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /wp-config.php HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /database.sql HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /database_backup.sql HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /actuator/heapdump HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /backup.zip HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /wp-admin/setup-config.php HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.git/HEAD HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /.env HTTP/1.1" 404 Not Found
+INFO:     81.171.74.60:0 - "GET /api/.env HTTP/1.1" 404 Not Found
+INFO:     198.235.24.186:0 - "GET / HTTP/1.1" 200 OK
+INFO:     198.235.24.27:0 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58478 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [1805289]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58092 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43774 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     Started server process [1805451]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:45040 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58130 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58146 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58162 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
