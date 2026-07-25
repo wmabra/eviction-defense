@@ -729,7 +729,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "defense_amount": {"page": 1, "x": 87, "y": 222, "w": 14, "h": 14, "size": 10},
             "defense_other": {"page": 1, "x": 70, "y": 435, "w": 14, "h": 14, "size": 10},
             "phone": {"page": 1, "x": 163, "y": 316, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 143, "y": 550, "w": 200, "h": 20, "size": 10}},
+            "signature": {"page": 1, "x": 143, "y": 550, "w": 200, "h": 20, "size": 10},
+            "defense_narrative": {"page": 1, "x": 72, "y": 370, "w": 450, "h": 500, "size": 7}},
 
         "has_fillable_fields": True,
         "court_type": "General Sessions Court",
