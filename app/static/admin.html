@@ -266,22 +266,59 @@
         </div>
 
         <!-- Chat Sessions -->
-        <div style="margin-top:24px">
-          <h3 style="margin-bottom:12px">Chat Sessions</h3>
-          <button class="btn btn-secondary" onclick="loadChatSessions()">Refresh</button>
-          <table style="margin-top:8px">
-            <thead><tr><th>Case ID</th><th>Messages</th><th>Last Active</th><th>Actions</th></tr></thead>
+        <div style="margin-top: 24px">
+          <h3 style="margin-bottom: 12px">Chat Sessions</h3>
+          <button class="btn btn-secondary" onclick="loadChatSessions()">
+            Refresh
+          </button>
+          <table style="margin-top: 8px">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Messages</th>
+                <th>Last Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
             <tbody id="chat-sessions-table">
-              <tr><td colspan="4" style="text-align:center;padding:20px;color:#888">Click Refresh to load</td></tr>
+              <tr>
+                <td
+                  colspan="4"
+                  style="text-align: center; padding: 20px; color: #888"
+                >
+                  Click Refresh to load
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Chat Viewer -->
-        <div id="chat-viewer" class="hidden" style="margin-top:24px;background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
-          <h3 style="margin-bottom:12px">Chat Log</h3>
-          <div id="chat-messages" style="max-height:500px;overflow-y:auto;font-size:13px"></div>
-          <button class="btn btn-secondary" onclick="document.getElementById('chat-viewer').classList.add('hidden')" style="margin-top:12px">Close</button>
+        <div
+          id="chat-viewer"
+          class="hidden"
+          style="
+            margin-top: 24px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          "
+        >
+          <h3 style="margin-bottom: 12px">Chat Log</h3>
+          <div
+            id="chat-messages"
+            style="max-height: 500px; overflow-y: auto; font-size: 13px"
+          ></div>
+          <button
+            class="btn btn-secondary"
+            onclick="
+              document.getElementById('chat-viewer').classList.add('hidden')
+            "
+            style="margin-top: 12px"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

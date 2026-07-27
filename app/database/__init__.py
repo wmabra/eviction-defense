@@ -12,8 +12,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db():
-    """Create all tables."""
-    Base.metadata.create_all(bind=engine)
+    """Create all tables (idempotent — safe to call on every startup)."""
+    Base.metadata.create_all(bind=engine, checkfirst=True)
 
 
 def get_db():
