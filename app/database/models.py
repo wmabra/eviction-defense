@@ -103,3 +103,14 @@ class Document(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     ocr_text = Column(SQLITE_TEXT, nullable=True)
     ocr_processed = Column(Boolean, default=False)
+
+
+class ChatLog(Base):
+    """Stores every chat message for review and improvement."""
+    __tablename__ = "chat_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    case_id = Column(String, index=True, nullable=False)
+    role = Column(String, nullable=False)  # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

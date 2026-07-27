@@ -1,7 +1,10 @@
 """Chat-based intake API endpoints."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+from app.database import get_db
+from app.database.models import ChatLog
 from app.services.chat import get_chat_response, get_session, reset_session
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
@@ -24,10 +27,31 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/send", response_model=ChatResponse)
-def send_message(req: ChatRequest):
+def send_message(req: ChatRequest, db: Session = Depends(get_db)):
     """Send a message to the AI intake specialist."""
     messages = [{"role": m.role, "content": m.content} for m in req.messages]
+    
+    # Log the last user message to the database for review
+    if req.case_id and messages:
+        last_msg = messages[-1]
+        try:
+            log = ChatLog(case_id=req.case_id, role=last_msg["role"], content=last_msg["content"])
+            db.add(log)
+            db.commit()
+        except Exception:
+            pass
+    
     result = get_chat_response(messages, case_id=req.case_id)
+    
+    # Log the AI response too
+    if req.case_id and result.get("message"):
+        try:
+            log = ChatLog(case_id=req.case_id, role="assistant", content=result["message"])
+            db.add(log)
+            db.commit()
+        except Exception:
+            pass
+    
     return ChatResponse(**result)
 
 

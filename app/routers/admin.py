@@ -155,3 +155,40 @@ def resend_packet(case_id: str, db: Session = Depends(get_db)):
         "case_id": case_id,
         "download_url": f"/api/v1/documents/generate-packet?{params}",
     }
+
+
+@router.get("/chat-sessions")
+def list_chat_sessions(page: int = 1, limit: int = 20, db: Session = Depends(get_db)):
+    """List recent chat sessions for review."""
+    from app.database.models import ChatLog
+    from sqlalchemy import func, distinct
+    
+    # Get unique case_ids with latest message time
+    sessions = db.query(
+        ChatLog.case_id,
+        func.max(ChatLog.created_at).label("last_message"),
+        func.count(ChatLog.id).label("message_count")
+    ).group_by(ChatLog.case_id).order_by(func.max(ChatLog.created_at).desc()).offset((page-1)*limit).limit(limit).all()
+    
+    return {
+        "sessions": [
+            {"case_id": s.case_id, "last_message": str(s.last_message), "message_count": s.message_count}
+            for s in sessions
+        ]
+    }
+
+
+@router.get("/chat-sessions/{case_id}")
+def get_chat_session_log(case_id: str, db: Session = Depends(get_db)):
+    """Get the full chat log for a specific session."""
+    from app.database.models import ChatLog
+    
+    messages = db.query(ChatLog).filter(ChatLog.case_id == case_id).order_by(ChatLog.created_at.asc()).all()
+    
+    return {
+        "case_id": case_id,
+        "messages": [
+            {"role": m.role, "content": m.content, "time": str(m.created_at)}
+            for m in messages
+        ]
+    }
