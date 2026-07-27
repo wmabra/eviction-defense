@@ -8,6 +8,7 @@ from app.routers import intake
 from app.routers import documents
 from app.routers import chat
 from app.routers import payment
+from app.routers import admin
 
 app = FastAPI(
     title="Eviction Defense — Automated Self-Help Paperwork",
@@ -39,12 +40,19 @@ app.include_router(intake.router)
 app.include_router(documents.router)
 app.include_router(chat.router)
 app.include_router(payment.router)
+app.include_router(admin.router)
 
 # Serve frontend static files
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "eviction-defense"}
+
+
+@app.get("/admin")
+def admin_page():
+    from fastapi.responses import FileResponse
+    return FileResponse("app/static/admin.html")
 
 
 @app.get("/")

@@ -1889,3 +1889,107 @@ INFO:     127.0.0.1:34552 - "POST /api/v1/documents/generate-packet HTTP/1.1" 20
 INFO:     127.0.0.1:34564 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     104.210.140.129:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
 INFO:     104.210.140.133:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     3.217.141.132:0 - "GET / HTTP/1.1" 200 OK
+INFO:     146.190.52.130:0 - "GET / HTTP/1.1" 200 OK
+INFO:     146.190.52.130:0 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET / HTTP/1.1" 200 OK
+INFO:     34.45.87.9:0 - "GET //xmlrpc.php?rsd HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //blog/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //wordpress/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //wp/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //2020/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //shop/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //test/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //site/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     34.45.87.9:0 - "GET //sito/wp-includes/wlwmanifest.xml HTTP/1.1" 404 Not Found
+INFO:     94.154.43.188:0 - "GET /.env HTTP/1.1" 404 Not Found
+INFO:     Started server process [2417093]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55146 - "POST /api/v1/admin/auth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/v1/admin/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "GET /api/v1/admin/cases HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/williamkm/.local/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/middleware/cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2596, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/williamkm/.local/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/williamkm/eviction-defense/app/routers/admin.py", line 95, in list_cases
+    "defenses": json.loads(c.defenses) if c.defenses else {},
+                ~~~~~~~~~~^^^^^^^^^^^^
+  File "/usr/lib/python3.14/json/__init__.py", line 345, in loads
+    raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+                    f'not {s.__class__.__name__}')
+TypeError: the JSON object must be str, bytes or bytearray, not dict
+INFO:     127.0.0.1:42700 - "GET /admin HTTP/1.1" 200 OK

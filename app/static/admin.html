@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — evictions.help</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, sans-serif; background: #f8f9fa; color: #1a1a2e; }
+.header { background: #1a1a2e; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 18px; }
+.header span { color: #e94560; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.stat-card h3 { font-size: 28px; color: #e94560; }
+.stat-card p { font-size: 13px; color: #888; margin-top: 4px; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+th { background: #1a1a2e; color: #fff; padding: 10px 12px; text-align: left; font-size: 13px; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+tr:hover { background: #f8f9fa; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-ok { background: #d4edda; color: #155724; }
+.badge-warn { background: #fff3cd; color: #856404; }
+.badge-info { background: #dbeafe; color: #1e40af; }
+
+.btn { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; }
+.btn-primary { background: #e94560; color: #fff; }
+.btn-secondary { background: #e5e7eb; color: #1a1a2e; }
+
+.login-box { max-width: 360px; margin: 80px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); text-align: center; }
+.login-box h2 { margin-bottom: 16px; }
+.login-box input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 14px; margin-bottom: 12px; }
+.login-box button { width: 100%; padding: 10px; background: #e94560; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+.hidden { display: none !important; }
+.loading { text-align: center; padding: 40px; color: #888; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>evictions.help <span>Admin</span></h1>
+  <button class="btn btn-secondary" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <input type="password" id="password" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+      <button onclick="login()">Login</button>
+      <p id="login-error" style="color:#dc2626;font-size:12px;margin-top:8px;display:none"></p>
+    </div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="stats">
+      <div class="stat-card"><h3 id="stat-total">—</h3><p>Total Cases</p></div>
+      <div class="stat-card"><h3 id="stat-today">—</h3><p>Today</p></div>
+      <div class="stat-card"><h3 id="stat-revenue">—</h3><p>Est. Revenue</p></div>
+      <div class="stat-card"><h3 id="stat-pending">—</h3><p>Pending Intake</p></div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <input type="text" id="search" placeholder="Search by name or email..." style="padding:8px 12px;border:2px solid #e5e7eb;border-radius:6px;width:300px" onkeyup="filterCases()">
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>County/State</th><th>Status</th><th>Date</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="case-table">
+        <tr><td colspan="6" class="loading">Loading...</td></tr>
+      </tbody>
+    </table>
+
+    <div id="case-detail" class="hidden" style="margin-top:24px;background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+      <h3 style="margin-bottom:12px">Case Detail</h3>
+      <div id="detail-content"></div>
+      <button class="btn btn-secondary" onclick="document.getElementById('case-detail').classList.add('hidden')" style="margin-top:12px">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/v1/admin";
+let sessionToken = null;
+
+function login() {
+  const pw = document.getElementById("password").value;
+  fetch(API + "/auth", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({password: pw}) })
+    .then(r => r.ok ? r.json() : Promise.reject("Invalid password"))
+    .then(data => {
+      sessionToken = data.token;
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      loadStats();
+      loadCases();
+    })
+    .catch(err => {
+      document.getElementById("login-error").textContent = "Invalid password";
+      document.getElementById("login-error").style.display = "block";
+    });
+}
+
+function logout() {
+  sessionToken = null;
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("dashboard").classList.add("hidden");
+}
+
+function loadStats() {
+  fetch(API + "/stats")
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById("stat-total").textContent = data.total_cases || 0;
+      document.getElementById("stat-today").textContent = data.cases_today || 0;
+      document.getElementById("stat-revenue").textContent = "$" + (data.revenue_estimate || 0).toLocaleString();
+      document.getElementById("stat-pending").textContent = (data.status_breakdown?.intake_in_progress || 0) + (data.status_breakdown?.intake_complete || 0);
+    });
+}
+
+let allCases = [];
+
+function loadCases() {
+  fetch(API + "/cases?limit=100")
+    .then(r => r.json())
+    .then(data => {
+      allCases = data.cases || [];
+      renderCases(allCases);
+    });
+}
+
+function renderCases(cases) {
+  const tbody = document.getElementById("case-table");
+  if (!cases.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888">No cases yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = cases.map(c => `
+    <tr>
+      <td><strong>${esc(c.full_name || "—")}</strong></td>
+      <td>${esc(c.email || "—")}</td>
+      <td>${esc(c.county || "—")}</td>
+      <td><span class="badge ${c.status === 'delivered' ? 'badge-ok' : c.status === 'intake_in_progress' ? 'badge-warn' : 'badge-info'}">${esc(c.status || "unknown")}</span></td>
+      <td>${(c.created_at || "").split("T")[0]}</td>
+      <td>
+        <button class="btn btn-primary" onclick="viewCase('${c.id}')">View</button>
+        <button class="btn btn-secondary" onclick="resendPacket('${c.id}')">Resend</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function filterCases() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const filtered = allCases.filter(c => 
+    (c.full_name || "").toLowerCase().includes(q) || 
+    (c.email || "").toLowerCase().includes(q)
+  );
+  renderCases(filtered);
+}
+
+function viewCase(id) {
+  fetch(API + "/cases/" + id)
+    .then(r => r.json())
+    .then(c => {
+      const el = document.getElementById("detail-content");
+      el.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+          <div><strong>Name:</strong> ${esc(c.full_name)}</div>
+          <div><strong>Email:</strong> ${esc(c.email)}</div>
+          <div><strong>Phone:</strong> ${esc(c.phone)}</div>
+          <div><strong>County:</strong> ${esc(c.county)}</div>
+          <div><strong>Property:</strong> ${esc(c.property_address)} ${esc(c.property_city)} ${esc(c.property_zip)}</div>
+          <div><strong>Case #:</strong> ${esc(c.case_number)}</div>
+          <div><strong>Court:</strong> ${esc(c.court_name)}</div>
+          <div><strong>Landlord:</strong> ${esc(c.landlord_name)}</div>
+          <div><strong>Amount Claimed:</strong> $${c.complaint_amount_claimed || "—"}</div>
+          <div><strong>Rent:</strong> $${c.monthly_rent || "—"}/mo</div>
+          <div><strong>Status:</strong> ${esc(c.status)}</div>
+          <div><strong>Payment:</strong> ${esc(c.payment_status || "unknown")}</div>
+          <div><strong>Defenses:</strong> ${Object.entries(c.defenses || {}).filter(([k,v]) => v && v.checked).map(([k]) => k.replace("def_","")).join(", ") || "None"}</div>
+          <div><strong>Created:</strong> ${(c.created_at || "").split("T")[0]}</div>
+        </div>`;
+      document.getElementById("case-detail").classList.remove("hidden");
+    });
+}
+
+function resendPacket(id) {
+  if (!confirm("Regenerate and download packet for this case?")) return;
+  fetch(API + "/cases/" + id + "/resend", { method:"POST" })
+    .then(r => r.json())
+    .then(data => {
+      if (data.download_url) window.open(data.download_url);
+    });
+}
+
+function esc(s) { return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+</script>
+</body>
+</html>
