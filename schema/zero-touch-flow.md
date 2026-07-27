@@ -24,7 +24,7 @@ showing exactly where automation replaces human work.
                          │          │
               ┌──────────▼──┐  ┌───▼──────────┐
               │  2. PAYMENT │  │ Auto-decline │ ← NO human involved
-              │   ($395)    │  │ + auto-refund │    (app/services/refund.py)
+              │   ($299)    │  │ + auto-refund │    (app/services/refund.py)
               └──────┬──────┘  └──────────────┘
                      │
               ┌──────▼─────────────────────────┐

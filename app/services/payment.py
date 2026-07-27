@@ -31,7 +31,7 @@ def charge_card(opaque_data: dict, amount_cents: int, order_id: str,
     
     Args:
         opaque_data: The opaqueData from Accept.js (dataDescriptor + dataValue)
-        amount_cents: Amount in cents ($395.00 = 39500)
+        amount_cents: Amount in cents ($299.00 = 29900)
         order_id: Unique order identifier
         customer_email: Customer's email for receipt
         description: Order description

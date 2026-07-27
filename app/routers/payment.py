@@ -37,7 +37,7 @@ def process_payment(req: PaymentRequest):
     
     result: PaymentResult = charge_card(
         opaque_data=req.opaque_data,
-        amount_cents=39500,  # $395.00
+        amount_cents=29900,  # $299.00
         order_id=req.order_id,
         customer_email=req.customer_email,
         description=f"Eviction Defense Packet — {req.customer_name}"

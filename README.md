@@ -2,11 +2,11 @@
 
 AI-powered document preparation for tenants facing eviction in 20 states.
 
-**Price:** $395 flat fee  
+**Price:** $299 flat fee  
 **Domain:** evictions.help  
 **Model:** No-touch software workflow — customer answers, uploads, confirms, and receives a ready-to-file paperwork packet.
 
-## What's Included ($395 Packet)
+## What's Included ($299 Packet)
 
 1. Form 1.947(b) Answer — Residential Eviction (pre-filled)
 2. Motion to Determine Rent (when applicable)

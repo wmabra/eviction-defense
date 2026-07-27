@@ -173,7 +173,7 @@ function startPayment() {
 			clientKey:
 				"4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42",
 		},
-		paymentData: { amount: 395.0, description: "Eviction Defense Packet" },
+		paymentData: { amount: 299.0, description: "Eviction Defense Packet" },
 		callback: (response) => {
 			if (response.messages.resultCode === "Error") {
 				btn.disabled = false;

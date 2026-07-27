@@ -48,9 +48,9 @@ def get_stats(db: Session = Depends(get_db)):
     # Cases by state (from county field or extracted data)
     state_counts = {}
     
-    # Revenue estimate ($395 per case with payment)
+    # Revenue estimate ($299 per case with payment)
     paid_cases = status_counts.get("packet_ready", 0) + status_counts.get("delivered", 0)
-    revenue_estimate = paid_cases * 395
+    revenue_estimate = paid_cases * 299
     
     return {
         "total_cases": total_cases,
