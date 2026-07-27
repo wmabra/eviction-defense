@@ -46,7 +46,22 @@ app.include_router(admin.router)
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "eviction-defense"}
+    """Health check with DB connectivity verification."""
+    from app.database import SessionLocal
+    from sqlalchemy import text
+    db_ok = False
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        db_ok = True
+    except Exception:
+        pass
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "service": "eviction-defense",
+        "database": "connected" if db_ok else "disconnected",
+    }
 
 
 @app.get("/admin")
