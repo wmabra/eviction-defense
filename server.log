@@ -1887,3 +1887,5 @@ INFO:     127.0.0.1:34544 - "POST /api/v1/documents/generate-packet HTTP/1.1" 20
 INFO:     127.0.0.1:34550 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     127.0.0.1:34552 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
 INFO:     127.0.0.1:34564 - "POST /api/v1/documents/generate-packet HTTP/1.1" 200 OK
+INFO:     104.210.140.129:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     104.210.140.133:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
