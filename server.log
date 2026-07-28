@@ -2291,3 +2291,5 @@ INFO:     93.152.221.13:0 - "GET /.env.local HTTP/1.1" 404 Not Found
 INFO:     93.152.221.13:0 - "GET /.env.backup HTTP/1.1" 404 Not Found
 INFO:     93.152.221.13:0 - "GET /config/.env HTTP/1.1" 404 Not Found
 INFO:     212.156.70.154:0 - "GET / HTTP/1.1" 200 OK
+INFO:     104.210.140.139:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
+INFO:     104.210.140.139:0 - "GET /robots.txt HTTP/1.1" 404 Not Found
