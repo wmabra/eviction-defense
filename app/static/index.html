@@ -30,19 +30,22 @@
         padding: 0 24px;
       }
 
+      .logo-bar {
+        background: #fff;
+        text-align: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .hero-logo {
+        max-width: 240px;
+        height: auto;
+        display: inline-block;
+      }
       .hero {
         text-align: center;
         padding: 60px 24px 40px;
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         color: #fff;
-      }
-      .hero-logo {
-        max-width: 280px;
-        height: auto;
-        margin-bottom: 20px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
       }
       .hero-badge {
         display: inline-block;
@@ -364,13 +367,13 @@
     </style>
   </head>
   <body>
+    <!-- Logo Bar -->
+    <div class="logo-bar">
+      <img src="/static/logo.jpeg" alt="evictions.help" class="hero-logo" />
+    </div>
+
     <!-- Hero -->
     <div class="hero">
-      <img
-        src="/static/logo.jpeg"
-        alt="evictions.help"
-        class="hero-logo"
-      />
       <div class="hero-badge">Serving 20 States</div>
       <h1>
         Eviction Court Paperwork<br />Prepared <span>Same Day — $299</span>
