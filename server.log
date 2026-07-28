@@ -2269,3 +2269,25 @@ Traceback (most recent call last):
                     f'not {s.__class__.__name__}')
 TypeError: the JSON object must be str, bytes or bytearray, not dict
 INFO:     2600:1700:1ce0:b270:d937:ab64:b316:4637:0 - "GET /api/v1/admin/stats HTTP/1.1" 200 OK
+INFO:     94.154.43.184:0 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     143.244.47.86:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     93.152.221.13:0 - "GET /phpinfo HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /phpinfo.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /test.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /_profiler/phpinfo HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /info.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /php.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /php_info.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /i.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /pi.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET / HTTP/1.1" 200 OK
+INFO:     93.152.221.13:0 - "GET /admin/phpinfo.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /pinfo.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /php_version.php HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /.aws/credentials HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /.env HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /.env.example HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /.env.local HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /.env.backup HTTP/1.1" 404 Not Found
+INFO:     93.152.221.13:0 - "GET /config/.env HTTP/1.1" 404 Not Found
+INFO:     212.156.70.154:0 - "GET / HTTP/1.1" 200 OK
