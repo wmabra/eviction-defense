@@ -536,40 +536,44 @@
         <tr>
           <td>Phase 1 — Fork &amp; Config</td>
           <td>
-            Fork the eviction-defense repo, write 5 state configs,
-            new system prompt for foreclosure intake, new landing page.
-            Payment, OCR, PDF engine, and admin all carry over as-is.
+            Fork the eviction-defense repo, write 5 state configs, new system
+            prompt for foreclosure intake, new landing page. Payment, OCR, PDF
+            engine, and admin all carry over as-is.
           </td>
           <td>3–5 days</td>
         </tr>
         <tr>
           <td>Phase 2 — Form Templates</td>
           <td>
-            Per-state foreclosure answer templates, motion-to-dismiss,
-            hardship affidavit, lender communication letters, filing
-            checklists. Reuses the same state_configs.py + pdf_overlay.py +
-            form_rebuilder.py architecture.
+            Per-state foreclosure answer templates, motion-to-dismiss, hardship
+            affidavit, lender communication letters, filing checklists. Reuses
+            the same state_configs.py + pdf_overlay.py + form_rebuilder.py
+            architecture.
           </td>
           <td>5–7 days</td>
         </tr>
         <tr>
           <td>Phase 3 — QA</td>
           <td>
-            Automated verification: 4 scenarios × 5 states = 20 checks.
-            Same pattern as the existing 80/80 QA suite.
+            Automated verification: 4 scenarios × 5 states = 20 checks. Same
+            pattern as the existing 80/80 QA suite.
           </td>
           <td>2–3 days</td>
         </tr>
         <tr>
           <td>Phase 4 — Launch</td>
           <td>
-            DigitalOcean droplet, domain + DNS, SSL, deploy. Identical
-            to what we did today for evictions.help.
+            DigitalOcean droplet, domain + DNS, SSL, deploy. Identical to what
+            we did today for evictions.help.
           </td>
           <td>1–2 days</td>
         </tr>
       </table>
-      <p><strong>Total: ~2–3 weeks to launch with 5 states.</strong> The heavy lifting — payment, OCR, PDF engine, chatbot architecture, admin dashboard, deployment pipeline — is already built and battle-tested.</p>
+      <p>
+        <strong>Total: ~2–3 weeks to launch with 5 states.</strong> The heavy
+        lifting — payment, OCR, PDF engine, chatbot architecture, admin
+        dashboard, deployment pipeline — is already built and battle-tested.
+      </p>
     </div>
   </body>
 </html>
