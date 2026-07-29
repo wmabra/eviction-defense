@@ -85,16 +85,16 @@ def charge_card(opaque_data: dict, amount_cents: int, order_id: str,
                 success=True,
                 transaction_id=txn.transId,
                 auth_code=txn.authCode if hasattr(txn, 'authCode') else None,
-                message=txn.messages.message[0].text if txn.messages else "Payment successful"
+                message=str(txn.messages.message[0].text) if txn.messages else "Payment successful"
             )
         else:
             errors = []
             if response.transactionResponse and response.transactionResponse.errors:
                 for err in response.transactionResponse.errors.error:
-                    errors.append(err.errorText)
+                    errors.append(str(err.errorText))
             else:
                 for msg in response.messages.message:
-                    errors.append(msg.text)
+                    errors.append(str(msg.text))
             return PaymentResult(
                 success=False,
                 message="; ".join(errors)

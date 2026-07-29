@@ -21,6 +21,7 @@ google-cloud-documentai>=2.30.0
 
 # Payments
 stripe>=10.12.0
+authorizenet>=1.1.6
 
 # SMS / Email
 twilio>=9.3.0
