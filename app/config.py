@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     # Retell AI (for voice support agent)
     retell_api_key: str = ""
     retell_agent_id: str = ""
+    retell_llm_id: str = "llm_87dab7937936a2b60db4da926390"
+
+    # Telnyx (SIP trunking for voice agent phone number)
+    telnyx_api_key: str = ""
+    telnyx_phone_number: str = ""  # toll-free number for evictions.help
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
