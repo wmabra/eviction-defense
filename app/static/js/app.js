@@ -1,6 +1,5 @@
 /* evictions.help — Eligibility + Payment */
 const SUPPORTED_STATES = [
-	"AL",
 	"AZ",
 	"AR",
 	"CA",

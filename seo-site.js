@@ -1,0 +1,162 @@
+window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {apiBase:"",useLivePreScreen:false,checkoutPath:"/checkout/",price:299};
+(function(){
+  const q=(s,c=document)=>c.querySelector(s), qa=(s,c=document)=>[...c.querySelectorAll(s)];
+  const menu=q(".mobile-menu"), nav=q(".nav-links"); if(menu&&nav) menu.addEventListener("click",()=>nav.classList.toggle("open"));
+  qa(".directory-search").forEach(input=>input.addEventListener("input",()=>{const term=input.value.toLowerCase().trim();qa("[data-location-item]",input.closest("section")||document).forEach(el=>el.hidden=!!term&&!el.dataset.locationItem.includes(term));}));
+  qa("a[href^=\"#eligibility\"]").forEach(a=>a.addEventListener("click",()=>setTimeout(()=>q("#eligibility select, #eligibility input")?.focus(),350)));
+  qa(".eligibility-form").forEach(initEligibility);
+  const checkout=q("[data-checkout]"); if(checkout) initCheckout(checkout);
+
+  function initEligibility(form){
+    const steps=qa(".screen-step",form), bar=q(".progress span",form), back=q("[data-back]",form), answerData={}; let idx=0, advancing=false;
+    const preset={state:form.dataset.state||"",county:form.dataset.county||"",city:form.dataset.city||""};
+    const stateSel=q("[name=\"state\"]",form), stateLocked=Boolean(preset.state);
+    if(stateSel&&stateLocked){stateSel.value=preset.state;stateSel.setAttribute("aria-readonly","true");answerData.state=preset.state;}
+    const countyInput=q("[name=\"county\"]",form), cityInput=q("[name=\"city\"]",form); if(countyInput&&preset.county) countyInput.value=preset.county; if(cityInput&&preset.city) cityInput.value=preset.city;
+
+    function show(i){
+      idx=Math.max(0,Math.min(i,steps.length-1));
+      steps.forEach((s,n)=>s.classList.toggle("active",n===idx));
+      bar.style.width=(idx>=7?100:((idx+1)/7*100))+"%";
+      if(back) back.hidden=idx===0||idx>=7||(stateLocked&&idx===1);
+      const focusable=q("select,input:not([type=\"radio\"]),input[type=\"radio\"]",steps[idx]);
+      if(focusable) setTimeout(()=>focusable.focus({preventScroll:true}),120);
+    }
+
+    function shake(step){step.classList.add("shake");setTimeout(()=>step.classList.remove("shake"),350);}
+
+    function evaluate(){
+      const stop=[];
+      if(answerData.tenant==="no")stop.push("The current program is designed for tenants, not landlords or property owners.");
+      if(answerData.residential==="no")stop.push("The current program handles residential rental matters only.");
+      if(answerData.subsidized==="yes")stop.push("Section 8, voucher, and public-housing cases may involve specialized rules that are outside the current automated service.");
+      if(answerData.military==="yes")stop.push("Active-duty military cases may involve additional federal protections and need specialized review.");
+      if(answerData.bankruptcy==="yes")stop.push("Bankruptcy can change whether and how an eviction may proceed, so the current automated service does not accept these cases.");
+      const result=q("[data-result]",form);
+      if(stop.length){
+        result.className="result-box result-stop";
+        result.innerHTML="<strong>This program may not be the right fit.</strong><br>"+stop.join(" ");
+        q("[data-qualified]",form).hidden=true;
+      }else{
+        result.className=answerData.served==="no"?"result-box result-warn":"result-box result-ok";
+        result.innerHTML=answerData.served==="no"?"<strong>You may continue, but timing matters.</strong><br>You indicated that formal court papers have not yet been served. The intake can still collect your information, but court forms generally depend on the papers actually filed.":"<strong>You appear eligible to continue.</strong><br>Complete the contact and property details below. No payment is collected on this page.";
+        q("[data-qualified]",form).hidden=false;
+      }
+      show(7);
+    }
+
+    function advance(field, stepIndex){
+      if(advancing || stepIndex!==idx || !field.value) return;
+      advancing=true;
+      answerData[field.name]=field.value;
+      window.setTimeout(()=>{
+        if(stepIndex===6) evaluate(); else show(stepIndex+1);
+        advancing=false;
+      },140);
+    }
+
+    if(stateSel){
+      stateSel.addEventListener("change",()=>advance(stateSel,0));
+    }
+    qa("input[type=radio]",form).forEach(r=>r.addEventListener("click",()=>{
+      const step=r.closest(".screen-step");
+      advance(r,steps.indexOf(step));
+    }));
+
+    if(back) back.addEventListener("click",()=>{
+      if(idx===1&&!stateLocked){
+        answerData.state="";
+        if(stateSel) stateSel.value="";
+        show(0);
+      }else{
+        show(idx-1);
+      }
+    });
+
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();
+      const fd=new FormData(form),payload=Object.fromEntries(fd.entries());
+      payload.eligibility=answerData;payload.source_url=location.href;
+      sessionStorage.setItem("evictionsHelpIntake",JSON.stringify(payload));
+      if(window.EVICTIONS_HELP_CONFIG.useLivePreScreen&&window.EVICTIONS_HELP_CONFIG.apiBase){
+        try{
+          const res=await fetch(window.EVICTIONS_HELP_CONFIG.apiBase+"/api/v1/intake/pre-screen",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+          if(!res.ok)throw new Error("Pre-screen failed");
+        }catch(err){console.error(err);alert("We could not reach the eligibility service. Please try again.");return;}
+      }
+      const p=new URLSearchParams({state:payload.state||"",county:payload.county||"",city:payload.city||"",email:payload.email||"",address:payload.street||""});
+      location.href=window.EVICTIONS_HELP_CONFIG.checkoutPath+"?"+p.toString();
+    });
+
+    show(stateLocked?1:0);
+  }
+
+  function initCheckout(el){
+    let data={};try{data=JSON.parse(sessionStorage.getItem("evictionsHelpIntake")||"{}")}catch(e){};
+    const params=new URLSearchParams(location.search);
+    ["state","county","city","email","address"].forEach(k=>{if(!data[k]&&params.get(k))data[k]=params.get(k)});
+    qa("[data-bind]",el).forEach(n=>n.textContent=data[n.dataset.bind]||"Not provided");
+    const btn=q("[data-payment-button]",el);
+    if(!btn)return;
+
+    btn.addEventListener("click",()=>{
+      if(typeof Accept === "undefined"){
+        redirectAfterPayment(data);
+        return;
+      }
+
+      btn.disabled=true;
+      btn.textContent="Processing...";
+
+      Accept.dispatchData({
+        authData: {
+          apiLoginID: "7wM69L5k7q2p",
+          clientKey: "4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42"
+        },
+        paymentData: { amount: 299.00, description: "Eviction Defense Packet" },
+        callback: function(response) {
+          if (response.messages.resultCode === "Error") {
+            btn.disabled=false;
+            btn.textContent="Payment Failed — Try Again";
+            return;
+          }
+          submitPayment(response.opaqueData, data);
+        }
+      });
+    });
+  }
+
+  async function submitPayment(opaqueData, intakeData){
+    const btn=q("[data-payment-button]");
+    try{
+      const res=await fetch("/api/v1/payment/charge",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          opaque_data: opaqueData,
+          order_id: "order-"+Date.now(),
+          customer_email: intakeData.email||"",
+          customer_name: intakeData.street||"Tenant"
+        })
+      });
+      if(!res.ok){
+        const err=await res.json().catch(()=>({}));
+        throw new Error(err.detail||"Payment failed");
+      }
+      redirectAfterPayment(intakeData);
+    }catch(e){
+      if(btn){btn.disabled=false;btn.textContent="Payment Failed — Try Again";}
+      console.error(e);
+    }
+  }
+
+  function redirectAfterPayment(data){
+    var url="/chat?state="+encodeURIComponent(data.state||"")
+      +"&email="+encodeURIComponent(data.email||"")
+      +"&address="+encodeURIComponent(data.address||data.street||"")
+      +"&city="+encodeURIComponent(data.city||"")
+      +"&county="+encodeURIComponent(data.county||"")
+      +"&served="+(data.eligibility&&data.eligibility.served==="yes"?"yes":"no");
+    window.location.href=url;
+  }
+})();
