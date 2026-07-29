@@ -9,6 +9,7 @@ from app.routers import documents
 from app.routers import chat
 from app.routers import payment
 from app.routers import admin
+from app.routers import voice
 
 app = FastAPI(
     title="Eviction Defense — Automated Self-Help Paperwork",
@@ -41,6 +42,7 @@ app.include_router(documents.router)
 app.include_router(chat.router)
 app.include_router(payment.router)
 app.include_router(admin.router)
+app.include_router(voice.router)
 
 # Serve frontend static files
 

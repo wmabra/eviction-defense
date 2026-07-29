@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # DeepSeek (for chat intake)
     deepseek_api_key: str = ""
 
+    # Retell AI (for voice support agent)
+    retell_api_key: str = ""
+    retell_agent_id: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
