@@ -56,6 +56,23 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     if not form_filename:
         logger.warning(f"No form configured for {state_code} ({form_key})")
         return False
+    
+    # County-specific form override: check if this county needs a different form
+    county = (data.get("personal_info", {}) or {}).get("county", "").strip()
+    county_overrides = config.get("county_form_overrides", {})
+    if county and county in county_overrides and form_key == "answer_form":
+        override = county_overrides[county]
+        override_filename = override.get("answer_form")
+        if override_filename:
+            logger.info(f"Using county-specific form for {state_code}/{county}: {override_filename}")
+            form_filename = override_filename
+            # Merge overlay positions from override if present
+            if override.get("overlay_positions"):
+                config = {**config, "overlay_positions": {**config.get("overlay_positions", {}), **override["overlay_positions"]}}
+            if override.get("field_mapping"):
+                config = {**config, "field_mapping": {**config.get("field_mapping", {}), **override["field_mapping"]}}
+            if override.get("has_fillable_fields") is not None:
+                config = {**config, "has_fillable_fields": override["has_fillable_fields"]}
 
     # Use rebuilt form if available (clean standardized fields)
     form_path = _get_form_path(form_filename, state_code if form_key == "answer_form" else "")
@@ -159,7 +176,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Defense narrative
     if defenses:
-        values["defense_narrative"] = _build_defense_narrative(defenses)
+        narrative = _build_defense_narrative(defenses)
+        values["defense_narrative"] = narrative
     
     # === LEGACY: Build _all_data for non-rebuilt forms that use field_mapping ===
     _all_data = {}
@@ -185,6 +203,15 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             for tk in target_keys:
                 if tk not in _all_data:
                     _all_data[tk] = _all_data[source_key]
+    
+    # Synthesize city_state_zip from city + state + zip
+    state_code = data.get("state", "")
+    if "property_city" in _all_data and "city_state_zip" not in _all_data:
+        city = _all_data.get("property_city", "")
+        zipcode = _all_data.get("property_zip", "")
+        _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
+    if "landlord_city_state_zip" not in _all_data:
+        _all_data["landlord_city_state_zip"] = ""  # landlord city/state/zip rarely available
     
     # Also add state-level data
     state_code = data.get("state", "")
@@ -237,6 +264,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             _all_data[k] = today_str
     
     # Map each field_mapping key to a value from our data
+    # Also make defense_narrative available for field_mapping
+    if "defense_narrative" in values:
+        _all_data["defense_narrative"] = values["defense_narrative"]
     for map_key, pdf_field in mapping.items():
         if map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
@@ -354,7 +384,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     # Field names that should NOT receive auto-fill from substring rules
     auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)|'
                                 r'landlord.*(accepted|date|payment|partial)|'
-                                r'(notice|amount|date).*(landlord)', re.IGNORECASE)
+                                r'(notice|amount|date).*(landlord)|'
+                                r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
@@ -577,13 +608,21 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     
     mapper = {
         "full_name": p.get("full_name"),
+        "defendant_name": p.get("full_name"),
+        "printed_name": p.get("full_name"),
+        "signature": "/s/",
         "phone": p.get("phone"),
+        "phone_bottom": p.get("phone"),
         "email": p.get("email"),
         "address": p.get("property_address"),
+        "property_address": p.get("property_address"),
         "city": p.get("property_city"),
         "zip": p.get("property_zip"),
+        "city_state_zip": f"{p.get('property_city', '')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", "),
         "county": p.get("county"),
+        "court_type": "Magistrate Court",  # default, overridden for Bernalillo County
         "landlord_name": l.get("landlord_name"),
+        "plaintiff_name": l.get("landlord_name"),
         "landlord_address": l.get("landlord_address"),
         "landlord_phone": l.get("landlord_phone"),
         "landlord_email": l.get("landlord_email"),
@@ -596,6 +635,33 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     # Handle defense narrative text generation
     if key == "defense_narrative":
         return _build_defense_narrative(defenses)
+    
+    # Handle numbered defense narrative lines (NM 4-907 style)
+    if key.startswith("defense_narrative_"):
+        idx = int(key.split("_")[-1]) - 1  # defense_narrative_1 → index 0
+        checked_defenses = [
+            ("def_repairs", "Conditions: "),
+            ("def_amount", "Amount disputed: "),
+            ("def_attempted_pay", "Tried to pay: "),
+            ("def_paid", "Already paid: "),
+            ("def_waived", "Waiver: "),
+            ("def_retaliation", "Retaliation: "),
+            ("def_fair_housing", "Discrimination: "),
+            ("def_accepted_rent", "Accepted rent: "),
+            ("def_corrected", "Corrected issue: "),
+            ("def_not_owner", "Not proper owner: "),
+            ("def_bad_notice", "Defective notice: "),
+            ("def_other", "Other: "),
+        ]
+        active = []
+        for def_key, label in checked_defenses:
+            d = defenses.get(def_key, {})
+            if isinstance(d, dict) and d.get("checked"):
+                expl = d.get("explanation", "")
+                active.append(f"{label}{expl}" if expl else label)
+        if idx < len(active):
+            return active[idx][:100]  # fit within form line
+        return None
     
     # Handle financial summary for overlay fee waiver forms
     if key == "financial_summary":
@@ -678,6 +744,39 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
     if key in ["household_adults", "household_children", "total_dependents"]:
         val = financial.get(key)
         return str(val) if val is not None else None
+    
+    # Computed summary fields
+    if key == "assets_description":
+        parts = []
+        vehicle = financial.get("vehicle_make_model")
+        vehicle_val = financial.get("vehicle_value")
+        if vehicle:
+            parts.append(f"Vehicle: {vehicle}" + (f" (${float(vehicle_val):,.0f})" if vehicle_val else ""))
+        checking = financial.get("checking_balance")
+        if checking:
+            parts.append(f"Checking: ${float(checking):,.2f}")
+        savings = financial.get("savings_balance")
+        if savings:
+            parts.append(f"Savings: ${float(savings):,.2f}")
+        cash = financial.get("cash_on_hand")
+        if cash:
+            parts.append(f"Cash: ${float(cash):,.2f}")
+        if financial.get("owns_real_estate"):
+            re_val = financial.get("real_estate_value")
+            parts.append(f"Real estate" + (f" (${float(re_val):,.0f})" if re_val else ""))
+        return "; ".join(parts) if parts else None
+    if key == "obligations_description":
+        parts = []
+        debt = financial.get("debt_payments")
+        if debt:
+            parts.append(f"Monthly debt payments: ${float(debt):,.2f}")
+        vehicle_loan = financial.get("vehicle_loan_owed")
+        if vehicle_loan:
+            parts.append(f"Vehicle loan balance: ${float(vehicle_loan):,.2f}")
+        re_loan = financial.get("real_estate_loan_owed")
+        if re_loan:
+            parts.append(f"Mortgage balance: ${float(re_loan):,.2f}")
+        return "; ".join(parts) if parts else None
     
     return None
 

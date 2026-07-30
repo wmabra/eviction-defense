@@ -47,12 +47,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": "User.Name1",
             "household_size": "User.NoInHousehold",
             "medical_expense": "User.MedicalExp",
+            "monthly_gross_income": "User.SelfTotalNet",
             "phone": "User.PetitionerTelephone",
             "printed_name": "User.PrintNamePetitioner",
             "receives_public_benefits": "User.CB02",
-            "receives_snap": "User.CB06",
-            "receives_ssi": "User.CB05",
-            "receives_tanf": "User.CB03",
+            "receives_snap": "User.SNAP",
+            "receives_ssi": "User.SSI",
+            "receives_tanf": "User.TANF",
+            "total_assets": "User.SelfTotalAssets",
         },
         "has_fillable_fields": True,
         "court_type": "General District Court",
@@ -156,8 +158,39 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # ══════════════════════════════════════════
     "GA": {
         "name": "Georgia",
-        "answer_form": "ga_eviction_answer.pdf",
+        "answer_form": "ga_dispossessory_answer.pdf",
         "fee_waiver_form": "ga_fee_waiver.pdf",
+        "has_fillable_fields": True,
+        "court_type": "Magistrate Court",
+        "field_mapping": {
+            "date": "Date.CurrentDate.SlashMDY",
+            "county": "County.Selection",
+            "case_number": "CaseNumber",
+            "full_name": "Defendant.SEQ001.Name.Full",
+            "address": "Defendant.SEQ001.HomeAddress.Street",
+            "city_state_zip": "Defendant.SEQ001.HomeAddress.CityStateZip",
+            "landlord_name": "Plaintiff.SEQ001.Name.Full",
+            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
+            "landlord_city_state_zip": "Plaintiff.SEQ001.HomeAddress.CityStateZip",
+        },
+        "static_values": {
+            "IsDefendant": "Yes",
+            "Reason.ResidentTenant": "Yes",
+        },
+        "defense_options": [
+            {"key": "def_not_owner", "label": "No landlord-tenant relationship", "field": "NoLTRel"},
+            {"key": "def_bad_notice", "label": "Improper notice / no proper demand", "field": "Reason.NoNotice"},
+            {"key": "def_bad_notice", "label": "Terminated without valid reason", "field": "Reason.Invalid"},
+            {"key": "def_amount", "label": "Do not owe any rent", "field": "Reason.NoRentDue"},
+            {"key": "def_attempted_pay", "label": "Offered to pay but landlord refused", "field": "Reason.OfferedToPay"},
+            {"key": "def_attempted_pay", "label": "Landlord refused payment with costs", "field": "Reason.LandlordRefusePayment"},
+            {"key": "def_repairs", "label": "Landlord failed to repair property", "field": "Reason.FailedToRepair"},
+            {"key": "def_not_owner", "label": "Landlord not entitled to evict", "field": "Reason.LandlordNotEntitled"},
+            {"key": "def_repairs", "label": "Landlord failed to repair (counterclaim)", "field": "FailedToRepair"},
+            {"key": "def_corrected", "label": "Defendant made repairs", "field": "Defendant.DidMakeRepairs"},
+            {"key": "def_paid", "label": "Landlord owes money", "field": "DoesOweMoney"},
+        ],
+        "notes": "GA MAG 30-03 Dispossessory Answer — statewide form from Council of Magistrate Court Judges. 36 fillable fields, single page. Accepted in all 159 GA counties. Filing procedures vary by county (e-filing vs mail vs in-person).",
         "fee_waiver_mapping": {
             "address": "2 Current Address",
             "case_number": "FILE NO",
@@ -175,33 +208,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "vehicle_make_model": "Make",
             "vehicle_value": "What is the approximate value of the vehicle",
         },
-        "has_fillable_fields": True,
-        "court_type": "Magistrate Court",
-        "field_mapping": {
-            "case_number": "CaseNumber",
-            "county": "County.Selection",
-            "date": "Date.CurrentDate.SlashMDY",
-            "full_name": "Defendant.SEQ001.Name.Full",
-            "address": "Defendant.SEQ001.HomeAddress.Street",
-            "landlord_name": "Plaintiff.SEQ001.Name.Full",
-            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
-            "plaintiff_city_state": "Plaintiff.SEQ001.HomeAddress.CityStateZip",
-        },
-        "defense_options": [
-            {"key": "def_did_repairs", "label": "Defendant did make repairs", "field": "DidMakeRepairs"},
-            {"key": "def_failed_repair", "label": "Landlord failed to repair", "field": "FailedToRepair"},
-            {"key": "def_no_notice", "label": "No notice given", "field": "NoNotice"},
-            {"key": "def_no_rent_due", "label": "No rent is due", "field": "NoRentDue"},
-            {"key": "def_offered_pay", "label": "Offered to pay", "field": "OfferedToPay"},
-            {"key": "def_refused_payment", "label": "Landlord refused payment", "field": "LandlordRefusePayment"},
-            {"key": "def_invalid", "label": "Invalid eviction", "field": "Invalid"},
-            {"key": "def_retaliation", "label": "Retaliation", "field": "NoLTRel"},
-            {"key": "def_landlord_not_entitled", "label": "Landlord not entitled", "field": "LandlordNotEntitled"},
-        ],
-        "answer_field": "Answer",
-        "counterclaim_field": "CounterClaim",
-        "did_cause_damages": "DidCauseDamages",
-        "does_owe_money": "DoesOweMoney",
     },
 
     # ══════════════════════════════════════════
@@ -350,7 +356,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_discrimination", "label": "Fair housing defense", "field": "46 - Checkbox"},
             {"key": "def_other", "label": "Other defense", "field": "52 - Checkbox"},
         ],
-        "notes": "IL Circuit Court eviction answer. 189 field widgets across 6 pages. Uses paragraph admit/deny triads mapped to common defenses (any checked defense → Deny that paragraph). Plus specific numbered defense checkboxes mapped on pages 2-3.",
+        "notes": "IL Circuit Court eviction answer — statewide form with 189 field widgets across 6 pages. Cook County has preferred local forms but Illinois law does not mandate a county-specific answer form.",
+        "county_form_overrides": {},
     },
 
     # ══════════════════════════════════════════
@@ -480,6 +487,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "date": "Date",
             "full_name": "PlaintiffPetitioner",
             "household_adults": "The PlaintiffPetitioner states that there are",
+            "monthly_gross_income": "in the amount of",
             "other_income_description": "income is",
             "phone": "Telephone Number",
         },
@@ -584,7 +592,26 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_corrected", "label": "I corrected the lease violation", "field": "7E.1"},
             {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "7E.2"},
         ],
-        "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Page 1 has 14 named fields (∆=defendant, π=plaintiff). Pages 2-4 have structured defense sections 7A-7E with checkboxes for non-payment, habitability, notice, retaliation/discrimination, and other defenses.",
+        "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Statewide except Denver County Court which requires its own form.",
+        "county_form_overrides": {
+            "Denver": {
+                "note": "Denver County Court DCC CP No. 3 Answer Under Simplified Civil Procedure — 2 pages, overlay. In-person/remote election, narrative defenses.",
+                "answer_form": "co_denver_answer.pdf",
+                "has_fillable_fields": False,
+                "overlay_positions": {
+                    "plaintiff_name": {"page": 0, "x": 114, "y": 125, "w": 350, "h": 16, "size": 11},
+                    "defendant_name": {"page": 0, "x": 128, "y": 162, "w": 350, "h": 16, "size": 11},
+                    "phone": {"page": 0, "x": 136, "y": 231, "w": 60, "h": 14, "size": 9},
+                    "email": {"page": 0, "x": 228, "y": 231, "w": 200, "h": 14, "size": 9},
+                    "case_number": {"page": 0, "x": 453, "y": 186, "w": 100, "h": 14, "size": 10},
+                    "printed_name": {"page": 0, "x": 132, "y": 295, "w": 350, "h": 16, "size": 11},
+                    "defense_narrative": {"page": 0, "x": 54, "y": 370, "w": 504, "h": 200, "size": 9},
+                    "signature": {"page": 1, "x": 60, "y": 474, "w": 250, "h": 20, "size": 11},
+                    "property_address": {"page": 1, "x": 168, "y": 502, "w": 350, "h": 20, "size": 10},
+                    "phone_bottom": {"page": 1, "x": 193, "y": 525, "w": 200, "h": 16, "size": 10},
+                },
+            },
+        },
     },
 
     # ══════════════════════════════════════════
@@ -893,7 +920,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "printed_name": {"page": 4, "x": 220, "y": 275, "w": 200, "h": 16, "size": 10},
             "signature": {"page": 1, "x": 136, "y": 265, "w": 200, "h": 20, "size": 10},
             "defense_narrative": {"page": 8, "x": 90, "y": 355, "w": 430, "h": 190, "size": 9}},
-        "notes": "AR unlawful detainer answer packet — 11 pages. Page 8 has narrative defense text area where tenant writes reasons. We pre-fill this with formatted defense explanations based on intake answers. Remaining pages are instructions (1-5) and signature pages (9-11).",
+        "notes": "AR Answer, Counterclaim & Objection to Writ — statewide-compliant combined document from Arkansas Justice. Covers both deadlines: 5-day objection to possession AND 30-day answer to complaint. 75/75 counties. Court caption dynamically filled with county and circuit court.",
     },
 
     # ══════════════════════════════════════════
@@ -946,7 +973,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "email": {"page": 1, "x": 192, "y": 172, "w": 200, "h": 16, "size": 10},
             "signature": {"page": 2, "x": 430, "y": 522, "w": 200, "h": 20, "size": 10},
             "defense_narrative": {"page": 1, "x": 72, "y": 548, "w": 430, "h": 80, "size": 9}},
-        "notes": "AZ answer form (LJEA00004F) — scanned PDF, no fillable fields. Overlay positions cover all essential tenant/landlord/case fields plus 7 defense checkboxes (OCR-verified). MHJCEA2I is the instructions companion PDF.",
+        "notes": "AZ LJEA00004F — statewide answer form from Arizona Supreme Court. Accepted in all 15 counties per A.R.S. § 12-1175(D) which prohibits courts from requiring mandatory technical forms. Maricopa and other counties may publish preferred branded versions, but a compliant answer cannot be rejected for not using the local form.",
+        "county_form_overrides": {},
     },
 
     # ══════════════════════════════════════════
@@ -1126,7 +1154,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_foreclosure", "label": "Property foreclosed on — new owner issues", "field": "I am a tenant in a property that has been foreclosed on and sold  The new owner"},
             {"key": "def_other", "label": "Other defenses (explain below)", "field": "Other explain below"},
         ],
-        "notes": "NV Summary Eviction Answer — Nonpayment of Rent. 65 fields across 4 pages. Covers tenant info, defenses, interpreter request, and certificate of service.",
+        "notes": "NV Summary Eviction Answer — 65 fields across 4 pages. Clark County publishes preferred local forms but Nevada law (NRS Ch. 40) requires only a verified answer, not a specific template. Statewide form is legally sufficient in all 17 counties.",
+        "county_form_overrides": {},
     },
 
     # ══════════════════════════════════════════
@@ -1302,45 +1331,38 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     },
 
     # ══════════════════════════════════════════
-    # NEW MEXICO — 4-907 Answer to Petition for Restitution
-    # 1 page, scanned (overlay only)
+    # NEW MEXICO — Form 4-907 Answer to Petition for Restitution
+    # Statewide form for ALL 33 NM counties (Magistrate, Metropolitan, District courts)
+    # Scanned/non-fillable — uses overlay for all fields
     # ══════════════════════════════════════════
     "NM": {
         "name": "New Mexico",
-        "answer_form": "nm_eviction_answer.pdf",
+        "answer_form": "nm_form_4-907.pdf",
         "fee_waiver_form": "nm_fee_waiver.pdf",
         "has_fillable_fields": False,
-        "court_type": "Metropolitan Court",
+        "court_type": "Magistrate Court",
         "overlay_positions": {
-            "full_name": {"page": 1, "x": 100, "y": 120, "w": 300, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 100, "y": 140, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 250, "y": 80, "w": 200, "h": 20, "size": 11},
-            "address": {"page": 1, "x": 100, "y": 160, "w": 300, "h": 20, "size": 10},
-            "phone": {"page": 1, "x": 100, "y": 180, "w": 200, "h": 20, "size": 10},
-            "county": {"page": 1, "x": 100, "y": 100, "w": 150, "h": 20, "size": 10},
-            "date": {"page": 1, "x": 350, "y": 180, "w": 150, "h": 20, "size": 10},
-            # Defense narrative text area — fills the "because:" blank lines
-            "defense_narrative": {"page": 1, "x": 36, "y": 210, "w": 540, "h": 350, "size": 9},
-        
-            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
-        
-            "court_name": {"page": 1, "x": 423, "y": 223, "w": 200, "h": 16, "size": 10},
-            "defense_other": {"page": 2, "x": 54, "y": 614, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 3, "x": 90, "y": 165, "w": 14, "h": 14, "size": 10},
-            "phone": {"page": 2, "x": 192, "y": 350, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 3, "x": 424, "y": 392, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 3, "x": 424, "y": 392, "w": 200, "h": 20, "size": 10},
-            "date": {"page": 2, "x": 131, "y": 347, "w": 120, "h": 16, "size": 10},
-            "defense_amount": {"page": 1, "x": 156, "y": 360, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 1, "x": 229, "y": 90, "w": 14, "h": 14, "size": 10},
-            "defense_repairs": {"page": 1, "x": 60, "y": 636, "w": 14, "h": 14, "size": 10},
-            "phone": {"page": 1, "x": 620, "y": 125, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 2, "x": 406, "y": 347, "w": 200, "h": 20, "size": 10},
-            "defense_amount": {"page": 1, "x": 54, "y": 304, "w": 14, "h": 14, "size": 10},
-            "printed_name": {"page": 1, "x": 136, "y": 729, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 460, "y": 473, "w": 200, "h": 20, "size": 10}},
-        "notes": "NM 4-907 Answer to Petition for Restitution — single-page form. Overlay fills data fields and pre-fills defense narrative in the 'because:' blank area (lines 1-5).",
-    
+            # Page 0 — Court header
+            "court_type": {"page": 0, "x": 90, "y": 114, "w": 96, "h": 16, "size": 10},
+            "county": {"page": 0, "x": 90, "y": 128, "w": 96, "h": 16, "size": 10},
+            "case_number": {"page": 0, "x": 462, "y": 156, "w": 120, "h": 16, "size": 10},
+            # Party names
+            "defendant_name": {"page": 0, "x": 90, "y": 240, "w": 432, "h": 18, "size": 11},
+            "plaintiff_name": {"page": 0, "x": 90, "y": 184, "w": 432, "h": 18, "size": 11},
+            # Defense narratives — filled into the blank lines after each "because:"
+            "defense_narrative_1": {"page": 0, "x": 370, "y": 340, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_2": {"page": 0, "x": 370, "y": 394, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_3": {"page": 0, "x": 370, "y": 436, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_4": {"page": 0, "x": 370, "y": 492, "w": 152, "h": 14, "size": 8},
+            # Signature block
+            "signature": {"page": 0, "x": 162, "y": 547, "w": 260, "h": 25, "size": 11},
+            "printed_name": {"page": 0, "x": 234, "y": 589, "w": 190, "h": 25, "size": 11},
+            "property_address": {"page": 0, "x": 234, "y": 631, "w": 190, "h": 25, "size": 10},
+            "city_state_zip": {"page": 0, "x": 90, "y": 673, "w": 340, "h": 25, "size": 10},
+            # Page 1 — Phone
+            "phone": {"page": 1, "x": 90, "y": 90, "w": 200, "h": 20, "size": 10},
+        },
+        "notes": "NM Form 4-907 — statewide for all 33 counties. Works in Magistrate, Metropolitan, and District courts. Narrative-style defenses (write-in).",
         "fee_waiver_overlay": {
             "county": {"page": 1, "x": 300, "y": 120, "w": 200, "h": 20, "size": 11},
             "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},

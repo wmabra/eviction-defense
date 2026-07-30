@@ -393,7 +393,7 @@
         Eviction Court Paperwork<br />Prepared <span>Same Day — $299</span>
       </h1>
       <p>
-        Answer 7 quick questions to check eligibility. Pay once. Chat with our
+        Answer 8 quick questions to check eligibility. Pay once. Chat with our
         AI to prepare your paperwork. Download a complete, ready-to-file packet.
       </p>
       <div class="hero-price">
@@ -487,7 +487,7 @@
             <div class="step-num">1</div>
             <h3>Check Eligibility</h3>
             <p>
-              Answer 7 quick questions to make sure we can help. Takes 30
+              Answer 8 quick questions to make sure we can help. Takes 45
               seconds.
             </p>
           </div>
@@ -514,7 +514,7 @@
         <div class="eligibility-card">
           <h2>Check Your Eligibility</h2>
           <p style="color: var(--gray); margin-bottom: 20px">
-            7 quick questions. Takes 60 seconds.
+            8 quick questions. Takes 60 seconds.
           </p>
 
           <div id="eligibility-form">
@@ -522,7 +522,11 @@
               <label class="form-label"
                 >1. What state is your eviction case in?</label
               >
-              <select id="el-state" class="form-select">
+              <select
+                id="el-state"
+                class="form-select"
+                onchange="populateCounties()"
+              >
                 <option value="">Select your state</option>
                 <option value="AR">Arkansas</option>
                 <option value="AZ">Arizona</option>
@@ -549,7 +553,16 @@
 
             <div class="form-group">
               <label class="form-label"
-                >2. Are you the tenant named in the eviction?</label
+                >2. What county is your eviction case in?</label
+              >
+              <select id="el-county" class="form-select">
+                <option value="">Select your county</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >3. Are you the tenant named in the eviction?</label
               >
               <div class="radio-group">
                 <label class="radio-label"
@@ -564,7 +577,7 @@
 
             <div class="form-group">
               <label class="form-label"
-                >3. Have you been served with court papers (summons +
+                >4. Have you been served with court papers (summons +
                 complaint)?</label
               >
               <div class="radio-group">
@@ -581,7 +594,7 @@
 
             <div class="form-group">
               <label class="form-label"
-                >4. Is this a residential rental (not a commercial or business
+                >5. Is this a residential rental (not a commercial or business
                 property)?</label
               >
               <div class="radio-group">
@@ -598,7 +611,7 @@
 
             <div class="form-group">
               <label class="form-label"
-                >5. Do you receive Section 8, a housing voucher, or live in
+                >6. Do you receive Section 8, a housing voucher, or live in
                 public housing?</label
               >
               <div class="radio-group">
@@ -615,7 +628,7 @@
 
             <div class="form-group">
               <label class="form-label"
-                >6. Are you on active military duty?</label
+                >7. Are you on active military duty?</label
               >
               <div class="radio-group">
                 <label class="radio-label"
@@ -631,7 +644,7 @@
 
             <div class="form-group">
               <label class="form-label"
-                >7. Have you filed for bankruptcy?</label
+                >8. Have you filed for bankruptcy?</label
               >
               <div class="radio-group">
                 <label class="radio-label"

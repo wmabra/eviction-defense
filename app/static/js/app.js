@@ -21,11 +21,442 @@ const SUPPORTED_STATES = [
 	"TX",
 	"VA",
 ];
+const SUPPORTED_COUNTIES = {
+	AR: [
+		"Benton",
+		"Columbia",
+		"Craighead",
+		"Crawford",
+		"Faulkner",
+		"Garland",
+		"Greene",
+		"Hempstead",
+		"Independence",
+		"Jefferson",
+		"Lonoke",
+		"Miller",
+		"Mississippi",
+		"Ouachita",
+		"Pulaski",
+		"Saline",
+		"Sebastian",
+		"Union",
+		"Washington",
+		"White",
+	],
+	AZ: [
+		"Apache",
+		"Cochise",
+		"Coconino",
+		"Gila",
+		"Glendale Market",
+		"Graham",
+		"Greenlee",
+		"La Paz",
+		"Maricopa",
+		"Mesa Market",
+		"Mohave",
+		"Navajo",
+		"Phoenix Market",
+		"Pima",
+		"Pinal",
+		"Santa Cruz",
+		"Scottsdale Market",
+		"Tucson Market",
+		"Yavapai",
+		"Yuma",
+	],
+	CA: [
+		"Alameda",
+		"Contra Costa",
+		"Fresno",
+		"Kern",
+		"Los Angeles",
+		"Monterey",
+		"Orange",
+		"Riverside",
+		"Sacramento",
+		"San Bernardino",
+		"San Diego",
+		"San Francisco",
+		"San Joaquin",
+		"San Mateo",
+		"Santa Clara",
+		"Solano",
+		"Sonoma",
+		"Stanislaus",
+		"Tulare",
+		"Ventura",
+	],
+	CO: [
+		"Adams",
+		"Arapahoe",
+		"Boulder",
+		"Broomfield",
+		"Denver",
+		"Douglas",
+		"Eagle",
+		"El Paso",
+		"Fremont",
+		"Garfield",
+		"Jefferson",
+		"La Plata",
+		"Larimer",
+		"Mesa",
+		"Montrose",
+		"Morgan",
+		"Pueblo",
+		"Routt",
+		"Summit",
+		"Weld",
+	],
+	CT: [
+		"Fairfield",
+		"Hartford",
+		"Litchfield",
+		"Middlesex",
+		"New Haven",
+		"New London",
+		"Tolland",
+		"Windham",
+	],
+	FL: [
+		"Brevard",
+		"Broward",
+		"Collier",
+		"Duval",
+		"Hillsborough",
+		"Lake",
+		"Lee",
+		"Manatee",
+		"Martin",
+		"Miami-Dade",
+		"Orange",
+		"Osceola",
+		"Palm Beach",
+		"Pasco",
+		"Pinellas",
+		"Polk",
+		"Sarasota",
+		"Seminole",
+		"St. Lucie",
+		"Volusia",
+	],
+	GA: [
+		"Bibb",
+		"Chatham",
+		"Cherokee",
+		"Clarke",
+		"Clayton",
+		"Cobb",
+		"Columbia",
+		"Coweta",
+		"DeKalb",
+		"Douglas",
+		"Fayette",
+		"Forsyth",
+		"Fulton",
+		"Gwinnett",
+		"Hall",
+		"Henry",
+		"Houston",
+		"Muscogee",
+		"Paulding",
+		"Richmond",
+	],
+	IL: [
+		"Champaign",
+		"Cook",
+		"DuPage",
+		"Kane",
+		"Kankakee",
+		"Kendall",
+		"LaSalle",
+		"Lake",
+		"Macon",
+		"Madison",
+		"McHenry",
+		"McLean",
+		"Peoria",
+		"Rock Island",
+		"Sangamon",
+		"St. Clair",
+		"Tazewell",
+		"Vermilion",
+		"Will",
+		"Winnebago",
+	],
+	LA: [
+		"Ascension",
+		"Bossier",
+		"Caddo",
+		"Calcasieu",
+		"East Baton Rouge",
+		"Iberia",
+		"Jefferson",
+		"Lafayette",
+		"Lafourche",
+		"Livingston",
+		"Orleans",
+		"Ouachita",
+		"Rapides",
+		"St. Charles",
+		"St. John the Baptist",
+		"St. Landry",
+		"St. Tammany",
+		"Tangipahoa",
+		"Terrebonne",
+		"Vernon",
+	],
+	MA: [
+		"Barnstable",
+		"Berkshire",
+		"Boston",
+		"Bristol",
+		"Cambridge",
+		"Dukes",
+		"Essex",
+		"Franklin",
+		"Hampden",
+		"Hampshire",
+		"Lowell",
+		"Middlesex",
+		"Nantucket",
+		"New Bedford",
+		"Norfolk",
+		"Plymouth",
+		"Springfield",
+		"Suffolk",
+		"Worcester",
+		"Worcester City",
+	],
+	MI: [
+		"Bay",
+		"Berrien",
+		"Calhoun",
+		"Eaton",
+		"Genesee",
+		"Ingham",
+		"Isabella",
+		"Jackson",
+		"Kalamazoo",
+		"Kent",
+		"Livingston",
+		"Macomb",
+		"Monroe",
+		"Muskegon",
+		"Oakland",
+		"Ottawa",
+		"Saginaw",
+		"St. Clair",
+		"Washtenaw",
+		"Wayne",
+	],
+	MN: [
+		"Anoka",
+		"Beltrami",
+		"Blue Earth",
+		"Carver",
+		"Clay",
+		"Crow Wing",
+		"Dakota",
+		"Hennepin",
+		"Kandiyohi",
+		"Olmsted",
+		"Otter Tail",
+		"Ramsey",
+		"Rice",
+		"Scott",
+		"Sherburne",
+		"St. Louis",
+		"Stearns",
+		"Washington",
+		"Winona",
+		"Wright",
+	],
+	NM: [
+		"Bernalillo",
+		"Chaves",
+		"Curry",
+		"Doña Ana",
+		"Eddy",
+		"Grant",
+		"Lea",
+		"Los Alamos",
+		"Luna",
+		"McKinley",
+		"Otero",
+		"Rio Arriba",
+		"Roosevelt",
+		"San Juan",
+		"San Miguel",
+		"Sandoval",
+		"Santa Fe",
+		"Taos",
+		"Torrance",
+		"Valencia",
+	],
+	NV: [
+		"Carson City",
+		"Churchill",
+		"Clark",
+		"Douglas",
+		"Elko",
+		"Eureka",
+		"Henderson Market",
+		"Humboldt",
+		"Lander",
+		"Lincoln",
+		"Lyon",
+		"Mesquite Market",
+		"Mineral",
+		"North Las Vegas Market",
+		"Nye",
+		"Pershing",
+		"Sparks Market",
+		"Storey",
+		"Washoe",
+		"White Pine",
+	],
+	OR: [
+		"Baker",
+		"Benton",
+		"Clackamas",
+		"Coos",
+		"Crook",
+		"Deschutes",
+		"Douglas",
+		"Jackson",
+		"Josephine",
+		"Klamath",
+		"Lane",
+		"Linn",
+		"Malheur",
+		"Marion",
+		"Multnomah",
+		"Polk",
+		"Umatilla",
+		"Union",
+		"Washington",
+		"Yamhill",
+	],
+	RI: ["Bristol", "Kent", "Newport", "Providence", "Washington"],
+	SC: [
+		"Aiken",
+		"Anderson",
+		"Beaufort",
+		"Berkeley",
+		"Charleston",
+		"Dorchester",
+		"Florence",
+		"Georgetown",
+		"Greenville",
+		"Greenwood",
+		"Horry",
+		"Kershaw",
+		"Lexington",
+		"Oconee",
+		"Orangeburg",
+		"Pickens",
+		"Richland",
+		"Spartanburg",
+		"Sumter",
+		"York",
+	],
+	TN: [
+		"Anderson",
+		"Blount",
+		"Bradley",
+		"Cumberland",
+		"Davidson",
+		"Hamilton",
+		"Knox",
+		"Madison",
+		"Maury",
+		"Montgomery",
+		"Putnam",
+		"Robertson",
+		"Rutherford",
+		"Sevier",
+		"Shelby",
+		"Sullivan",
+		"Sumner",
+		"Washington",
+		"Williamson",
+		"Wilson",
+	],
+	TX: [
+		"Bell",
+		"Bexar",
+		"Brazoria",
+		"Cameron",
+		"Collin",
+		"Dallas",
+		"Denton",
+		"El Paso",
+		"Fort Bend",
+		"Galveston",
+		"Harris",
+		"Hidalgo",
+		"Lubbock",
+		"McLennan",
+		"Montgomery",
+		"Nueces",
+		"Tarrant",
+		"Travis",
+		"Webb",
+		"Williamson",
+	],
+	VA: [
+		"Albemarle",
+		"Alexandria",
+		"Arlington",
+		"Chesapeake",
+		"Chesterfield",
+		"Fairfax",
+		"Hampton",
+		"Henrico",
+		"Loudoun",
+		"Lynchburg",
+		"Montgomery",
+		"Newport News",
+		"Norfolk",
+		"Prince William",
+		"Richmond City",
+		"Roanoke City",
+		"Rockingham",
+		"Spotsylvania",
+		"Stafford",
+		"Virginia Beach",
+	],
+};
+
 const appState = { state: "" };
 
-// Eligibility check — 7 questions
+// Eligibility check — 8 questions
+function populateCounties() {
+	const state = document.getElementById("el-state").value;
+	const countySelect = document.getElementById("el-county");
+	while (countySelect.options.length > 0) {
+		countySelect.remove(0);
+	}
+	const placeholder = document.createElement("option");
+	placeholder.value = "";
+	placeholder.textContent = "Select your county";
+	countySelect.appendChild(placeholder);
+	if (state && SUPPORTED_COUNTIES[state]) {
+		SUPPORTED_COUNTIES[state].forEach((c) => {
+			var opt = document.createElement("option");
+			opt.value = c;
+			opt.textContent = c;
+			countySelect.appendChild(opt);
+		});
+	}
+}
+
 function checkEligibility() {
 	const state = document.getElementById("el-state").value;
+	const county = document.getElementById("el-county").value;
 	const isTenant = document.querySelector('input[name="el-tenant"]:checked');
 	const isServed = document.querySelector('input[name="el-served"]:checked');
 	const isResidential = document.querySelector(
@@ -46,6 +477,7 @@ function checkEligibility() {
 	// Validate all answered
 	if (
 		!state ||
+		!county ||
 		!isTenant ||
 		!isServed ||
 		!isResidential ||
@@ -53,7 +485,7 @@ function checkEligibility() {
 		!isMilitary ||
 		!isBankruptcy
 	) {
-		showResult("error", "Please answer all 7 questions.");
+		showResult("error", "Please answer all 8 questions.");
 		return;
 	}
 
@@ -70,7 +502,10 @@ function checkEligibility() {
 		return;
 	}
 
-	// 2. Tenant check — hard block
+	// Store county for redirect
+	appState.county = county;
+
+	// 3. Tenant check — hard block
 	if (isTenant.value === "no") {
 		showResult(
 			"error",
@@ -79,10 +514,10 @@ function checkEligibility() {
 		return;
 	}
 
-	// 3. Served check — SOFT warning (pre-eviction docs available)
+	// 4. Served check — SOFT warning (pre-eviction docs available)
 	const wasServed = isServed.value === "yes";
 
-	// 4. Residential check — hard block
+	// 5. Residential check — hard block
 	if (isResidential.value === "no") {
 		showResult(
 			"error",
@@ -91,7 +526,7 @@ function checkEligibility() {
 		return;
 	}
 
-	// 5. Section 8 check — hard block
+	// 6. Section 8 check — hard block
 	if (isSection8.value === "yes") {
 		showResult(
 			"error",
@@ -100,7 +535,7 @@ function checkEligibility() {
 		return;
 	}
 
-	// 6. Military check — hard block
+	// 7. Military check — hard block
 	if (isMilitary.value === "yes") {
 		showResult(
 			"error",
@@ -109,7 +544,7 @@ function checkEligibility() {
 		return;
 	}
 
-	// 7. Bankruptcy check — hard block
+	// 8. Bankruptcy check — hard block
 	if (isBankruptcy.value === "yes") {
 		showResult(
 			"error",
