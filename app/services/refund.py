@@ -70,8 +70,9 @@ def process_auto_refund(
 def generate_refund_deadline_message(case_id: str) -> str:
     """Generate a message about refund timing.
 
-    Our policy: full refund within 24 hours of purchase if packet not yet generated.
-    No refunds after packet is delivered (customer can choose not to use it).
+    Our policy: full refund if packet has not been generated yet.
+    No refunds after the packet is delivered.
+    Extreme circumstances handled on a case-by-case basis.
     """
     return (
         "Since we were unable to process your case, we have issued a full refund. "
@@ -88,8 +89,8 @@ CHECK_ELIGIBILITY_ROUTE_REFUND_MAP = {
     "bankruptcy": "Bankruptcy cases require coordination with your bankruptcy attorney.",
 }
 
-# 24-hour money-back guarantee auto message
+# No refunds after packet delivery. Extreme cases handled case-by-case.
 REFUND_POLICY_MESSAGE = (
-    "We offer a full refund if we cannot prepare your packet, "
-    "or if you cancel within 24 hours of purchase before the packet is generated."
+    "We offer a full refund if we cannot prepare your packet. "
+    "No refunds after the packet has been generated and delivered."
 )

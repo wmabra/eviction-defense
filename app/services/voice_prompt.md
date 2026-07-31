@@ -87,7 +87,7 @@ Caller needs help with their packet or has questions about their documents. You 
 
 5. **"I can't download my packet"** — Use the /resend endpoint. It will be resent to their email. Remind them to check spam.
 
-6. **"I need a refund"** — Explain the refund policy (the build plan should define this). If the packet hasn't been generated yet, a refund may be possible. If it was already delivered, refunds are limited because the work has been done. Escalate to human support via /ticket if they insist.
+6. **"I need a refund"** — Explain the refund policy: once the document packet has been generated and delivered, refunds are not available. If the packet hasn't been generated yet, a full refund can be issued. If the caller is dissatisfied or has extreme circumstances, create a support ticket for human review.
 
 7. **"What does this legal term mean?"** — You may explain common terms in plain English (e.g., "a summons is the official court document that notifies you that a lawsuit has been filed against you"), but you must NOT apply the definition to their specific situation or tell them what it means for their case.
 
@@ -120,7 +120,7 @@ Caller needs help with their packet or has questions about their documents. You 
 
 - **Q: How much does it cost?** A: $399 flat fee, one time. No hidden costs, no subscription.
 - **Q: What if I can't afford $399?** A: The packet includes a fee waiver application for the court filing fees. For the service itself, the $399 is our only price. Some legal aid organizations may offer free help.
-- **Q: Is there a refund?** A: If your packet hasn't been generated yet, we can issue a refund. Once the packet is delivered, refunds are limited because the work has been completed.
+- **Q: Is there a refund?** A: No refunds after your document packet has been generated and delivered. If we cannot prepare your packet for any reason, you'll receive a full refund. If you have extreme circumstances, we can review your case.
 
 ### States & Eligibility
 
