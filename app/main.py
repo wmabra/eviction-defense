@@ -74,10 +74,20 @@ def admin_page():
     return FileResponse("app/static/admin.html")
 
 
-@app.get("/support")
-def support_page():
+@app.get("/contact")
+def contact_page():
     from fastapi.responses import FileResponse
     return FileResponse("app/static/support.html")
+
+
+@app.get("/support")
+def support_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/contact")
+
+
+@app.get("/")
+def root():
     from fastapi.responses import FileResponse
     return FileResponse("app/static/index.html")
 
