@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     telnyx_api_key: str = ""
     telnyx_phone_number: str = ""  # toll-free number for evictions.help
 
+    # Support
+    support_phone: str = "+1-561-960-0485"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

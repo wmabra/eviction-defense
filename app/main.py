@@ -10,6 +10,7 @@ from app.routers import chat
 from app.routers import payment
 from app.routers import admin
 from app.routers import voice
+from app.routers import support
 
 app = FastAPI(
     title="Eviction Defense — Automated Self-Help Paperwork",
@@ -43,6 +44,7 @@ app.include_router(chat.router)
 app.include_router(payment.router)
 app.include_router(admin.router)
 app.include_router(voice.router)
+app.include_router(support.router)
 
 # Serve frontend static files
 
@@ -72,8 +74,10 @@ def admin_page():
     return FileResponse("app/static/admin.html")
 
 
-@app.get("/")
-def root():
+@app.get("/support")
+def support_page():
+    from fastapi.responses import FileResponse
+    return FileResponse("app/static/support.html")
     from fastapi.responses import FileResponse
     return FileResponse("app/static/index.html")
 

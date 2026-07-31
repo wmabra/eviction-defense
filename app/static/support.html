@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Support — evictions.help</title>
+<meta name="description" content="Get help with your eviction defense packet. Contact evictions.help support by phone or email.">
+<link rel="icon" href="/static/favicon.png" type="image/png">
+<style>
+:root {
+  --ink: #1a2942; --accent: #c44c4c; --accent2: #d46565;
+  --blue: #1c5b90; --green: #1c8b50; --muted: #5a6a7e;
+  --line: #dce3ee; --soft: #f4f7fb; --shadow: 0 8px 32px rgba(17,65,104,.08);
+  --max: 960px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); font-family: Inter, ui-sans-serif, -apple-system, sans-serif; line-height: 1.6; background: #fff; }
+img { max-width: 100%; }
+a { color: var(--blue); text-decoration: none; }
+.container { width: min(calc(100% - 36px), var(--max)); margin: auto; }
+.site-header { position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid var(--line); }
+.nav { height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brand img { width: 220px; height: auto; display: block; }
+.nav-links { display: flex; align-items: center; gap: 24px; font-size: 14px; font-weight: 700; }
+.nav-links a { text-decoration: none; color: var(--ink); }
+.nav-links a:hover { color: var(--accent); }
+.btn { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 12px; padding: 14px 22px; font-weight: 800; font-size: 15px; text-decoration: none; cursor: pointer; transition: .2s; min-height: 48px; font-family: inherit; }
+.btn-primary { color: #fff; background: linear-gradient(135deg, var(--accent2), var(--accent)); box-shadow: 0 10px 26px rgba(196,76,76,.26); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(196,76,76,.34); }
+.btn-secondary { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+.hero { padding: 56px 0 48px; background: radial-gradient(circle at 82% 8%, rgba(196,76,76,.10), transparent 31%), linear-gradient(135deg, #f4f9fc, #fff 52%); }
+h1 { font-size: clamp(34px, 4.5vw, 52px); line-height: 1.08; letter-spacing: -.03em; margin: 0 0 10px; }
+h2 { font-size: clamp(24px, 2.8vw, 36px); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 10px; }
+.lede { font-size: 18px; color: var(--muted); margin: 0 0 28px; max-width: 600px; }
+.page-body { padding: 56px 0 72px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+@media(max-width:680px) { .split { grid-template-columns: 1fr; } .container { width: min(calc(100% - 24px), var(--max)); } .hero { padding: 48px 0; } }
+
+.contact-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 32px; box-shadow: var(--shadow); }
+.contact-card h3 { font-size: 22px; margin: 0 0 16px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 5px; color: var(--ink); }
+.form-input, .form-textarea, .form-select { width: 100%; min-height: 48px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font: inherit; color: var(--ink); font-size: 15px; transition: .15s; }
+.form-textarea { resize: vertical; min-height: 120px; }
+.form-input:focus, .form-textarea:focus, .form-select:focus { outline: 3px solid rgba(28,91,144,.14); border-color: var(--blue); }
+.form-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.phone-box { background: var(--soft); border: 1.5px solid var(--line); border-radius: 18px; padding: 28px; text-align: center; }
+.phone-box .icon { font-size: 40px; margin-bottom: 8px; }
+.phone-box .number { font-size: 26px; font-weight: 900; color: var(--blue); letter-spacing: -.01em; }
+.phone-box .hours { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.phone-box .note { font-size: 13px; color: var(--muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+.alert { padding: 14px 18px; border-radius: 12px; margin-bottom: 16px; font-weight: 700; font-size: 14px; }
+.alert-success { background: #eaf8f2; color: #115c46; border: 1px solid #b8e6d0; }
+.alert-error { background: #fff0f2; color: #8f1831; border: 1px solid #f5c6cb; }
+.hidden { display: none; }
+
+.footer { background: #0f3d61; color: #fff; padding: 48px 0 24px; margin-top: 40px; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.12); padding-top: 20px; font-size: 13px; color: #b7cedd; text-align: center; }
+.footer a { color: #d5e4ee; }
+
+@media(max-width:680px) {
+  .brand img { width: 180px; }
+  .nav { height: 72px; }
+  .contact-card { padding: 20px; }
+  .phone-box .number { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="/"><img src="/static/logo-v3.png" alt="evictions.help"></a>
+    <nav class="nav-links">
+      <a href="/#included">What's Included</a>
+      <a href="/#how-it-works">How It Works</a>
+      <a href="/#states">States</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/#eligibility">Check Eligibility</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Contact Support</h1>
+    <p class="lede">Need help with your eviction defense packet? Have questions before purchasing? We're here to help.</p>
+  </div>
+</section>
+
+<div class="page-body">
+  <div class="container">
+    <div class="split">
+
+      <!-- Contact Form -->
+      <div class="contact-card">
+        <h3>Send Us a Message</h3>
+        <div id="form-alert" class="hidden"></div>
+
+        <form id="contact-form" onsubmit="submitContactForm(event)">
+          <div class="form-group">
+            <label class="form-label" for="cf-name">Your Name</label>
+            <input type="text" id="cf-name" class="form-input" placeholder="Full name" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cf-email">Email Address</label>
+            <input type="email" id="cf-email" class="form-input" placeholder="you@email.com" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cf-reason">What is this about?</label>
+            <select id="cf-reason" class="form-select" required>
+              <option value="">Select a reason</option>
+              <option value="question">Question before purchasing</option>
+              <option value="packet">Problem with my packet</option>
+              <option value="refund">Refund request</option>
+              <option value="technical">Technical issue</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cf-message">Message</label>
+            <textarea id="cf-message" class="form-textarea" placeholder="Describe your question or issue..." required></textarea>
+            <p class="form-hint">Please include your case number or order ID if you have one.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%" id="cf-submit">
+            Send Message
+          </button>
+        </form>
+      </div>
+
+      <!-- Phone + Info -->
+      <div>
+        <div class="phone-box">
+          <div class="icon">📞</div>
+          <div class="number" id="support-phone">Loading...</div>
+          <div class="hours">Monday – Friday, 9 AM – 5 PM Eastern</div>
+          <div class="note">
+            <strong>Phone support is for questions and problems only.</strong><br>
+            For faster help, include your case number when you call.<br>
+            This is not a sales line — please use the form or<br>
+            <a href="/#eligibility">eligibility checker</a> to get started.
+          </div>
+        </div>
+
+        <div style="margin-top: 28px; padding: 20px; border: 1px solid var(--line); border-radius: 14px;">
+          <p style="font-weight: 800; margin: 0 0 8px;">📧 Email</p>
+          <p style="margin: 0; color: var(--muted);">
+            <a href="mailto:support@evictions.help">support@evictions.help</a>
+          </p>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">
+            We respond to emails within 24 hours on business days.
+          </p>
+        </div>
+
+        <div style="margin-top: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 14px;">
+          <p style="font-weight: 800; margin: 0 0 8px;">🔄 Refund Policy</p>
+          <p style="margin: 0; font-size: 14px; color: var(--muted);">
+            Full refund if we cannot prepare your packet, or if you cancel within 24 hours of purchase before the packet is generated. No refunds after packet delivery.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      &copy; 2026 evictions.help. Self-help document preparation. Not a law firm. Not legal advice.
+    </div>
+  </div>
+</footer>
+
+<script>
+// Load phone number from config
+fetch('/api/v1/config/support')
+  .then(r => r.json())
+  .then(cfg => {
+    if (cfg.phone) document.getElementById('support-phone').textContent = cfg.phone;
+    else document.getElementById('support-phone').textContent = 'Coming soon';
+  })
+  .catch(() => {
+    document.getElementById('support-phone').textContent = 'Coming soon';
+  });
+
+async function submitContactForm(e) {
+  e.preventDefault();
+  const alert = document.getElementById('form-alert');
+  const btn = document.getElementById('cf-submit');
+
+  const name = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const reason = document.getElementById('cf-reason').value;
+  const message = document.getElementById('cf-message').value.trim();
+
+  if (!name || !email || !reason || !message) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('/api/v1/support/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, reason, message }),
+    });
+
+    if (res.ok) {
+      alert.className = 'alert alert-success';
+      alert.textContent = '✅ Message sent! We\'ll get back to you within 24 hours.';
+      alert.classList.remove('hidden');
+      document.getElementById('contact-form').reset();
+    } else {
+      throw new Error('Failed');
+    }
+  } catch (err) {
+    alert.className = 'alert alert-error';
+    alert.textContent = 'Something went wrong. Please email support@evictions.help directly.';
+    alert.classList.remove('hidden');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send Message';
+}
+</script>
+
+</body>
+</html>
