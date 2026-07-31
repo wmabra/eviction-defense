@@ -570,53 +570,39 @@ function showResult(type, msg) {
 	result.classList.remove("hidden");
 }
 
-// Payment via Authorize.net
-function startPayment() {
+// Payment via Authorize.net — AcceptUI hosted form
+// Called by Authorize.net AcceptUI after the user completes the hosted payment form
+function authNetResponseHandler(response) {
+	const btn = document.getElementById("btn-pay");
+
+	if (response.messages.resultCode === "Error") {
+		btn.disabled = false;
+		btn.textContent = "Payment Failed — Try Again";
+		return;
+	}
+
+	// Payment successful — get user info and submit
 	const email = document.getElementById("pay-email").value.trim();
 	const address = document.getElementById("pay-address").value.trim();
 	const city = document.getElementById("pay-city").value.trim();
-	const county = document.getElementById("pay-county").value.trim();
 	const zip = document.getElementById("pay-zip").value.trim();
 
-	if (!email) {
-		alert("Please enter your email address.");
-		return;
-	}
-	if (!address || !city || !county) {
-		alert("Please fill in your address, city, and county.");
+	if (!email || !address || !city) {
+		alert("Please fill in your email, address, and city first.");
+		btn.disabled = false;
+		btn.textContent = "Pay $399 — Secure Checkout";
 		return;
 	}
 
 	appState.email = email;
 	appState.address = address;
 	appState.city = city;
-	appState.county = county;
 	appState.zip = zip;
-	const btn = document.getElementById("btn-pay");
+
 	btn.disabled = true;
-	btn.innerHTML = '<span class="spinner"></span> Processing...';
+	btn.textContent = "Processing...";
 
-	if (typeof Accept === "undefined") {
-		redirectToChat(email);
-		return;
-	}
-
-	Accept.dispatchData({
-		authData: {
-			apiLoginID: "7wM69L5k7q2p",
-			clientKey:
-				"4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42",
-		},
-		paymentData: { amount: 299.0, description: "Eviction Defense Packet" },
-		callback: (response) => {
-			if (response.messages.resultCode === "Error") {
-				btn.disabled = false;
-				btn.textContent = "Payment Failed — Try Again";
-				return;
-			}
-			submitPayment(response.opaqueData, email);
-		},
-	});
+	submitPayment(response.opaqueData, email);
 }
 
 async function submitPayment(opaqueData, email) {

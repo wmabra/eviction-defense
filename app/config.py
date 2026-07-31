@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     authorize_login_id: str = ""
     authorize_transaction_key: str = ""
     authorize_sandbox: bool = True  # True = test mode, False = live
-    product_price: int = 29900  # $299.00 in cents
+    product_price: int = 39900  # $399.00 in cents
 
     # LLM Provider (OpenAI, DeepSeek, or any OpenAI-compatible API)
     llm_api_key: str = ""

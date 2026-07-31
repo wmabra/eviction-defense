@@ -2,7 +2,7 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 	apiBase: "",
 	useLivePreScreen: false,
 	checkoutPath: "/checkout/",
-	price: 299,
+	price: 399,
 };
 (() => {
 	const SUPPORTED_COUNTIES = {
@@ -661,7 +661,7 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 					clientKey:
 						"4r8CTQ7wQKYuGa266vv8WdXLD25pKfd8KgvA7j23NGs22mhLqVFVadczeXf5Gx42",
 				},
-				paymentData: { amount: 299.0, description: "Eviction Defense Packet" },
+				paymentData: { amount: 399.0, description: "Eviction Defense Packet" },
 				callback: (response) => {
 					if (response.messages.resultCode === "Error") {
 						btn.disabled = false;
