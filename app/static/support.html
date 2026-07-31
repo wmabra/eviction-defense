@@ -225,6 +225,11 @@
         font-weight: 900;
         color: var(--blue);
         letter-spacing: -0.01em;
+        text-decoration: none;
+        display: block;
+      }
+      .phone-box .number:hover {
+        color: var(--accent);
       }
       .phone-box .hours {
         font-size: 14px;
@@ -392,7 +397,7 @@
           <div>
             <div class="phone-box">
               <div class="icon">📞</div>
-              <div class="number" id="support-phone">Loading...</div>
+              <a href="tel:+15619600485" class="number" id="support-phone">+1-561-960-0485</a>
               <div class="hours">Monday – Friday, 9 AM – 5 PM Eastern</div>
               <div class="note">
                 <strong
