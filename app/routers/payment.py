@@ -4,11 +4,13 @@ from pydantic import BaseModel
 
 try:
     from app.services.payment import charge_card, PaymentResult
+    from app.config import settings
     PAYMENT_AVAILABLE = True
 except ImportError:
     PAYMENT_AVAILABLE = False
     charge_card = None
     PaymentResult = None
+    settings = None
 
 router = APIRouter(prefix="/api/v1/payment", tags=["payment"])
 
@@ -37,7 +39,7 @@ def process_payment(req: PaymentRequest):
     
     result: PaymentResult = charge_card(
         opaque_data=req.opaque_data,
-        amount_cents=39900,  # $399.00
+        amount_cents=39900,  # $399.00 flat — same price for all 20 states
         order_id=req.order_id,
         customer_email=req.customer_email,
         description=f"Eviction Defense Packet — {req.customer_name}"

@@ -1,8 +1,15 @@
-"""Authorize.net payment service — sandbox & live."""
+"""Authorize.net payment service — sandbox & live.
+
+Test mode (authorize_sandbox=true): uses Authorize.net sandbox endpoint.
+Test card 4111 1111 1111 1111 works with any future expiration date.
+To go live: set AUTHORIZE_SANDBOX=false in .env and use real card numbers.
+"""
 import os
 from dataclasses import dataclass
 from authorizenet import apicontractsv1
 from authorizenet.apicontrollers import createTransactionController
+from authorizenet.apicontrollersbase import APIOperationBase
+from authorizenet.constants import constants as anet_constants
 from app.config import settings
 
 
@@ -36,9 +43,13 @@ def charge_card(opaque_data: dict, amount_cents: int, order_id: str,
         customer_email: Customer's email for receipt
         description: Order description
     """
-    if not settings.authorize_sandbox:
-        # Live mode
-        pass  # Same API, different endpoint configured in settings
+    # Switch between sandbox (test) and production (live) endpoints.
+    # Sandbox: test card 4111 1111 1111 1111 works with any future expiry.
+    # When testing is complete, set AUTHORIZE_SANDBOX=false in .env.
+    if settings.authorize_sandbox:
+        APIOperationBase.setenvironment(anet_constants.SANDBOX)
+    else:
+        APIOperationBase.setenvironment(anet_constants.PRODUCTION)
 
     merchant = get_merchant_auth()
     
