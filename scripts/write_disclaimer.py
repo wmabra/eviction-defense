@@ -31,20 +31,26 @@ content = """<!doctype html><html lang="en"><head>
 <h1>Legal Disclaimer</h1>
 
 <div class="notice" style="margin-bottom:24px">
-<strong>Important:</strong> evictions.help is a self-help document preparation service. We are not a law firm, we do not provide legal advice, and we do not represent anyone in court.
+<strong>Important:</strong> evictions.help is an automated typing and formatting utility. We are not a law firm, we do not provide legal advice, and we do not represent anyone in court. You are acting as your own document preparer, and you are solely responsible for the accuracy and filing of your documents.
 </div>
 
 <h2>Not Legal Advice</h2>
-<p>The information and documents provided by evictions.help are for self-help purposes only. Nothing on this website, in our communications, or in the documents we prepare constitutes legal advice. Legal advice involves applying the law to your specific circumstances, which only a licensed attorney can do.</p>
+<p>evictions.help types and formats information you provide onto official state court forms. Nothing on this website, in our communications, or in the documents we type constitutes legal advice, a legal opinion, or a recommendation about your case. Legal advice involves applying the law to your specific circumstances, which only a licensed attorney can do.</p>
+
+<h2>Your Role as Your Own Document Preparer</h2>
+<p>You — not evictions.help — are the preparer of your own legal documents. We act only as an automated typing service that transcribes the answers, selections, and information you provide onto the correct official forms. You make all legal decisions, including which defenses to raise, whether to request a jury trial, and whether to file any motion. We do not choose, suggest, or recommend any defense, motion, or legal strategy for you.</p>
 
 <h2>No Attorney-Client Relationship</h2>
-<p>Using evictions.help does not create an attorney-client relationship. Our service is a document preparation service. We do not represent you in court, negotiate with your landlord, or provide legal opinions about your case.</p>
+<p>Using evictions.help does not create an attorney-client relationship. Our service is an automated document typing and formatting service. We do not represent you in court, negotiate with your landlord, or provide legal opinions about your case.</p>
 
 <h2>No Guarantee of Results</h2>
 <p>Every eviction case is unique. The outcome of your case depends on many factors, including the facts of your situation, applicable laws, the judge assigned to your case, and the actions of your landlord. evictions.help cannot predict or guarantee any particular outcome.</p>
 
 <h2>Court Filing Responsibility</h2>
 <p>You are solely responsible for reviewing your documents for accuracy, filing them with the appropriate court, meeting all deadlines, serving copies on the opposing party, and following all applicable court rules. Deadlines in eviction cases are strict. Failure to meet a deadline may result in a default judgment against you.</p>
+
+<h2>Court Fees and Fee Waivers</h2>
+<p>Courts charge filing fees. If you request a fee waiver, a judge decides whether you qualify. A fee waiver is not guaranteed, and if your request is denied, you may still be required to pay the court filing fee. You are responsible for confirming whether any fee is owed and paying it on time.</p>
 
 <h2>Accuracy of Information</h2>
 <p>Our documents are prepared based on the information you provide. You are responsible for ensuring that all information is accurate and complete. We recommend reviewing your documents carefully before filing.</p>
@@ -59,10 +65,10 @@ content = """<!doctype html><html lang="en"><head>
 <p>To the fullest extent permitted by law, evictions.help disclaims all liability for any damages arising from your use of our service or reliance on the documents we prepare. Our liability is limited to the amount you paid for our service.</p>
 </div></section>
 <footer class="footer"><div class="container"><div class="footer-grid">
-<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>AI-assisted self-help document preparation for residential tenants facing eviction. Flat fee: $399.</p></div>
+<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>Automated typing and formatting for residential tenants facing eviction. Flat fee: $399.</p></div>
 <div><h3>Program</h3><div class="footer-links"><a href="/#included">Packet contents</a><a href="/#how-it-works">How it works</a><a href="/#states">Supported states</a><a href="/#faq">Frequently asked questions</a></div></div>
 <div><h3>Important</h3><div class="footer-links"><a href="/terms/">Terms of use</a><a href="/privacy/">Privacy</a><a href="/disclaimer/">Legal disclaimer</a><a href="mailto:support@evictions.help">support@evictions.help</a></div></div>
-</div><div class="footer-bottom">&copy; 2026 evictions.help. Self-help document preparation. Not a law firm. Not legal advice.</div></div></footer>
+</div><div class="footer-bottom">&copy; 2026 evictions.help. Automated document typing service. Not a law firm. Not legal advice.</div></div></footer>
 <script src="/assets/site.js" defer></script>
 </body></html>"""
 

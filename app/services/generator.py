@@ -147,7 +147,10 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     Returns:
         dict with paths to each generated document
     """
-    os.makedirs(output_dir, exist_ok=True)
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+    except OSError:
+        pass
     base = case_data
 
     paths = {}
@@ -576,7 +579,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     if not plan_amount and amount_claimed:
         try:
             plan_amount = f"${float(amount_claimed) / 4:,.0f}"
-        except:
+        except (TypeError, ValueError):
             plan_amount = "$_____"
     
     elements.append(Paragraph(today, S["Body"]))
@@ -1073,6 +1076,8 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
                 import openpyxl
                 wb = openpyxl.load_workbook(db_path)
                 ws = wb['Verified Resources'] if 'Verified Resources' in wb.sheetnames else wb.active
+                if ws is None:
+                    raise ValueError("No worksheet available in workbook")
                 header_row = 1
                 for r in range(1, min(6, ws.max_row + 1)):
                     for c in range(1, ws.max_column + 1):
@@ -1727,7 +1732,10 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     # Helper to format dollar amounts or show blank
     def fmt(val):
         if val is not None and val != 0:
-            return f"${float(val):,.2f}"
+            try:
+                return f"${float(val):,.2f}"
+            except (TypeError, ValueError):
+                return "$___________"
         return "$___________"
 
     def fmt_text(val):

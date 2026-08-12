@@ -36,12 +36,16 @@ async def upload_document(
     Accepts PDF, JPG, PNG. Stores file and saves database record.
     """
     case = db.query(Case).filter(Case.id == case_id).first()
-    if not case:
+    if case is None:
         raise HTTPException(status_code=404, detail="Case not found")
+
+    filename = file.filename
+    if not filename:
+        raise HTTPException(status_code=400, detail="No filename provided")
 
     # Validate file type
     allowed_types = {".pdf", ".jpg", ".jpeg", ".png"}
-    ext = os.path.splitext(file.filename)[1].lower()
+    ext = os.path.splitext(filename)[1].lower()
     if ext not in allowed_types:
         raise HTTPException(
             status_code=400,
@@ -50,29 +54,35 @@ async def upload_document(
 
     # Save file
     case_dir = os.path.join(UPLOAD_DIR, case_id)
-    os.makedirs(case_dir, exist_ok=True)
-    safe_filename = f"{doc_type}_{file.filename}"
+    try:
+        os.makedirs(case_dir, exist_ok=True)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not create directory: {e}")
+    safe_filename = f"{doc_type}_{filename}"
     filepath = os.path.join(case_dir, safe_filename)
 
     content = await file.read()
-    with open(filepath, "wb") as f:
-        f.write(content)
+    try:
+        with open(filepath, "wb") as f:
+            f.write(content)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not save file: {e}")
 
     # Save document record
     doc = Document(
         case_id=case_id,
         doc_type=doc_type,
-        filename=file.filename,
+        filename=filename,
         filepath=filepath,
     )
     db.add(doc)
-    case.status = "extraction_pending"
+    case.status = "extraction_pending"  # type: ignore[assignment]
     db.commit()
 
     return {
         "status": "ok",
         "document_id": doc.id,
-        "filename": file.filename,
+        "filename": filename,
         "doc_type": doc_type,
         "file_size": len(content),
     }
@@ -248,7 +258,7 @@ def _run_ocr(filepath: str, doc_type: str) -> str:
 
             # Try pdfminer as fallback
             try:
-                from pdfminer.high_level import extract_text as pdfminer_extract
+                from pdfminer.high_level import extract_text as pdfminer_extract  # type: ignore[import-not-found]
                 text = pdfminer_extract(filepath)
                 if text.strip():
                     return text

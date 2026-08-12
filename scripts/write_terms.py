@@ -32,22 +32,25 @@ content = """<!doctype html><html lang="en"><head>
 <p style="color:var(--muted)">Last updated: January 2026</p>
 
 <h2>1. About evictions.help</h2>
-<p>evictions.help is a self-help document preparation service. For a flat fee of $399, we prepare eviction defense paperwork based on information you provide. We are not a law firm. We do not provide legal advice, legal representation, or legal opinions. Nothing on this website or in our communications should be construed as legal advice.</p>
+<p>evictions.help is an automated typing and formatting utility. For a flat fee of $399, we type and format the answers, selections, and information you provide onto official state court forms. You are acting as your own document preparer. We are not a law firm. We do not provide legal advice, legal representation, or legal opinions, and we do not choose, suggest, or recommend any defense, motion, or trial option for you. Nothing on this website or in our communications should be construed as legal advice.</p>
 
 <h2>2. No Attorney-Client Relationship</h2>
-<p>Your use of evictions.help does not create an attorney-client relationship. Our document preparation specialists are not attorneys and cannot provide legal advice. If you need legal advice, we recommend consulting with a licensed attorney in your state.</p>
+<p>Your use of evictions.help does not create an attorney-client relationship. evictions.help is an automated typing service and is not staffed by attorneys. If you need legal advice, we recommend consulting with a licensed attorney in your state.</p>
 
 <h2>3. Accuracy of Information</h2>
-<p>You are responsible for providing accurate and complete information during the intake process. The documents we prepare are based solely on the information you provide. You must review all documents for accuracy before filing them with the court. evictions.help is not responsible for errors resulting from incorrect or incomplete information you provide.</p>
+<p>You are responsible for providing accurate and complete information during the intake process. The documents we type and format are based solely on the information and selections you provide. You make all legal decisions, including which defenses to raise and whether to file any motion. You must review all documents for accuracy before filing them with the court. evictions.help is not responsible for errors resulting from incorrect or incomplete information you provide.</p>
 
-<h2>4. Document Filing and Court Procedures</h2>
+<h2>4. Court Fees and Fee Waivers</h2>
+<p>Courts charge filing fees. If you request a fee waiver, a judge decides whether you qualify. A fee waiver is not guaranteed, and if your request is denied, you may still be required to pay the court filing fee. You are responsible for confirming whether any fee is owed and paying it on time.</p>
+
+<h2>5. Document Filing and Court Procedures</h2>
 <p>You are solely responsible for filing your documents with the appropriate court, serving copies on the opposing party, meeting all court deadlines, and following all applicable court rules and procedures. While our packet includes filing checklists and instructions, you bear ultimate responsibility for timely and proper filing.</p>
 
-<h2>5. No Guaranteed Outcome</h2>
+<h2>6. No Guaranteed Outcome</h2>
 <p>evictions.help does not guarantee any particular outcome in your eviction case. Every case is different, and results depend on many factors including the facts of your case, the judge assigned, local court practices, and the actions of your landlord. We cannot predict or guarantee what will happen in court.</p>
 
-<h2>6. Payment and Refunds</h2>
-<p>The fee for our document preparation service is $399. Payment is processed through Authorize.net. Once your document packet has been generated and delivered, the fee is non-refundable. If we are unable to prepare your packet for any reason before delivery, you will receive a full refund. Refund requests should be directed to support@evictions.help.</p>
+<h2>7. Payment and Refunds</h2>
+<p>The fee for our document typing and formatting service is $399. Payment is processed through Authorize.net. Once your document packet has been generated and delivered, the fee is non-refundable. If we are unable to prepare your packet for any reason before delivery, you will receive a full refund. Refund requests should be directed to support@evictions.help.</p>
 
 <h2>7. Eligibility</h2>
 <p>Our service is available to residential tenants facing eviction in the 20 states we serve. We reserve the right to decline service to anyone for any reason, including but not limited to cases involving commercial property, cases where the tenant has already been evicted, cases involving criminal activity, or cases that fall outside our service capabilities.</p>
