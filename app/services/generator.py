@@ -1066,6 +1066,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "IL": "Illinois_Eviction_Support_Database_Framework_200.xlsx",
         "LA": "Louisiana_Eviction_Support_Database_Framework_200.xlsx",
         "MI": "Michigan_Eviction_Support_Database_Framework_200.xlsx",
+        "MO": "Missouri_Eviction_Support_Database_Framework_200.xlsx",
         "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
         "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
         "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",

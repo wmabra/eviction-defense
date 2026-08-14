@@ -111,9 +111,9 @@ def run_extraction(case_id: str, db: Session = Depends(get_db)):
     # Step 1: OCR each document
     doc_texts = []
     for doc in documents:
-        ocr_text = _run_ocr(doc.filepath, doc.doc_type)
-        doc.ocr_text = ocr_text
-        doc.ocr_processed = True
+        ocr_text = _run_ocr(doc.filepath, doc.doc_type)  # type: ignore[arg-type]
+        doc.ocr_text = ocr_text  # type: ignore[assignment]
+        doc.ocr_processed = True  # type: ignore[assignment]
         doc_texts.append({
             "doc_type": doc.doc_type,
             "filename": doc.filename,
@@ -148,8 +148,8 @@ def run_extraction(case_id: str, db: Session = Depends(get_db)):
     confirmation = build_confirmation_screen(intake_data, extraction_result)
 
     # Save extracted data to case record
-    case.extracted_data = json.dumps(extraction_result.get("fields", {}))
-    case.status = "confirmation_pending"
+    case.extracted_data = json.dumps(extraction_result.get("fields", {}))  # type: ignore[assignment]
+    case.status = "confirmation_pending"  # type: ignore[assignment]
     db.commit()
 
     return {
@@ -180,9 +180,9 @@ def get_extraction_status(case_id: str, db: Session = Depends(get_db)):
     ]
 
     extracted = {}
-    if case.extracted_data:
+    if case.extracted_data is not None:
         try:
-            extracted = json.loads(case.extracted_data)
+            extracted = json.loads(case.extracted_data)  # type: ignore[arg-type]
         except (json.JSONDecodeError, TypeError):
             extracted = {}
 
@@ -215,8 +215,8 @@ def confirm_extraction(
     if not result.get("valid"):
         return {"status": "validation_error", "errors": result.get("errors", [])}
 
-    case.extraction_confirmed = True
-    case.status = "confirmation_complete"
+    case.extraction_confirmed = True  # type: ignore[assignment]
+    case.status = "confirmation_complete"  # type: ignore[assignment]
     db.commit()
 
     return {
@@ -447,7 +447,7 @@ def _build_and_return_packet(
     case_number: str = "",
     phone: str = "",
     email: str = "",
-    extra_data: dict = None,
+    extra_data: Optional[dict] = None,
 ):
     """Generate a complete eviction defense packet with all documents."""
     import tempfile, zipfile
@@ -536,7 +536,7 @@ def _build_intake_dict(case: Case) -> dict:
         "landlord_name": case.landlord_name,
         "amount_claimed": case.complaint_amount_claimed,
         "notice_date": None,
-        "service_date": str(case.summons_service_date) if case.summons_service_date else None,
-        "court_date": str(case.court_date) if case.court_date else None,
-        "response_deadline": str(case.response_deadline) if case.response_deadline else None,
+        "service_date": str(case.summons_service_date) if case.summons_service_date is not None else None,
+        "court_date": str(case.court_date) if case.court_date is not None else None,
+        "response_deadline": str(case.response_deadline) if case.response_deadline is not None else None,
     }

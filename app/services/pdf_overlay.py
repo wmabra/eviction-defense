@@ -4,10 +4,11 @@ PDF overlay system — fills any court form, even scanned/non-fillable PDFs.
 For fillable PDFs: uses field mapping (fast, precise).
 For scanned PDFs: overlays text at exact coordinates (works on any form).
 """
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
 
 import os
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, cast
 from datetime import date
 
 import fitz  # PyMuPDF
@@ -391,7 +392,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     for page_num in range(len(doc)):
         page = doc[page_num]
         for widget in page.widgets():
-            field_name = widget.field_name
+            widget = cast(Any, widget)  # PyMuPDF widget: dynamic attributes
+            field_name = cast(str, widget.field_name)
+            if not field_name:
+                continue
             
             # 1. Check explicit mapping first
             if field_name in values:
