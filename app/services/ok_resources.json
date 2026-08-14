@@ -1,0 +1,304 @@
+{
+  "state": "OK",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Legal Aid of Oklahoma": "1-888-534-5243"
+  },
+  "counties": {
+    "Oklahoma": {
+      "_region": "community_action_agency_of_okc"
+    },
+    "Canadian": {
+      "_region": "community_action_agency_of_okc"
+    },
+    "Cleveland": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Lincoln": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Logan": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Payne": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Pottawatomie": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Seminole": {
+      "_region": "central_oklahoma_community_action_agency"
+    },
+    "Adair": {
+      "_region": "northeast_oklahoma_community_action_agen"
+    },
+    "Cherokee": {
+      "_region": "northeast_oklahoma_community_action_agen"
+    },
+    "Craig": {
+      "_region": "northeast_oklahoma_community_action_agen"
+    },
+    "Delaware": {
+      "_region": "northeast_oklahoma_community_action_agen"
+    },
+    "Ottawa": {
+      "_region": "northeast_oklahoma_community_action_agen"
+    },
+    "Nowata": {
+      "_region": "community_action_resource_and_developmen"
+    },
+    "Mayes": {
+      "_region": "community_action_resource_and_developmen"
+    },
+    "Rogers": {
+      "_region": "community_action_resource_and_developmen"
+    },
+    "Wagoner": {
+      "_region": "community_action_resource_and_developmen"
+    },
+    "Washington": {
+      "_region": "community_action_resource_and_developmen"
+    },
+    "Hughes": {
+      "_region": "deep_fork_community_action_foundation"
+    },
+    "McIntosh": {
+      "_region": "deep_fork_community_action_foundation"
+    },
+    "Okfuskee": {
+      "_region": "deep_fork_community_action_foundation"
+    },
+    "Okmulgee": {
+      "_region": "deep_fork_community_action_foundation"
+    },
+    "Garvin": {
+      "_region": "delta_community_action_foundation"
+    },
+    "McClain": {
+      "_region": "delta_community_action_foundation"
+    },
+    "Stephens": {
+      "_region": "delta_community_action_foundation"
+    },
+    "Garfield": {
+      "_region": "community_development_support_associatio"
+    },
+    "Alfalfa": {
+      "_region": "community_development_support_associatio"
+    },
+    "Blaine": {
+      "_region": "community_action_development_corporation"
+    },
+    "Grant": {
+      "_region": "community_development_support_associatio"
+    },
+    "Kingfisher": {
+      "_region": "community_development_support_associatio"
+    },
+    "Major": {
+      "_region": "community_development_support_associatio"
+    },
+    "Creek": {
+      "_region": "united_community_action_program_ucap"
+    },
+    "Kay": {
+      "_region": "united_community_action_program_ucap"
+    },
+    "Noble": {
+      "_region": "united_community_action_program_ucap"
+    },
+    "Osage": {
+      "_region": "united_community_action_program_ucap"
+    },
+    "Pawnee": {
+      "_region": "united_community_action_program_ucap"
+    },
+    "Caddo": {
+      "_region": "washita_valley_community_action_council"
+    },
+    "Grady": {
+      "_region": "washita_valley_community_action_council"
+    },
+    "Choctaw": {
+      "_region": "big_five_community_services"
+    },
+    "McCurtain": {
+      "_region": "little_dixie_community_action_agency"
+    },
+    "Pushmataha": {
+      "_region": "little_dixie_community_action_agency"
+    },
+    "Tulsa": {
+      "_region": "cap_tulsa"
+    },
+    "Comanche": {
+      "_region": "great_plains_improvement_foundation"
+    },
+    "Cotton": {
+      "_region": "great_plains_improvement_foundation"
+    },
+    "Tillman": {
+      "_region": "great_plains_improvement_foundation"
+    },
+    "Haskell": {
+      "_region": "ki_bois_community_action_foundation"
+    },
+    "Latimer": {
+      "_region": "ki_bois_community_action_foundation"
+    },
+    "Le Flore": {
+      "_region": "ki_bois_community_action_foundation"
+    },
+    "Pittsburg": {
+      "_region": "ki_bois_community_action_foundation"
+    },
+    "Sequoyah": {
+      "_region": "ki_bois_community_action_foundation"
+    },
+    "Atoka": {
+      "_region": "little_dixie_community_action_agency"
+    },
+    "Bryan": {
+      "_region": "big_five_community_services"
+    },
+    "Beckham": {
+      "_region": "community_action_development_corporation"
+    },
+    "Greer": {
+      "_region": "southwest_oklahoma_community_action_grou"
+    },
+    "Harmon": {
+      "_region": "southwest_oklahoma_community_action_grou"
+    },
+    "Jackson": {
+      "_region": "southwest_oklahoma_community_action_grou"
+    },
+    "Kiowa": {
+      "_region": "southwest_oklahoma_community_action_grou"
+    },
+    "Roger Mills": {
+      "_region": "southwest_oklahoma_community_action_grou"
+    },
+    "Washita": {
+      "_region": "community_action_development_corporation"
+    },
+    "Cimarron": {
+      "_region": "opportunities,_inc."
+    },
+    "Dewey": {
+      "_region": "community_action_development_corporation"
+    },
+    "Ellis": {
+      "_region": "opportunities,_inc."
+    },
+    "Harper": {
+      "_region": "opportunities,_inc."
+    },
+    "Texas": {
+      "_region": "opportunities,_inc."
+    },
+    "Woods": {
+      "_region": "opportunities,_inc."
+    },
+    "Woodward": {
+      "_region": "opportunities,_inc."
+    },
+    "Carter": {
+      "_region": "big_five_community_services"
+    },
+    "Coal": {
+      "_region": "inca_community_services"
+    },
+    "Johnston": {
+      "_region": "inca_community_services"
+    },
+    "Love": {
+      "_region": "big_five_community_services"
+    },
+    "Marshall": {
+      "_region": "big_five_community_services"
+    },
+    "Murray": {
+      "_region": "inca_community_services"
+    },
+    "Pontotoc": {
+      "_region": "inca_community_services"
+    },
+    "Custer": {
+      "_region": "community_action_development_corporation"
+    },
+    "Beaver": {
+      "_region": "okacaa_general"
+    },
+    "Jefferson": {
+      "_region": "okacaa_general"
+    },
+    "Muskogee": {
+      "_region": "okacaa_general"
+    }
+  },
+  "regions": {
+    "community_action_agency_of_okc": {
+      "Community Action Agency of OKC": "(405) 232-0199"
+    },
+    "central_oklahoma_community_action_agency": {
+      "Central Oklahoma Community Action Agency": "(405) 434-6100"
+    },
+    "northeast_oklahoma_community_action_agen": {
+      "Northeast Oklahoma Community Action Agency": "(918) 253-4683"
+    },
+    "community_action_resource_and_developmen": {
+      "Community Action Resource & Development (CARD)": "(918) 341-5000"
+    },
+    "deep_fork_community_action_foundation": {
+      "Deep Fork Community Action Foundation": "(918) 756-2826"
+    },
+    "delta_community_action_foundation": {
+      "Delta Community Action Foundation": "(580) 224-8600"
+    },
+    "community_development_support_associatio": {
+      "Community Development Support Association (CDSA)": "(580) 242-6131"
+    },
+    "united_community_action_program_ucap": {
+      "United Community Action Program (UCAP)": "(918) 762-3041"
+    },
+    "washita_valley_community_action_council": {
+      "Washita Valley Community Action Council": "(405) 224-5830"
+    },
+    "lift_community_action_agency": {
+      "LIFT Community Action Agency": "(580) 326-5165"
+    },
+    "cap_tulsa": {
+      "CAP Tulsa": "(918) 382-3200"
+    },
+    "great_plains_improvement_foundation": {
+      "Great Plains Improvement Foundation": "(580) 353-0400"
+    },
+    "ki_bois_community_action_foundation": {
+      "KI BOIS Community Action Foundation": "(918) 967-3325"
+    },
+    "little_dixie_community_action_agency": {
+      "Little Dixie Community Action Agency": "(580) 326-3351"
+    },
+    "southwest_oklahoma_community_action_grou": {
+      "Southwest Oklahoma Community Action Group": "(580) 482-3441"
+    },
+    "opportunities,_inc.": {
+      "Opportunities, Inc.": "(580) 256-6446"
+    },
+    "inca_community_services": {
+      "INCA Community Services": "(580) 226-1133"
+    },
+    "community_action_development_corporation": {
+      "Community Action Development Corporation": "(580) 497-3333"
+    },
+    "big_five_community_services": {
+      "Big Five Community Services": "(580) 924-5331"
+    },
+    "okacaa_general": {
+      "Oklahoma Community Action Network": "(405) 949-1495"
+    }
+  }
+}

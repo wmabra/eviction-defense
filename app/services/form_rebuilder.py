@@ -5,6 +5,7 @@ Takes each state's official court form, renders it as a background image,
 and places standardized AcroForm widgets at the exact overlay positions.
 Result: identical to the official form but with clean, predictable field names.
 """
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 
 import os
 import fitz
@@ -51,7 +52,10 @@ def rebuild_all_states():
     """Rebuild all 20 states' court forms with standardized fields."""
     from app.services.state_configs import STATE_CONFIGS
     
-    os.makedirs(REBUILT_DIR, exist_ok=True)
+    try:
+        os.makedirs(REBUILT_DIR, exist_ok=True)
+    except OSError:
+        pass
     results = {}
     
     for state_code in sorted(STATE_CONFIGS.keys()):

@@ -73,6 +73,7 @@ STATE_COURT_CAPTIONS = {
     "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
     "MO": "IN THE CIRCUIT COURT OF {county} COUNTY, MISSOURI (ASSOCIATE CIRCUIT DIVISION)",
     "KY": "IN THE DISTRICT COURT OF {county} COUNTY, KENTUCKY",
+    "OK": "IN THE DISTRICT COURT OF {county} COUNTY, STATE OF OKLAHOMA",
 }
 
 WRIT_TERMS = {
@@ -98,6 +99,7 @@ WRIT_TERMS = {
     "NM": "Writ of Restitution",
     "MO": "Judgment for Restitution of Premises",
     "KY": "Warrant for Possession",
+    "OK": "Writ of Execution",
 }
 
 EVICTION_LAW_CHAPTERS = {
@@ -123,6 +125,7 @@ EVICTION_LAW_CHAPTERS = {
     "NM": "NMSA 1978 § 35-10-1 et seq. (Forcible Entry and Detainer)",
     "MO": "RSMo Chapter 535 (Landlord-Tenant Actions) & Chapter 534 (Forcible Entry and Unlawful Detainer)",
     "KY": "KRS 383.200-383.275 (Forcible Entry and Detainer)",
+    "OK": "41 O.S. \u00a7\u00a7 131-137 (Forcible Entry and Detainer)",
 }
 
 
@@ -731,6 +734,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         "NM": "10 days from the date you were served",
         "MO": "On or before the return date shown on your summons (rent and possession cases are set for a hearing)",
         "KY": "Appear at the forcible detainer trial on the date shown on your summons (AOC-215 requires at least 3 days\u2019 notice)",
+        "OK": "File your Answer/Affidavit before the hearing date shown on your FED summons",
     }
     deadline = STATE_DEADLINES.get(state, "the deadline shown on your summons")
 
@@ -983,6 +987,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
         "RI": {"form": "Motion to Proceed In Forma Pauperis", "site": "www.courts.ri.gov", "fee": "varies by court"},
         "MO": {"form": "GN10 - Motion and Affidavit in Support of Request to Proceed as a Poor Person", "site": "www.courts.mo.gov", "fee": "varies by court"},
         "KY": {"form": "AOC-026 - Motion for Waiver of Costs and Fees (In Forma Pauperis)", "site": "www.kycourts.gov", "fee": "varies by court"},
+        "OK": {"form": "Pauper\u2019s Affidavit (In Forma Pauperis)", "site": "oklaw.org", "fee": "varies by court"},
     }
     info = WAIVER_INFO.get(state, {"form": "your state's fee waiver form", "site": "your state court website", "fee": "varies"})
     
@@ -1073,6 +1078,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "MI": "Michigan_Eviction_Support_Database_Framework_200.xlsx",
         "MO": "Missouri_Eviction_Support_Database_Framework_200.xlsx",
         "KY": "Kentucky_Eviction_Support_Database_Framework_200.xlsx",
+        "OK": "Oklahoma_Eviction_Support_Database_Framework_200.xlsx",
         "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
         "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
         "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",
@@ -1485,6 +1491,14 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "Within 30 days", "District Court judge hears case. Mediation may be available."),
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may request a stay."),
             ("6. Execution", "Varies", "Sheriff executes eviction. Court may grant additional time to vacate."),
+        ],
+        "OK": [
+            ("1. FED Petition Filed", "After notice", "Landlord files Forcible Entry and Detainer petition in District Court."),
+            ("2. Summons Served", "At least 3 days before hearing", "You receive the FED summons with a hearing date."),
+            ("3. File Answer / Appear", "Before hearing date", "YOU ARE HERE. File your Answer or Affidavit and appear at the hearing."),
+            ("4. Hearing", "On summons date", "District judge hears both sides. Bring lease, payment records, and evidence."),
+            ("5. Judgment", "Day of hearing", "If you lose, the court issues judgment for possession."),
+            ("6. Writ of Execution", "48 hours after judgment", "Sheriff may execute the writ. Tenant must vacate."),
         ],
         "KY": [
             ("1. Forcible Detainer Complaint", "After notice", "Landlord files AOC-216 Forcible Detainer Complaint in District Court."),
