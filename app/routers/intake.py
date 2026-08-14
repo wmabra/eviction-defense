@@ -1,4 +1,5 @@
 """Intake questionnaire API endpoints."""
+# pyright: reportAttributeAccessIssue=false
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -88,7 +89,7 @@ def get_intake_status(case_id: str, db: Session = Depends(get_db)):
     return {
         "case_id": case.id,
         "status": case.status,
-        "stage_description": stages.get(case.status, "Unknown"),
+        "stage_description": stages.get(str(case.status), "Unknown"),
         "payment_status": case.payment_status,
         "extraction_confirmed": case.extraction_confirmed,
         "packet_status": case.packet_status,

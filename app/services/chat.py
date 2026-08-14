@@ -71,7 +71,7 @@ b. Landlord's address — optional, ask briefly
 c. Landlord's phone/email — optional, skip if unknown
 d. Landlord's attorney name — ONLY if listed on the summons. Accept "no" or "I don't know" immediately and move on. This is NOT required.
 e. Case number (from summons/complaint — this is on the top of court papers)
-f. Court name (which courthouse — usually on the summons)
+f. Court name (which courthouse — usually on the summons) and division number if shown (e.g., Missouri Associate Circuit Division)
 g. Have you been served with court papers (summons and complaint)? (yes/no)
 h. When were you served? (date on summons)
 i. Did you receive a notice to pay or quit (3-day/5-day/etc notice) BEFORE the court papers? (yes/no)
@@ -145,7 +145,7 @@ After ALL phases are complete (all fields collected), append this JSON block to 
 The collected_data JSON must include these top-level keys matching the CompleteIntake schema:
 - personal_info: {full_name, phone, email, property_address, property_city, property_zip, county}
 - landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name}
-- case_details: {case_number, court_name, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, response_deadline}
+- case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, response_deadline}
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
 - defenses: {def_repairs: {checked, explanation}, def_amount: {checked, explanation}, ... for all 12 defenses}
 - preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, needs_emergency_stay, facing_writ_possession, filing_bankruptcy}

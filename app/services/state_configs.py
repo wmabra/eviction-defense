@@ -1091,6 +1091,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "property_address": "Respondents AddressTelephone",
             "total_dependents": "Number of dependents",
             "employment_income": "Gross Salary",
+            "ssi_income": "Public Assistance",
             "pension_income": "Retirement/Pension",
             "social_security_income": "Social Security",
             "child_support_income": "Child Support",
@@ -1110,9 +1111,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "vehicle_value": "Value of Automobiles",
             "real_estate_loan_owed": "Home Loan Balance",
             "vehicle_loan_owed": "Automobile Loan",
+            "total_assets": "Total Assets",
+            "total_debts": "Total Debts",
         },
         "has_fillable_fields": True,
         "court_type": "Associate Circuit Court",
+        "field_mapping": {
+            "division": "division",
+        },
         "defense_options": [
             {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
             {"key": "def_amount", "label": "I dispute the amount of rent claimed", "field": "defense_amount"},

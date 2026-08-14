@@ -1,4 +1,5 @@
 """Inspect PDF fields and nearby text labels to build accurate field mappings."""
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 import fitz
@@ -50,7 +51,13 @@ def inspect_state(state_code):
                         nearby.append(txt[:60])
             
             # If field name is generic (Text1, Check Box, number), show nearby labels
-            if fn.startswith("Text") or fn.startswith("Check Box") or (str(fn).isdigit() and int(str(fn)) < 100):
+            is_generic = fn.startswith("Text") or fn.startswith("Check Box")
+            if not is_generic and str(fn).isdigit():
+                try:
+                    is_generic = int(str(fn)) < 100
+                except (ValueError, TypeError):
+                    pass
+            if is_generic:
                 label = nearby[0] if nearby else "(no label nearby)"
                 print(f"  Field \"{fn}\" ← near: \"{label}\"")
             elif fn in ["undefined", "undefined_2", "VS", "VS_2"]:

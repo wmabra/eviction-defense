@@ -52,6 +52,7 @@ class CaseDetails(BaseModel):
     case_number: str
     court_name: str
     court_location: Optional[str] = None
+    division: Optional[str] = None  # e.g., MO Associate Circuit Division number
     received_3day_notice: bool = False
     notice_received_date: Optional[date] = None
     notice_amount_demanded: Optional[float] = None

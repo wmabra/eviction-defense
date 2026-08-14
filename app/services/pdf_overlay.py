@@ -11,6 +11,23 @@ import logging
 from typing import Any, Dict, Optional, cast
 from datetime import date
 
+
+def _to_float(val) -> float:
+    """Safely coerce a value to float (financial data is validated as numeric)."""
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _money(val, dec: int = 2) -> str:
+    """Safely format a value as a dollar string."""
+    try:
+        return f"${float(val):,.{dec}f}"
+    except (TypeError, ValueError):
+        return "$0.00"
+
+
 import fitz  # PyMuPDF
 
 from app.services.state_configs import get_state_config
@@ -486,7 +503,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
             if fin:
                 fin_lines = []
                 income = fin.get("monthly_gross_income") or fin.get("employment_income")
-                if income: fin_lines.append(f"Monthly Income: ${float(income):,.2f}")
+                if income: fin_lines.append(f"Monthly Income: {_money(income, 2)}")
                 adults = fin.get("household_adults")
                 children = fin.get("household_children")
                 if adults or children:
@@ -503,14 +520,14 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 vehicle_val = fin.get("vehicle_value")
                 if vehicle:
                     vtext = f"Vehicle: {vehicle}"
-                    if vehicle_val: vtext += f" (${float(vehicle_val):,.2f})"
+                    if vehicle_val: vtext += f" ({_money(vehicle_val, 2)})"
                     fin_lines.append(vtext)
                 checking = fin.get("checking_balance")
                 savings = fin.get("savings_balance")
                 cash = fin.get("cash_on_hand")
                 if checking or savings or cash:
                     total = (checking or 0) + (savings or 0) + (cash or 0)
-                    fin_lines.append(f"Bank/Cash: ${float(total):,.2f}")
+                    fin_lines.append(f"Bank/Cash: {_money(total, 2)}")
                 if fin_lines:
                     fin_text = "\n".join(fin_lines)
                     fin_rect = fitz.Rect(50, 250, 550, 400)
@@ -567,7 +584,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if fin:
                     text_lines.append("")
                     income = fin.get("monthly_gross_income") or fin.get("employment_income")
-                    if income: text_lines.append(f"Monthly Income: ${float(income):,.2f}")
+                    if income: text_lines.append(f"Monthly Income: {_money(income, 2)}")
                     adults = fin.get("household_adults")
                     children = fin.get("household_children")
                     if adults or children:
@@ -584,14 +601,14 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     vehicle_val = fin.get("vehicle_value")
                     if vehicle:
                         vtext = f"Vehicle: {vehicle}"
-                        if vehicle_val: vtext += f" (${float(vehicle_val):,.2f})"
+                        if vehicle_val: vtext += f" ({_money(vehicle_val, 2)})"
                         text_lines.append(vtext)
                     checking = fin.get("checking_balance")
                     savings = fin.get("savings_balance")
                     cash = fin.get("cash_on_hand")
                     if checking or savings or cash:
                         total = (checking or 0) + (savings or 0) + (cash or 0)
-                        text_lines.append(f"Bank/Cash: ${float(total):,.2f}")
+                        text_lines.append(f"Bank/Cash: {_money(total, 2)}")
                 
                 text = "\n".join(text_lines)
                 rect = fitz.Rect(50, 50, 550, 300)
@@ -642,7 +659,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     
     # Handle numbered defense narrative lines (NM 4-907 style)
     if key.startswith("defense_narrative_"):
-        idx = int(key.split("_")[-1]) - 1  # defense_narrative_1 → index 0
+        try:
+            idx = int(key.split("_")[-1]) - 1  # defense_narrative_1 → index 0
+        except (ValueError, IndexError):
+            idx = 0
         checked_defenses = [
             ("def_repairs", "Conditions: "),
             ("def_amount", "Amount disputed: "),
@@ -734,7 +754,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         if val is None and key == "employment_income":
             val = financial.get("monthly_gross_income")
         if val is not None and val != 0:
-            return f"${float(val):,.2f}"
+            return f"{_money(val, 2)}"
         return None
     
     # Text fields
@@ -755,33 +775,54 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         vehicle = financial.get("vehicle_make_model")
         vehicle_val = financial.get("vehicle_value")
         if vehicle:
-            parts.append(f"Vehicle: {vehicle}" + (f" (${float(vehicle_val):,.0f})" if vehicle_val else ""))
+            parts.append(f"Vehicle: {vehicle}" + (f" ({_money(vehicle_val, 0)})" if vehicle_val else ""))
         checking = financial.get("checking_balance")
         if checking:
-            parts.append(f"Checking: ${float(checking):,.2f}")
+            parts.append(f"Checking: {_money(checking, 2)}")
         savings = financial.get("savings_balance")
         if savings:
-            parts.append(f"Savings: ${float(savings):,.2f}")
+            parts.append(f"Savings: {_money(savings, 2)}")
         cash = financial.get("cash_on_hand")
         if cash:
-            parts.append(f"Cash: ${float(cash):,.2f}")
+            parts.append(f"Cash: {_money(cash, 2)}")
         if financial.get("owns_real_estate"):
             re_val = financial.get("real_estate_value")
-            parts.append(f"Real estate" + (f" (${float(re_val):,.0f})" if re_val else ""))
+            parts.append(f"Real estate" + (f" ({_money(re_val, 0)})" if re_val else ""))
         return "; ".join(parts) if parts else None
     if key == "obligations_description":
         parts = []
         debt = financial.get("debt_payments")
         if debt:
-            parts.append(f"Monthly debt payments: ${float(debt):,.2f}")
+            parts.append(f"Monthly debt payments: {_money(debt, 2)}")
         vehicle_loan = financial.get("vehicle_loan_owed")
         if vehicle_loan:
-            parts.append(f"Vehicle loan balance: ${float(vehicle_loan):,.2f}")
+            parts.append(f"Vehicle loan balance: {_money(vehicle_loan, 2)}")
         re_loan = financial.get("real_estate_loan_owed")
         if re_loan:
-            parts.append(f"Mortgage balance: ${float(re_loan):,.2f}")
+            parts.append(f"Mortgage balance: {_money(re_loan, 2)}")
         return "; ".join(parts) if parts else None
-    
+
+    # Computed totals (for GN10-style "Total Assets" / "Total Debts" fields)
+    if key == "total_assets":
+        asset_vals = [
+            financial.get("cash_on_hand"),
+            financial.get("checking_balance"),
+            financial.get("savings_balance"),
+            financial.get("vehicle_value"),
+            financial.get("real_estate_value"),
+            financial.get("other_assets_value"),
+        ]
+        total = sum(_to_float(v) for v in asset_vals if v)
+        return f"${total:,.2f}" if total else None
+
+    if key == "total_debts":
+        debt_vals = [
+            financial.get("real_estate_loan_owed"),
+            financial.get("vehicle_loan_owed"),
+        ]
+        total = sum(_to_float(v) for v in debt_vals if v)
+        return f"${total:,.2f}" if total else None
+
     return None
 
 
@@ -795,10 +836,10 @@ def _build_financial_summary(financial: dict) -> str:
     # Income
     income = financial.get('monthly_gross_income')
     if income:
-        lines.append(f"Monthly Gross Income: ${float(income):,.2f}")
+        lines.append(f"Monthly Gross Income: {_money(income, 2)}")
     emp = financial.get('employment_income')
     if emp:
-        lines.append(f"Employment: ${float(emp):,.2f}")
+        lines.append(f"Employment: {_money(emp, 2)}")
     
     # Household
     adults = financial.get('household_adults', 1)
@@ -818,25 +859,25 @@ def _build_financial_summary(financial: dict) -> str:
     # Expenses
     rent = financial.get('rent_or_mortgage')
     if rent:
-        lines.append(f"Rent/Mortgage: ${float(rent):,.2f}")
+        lines.append(f"Rent/Mortgage: {_money(rent, 2)}")
     total_exp = financial.get('total_monthly_expenses')
     if total_exp:
-        lines.append(f"Total Monthly Expenses: ${float(total_exp):,.2f}")
+        lines.append(f"Total Monthly Expenses: {_money(total_exp, 2)}")
     
     # Assets
     cash_val = financial.get('cash_on_hand')
     if cash_val:
-        lines.append(f"Cash on Hand: ${float(cash_val):,.2f}")
+        lines.append(f"Cash on Hand: {_money(cash_val, 2)}")
     checking = financial.get('checking_balance')
     if checking:
-        lines.append(f"Checking: ${float(checking):,.2f}")
+        lines.append(f"Checking: {_money(checking, 2)}")
     savings = financial.get('savings_balance')
     if savings:
-        lines.append(f"Savings: ${float(savings):,.2f}")
+        lines.append(f"Savings: {_money(savings, 2)}")
     vehicle = financial.get('vehicle_make_model')
     if vehicle:
         vehicle_val = financial.get('vehicle_value')
-        lines.append(f"Vehicle: {vehicle} (${float(vehicle_val):,.2f})" if vehicle_val else f"Vehicle: {vehicle}")
+        lines.append(f"Vehicle: {vehicle} ({_money(vehicle_val, 2)})" if vehicle_val else f"Vehicle: {vehicle}")
     
     return '\n'.join(lines)
 
