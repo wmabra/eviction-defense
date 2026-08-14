@@ -384,6 +384,16 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 			bar = q(".progress span", form),
 			back = q("[data-back]", form),
 			answerData = {};
+		const actions = q(".screen-actions", form);
+		let next = null;
+		if (actions) {
+			next = document.createElement("button");
+			next.type = "button";
+			next.className = "btn btn-primary";
+			next.setAttribute("data-next", "");
+			next.textContent = "Next";
+			actions.appendChild(next);
+		}
 		let idx = 0,
 			advancing = false;
 		const preset = {
@@ -428,6 +438,8 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 			bar.style.width = (idx >= 8 ? 100 : ((idx + 1) / 8) * 100) + "%";
 			if (back)
 				back.hidden = idx === 0 || idx >= 8 || (stateLocked && idx === 2);
+			if (next)
+				next.hidden = idx >= 8;
 			const focusable = q(
 				'select,input:not([type="radio"]),input[type="radio"]',
 				steps[idx],
@@ -523,6 +535,17 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 					show(1);
 				} else {
 					show(idx - 1);
+				}
+			});
+
+		if (next)
+			next.addEventListener("click", () => {
+				const step = steps[idx];
+				const sel = q("select", step);
+				const radio = q('input[type="radio"]:checked', step);
+				const field = sel || radio;
+				if (field && field.value) {
+					advance(field, idx);
 				}
 			});
 
