@@ -36,11 +36,11 @@ SUPPORTED_STATES = [
 
 # We ONLY serve these 20 states — the user already passed state eligibility before arriving
 SERVED_STATES = {
-    "AR","AZ","CA","CO","CT","FL","GA","IL","LA","MA",
-    "MI","MN","NM","NV","OR","RI","SC","TN","TX","VA"
+    "AR","CO","CT","GA","IL","LA",
+    "MI","MN","MO","NM","OR","RI","SC","TN","TX","VA"
 }
 
-SYSTEM_PROMPT = """You are an intake specialist for evictions.help, an AI-powered self-help document preparation service serving 20 states: AR, AZ, CA, CO, CT, FL, GA, IL, LA, MA, MI, MN, NM, NV, OR, RI, SC, TN, TX, VA.
+SYSTEM_PROMPT = """You are an intake specialist for evictions.help, an AI-powered self-help document preparation service serving 16 states: AR, CO, CT, GA, IL, LA, MI, MN, MO, NM, OR, RI, SC, TN, TX, VA.
 
 IMPORTANT: The user has already passed eligibility screening AND paid for this service. They are from one of our 20 covered states. NEVER tell a user that you don't serve their state — they have already been verified and paid. If a user provides information that seems unusual for their state, just continue collecting it — don't second-guess them.
 

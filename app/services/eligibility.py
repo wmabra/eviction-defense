@@ -4,26 +4,22 @@ from app.schema.intake import PreScreen
 
 # Supported states
 SUPPORTED_STATES = {
-    "AR", "AZ", "CA", "CO", "CT", "FL", "GA", "IL", "LA", "MA",
-    "MI", "MN", "NM", "NV", "OR", "RI", "SC", "TN", "TX", "VA",
+    "AR", "CO", "CT", "GA", "IL", "LA",
+    "MI", "MN", "MO", "NM", "OR", "RI", "SC", "TN", "TX", "VA",
 }
 
 # Supported counties by state (from rental assistance resource databases)
 SUPPORTED_COUNTIES = {
     "AR": {'Benton', 'Columbia', 'Craighead', 'Crawford', 'Faulkner', 'Garland', 'Greene', 'Hempstead', 'Independence', 'Jefferson', 'Lonoke', 'Miller', 'Mississippi', 'Ouachita', 'Pulaski', 'Saline', 'Sebastian', 'Union', 'Washington', 'White'},
-    "AZ": {'Apache', 'Cochise', 'Coconino', 'Gila', 'Glendale Market', 'Graham', 'Greenlee', 'La Paz', 'Maricopa', 'Mesa Market', 'Mohave', 'Navajo', 'Phoenix Market', 'Pima', 'Pinal', 'Santa Cruz', 'Scottsdale Market', 'Tucson Market', 'Yavapai', 'Yuma'},
-    "CA": {'Alameda', 'Contra Costa', 'Fresno', 'Kern', 'Los Angeles', 'Monterey', 'Orange', 'Riverside', 'Sacramento', 'San Bernardino', 'San Diego', 'San Francisco', 'San Joaquin', 'San Mateo', 'Santa Clara', 'Solano', 'Sonoma', 'Stanislaus', 'Tulare', 'Ventura'},
     "CO": {'Adams', 'Arapahoe', 'Boulder', 'Broomfield', 'Denver', 'Douglas', 'Eagle', 'El Paso', 'Fremont', 'Garfield', 'Jefferson', 'La Plata', 'Larimer', 'Mesa', 'Montrose', 'Morgan', 'Pueblo', 'Routt', 'Summit', 'Weld'},
     "CT": {'Fairfield', 'Hartford', 'Litchfield', 'Middlesex', 'New Haven', 'New London', 'Tolland', 'Windham'},
-    "FL": {'Brevard', 'Broward', 'Collier', 'Duval', 'Hillsborough', 'Lake', 'Lee', 'Manatee', 'Martin', 'Miami-Dade', 'Orange', 'Osceola', 'Palm Beach', 'Pasco', 'Pinellas', 'Polk', 'Sarasota', 'Seminole', 'St. Lucie', 'Volusia'},
     "GA": {'Bibb', 'Chatham', 'Cherokee', 'Clarke', 'Clayton', 'Cobb', 'Columbia', 'Coweta', 'DeKalb', 'Douglas', 'Fayette', 'Forsyth', 'Fulton', 'Gwinnett', 'Hall', 'Henry', 'Houston', 'Muscogee', 'Paulding', 'Richmond'},
     "IL": {'Champaign', 'Cook', 'DuPage', 'Kane', 'Kankakee', 'Kendall', 'LaSalle', 'Lake', 'Macon', 'Madison', 'McHenry', 'McLean', 'Peoria', 'Rock Island', 'Sangamon', 'St. Clair', 'Tazewell', 'Vermilion', 'Will', 'Winnebago'},
     "LA": {'Ascension', 'Bossier', 'Caddo', 'Calcasieu', 'East Baton Rouge', 'Iberia', 'Jefferson', 'Lafayette', 'Lafourche', 'Livingston', 'Orleans', 'Ouachita', 'Rapides', 'St. Charles', 'St. John the Baptist', 'St. Landry', 'St. Tammany', 'Tangipahoa', 'Terrebonne', 'Vernon'},
-    "MA": {'Barnstable', 'Berkshire', 'Boston', 'Bristol', 'Cambridge', 'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Lowell', 'Middlesex', 'Nantucket', 'New Bedford', 'Norfolk', 'Plymouth', 'Springfield', 'Suffolk', 'Worcester', 'Worcester City'},
     "MI": {'Bay', 'Berrien', 'Calhoun', 'Eaton', 'Genesee', 'Ingham', 'Isabella', 'Jackson', 'Kalamazoo', 'Kent', 'Livingston', 'Macomb', 'Monroe', 'Muskegon', 'Oakland', 'Ottawa', 'Saginaw', 'St. Clair', 'Washtenaw', 'Wayne'},
     "MN": {'Anoka', 'Beltrami', 'Blue Earth', 'Carver', 'Clay', 'Crow Wing', 'Dakota', 'Hennepin', 'Kandiyohi', 'Olmsted', 'Otter Tail', 'Ramsey', 'Rice', 'Scott', 'Sherburne', 'St. Louis', 'Stearns', 'Washington', 'Winona', 'Wright'},
+    "MO": {'St. Louis County', 'Jackson', 'St. Charles', 'Greene', 'St. Louis City', 'Clay', 'Jefferson', 'Boone', 'Jasper', 'Cass', 'Platte', 'Franklin', 'Christian', 'Buchanan', 'Cape Girardeau', 'Cole', 'St. Francois', 'Lincoln', 'Taney', 'Howell'},
     "NM": {'Bernalillo', 'Chaves', 'Curry', 'Doña Ana', 'Eddy', 'Grant', 'Lea', 'Los Alamos', 'Luna', 'McKinley', 'Otero', 'Rio Arriba', 'Roosevelt', 'San Juan', 'San Miguel', 'Sandoval', 'Santa Fe', 'Taos', 'Torrance', 'Valencia'},
-    "NV": {'Carson City', 'Churchill', 'Clark', 'Douglas', 'Elko', 'Eureka', 'Henderson Market', 'Humboldt', 'Lander', 'Lincoln', 'Lyon', 'Mesquite Market', 'Mineral', 'North Las Vegas Market', 'Nye', 'Pershing', 'Sparks Market', 'Storey', 'Washoe', 'White Pine'},
     "OR": {'Baker', 'Benton', 'Clackamas', 'Coos', 'Crook', 'Deschutes', 'Douglas', 'Jackson', 'Josephine', 'Klamath', 'Lane', 'Linn', 'Malheur', 'Marion', 'Multnomah', 'Polk', 'Umatilla', 'Union', 'Washington', 'Yamhill'},
     "RI": {'Bristol', 'Kent', 'Newport', 'Providence', 'Washington'},
     "SC": {'Aiken', 'Anderson', 'Beaufort', 'Berkeley', 'Charleston', 'Dorchester', 'Florence', 'Georgetown', 'Greenville', 'Greenwood', 'Horry', 'Kershaw', 'Lexington', 'Oconee', 'Orangeburg', 'Pickens', 'Richland', 'Spartanburg', 'Sumter', 'York'},

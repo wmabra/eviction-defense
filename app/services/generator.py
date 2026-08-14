@@ -71,6 +71,7 @@ STATE_COURT_CAPTIONS = {
     "VA": "IN THE GENERAL DISTRICT COURT, {county} COUNTY, VIRGINIA",
     "MA": "IN THE HOUSING COURT, {county} DIVISION, MASSACHUSETTS",
     "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
+    "MO": "IN THE CIRCUIT COURT OF {county} COUNTY, MISSOURI (ASSOCIATE CIRCUIT DIVISION)",
 }
 
 WRIT_TERMS = {
@@ -94,6 +95,7 @@ WRIT_TERMS = {
     "VA": "Writ of Possession",
     "MA": "Execution",
     "NM": "Writ of Restitution",
+    "MO": "Judgment for Restitution of Premises",
 }
 
 EVICTION_LAW_CHAPTERS = {
@@ -117,6 +119,7 @@ EVICTION_LAW_CHAPTERS = {
     "VA": "Virginia Code § 8.01-124 et seq. (Unlawful Detainer)",
     "MA": "M.G.L. Chapter 239 (Summary Process)",
     "NM": "NMSA 1978 § 35-10-1 et seq. (Forcible Entry and Detainer)",
+    "MO": "RSMo Chapter 535 (Landlord-Tenant Actions) & Chapter 534 (Forcible Entry and Unlawful Detainer)",
 }
 
 
@@ -723,6 +726,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         "VA": "You must appear on the return date shown on your summons",
         "MA": "You must file your Answer on or before the return date listed on your summons",
         "NM": "10 days from the date you were served",
+        "MO": "On or before the return date shown on your summons (rent and possession cases are set for a hearing)",
     }
     deadline = STATE_DEADLINES.get(state, "the deadline shown on your summons")
 
@@ -973,6 +977,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
         "MA": {"form": "Affidavit of Indigency (Housing Court)", "site": "www.mass.gov/courts", "fee": "varies by court"},
         "NM": {"form": "Application for Free Process (In Forma Pauperis)", "site": "www.nmcourts.gov", "fee": "varies by court"},
         "RI": {"form": "Motion to Proceed In Forma Pauperis", "site": "www.courts.ri.gov", "fee": "varies by court"},
+        "MO": {"form": "GN10 - Motion and Affidavit in Support of Request to Proceed as a Poor Person", "site": "www.courts.mo.gov", "fee": "varies by court"},
     }
     info = WAIVER_INFO.get(state, {"form": "your state's fee waiver form", "site": "your state court website", "fee": "varies"})
     
@@ -1474,6 +1479,15 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may request a stay."),
             ("6. Execution", "Varies", "Sheriff executes eviction. Court may grant additional time to vacate."),
         ],
+        "MO": [
+            ("1. Notice to Vacate", "Varies", "Landlord serves written demand to terminate tenancy."),
+            ("2. Rent and Possession Complaint", "After notice", "Landlord files in Associate Circuit Court. You receive a summons with a return date."),
+            ("3. File Answer / Appear", "By return date", "YOU ARE HERE. File your answer before the return date on the summons. You must appear."),
+            ("4. Hearing", "On return date", "Judge hears case. Bring lease, payment records, notices, and evidence."),
+            ("5. Judgment", "Day of hearing", "If you lose, judgment for restitution of premises."),
+            ("6. Restitution", "After judgment", "Sheriff restores possession to landlord. Tenant must vacate."),
+        ],
+
     }
 
     DEFAULT_TIMELINE = [

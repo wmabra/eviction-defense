@@ -796,80 +796,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # 4 pages, 154 fillable fields
     # Fills attorney/party info section with defendant's data (pro se)
     # ══════════════════════════════════════════
-    "CA": {
-        "name": "California",
-        "answer_form": "ca_ud105.pdf",
-        "fee_waiver_form": "ca_fee_waiver.pdf",
-        "has_fillable_fields": True,
-        "court_type": "Superior Court",
-        "field_mapping": {
-            "case_number": "UD-105[0].Page1[0].P1Caption[0].CaptionSub[0].CaseNumber[0].CaseNumber[0]",
-            "full_name": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Name[0]",
-            "address": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Street[0]",
-            "city": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].City[0]",
-            "state": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].State[0]",
-            "zip": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Zip[0]",
-            "phone": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Phone[0]",
-            "email": "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].Email[0]",
-            "county": "UD-105[0].Page1[0].P1Caption[0].CourtInfo[0].CrtCounty[0]",
-            "printed_name": "UD-105[0].Page4[0].Sign[0].PrintName1[0]",
-        },
-        "fee_waiver_mapping": {
-            # Page 1 — Personal Info
-            "case_number": "FW-001[0].Page1[0].RightCaption[0].CaseNumber[0]",
-            "full_name": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerName1[0]",
-            "address": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerStrAddress[0]",
-            "city": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerCity[0]",
-            "state_short": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerState[0]",
-            "zip": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerZip[0]",
-            "phone": "FW-001[0].Page1[0].List1[0].item1[0].PetitionerTel[0]",
-            # Public Benefits (checkboxes)
-            "receives_public_benefits": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitReceived[0]",
-            "receives_snap": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitSNAP[0]",
-            "receives_ssi": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitSSI[0]",
-            "receives_medicaid": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitMediCal[0]",
-            "receives_tanf": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitCalWORKSTANF[0]",
-            "receives_county_assistance": "FW-001[0].Page1[0].List5[0].Lia[0].PublicBenefitCtyGA[0]",
-            # Income threshold (checkbox — income below 200% FPL)
-            "income_below_threshold": "FW-001[0].Page1[0].List5[0].Lib[0].GrossMonthIncomeLess[0]",
-            # Page 2 — Financial Data
-            "cash_on_hand": "FW-001[0].Page2[0].List10[0].Lia[0].Cash[0]",
-            "monthly_gross_income": "FW-001[0].Page2[0].List8[0].Lib[0].TotalIncome[0]",
-            "rent_or_mortgage": "FW-001[0].Page2[0].List11[0].Lib[0].ExpenseHousing[0]",
-            "food_expense": "FW-001[0].Page2[0].List11[0].Lic[0].ExpenseFoodSupplies[0]",
-            "utilities_expense": "FW-001[0].Page2[0].List11[0].Lid[0].ExpenseUtilitiesPhone[0]",
-            "transportation_expense": "FW-001[0].Page2[0].List11[0].Lik[0].ExpenseTransportation[0]",
-            "medical_expense": "FW-001[0].Page2[0].List11[0].Lig[0].ExpenseMedicalDental[0]",
-            "child_care_expense": "FW-001[0].Page2[0].List11[0].Lii[0].ExpenseSchoolChildCare[0]",
-            "total_monthly_expenses": "FW-001[0].Page2[0].List11[0].Total[0].Totalmonthlyexpenses[0]",
-            "debt_payments": "FW-001[0].Page2[0].List11[0].Lil[0].InstallmentPaymentAmount1[0]",
-            # Vehicle info
-            "vehicle_make_model": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleMakeYr1[0]",
-            "vehicle_value": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleFairMarketVal1[0]",
-            "vehicle_loan_owed": "FW-001[0].Page2[0].List10[0].Lic[0].VehicleAmountOwed1[0]",
-            # Signature
-            "date": "FW-001[0].Page1[0].Sign[0].SigDate[0]",
-            "printed_name": "FW-001[0].Page1[0].Sign[0].PetitionerName[0]",
-        },
-        "static_values": {
-            "UD-105[0].Page1[0].P1Caption[0].AttyPartyInfo[0].AttyFirm[0]": "In Pro Per",
-        },
-        "defense_options": [
-            # Section 3 — Affirmative Defenses (CA UD-105)
-            {"key": "def_bad_notice", "label": "Notice to quit is not proper (3a)", "field": "UD-105[0].Page1[0].List3[0].Lia[0].Check8[0]"},
-            {"key": "def_bad_notice", "label": "Service of notice was not proper (3b)", "field": "UD-105[0].Page1[0].List3[0].Lib[0].Check9[0]"},
-            {"key": "def_waived", "label": "Plaintiff waived/changed/canceled notice (3c)", "field": "UD-105[0].Page1[0].List3[0].Lic[0].Check10[0]"},
-            {"key": "def_attempted_pay", "label": "Tendered payment of rent demanded (3d)", "field": "UD-105[0].Page1[0].List3[0].li3d[0].Check8[0]"},
-            {"key": "def_retaliation", "label": "Eviction is retaliatory (3e)", "field": "UD-105[0].Page1[0].List3[0].Lie[0].Check11[0]"},
-            {"key": "def_discrimination", "label": "Eviction is discriminatory (3f)", "field": "UD-105[0].Page1[0].List3[0].Lif[0].Check12[0]"},
-            {"key": "def_repairs", "label": "Breach of warranty of habitability (3g)", "field": "UD-105[0].Page2[0].List3[0].Lig[0].Check13[0]"},
-            {"key": "def_did_repairs", "label": "Repair and deduct (3k)", "field": "UD-105[0].Page2[0].List3[0].Lij[0].Check21[0]"},
-            {"key": "def_accepted_rent", "label": "Landlord accepted rent (3k2)", "field": "UD-105[0].Page2[0].List3[0].Lik[0].Check22[0]"},
-            {"key": "def_other", "label": "Other affirmative defenses (3l)", "field": "UD-105[0].Page2[0].List3[0].l3il[0].Check23[0]"},
-        ],
-        "notes": "CA UD-105 — 154 fields, complex XFA dotted paths. Maps defendant (pro se) into AttyPartyInfo section. 10 defense checkboxes mapped from Sections 3a-3l for improper notice, improper service, waiver, tender, retaliation, discrimination, habitability, repair-and-deduct, accepted rent, and other.",
-    },
-
     # ══════════════════════════════════════════
     # ARKANSAS — Unlawful Detainer Answer Packet
     # 11 pages (scanned, overlay needed)
@@ -927,121 +853,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # ARIZONA — Answer (LJEA00004F) + MHJCEA2I Instructions
     # Answer form is 2 pages, scanned (overlay only)
     # ══════════════════════════════════════════
-    "AZ": {
-        "name": "Arizona",
-        "answer_form": "az_answer_form.pdf",
-        "instructions_form": "az_eviction_answer.pdf",
-        "fee_waiver_form": "az_fee_waiver.pdf",
-        "fee_waiver_mapping": {
-            "address": "Address if not protected",
-            "bank_balances": "BankBalances",
-            "case_number": "Case Number",
-            "county": "COUNTY",
-            "date": "Date",
-            "email": "Email Address",
-            "full_name": "Person Filing",
-            "monthly_gross_income": "GrossMonthlyIncome",
-            "monthly_net_income": "TakehomePay",
-            "phone": "Telephone",
-            "printed_name": "ApplicantName",
-            "receives_snap": "FoodStamps",
-            "receives_tanf": "TANF",
-            "total_monthly_expenses": "MonthlyExpenses",
-        },
-        "has_fillable_fields": False,
-        "court_type": "Justice Court / Superior Court",
-        "overlay_positions": {
-            "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 72, "y": 420, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 2, "x": 130, "y": 37, "w": 200, "h": 20, "size": 11},
-            "address": {"page": 1, "x": 72, "y": 440, "w": 300, "h": 20, "size": 10},
-            "phone": {"page": 1, "x": 72, "y": 460, "w": 200, "h": 20, "size": 10},
-            "county": {"page": 1, "x": 72, "y": 380, "w": 200, "h": 20, "size": 10},
-            "date": {"page": 1, "x": 400, "y": 460, "w": 150, "h": 20, "size": 10},
-            # Defense checkbox overlay positions (OCR-verified at 300 DPI)
-            "def_dismiss": {"page": 1, "x": 73, "y": 526, "w": 14, "h": 14, "size": 10},
-            "def_contest": {"page": 1, "x": 109, "y": 544, "w": 14, "h": 14, "size": 10},
-            "def_not_owner": {"page": 1, "x": 109, "y": 561, "w": 14, "h": 14, "size": 10},
-            "def_not_owner2": {"page": 1, "x": 109, "y": 595, "w": 14, "h": 14, "size": 10},
-            "def_bad_notice": {"page": 1, "x": 109, "y": 630, "w": 14, "h": 14, "size": 10},
-            "def_other": {"page": 1, "x": 73, "y": 653, "w": 14, "h": 14, "size": 10},
-            "def_repairs": {"page": 2, "x": 73, "y": 187, "w": 14, "h": 14, "size": 10},
-        
-            "court_name": {"page": 1, "x": 172, "y": 238, "w": 200, "h": 16, "size": 10},
-            "defense_other": {"page": 1, "x": 90, "y": 648, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 2, "x": 126, "y": 105, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 1, "x": 192, "y": 172, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 2, "x": 430, "y": 522, "w": 200, "h": 20, "size": 10},
-            "defense_narrative": {"page": 1, "x": 72, "y": 548, "w": 430, "h": 80, "size": 9}},
-        "notes": "AZ LJEA00004F — statewide answer form from Arizona Supreme Court. Accepted in all 15 counties per A.R.S. § 12-1175(D) which prohibits courts from requiring mandatory technical forms. Maricopa and other counties may publish preferred branded versions, but a compliant answer cannot be rejected for not using the local form.",
-        "county_form_overrides": {},
-    },
-
     # ══════════════════════════════════════════
     # FLORIDA — Form 1.947(b) Answer Residential Eviction (generated)
     # Standardized form generated by the packet system
     # ══════════════════════════════════════════
-    "FL": {
-        "name": "Florida",
-        "answer_form": "answer_form_917.pdf",
-        "fee_waiver_form": "fl_fee_waiver.pdf",
-        "overlay_positions": {
-            "full_name": {"page": 1, "x": 72, "y": 400, "w": 300, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
-            "financial_summary": {"page": 1, "x": 50, "y": 500, "w": 500, "h": 200, "size": 9},
-        
-            "date": {"page": 1, "x": 160, "y": 411, "w": 120, "h": 16, "size": 10},
-            "defense_accepted_rent": {"page": 2, "x": 80, "y": 104, "w": 14, "h": 14, "size": 10},
-            "defense_amount": {"page": 1, "x": 80, "y": 355, "w": 14, "h": 14, "size": 10},
-            "defense_attempted_pay": {"page": 1, "x": 80, "y": 557, "w": 14, "h": 14, "size": 10},
-            "defense_bad_notice": {"page": 2, "x": 80, "y": 215, "w": 14, "h": 14, "size": 10},
-            "defense_corrected": {"page": 2, "x": 80, "y": 141, "w": 14, "h": 14, "size": 10},
-            "defense_discrimination": {"page": 2, "x": 80, "y": 57, "w": 14, "h": 14, "size": 10},
-            "defense_not_owner": {"page": 2, "x": 80, "y": 178, "w": 14, "h": 14, "size": 10},
-            "defense_other": {"page": 2, "x": 80, "y": 253, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 1, "x": 62, "y": 312, "w": 14, "h": 14, "size": 10},
-            "defense_repairs": {"page": 1, "x": 80, "y": 452, "w": 14, "h": 14, "size": 10},
-            "defense_retaliation": {"page": 1, "x": 80, "y": 689, "w": 14, "h": 14, "size": 10},
-            "defense_waived": {"page": 1, "x": 80, "y": 641, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 2, "x": 426, "y": 579, "w": 200, "h": 16, "size": 10},
-            "phone": {"page": 2, "x": 426, "y": 562, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 2, "x": 406, "y": 513, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 2, "x": 406, "y": 497, "w": 200, "h": 20, "size": 10}},
-        "has_fillable_fields": True,
-        "court_type": "County Court",
-        "field_mapping": {
-            "full_name": "Defendant(s)",
-            "landlord_name": "Plaintiff(s)",
-            "case_number": "Case number",
-            "phone": "Telephone number",
-            "email": "E-mail Address",
-            "address": "Address",
-            "date": "Date",
-            "printed_name": "Print Name",
-        },
-        "defense_options": [
-            {"key": "def_repairs", "label": "Landlord did not make repairs", "field": "The landlord did not make repairs"},
-            {"key": "def_amount", "label": "I do not owe the amount claimed", "field": "I do not owe the total amount of rent"},
-            {"key": "def_attempted_pay", "label": "I attempted/offered to pay", "field": "I attempted/offered to pay all the rent due"},
-            {"key": "def_paid", "label": "I paid the rent demanded", "field": "I paid the rent demanded by the the lanlord in the notice to pay rent"},
-            {"key": "def_waived", "label": "Landlord waived/changed/canceled notice", "field": "The landlord waived, changed, or canceled the notice"},
-            {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "The landlord filed the eviction notice"},
-            {"key": "def_fair_housing", "label": "Fair Housing Act violation", "field": "The landlord filed the eviction in violation"},
-            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "The landlord accepted rent from me after sending me the notice to terminate"},
-            {"key": "def_corrected", "label": "I already corrected the violations", "field": "I already corrected the violations claime by the landlord"},
-            {"key": "def_not_owner", "label": "Landlord is not the owner", "field": "The landlord is not the owner of the property"},
-            {"key": "def_bad_notice", "label": "No notice or legally incorrect notice", "field": "I did not receive the notice to terminate or the notice was legally incorrect"},
-            {"key": "def_other", "label": "Other defenses", "field": "Other defenses l"},
-        ],
-        "notes": "FL Form 1.947(b) Answer — Residential Eviction. 54 fillable fields across 2 pages (Miami-Dade clerk version). Covers all 12 defenses with explanation fields, jury trial selection, and signature block.",
-    
-        "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 350, "y": 200, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 72, "y": 230, "w": 200, "h": 20, "size": 11},
-            "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
-        }},
-
     # ══════════════════════════════════════════
     # MINNESOTA — Housing Court Eviction Answer (HOU202)
     # 4 pages, scanned (overlay only)
@@ -1091,73 +906,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # NEVADA — Summary Eviction Answer (Nonpayment)
     # 65 fillable fields across 4 pages
     # ══════════════════════════════════════════
-    "NV": {
-        "name": "Nevada",
-        "answer_form": "nv_answer_nonpayment.pdf",
-        "fee_waiver_form": "nv_fee_waiver.pdf",
-        "fee_waiver_mapping": {
-            "address": "Address",
-            "case_number": "Case Number",
-            "child_care_expense": "Child Care",
-            "county": "County",
-            "date": "Date",
-            "email": "Email",
-            "employment_income": "Wages",
-            "food_expense": "Food",
-            "full_name": "Name",
-            "household_adults": "Total Adults",
-            "household_children": "Total Children",
-            "medical_expense": "Medical Expenses",
-            "phone": "Phone",
-            "printed_name": "Name",
-            "receives_child_care_assistance": "Child Care Subsidy",
-            "receives_energy_assistance": "Energy Asst",
-            "receives_medicaid": "Medicaid",
-            "receives_public_benefits": "Public Assistance",
-            "receives_public_housing": "Public Housing",
-            "receives_snap": "SNAP",
-            "receives_ssi": "SSI",
-            "receives_tanf": "TANF",
-            "rent_or_mortgage": "Rent / Mortgage",
-            "total_monthly_expenses": "Total Expenses",
-            "transportation_expense": "Transportation",
-            "utilities_expense": "Utilities",
-        },
-        "has_fillable_fields": True,
-        "court_type": "Justice Court",
-        "field_mapping": {
-            "full_name": "Name",
-            "landlord_name": "s Name",
-            "case_number": "Case No",
-            "address": "Address",
-            "city_state_zip": "CityStateZip",
-            "phone": "Phone",
-            "email": "EMail",
-            "date": "Date",
-            "court_name": "CourtSelect",
-            "department": "Dept No",
-            "printed_name": "Print your name",
-        },
-        "defense_options": [
-            {"key": "def_moved_out", "label": "I moved out and returned keys", "field": "I moved out and gave my keys to the landlord"},
-            {"key": "def_disagree_amount", "label": "I disagree with the rent amount claimed", "field": "I disagree with the amount of rent the Landlord claims I owe"},
-            {"key": "def_rent_paid", "label": "My rent is paid in full", "field": "My rent is paid in full"},
-            {"key": "def_costs_not_rent", "label": "Amount includes costs/fees that are not rent", "field": "The rent amount in the notice includes costs or fees that are not regular rent or late fees"},
-            {"key": "def_tried_to_pay", "label": "I tried to pay rent but landlord refused", "field": "I tried to pay my full rent on insert date"},
-            {"key": "def_partial_payment", "label": "Landlord accepted partial payment", "field": "Landlord accepted partial payment of my rent on this date"},
-            {"key": "def_late_fee", "label": "Late fee exceeds 5% of rent", "field": "Landlord is charging a late fee more than 5 of regular rent"},
-            {"key": "def_no_free_pay", "label": "No free way to pay rent provided", "field": "Landlord has not provided a free way to pay the rent Landlord is required to provide a way for rent to be"},
-            {"key": "def_repairs", "label": "Corrected habitability problem, deducting from rent", "field": "I corrected a habitability problem at my rental unit and am removing the cost from my rent"},
-            {"key": "def_bad_notice", "label": "Notice was not properly served", "field": "Landlords notice was not served as required by law or the notice did not in other ways"},
-            {"key": "def_discrimination", "label": "Discrimination (Fair Housing Act)", "field": "Landlord is discriminating against me in violation of the Federal Fair Housing Act or"},
-            {"key": "def_retaliation", "label": "Retaliation for protected acts", "field": "Landlord is retaliating against me for taking part in certain protected acts"},
-            {"key": "def_foreclosure", "label": "Property foreclosed on — new owner issues", "field": "I am a tenant in a property that has been foreclosed on and sold  The new owner"},
-            {"key": "def_other", "label": "Other defenses (explain below)", "field": "Other explain below"},
-        ],
-        "notes": "NV Summary Eviction Answer — 65 fields across 4 pages. Clark County publishes preferred local forms but Nevada law (NRS Ch. 40) requires only a verified answer, not a specific template. Statewide form is legally sufficient in all 17 counties.",
-        "county_form_overrides": {},
-    },
-
     # ══════════════════════════════════════════
     # OREGON — Eviction Answer (FED Answer)
     # 2 pages, scanned (overlay only)
@@ -1286,50 +1034,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     # MASSACHUSETTS — Summary Process (Eviction) Answer
     # 3 pages, 47 fillable fields — Housing Court
     # ══════════════════════════════════════════
-    "MA": {
-        "name": "Massachusetts",
-        "answer_form": "ma_eviction_answer.pdf",
-        "fee_waiver_form": "ma_fee_waiver.pdf",
-        "fee_waiver_mapping": {
-            "address": "Street and number",
-            "case_number": "Case Name and Number if known",
-            "full_name": "Name of applicant",
-            "household_adults": "persons consisting of myself and",
-            "other_income_description": "List any other available household income for the checked period on this line",
-            "receives_medicaid": "Medicaid MassHealth",
-            "receives_public_benefits": "A I receive public assistance under check form of public assistance received",
-            "receives_ssi": "Supplemental Security Income SSI",
-            "receives_tanf": "Transitional Aid to Families with Dependent Children TAFDC",
-        },
-        "has_fillable_fields": True,
-        "court_type": "Housing Court",
-        "field_mapping": {
-            "case_number": "Docket#",
-            "county": "County",
-            "court_name": "HOUSING COURT DIVISION",
-            "landlord_name": "Plaintiff_Name",
-            "full_name": "Defendant_Name",
-            "submitted_name": "SubmittedBy_Name",
-            "court_date": "Trial_Date",
-            "address": "SubmittedBy_1Address",
-            "submitted_address2": "SubmittedBy_2Address",
-        },
-        "defense_options": [
-            {"key": "def_conditions", "label": "Poor conditions / landlord failed to repair", "field": "Check Box74"},
-            {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "Check Box75"},
-            {"key": "def_discrimination", "label": "Discrimination", "field": "Check Box76"},
-            {"key": "def_no_notice", "label": "Improper notice / no notice to quit", "field": "Check Box77"},
-            {"key": "def_rent_paid", "label": "Rent has been paid", "field": "Check Box78"},
-            {"key": "def_amount_wrong", "label": "Amount claimed is incorrect", "field": "Check Box79"},
-            {"key": "def_waiver", "label": "Landlord waived right to evict", "field": "Check Box80"},
-            {"key": "def_lease_violation", "label": "No lease violation", "field": "Check Box82"},
-            {"key": "def_cured", "label": "Lease violation already cured", "field": "Check Box83"},
-            {"key": "def_no_breach", "label": "No breach of lease", "field": "Check Box84"},
-            {"key": "def_other", "label": "Other defenses", "field": "Check Box86"},
-        ],
-        "notes": "MA Summary Process Answer — Housing Court. 47 fillable fields across 3 pages. Page 1: case caption. Page 2: defense checkboxes + explanations. Page 3: counterclaims and certificate of service.",
-    },
-
     # ══════════════════════════════════════════
     # NEW MEXICO — Form 4-907 Answer to Petition for Restitution
     # Statewide form for ALL 33 NM counties (Magistrate, Metropolitan, District courts)
@@ -1368,6 +1072,63 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
             "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
         }},
+
+    # ══════════════════════════════════════════
+    # MISSOURI — Answer to Rent and Possession Complaint (narrative)
+    # GN10 statewide fee waiver (62 fillable fields)
+    # ══════════════════════════════════════════
+    "MO": {
+        "name": "Missouri",
+        "answer_form": "mo_eviction_answer.pdf",
+        "fee_waiver_form": "mo_fee_waiver.pdf",
+        "fee_waiver_mapping": {
+            "county": "COUNTY NAME",
+            "court_name": "Judge or Division",
+            "case_number": "Case Number",
+            "landlord_name": "Petitioner Name",
+            "landlord_address": "Petitioners AddressTelephone",
+            "full_name": "Respondent Name",
+            "property_address": "Respondents AddressTelephone",
+            "total_dependents": "Number of dependents",
+            "employment_income": "Gross Salary",
+            "pension_income": "Retirement/Pension",
+            "social_security_income": "Social Security",
+            "child_support_income": "Child Support",
+            "alimony_income": "Maintenance - Income",
+            "other_income": "Other Income Amount",
+            "other_income_description": "Other income to be considered",
+            "monthly_gross_income": "Total Monthly Income",
+            "rent_or_mortgage": "Mortgage or Rent Payment Amount",
+            "utilities_expense": "Utilities Amount",
+            "food_expense": "Food Amount",
+            "debt_payments": "Payment on Debts and Credit Cards",
+            "medical_expense": "Medical Expenses",
+            "total_monthly_expenses": "Total Monthly Expenses",
+            "cash_on_hand": "Cash on Hand",
+            "checking_balance": "Checking Account",
+            "savings_balance": "Savings Account",
+            "vehicle_value": "Value of Automobiles",
+            "real_estate_loan_owed": "Home Loan Balance",
+            "vehicle_loan_owed": "Automobile Loan",
+        },
+        "has_fillable_fields": True,
+        "court_type": "Associate Circuit Court",
+        "defense_options": [
+            {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
+            {"key": "def_amount", "label": "I dispute the amount of rent claimed", "field": "defense_amount"},
+            {"key": "def_attempted_pay", "label": "I attempted to pay but the landlord refused", "field": "defense_attempted_pay"},
+            {"key": "def_paid", "label": "I already paid the rent demanded", "field": "defense_paid"},
+            {"key": "def_waived", "label": "The landlord waived or canceled the notice", "field": "defense_waived"},
+            {"key": "def_retaliation", "label": "The eviction is retaliatory", "field": "defense_retaliation"},
+            {"key": "def_fair_housing", "label": "The eviction violates fair housing law", "field": "defense_discrimination"},
+            {"key": "def_accepted_rent", "label": "The landlord accepted rent after notice", "field": "defense_accepted_rent"},
+            {"key": "def_corrected", "label": "I already corrected the issue", "field": "defense_corrected"},
+            {"key": "def_not_owner", "label": "The person suing me is not the owner", "field": "defense_not_owner"},
+            {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "defense_bad_notice"},
+            {"key": "def_other", "label": "Other defenses", "field": "defense_other"},
+        ],
+        "notes": "MO Rent and Possession answer (narrative) + GN10 statewide fee waiver (62 fillable fields).",
+    },
 }
 
 
