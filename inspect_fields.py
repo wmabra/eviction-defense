@@ -1,5 +1,5 @@
 """Inspect PDF fields and nearby text labels to build accurate field mappings."""
-# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 import fitz

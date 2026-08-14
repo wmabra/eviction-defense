@@ -4,7 +4,7 @@ from app.schema.intake import PreScreen
 
 # Supported states
 SUPPORTED_STATES = {
-    "AR", "CO", "CT", "GA", "IL", "LA",
+    "AR", "CO", "CT", "GA", "IL", "KY", "LA",
     "MI", "MN", "MO", "NM", "OR", "RI", "SC", "TN", "TX", "VA",
 }
 
@@ -15,6 +15,7 @@ SUPPORTED_COUNTIES = {
     "CT": {'Fairfield', 'Hartford', 'Litchfield', 'Middlesex', 'New Haven', 'New London', 'Tolland', 'Windham'},
     "GA": {'Bibb', 'Chatham', 'Cherokee', 'Clarke', 'Clayton', 'Cobb', 'Columbia', 'Coweta', 'DeKalb', 'Douglas', 'Fayette', 'Forsyth', 'Fulton', 'Gwinnett', 'Hall', 'Henry', 'Houston', 'Muscogee', 'Paulding', 'Richmond'},
     "IL": {'Champaign', 'Cook', 'DuPage', 'Kane', 'Kankakee', 'Kendall', 'LaSalle', 'Lake', 'Macon', 'Madison', 'McHenry', 'McLean', 'Peoria', 'Rock Island', 'Sangamon', 'St. Clair', 'Tazewell', 'Vermilion', 'Will', 'Winnebago'},
+    "KY": {'Jefferson', 'Fayette', 'Kenton', 'Boone', 'Warren', 'Hardin', 'Daviess', 'Campbell', 'Madison', 'Bullitt', 'Christian', 'Oldham', 'Pulaski', 'Laurel', 'Scott', 'Jessamine', 'Franklin', 'McCracken', 'Hopkins', 'Shelby'},
     "LA": {'Ascension', 'Bossier', 'Caddo', 'Calcasieu', 'East Baton Rouge', 'Iberia', 'Jefferson', 'Lafayette', 'Lafourche', 'Livingston', 'Orleans', 'Ouachita', 'Rapides', 'St. Charles', 'St. John the Baptist', 'St. Landry', 'St. Tammany', 'Tangipahoa', 'Terrebonne', 'Vernon'},
     "MI": {'Bay', 'Berrien', 'Calhoun', 'Eaton', 'Genesee', 'Ingham', 'Isabella', 'Jackson', 'Kalamazoo', 'Kent', 'Livingston', 'Macomb', 'Monroe', 'Muskegon', 'Oakland', 'Ottawa', 'Saginaw', 'St. Clair', 'Washtenaw', 'Wayne'},
     "MN": {'Anoka', 'Beltrami', 'Blue Earth', 'Carver', 'Clay', 'Crow Wing', 'Dakota', 'Hennepin', 'Kandiyohi', 'Olmsted', 'Otter Tail', 'Ramsey', 'Rice', 'Scott', 'Sherburne', 'St. Louis', 'Stearns', 'Washington', 'Winona', 'Wright'},

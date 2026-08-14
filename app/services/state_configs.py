@@ -1135,6 +1135,61 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         ],
         "notes": "MO Rent and Possession answer (narrative) + GN10 statewide fee waiver (62 fillable fields).",
     },
+
+    # ══════════════════════════════════════════
+    # KENTUCKY — Answer to Forcible Detainer (narrative)
+    # AOC-026 statewide fee waiver (128 fields)
+    # ══════════════════════════════════════════
+    "KY": {
+        "name": "Kentucky",
+        "answer_form": "ky_eviction_answer.pdf",
+        "fee_waiver_form": "ky_fee_waiver.pdf",
+        "fee_waiver_mapping": {
+            "case_number": "Case Number",
+            "court_name": "Court",
+            "county": "County Dropdown",
+            "division": "Division",
+            "landlord_name": "Plaintiff",
+            "full_name": "Defendant",
+            "phone": "Text Field 11",
+            "employment_income": "Text Field 19",
+            "social_security_income": "Text Field 32",
+            "unemployment_income": "Text Field 34",
+            "pension_income": "Text Field 35",
+            "child_support_income": "Text Field 36",
+            "alimony_income": "Text Field 37",
+            "monthly_gross_income": "Text Field 61",
+            "rent_or_mortgage": "Text Field 44",
+            "utilities_expense": "Text Field 45",
+            "food_expense": "Text Field 47",
+            "transportation_expense": "Text Field 51",
+            "medical_expense": "Text Field 59",
+            "total_monthly_expenses": "Text Field 62",
+            "cash_on_hand": "Text Field 63",
+            "total_assets": "Assests Total",
+            "total_debts": "Debts Total",
+        },
+        "has_fillable_fields": True,
+        "court_type": "District Court",
+        "field_mapping": {
+            "division": "division",
+        },
+        "defense_options": [
+            {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
+            {"key": "def_amount", "label": "I dispute the amount of rent claimed", "field": "defense_amount"},
+            {"key": "def_attempted_pay", "label": "I attempted to pay but the landlord refused", "field": "defense_attempted_pay"},
+            {"key": "def_paid", "label": "I already paid the rent demanded", "field": "defense_paid"},
+            {"key": "def_waived", "label": "The landlord waived or canceled the notice", "field": "defense_waived"},
+            {"key": "def_retaliation", "label": "The eviction is retaliatory", "field": "defense_retaliation"},
+            {"key": "def_fair_housing", "label": "The eviction violates fair housing law", "field": "defense_discrimination"},
+            {"key": "def_accepted_rent", "label": "The landlord accepted rent after notice", "field": "defense_accepted_rent"},
+            {"key": "def_corrected", "label": "I already corrected the issue", "field": "defense_corrected"},
+            {"key": "def_not_owner", "label": "The person suing me is not the owner", "field": "defense_not_owner"},
+            {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "defense_bad_notice"},
+            {"key": "def_other", "label": "Other defenses", "field": "defense_other"},
+        ],
+        "notes": "KY forcible detainer (hearing-based) + AOC-026 statewide fee waiver (128 fields).",
+    },
 }
 
 

@@ -72,6 +72,7 @@ STATE_COURT_CAPTIONS = {
     "MA": "IN THE HOUSING COURT, {county} DIVISION, MASSACHUSETTS",
     "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
     "MO": "IN THE CIRCUIT COURT OF {county} COUNTY, MISSOURI (ASSOCIATE CIRCUIT DIVISION)",
+    "KY": "IN THE DISTRICT COURT OF {county} COUNTY, KENTUCKY",
 }
 
 WRIT_TERMS = {
@@ -96,6 +97,7 @@ WRIT_TERMS = {
     "MA": "Execution",
     "NM": "Writ of Restitution",
     "MO": "Judgment for Restitution of Premises",
+    "KY": "Warrant for Possession",
 }
 
 EVICTION_LAW_CHAPTERS = {
@@ -120,6 +122,7 @@ EVICTION_LAW_CHAPTERS = {
     "MA": "M.G.L. Chapter 239 (Summary Process)",
     "NM": "NMSA 1978 § 35-10-1 et seq. (Forcible Entry and Detainer)",
     "MO": "RSMo Chapter 535 (Landlord-Tenant Actions) & Chapter 534 (Forcible Entry and Unlawful Detainer)",
+    "KY": "KRS 383.200-383.275 (Forcible Entry and Detainer)",
 }
 
 
@@ -727,6 +730,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         "MA": "You must file your Answer on or before the return date listed on your summons",
         "NM": "10 days from the date you were served",
         "MO": "On or before the return date shown on your summons (rent and possession cases are set for a hearing)",
+        "KY": "Appear at the forcible detainer trial on the date shown on your summons (AOC-215 requires at least 3 days\u2019 notice)",
     }
     deadline = STATE_DEADLINES.get(state, "the deadline shown on your summons")
 
@@ -978,6 +982,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
         "NM": {"form": "Application for Free Process (In Forma Pauperis)", "site": "www.nmcourts.gov", "fee": "varies by court"},
         "RI": {"form": "Motion to Proceed In Forma Pauperis", "site": "www.courts.ri.gov", "fee": "varies by court"},
         "MO": {"form": "GN10 - Motion and Affidavit in Support of Request to Proceed as a Poor Person", "site": "www.courts.mo.gov", "fee": "varies by court"},
+        "KY": {"form": "AOC-026 - Motion for Waiver of Costs and Fees (In Forma Pauperis)", "site": "www.kycourts.gov", "fee": "varies by court"},
     }
     info = WAIVER_INFO.get(state, {"form": "your state's fee waiver form", "site": "your state court website", "fee": "varies"})
     
@@ -1067,6 +1072,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "LA": "Louisiana_Eviction_Support_Database_Framework_200.xlsx",
         "MI": "Michigan_Eviction_Support_Database_Framework_200.xlsx",
         "MO": "Missouri_Eviction_Support_Database_Framework_200.xlsx",
+        "KY": "Kentucky_Eviction_Support_Database_Framework_200.xlsx",
         "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
         "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
         "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",
@@ -1479,6 +1485,14 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "Within 30 days", "District Court judge hears case. Mediation may be available."),
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may request a stay."),
             ("6. Execution", "Varies", "Sheriff executes eviction. Court may grant additional time to vacate."),
+        ],
+        "KY": [
+            ("1. Forcible Detainer Complaint", "After notice", "Landlord files AOC-216 Forcible Detainer Complaint in District Court."),
+            ("2. Summons Served", "At least 3 days before trial", "You receive AOC-215 Forcible Detainer Summons with the trial date."),
+            ("3. Appear at Trial", "On the summons date", "YOU ARE HERE. Appear at the forcible detainer trial. Bring lease, payment records, and evidence."),
+            ("4. Hearing", "On trial date", "District judge hears both sides. You may present defenses and counterclaims."),
+            ("5. Judgment", "Day of hearing", "If you lose, the court issues AOC-217 Forcible Detainer Judgment."),
+            ("6. Warrant for Possession", "7 days after judgment", "Sheriff may issue AOC-220 Warrant for Possession. Tenant must vacate within 7 days."),
         ],
         "MO": [
             ("1. Notice to Vacate", "Varies", "Landlord serves written demand to terminate tenancy."),

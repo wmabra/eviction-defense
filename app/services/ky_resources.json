@@ -1,0 +1,442 @@
+{
+  "state": "KY",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "United Way": "2-1-1",
+    "211": "2-1-1",
+    "Louisville Housing Stabilization": "502-308-3344"
+  },
+  "counties": {
+    "Daviess": {
+      "_region": "audubon_area_community_services"
+    },
+    "Hancock": {
+      "_region": "audubon_area_community_services"
+    },
+    "Henderson": {
+      "_region": "audubon_area_community_services"
+    },
+    "McLean": {
+      "_region": "audubon_area_community_services"
+    },
+    "Ohio": {
+      "_region": "audubon_area_community_services"
+    },
+    "Union": {
+      "_region": "audubon_area_community_services"
+    },
+    "Webster": {
+      "_region": "audubon_area_community_services"
+    },
+    "Bell": {
+      "_region": "bell-whitley_community_action_agency"
+    },
+    "Whitley": {
+      "_region": "bell-whitley_community_action_agency"
+    },
+    "Floyd": {
+      "_region": "big_sandy_area_community_action_program"
+    },
+    "Johnson": {
+      "_region": "big_sandy_area_community_action_program"
+    },
+    "Magoffin": {
+      "_region": "big_sandy_area_community_action_program"
+    },
+    "Martin": {
+      "_region": "big_sandy_area_community_action_program"
+    },
+    "Pike": {
+      "_region": "big_sandy_area_community_action_program"
+    },
+    "Anderson": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Boyle": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Franklin": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Garrard": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Jessamine": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Lincoln": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Mercer": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Scott": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Woodford": {
+      "_region": "blue_grass_community_action_partnership"
+    },
+    "Breckinridge": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Grayson": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Hardin": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "LaRue": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Marion": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Meade": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Nelson": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Washington": {
+      "_region": "central_kentucky_community_action_counci"
+    },
+    "Bourbon": {
+      "_region": "community_action_council_lexington"
+    },
+    "Fayette": {
+      "_region": "community_action_council_lexington"
+    },
+    "Harrison": {
+      "_region": "community_action_council_lexington"
+    },
+    "Nicholas": {
+      "_region": "community_action_council_lexington"
+    },
+    "Allen": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Barren": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Butler": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Edmonson": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Hart": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Logan": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Metcalfe": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Monroe": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Simpson": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Warren": {
+      "_region": "community_action_of_southern_kentucky"
+    },
+    "Clay": {
+      "_region": "daniel_boone_community_action_agency"
+    },
+    "Jackson": {
+      "_region": "daniel_boone_community_action_agency"
+    },
+    "Laurel": {
+      "_region": "daniel_boone_community_action_agency"
+    },
+    "Rockcastle": {
+      "_region": "daniel_boone_community_action_agency"
+    },
+    "Bath": {
+      "_region": "gateway_community_action_agency"
+    },
+    "Menifee": {
+      "_region": "gateway_community_action_agency"
+    },
+    "Montgomery": {
+      "_region": "gateway_community_action_agency"
+    },
+    "Morgan": {
+      "_region": "gateway_community_action_agency"
+    },
+    "Rowan": {
+      "_region": "gateway_community_action_agency"
+    },
+    "Harlan": {
+      "_region": "harlan_county_community_action_agency"
+    },
+    "Knox": {
+      "_region": "kceoc_community_action_partnership"
+    },
+    "Clark": {
+      "_region": "kentucky_river_foothills_development_cou"
+    },
+    "Estill": {
+      "_region": "kentucky_river_foothills_development_cou"
+    },
+    "Madison": {
+      "_region": "kentucky_river_foothills_development_cou"
+    },
+    "Powell": {
+      "_region": "kentucky_river_foothills_development_cou"
+    },
+    "Adair": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Casey": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Clinton": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Cumberland": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Green": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "McCreary": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Pulaski": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Russell": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Taylor": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Wayne": {
+      "_region": "lake_cumberland_community_action_agency"
+    },
+    "Bracken": {
+      "_region": "licking_valley_community_action_program"
+    },
+    "Fleming": {
+      "_region": "licking_valley_community_action_program"
+    },
+    "Lewis": {
+      "_region": "licking_valley_community_action_program"
+    },
+    "Mason": {
+      "_region": "licking_valley_community_action_program"
+    },
+    "Robertson": {
+      "_region": "licking_valley_community_action_program"
+    },
+    "Knott": {
+      "_region": "lklp_community_action_council"
+    },
+    "Leslie": {
+      "_region": "lklp_community_action_council"
+    },
+    "Letcher": {
+      "_region": "lklp_community_action_council"
+    },
+    "Perry": {
+      "_region": "lklp_community_action_council"
+    },
+    "Jefferson": {
+      "_region": "louisville_metro_office_of_social_servic"
+    },
+    "Breathitt": {
+      "_region": "middle_kentucky_community_action_partner"
+    },
+    "Lee": {
+      "_region": "middle_kentucky_community_action_partner"
+    },
+    "Owsley": {
+      "_region": "middle_kentucky_community_action_partner"
+    },
+    "Wolfe": {
+      "_region": "middle_kentucky_community_action_partner"
+    },
+    "Bullitt": {
+      "_region": "multi-purpose_community_action_agency"
+    },
+    "Shelby": {
+      "_region": "multi-purpose_community_action_agency"
+    },
+    "Spencer": {
+      "_region": "multi-purpose_community_action_agency"
+    },
+    "Boyd": {
+      "_region": "northeast_kentucky_community_action_agen"
+    },
+    "Carter": {
+      "_region": "northeast_kentucky_community_action_agen"
+    },
+    "Elliott": {
+      "_region": "northeast_kentucky_community_action_agen"
+    },
+    "Greenup": {
+      "_region": "northeast_kentucky_community_action_agen"
+    },
+    "Lawrence": {
+      "_region": "northeast_kentucky_community_action_agen"
+    },
+    "Boone": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Campbell": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Carroll": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Gallatin": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Grant": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Kenton": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Owen": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Pendleton": {
+      "_region": "northern_kentucky_community_action_commi"
+    },
+    "Caldwell": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Christian": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Crittenden": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Hopkins": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Livingston": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Lyon": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Muhlenberg": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Todd": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Trigg": {
+      "_region": "pennyrile_allied_community_services"
+    },
+    "Henry": {
+      "_region": "tri-county_community_action_agency"
+    },
+    "Oldham": {
+      "_region": "tri-county_community_action_agency"
+    },
+    "Trimble": {
+      "_region": "tri-county_community_action_agency"
+    },
+    "Ballard": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Calloway": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Carlisle": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Fulton": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Graves": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Hickman": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "Marshall": {
+      "_region": "west_kentucky_allied_services"
+    },
+    "McCracken": {
+      "_region": "west_kentucky_allied_services"
+    }
+  },
+  "regions": {
+    "audubon_area_community_services": {
+      "Audubon Area Community Services": "270-686-1600"
+    },
+    "bell-whitley_community_action_agency": {
+      "Bell-Whitley Community Action Agency": "606-337-3044"
+    },
+    "big_sandy_area_community_action_program": {
+      "Big Sandy Area Community Action Program": "606-789-3641"
+    },
+    "blue_grass_community_action_partnership": {
+      "Blue Grass Community Action Partnership": "502-695-4290"
+    },
+    "central_kentucky_community_action_counci": {
+      "Central Kentucky Community Action Council": "270-692-2136"
+    },
+    "community_action_council_lexington": {
+      "Community Action Council (Lexington)": "859-233-4600"
+    },
+    "community_action_of_southern_kentucky": {
+      "Community Action of Southern Kentucky": "270-782-3162"
+    },
+    "daniel_boone_community_action_agency": {
+      "Daniel Boone Community Action Agency": "606-366-7433"
+    },
+    "gateway_community_action_agency": {
+      "Gateway Community Action Agency": "606-743-3133"
+    },
+    "harlan_county_community_action_agency": {
+      "Harlan County Community Action Agency": "606-573-5335"
+    },
+    "kceoc_community_action_partnership": {
+      "KCEOC Community Action Partnership": "606-546-3152"
+    },
+    "kentucky_river_foothills_development_cou": {
+      "Kentucky River Foothills Development Council": "859-624-2046"
+    },
+    "lake_cumberland_community_action_agency": {
+      "Lake Cumberland Community Action Agency": "270-343-4600"
+    },
+    "licking_valley_community_action_program": {
+      "Licking Valley Community Action Program": "606-845-0081"
+    },
+    "lklp_community_action_council": {
+      "LKLP Community Action Council": "606-436-8853"
+    },
+    "louisville_metro_office_of_social_servic": {
+      "Louisville Metro Office of Social Services": "502-574-5050"
+    },
+    "middle_kentucky_community_action_partner": {
+      "Middle Kentucky Community Action Partnership": "606-666-2452"
+    },
+    "multi-purpose_community_action_agency": {
+      "Multi-Purpose Community Action Agency": "502-633-7162"
+    },
+    "northeast_kentucky_community_action_agen": {
+      "Northeast Kentucky Community Action Agency": "606-286-4443"
+    },
+    "northern_kentucky_community_action_commi": {
+      "Northern Kentucky Community Action Commission": "859-581-6607"
+    },
+    "pennyrile_allied_community_services": {
+      "Pennyrile Allied Community Services": "270-886-6341"
+    },
+    "tri-county_community_action_agency": {
+      "Tri-County Community Action Agency": "502-222-1349"
+    },
+    "west_kentucky_allied_services": {
+      "West Kentucky Allied Services": "270-247-4046"
+    }
+  }
+}
