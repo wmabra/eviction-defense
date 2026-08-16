@@ -5,6 +5,7 @@ from app.schema.intake import PreScreen
 # Supported states
 SUPPORTED_STATES = {
     "AR", "CO", "CT", "GA", "IL", "KY", "LA",
+    "IL", "IN", "KY", "LA",
     "MI", "MN", "MO", "NM", "OK", "OR", "RI", "SC", "TN", "TX", "VA",
 }
 
@@ -14,6 +15,7 @@ SUPPORTED_COUNTIES = {
     "CO": {'Adams', 'Arapahoe', 'Boulder', 'Broomfield', 'Denver', 'Douglas', 'Eagle', 'El Paso', 'Fremont', 'Garfield', 'Jefferson', 'La Plata', 'Larimer', 'Mesa', 'Montrose', 'Morgan', 'Pueblo', 'Routt', 'Summit', 'Weld'},
     "CT": {'Fairfield', 'Hartford', 'Litchfield', 'Middlesex', 'New Haven', 'New London', 'Tolland', 'Windham'},
     "GA": {'Bibb', 'Chatham', 'Cherokee', 'Clarke', 'Clayton', 'Cobb', 'Columbia', 'Coweta', 'DeKalb', 'Douglas', 'Fayette', 'Forsyth', 'Fulton', 'Gwinnett', 'Hall', 'Henry', 'Houston', 'Muscogee', 'Paulding', 'Richmond'},
+    "IN": {'Marion', 'Lake', 'Allen', 'Hamilton', 'St. Joseph', 'Elkhart', 'Tippecanoe', 'Vanderburgh', 'Porter', 'Hendricks', 'Johnson', 'Monroe', 'Madison', 'Delaware', 'Clark', 'Vigo', 'Howard', 'LaPorte', 'Bartholomew', 'Boone'},
     "IL": {'Champaign', 'Cook', 'DuPage', 'Kane', 'Kankakee', 'Kendall', 'LaSalle', 'Lake', 'Macon', 'Madison', 'McHenry', 'McLean', 'Peoria', 'Rock Island', 'Sangamon', 'St. Clair', 'Tazewell', 'Vermilion', 'Will', 'Winnebago'},
     "KY": {'Jefferson', 'Fayette', 'Kenton', 'Boone', 'Warren', 'Hardin', 'Daviess', 'Campbell', 'Madison', 'Bullitt', 'Christian', 'Oldham', 'Pulaski', 'Laurel', 'Scott', 'Jessamine', 'Franklin', 'McCracken', 'Hopkins', 'Shelby'},
     "LA": {'Ascension', 'Bossier', 'Caddo', 'Calcasieu', 'East Baton Rouge', 'Iberia', 'Jefferson', 'Lafayette', 'Lafourche', 'Livingston', 'Orleans', 'Ouachita', 'Rapides', 'St. Charles', 'St. John the Baptist', 'St. Landry', 'St. Tammany', 'Tangipahoa', 'Terrebonne', 'Vernon'},

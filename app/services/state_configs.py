@@ -1232,6 +1232,56 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         ],
         "notes": "OK Forcible Entry and Detainer (narrative answer) + Pauper's Affidavit fee waiver.",
     },
+
+    # ══════════════════════════════════════════
+    # INDIANA — Answer to Notice of Claim (narrative)
+    # General Fee Waiver Motion and Order (fillable)
+    # ══════════════════════════════════════════
+    "IN": {
+        "name": "Indiana",
+        "answer_form": "in_eviction_answer.pdf",
+        "fee_waiver_form": "in_fee_waiver.pdf",
+        "fee_waiver_mapping": {
+            "county": "County",
+            "landlord_name": "Petitioner",
+            "full_name": "Respondent",
+            "household_adults": "HouseholdAdults",
+            "household_children": "HouseholdChildren",
+            "monthly_gross_income": "CombinedIncome",
+            "employment_income": "HourlyWagexMonthlyHours",
+            "unemployment_income": "MonthlyUnemployment",
+            "ssi_income": "MonthlySSI/SSD",
+            "child_support_income": "MonthlyChildSupportReceived",
+            "rent_or_mortgage": "MonthlyHousing",
+            "utilities_expense": "MonthlyUtilities",
+            "food_expense": "MonthlyFood",
+            "child_care_expense": "MonthlyChildCare",
+            "medical_expense": "MonthlyMedicalBills",
+            "transportation_expense": "MonthlyTransportation",
+            "other_expenses": "MonthlyOtherExpenses",
+            "total_monthly_expenses": "MonthlyExpensesTotal",
+        },
+        "has_fillable_fields": True,
+        "court_type": "Small Claims Court",
+        "field_mapping": {
+            "division": "division",
+        },
+        "defense_options": [
+            {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
+            {"key": "def_amount", "label": "I dispute the amount of rent claimed", "field": "defense_amount"},
+            {"key": "def_attempted_pay", "label": "I attempted to pay but the landlord refused", "field": "defense_attempted_pay"},
+            {"key": "def_paid", "label": "I already paid the rent demanded", "field": "defense_paid"},
+            {"key": "def_waived", "label": "The landlord waived or canceled the notice", "field": "defense_waived"},
+            {"key": "def_retaliation", "label": "The eviction is retaliatory", "field": "defense_retaliation"},
+            {"key": "def_fair_housing", "label": "The eviction violates fair housing law", "field": "defense_discrimination"},
+            {"key": "def_accepted_rent", "label": "The landlord accepted rent after notice", "field": "defense_accepted_rent"},
+            {"key": "def_corrected", "label": "I already corrected the issue", "field": "defense_corrected"},
+            {"key": "def_not_owner", "label": "The person suing me is not the owner", "field": "defense_not_owner"},
+            {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "defense_bad_notice"},
+            {"key": "def_other", "label": "Other defenses", "field": "defense_other"},
+        ],
+        "notes": "IN small claims eviction (hearing-based) + General Fee Waiver Motion (fillable, 38 fields).",
+    },
 }
 
 

@@ -1,0 +1,357 @@
+{
+  "state": "IN",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "211": "2-1-1",
+    "Indiana Legal Services": "1-844-243-8570"
+  },
+  "counties": {
+    "Adams": {
+      "_region": "community_and_family_services"
+    },
+    "Blackford": {
+      "_region": "community_and_family_services"
+    },
+    "Huntington": {
+      "_region": "community_and_family_services"
+    },
+    "Jay": {
+      "_region": "community_and_family_services"
+    },
+    "Randolph": {
+      "_region": "community_and_family_services"
+    },
+    "Wells": {
+      "_region": "community_and_family_services"
+    },
+    "Allen": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "DeKalb": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "LaGrange": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "Noble": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "Steuben": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "Whitley": {
+      "_region": "community_action_of_northeast_indiana"
+    },
+    "Bartholomew": {
+      "_region": "human_services,_inc."
+    },
+    "Decatur": {
+      "_region": "human_services,_inc."
+    },
+    "Jackson": {
+      "_region": "human_services,_inc."
+    },
+    "Johnson": {
+      "_region": "human_services,_inc."
+    },
+    "Shelby": {
+      "_region": "human_services,_inc."
+    },
+    "Benton": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Fountain": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Montgomery": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Parke": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Vermillion": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Warren": {
+      "_region": "community_action_program_of_western_indi"
+    },
+    "Boone": {
+      "_region": "community_action_of_greater_indianapolis"
+    },
+    "Hamilton": {
+      "_region": "community_action_of_greater_indianapolis"
+    },
+    "Hendricks": {
+      "_region": "community_action_of_greater_indianapolis"
+    },
+    "Marion": {
+      "_region": "community_action_of_greater_indianapolis"
+    },
+    "Brown": {
+      "_region": "south_central_community_action_program"
+    },
+    "Monroe": {
+      "_region": "south_central_community_action_program"
+    },
+    "Morgan": {
+      "_region": "south_central_community_action_program"
+    },
+    "Owen": {
+      "_region": "south_central_community_action_program"
+    },
+    "Carroll": {
+      "_region": "area_iv_agency_on_aging_and_community_ac"
+    },
+    "Clinton": {
+      "_region": "area_iv_agency_on_aging_and_community_ac"
+    },
+    "Tippecanoe": {
+      "_region": "area_iv_agency_on_aging_and_community_ac"
+    },
+    "White": {
+      "_region": "area_iv_agency_on_aging_and_community_ac"
+    },
+    "Cass": {
+      "_region": "area_five_agency_on_aging_and_community_"
+    },
+    "Howard": {
+      "_region": "area_five_agency_on_aging_and_community_"
+    },
+    "Miami": {
+      "_region": "area_five_agency_on_aging_and_community_"
+    },
+    "Tipton": {
+      "_region": "area_five_agency_on_aging_and_community_"
+    },
+    "Wabash": {
+      "_region": "area_five_agency_on_aging_and_community_"
+    },
+    "Clark": {
+      "_region": "community_action_of_southern_indiana"
+    },
+    "Floyd": {
+      "_region": "community_action_of_southern_indiana"
+    },
+    "Harrison": {
+      "_region": "community_action_of_southern_indiana"
+    },
+    "Clay": {
+      "_region": "western_indiana_community_action_agency"
+    },
+    "Putnam": {
+      "_region": "western_indiana_community_action_agency"
+    },
+    "Vigo": {
+      "_region": "western_indiana_community_action_agency"
+    },
+    "Crawford": {
+      "_region": "lincoln_hills_development_corporation"
+    },
+    "Perry": {
+      "_region": "lincoln_hills_development_corporation"
+    },
+    "Spencer": {
+      "_region": "lincoln_hills_development_corporation"
+    },
+    "Daviess": {
+      "_region": "pace_community_action_agency"
+    },
+    "Greene": {
+      "_region": "pace_community_action_agency"
+    },
+    "Knox": {
+      "_region": "pace_community_action_agency"
+    },
+    "Sullivan": {
+      "_region": "pace_community_action_agency"
+    },
+    "Dearborn": {
+      "_region": "southeastern_indiana_economic_opportunit"
+    },
+    "Franklin": {
+      "_region": "southeastern_indiana_economic_opportunit"
+    },
+    "Ohio": {
+      "_region": "southeastern_indiana_economic_opportunit"
+    },
+    "Ripley": {
+      "_region": "southeastern_indiana_economic_opportunit"
+    },
+    "Switzerland": {
+      "_region": "southeastern_indiana_economic_opportunit"
+    },
+    "Delaware": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Fayette": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Hancock": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Henry": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Rush": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Wayne": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Union": {
+      "_region": "interlocal_community_action_program_icap"
+    },
+    "Dubois": {
+      "_region": "dubois-pike-warrick_economic_opportunity"
+    },
+    "Pike": {
+      "_region": "dubois-pike-warrick_economic_opportunity"
+    },
+    "Warrick": {
+      "_region": "dubois-pike-warrick_economic_opportunity"
+    },
+    "Elkhart": {
+      "_region": "real_services"
+    },
+    "Fulton": {
+      "_region": "real_services"
+    },
+    "Kosciusko": {
+      "_region": "real_services"
+    },
+    "Marshall": {
+      "_region": "real_services"
+    },
+    "St. Joseph": {
+      "_region": "real_services"
+    },
+    "Gibson": {
+      "_region": "community_action_program_of_evansville_a"
+    },
+    "Posey": {
+      "_region": "community_action_program_of_evansville_a"
+    },
+    "Vanderburgh": {
+      "_region": "community_action_program_of_evansville_a"
+    },
+    "Grant": {
+      "_region": "community_action___madison_county"
+    },
+    "Madison": {
+      "_region": "community_action___madison_county"
+    },
+    "Jasper": {
+      "_region": "northwest_indiana_community_action_corpo"
+    },
+    "Lake": {
+      "_region": "northwest_indiana_community_action_corpo"
+    },
+    "Newton": {
+      "_region": "northwest_indiana_community_action_corpo"
+    },
+    "Porter": {
+      "_region": "northwest_indiana_community_action_corpo"
+    },
+    "LaPorte": {
+      "_region": "north_central_community_action_agencies"
+    },
+    "Pulaski": {
+      "_region": "north_central_community_action_agencies"
+    },
+    "Starke": {
+      "_region": "north_central_community_action_agencies"
+    },
+    "Lawrence": {
+      "_region": "hoosier_uplands_economic_development_cor"
+    },
+    "Martin": {
+      "_region": "hoosier_uplands_economic_development_cor"
+    },
+    "Orange": {
+      "_region": "hoosier_uplands_economic_development_cor"
+    },
+    "Washington": {
+      "_region": "hoosier_uplands_economic_development_cor"
+    },
+    "Jefferson": {
+      "_region": "ohio_valley_opportunities"
+    },
+    "Jennings": {
+      "_region": "ohio_valley_opportunities"
+    },
+    "Scott": {
+      "_region": "ohio_valley_opportunities"
+    }
+  },
+  "regions": {
+    "community_and_family_services": {
+      "Community & Family Services": "(260) 726-6322"
+    },
+    "community_action_of_northeast_indiana": {
+      "Community Action of Northeast Indiana": "(260) 399-4101"
+    },
+    "human_services,_inc.": {
+      "Human Services, Inc.": "(812) 372-8407"
+    },
+    "community_action_program_of_western_indi": {
+      "Community Action Program of Western Indiana": "(765) 793-4881"
+    },
+    "community_action_of_greater_indianapolis": {
+      "Community Action of Greater Indianapolis": "(317) 396-1732"
+    },
+    "south_central_community_action_program": {
+      "South Central Community Action Program": "(812) 339-3447"
+    },
+    "area_iv_agency_on_aging_and_community_ac": {
+      "Area IV Agency on Aging & Community Action": "(765) 447-7683"
+    },
+    "area_five_agency_on_aging_and_community_": {
+      "Area Five Agency on Aging & Community Services": "(574) 722-4451"
+    },
+    "community_action_of_southern_indiana": {
+      "Community Action of Southern Indiana": "(812) 288-6451"
+    },
+    "western_indiana_community_action_agency": {
+      "Western Indiana Community Action Agency": "(812) 446-4000"
+    },
+    "lincoln_hills_development_corporation": {
+      "Lincoln Hills Development Corporation": "(812) 547-3435"
+    },
+    "pace_community_action_agency": {
+      "PACE Community Action Agency": "(812) 882-7927"
+    },
+    "southeastern_indiana_economic_opportunit": {
+      "Southeastern Indiana Economic Opportunity Corp.": "(812) 926-1585"
+    },
+    "interlocal_community_action_program_icap": {
+      "Interlocal Community Action Program (ICAP)": "(765) 529-4403"
+    },
+    "dubois-pike-warrick_economic_opportunity": {
+      "Dubois-Pike-Warrick Economic Opportunity Committee": "(812) 482-2233"
+    },
+    "real_services": {
+      "REAL Services": "(574) 284-7101"
+    },
+    "community_action_program_of_evansville_a": {
+      "Community Action Program of Evansville & Vanderburgh Co.": "(812) 425-4241"
+    },
+    "community_action___madison_county": {
+      "Community Action / Madison County": "(765) 649-9276"
+    },
+    "northwest_indiana_community_action_corpo": {
+      "Northwest Indiana Community Action Corporation": "(219) 794-1829"
+    },
+    "north_central_community_action_agencies": {
+      "North Central Community Action Agencies": "(219) 872-0351"
+    },
+    "hoosier_uplands_economic_development_cor": {
+      "Hoosier Uplands Economic Development Corporation": "(812) 849-4457"
+    },
+    "ohio_valley_opportunities": {
+      "Ohio Valley Opportunities": "(812) 265-5858"
+    },
+    "incap_general": {
+      "Indiana Community Action Network": "(317) 638-4232"
+    }
+  }
+}

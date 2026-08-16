@@ -74,6 +74,7 @@ STATE_COURT_CAPTIONS = {
     "MO": "IN THE CIRCUIT COURT OF {county} COUNTY, MISSOURI (ASSOCIATE CIRCUIT DIVISION)",
     "KY": "IN THE DISTRICT COURT OF {county} COUNTY, KENTUCKY",
     "OK": "IN THE DISTRICT COURT OF {county} COUNTY, STATE OF OKLAHOMA",
+    "IN": "IN THE SMALL CLAIMS COURT OF {county} COUNTY, INDIANA",
 }
 
 WRIT_TERMS = {
@@ -100,6 +101,7 @@ WRIT_TERMS = {
     "MO": "Judgment for Restitution of Premises",
     "KY": "Warrant for Possession",
     "OK": "Writ of Execution",
+    "IN": "Writ of Restitution",
 }
 
 EVICTION_LAW_CHAPTERS = {
@@ -735,6 +737,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         "MO": "On or before the return date shown on your summons (rent and possession cases are set for a hearing)",
         "KY": "Appear at the forcible detainer trial on the date shown on your summons (AOC-215 requires at least 3 days\u2019 notice)",
         "OK": "File your Answer/Affidavit before the hearing date shown on your FED summons",
+        "IN": "Attend the small claims eviction hearing on the date shown on your Notice of Claim",
     }
     deadline = STATE_DEADLINES.get(state, "the deadline shown on your summons")
 
@@ -1079,6 +1082,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "MO": "Missouri_Eviction_Support_Database_Framework_200.xlsx",
         "KY": "Kentucky_Eviction_Support_Database_Framework_200.xlsx",
         "OK": "Oklahoma_Eviction_Support_Database_Framework_200.xlsx",
+        "IN": "Indiana_Eviction_Support_Database_Framework_200.xlsx",
         "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
         "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
         "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",
@@ -1491,6 +1495,14 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "Within 30 days", "District Court judge hears case. Mediation may be available."),
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may request a stay."),
             ("6. Execution", "Varies", "Sheriff executes eviction. Court may grant additional time to vacate."),
+        ],
+        "IN": [
+            ("1. Notice to Quit", "Varies", "Landlord serves written notice to vacate (10 days for nonpayment, 30 days for no-fault)."),
+            ("2. Notice of Claim Filed", "After notice", "Landlord files small claims eviction. You receive the Notice of Claim with a hearing date."),
+            ("3. Attend Hearing", "On the hearing date", "YOU ARE HERE. Appear at the small claims hearing. Bring lease, payment records, and evidence."),
+            ("4. Hearing", "On hearing date", "Judge hears both sides. You may present defenses and counterclaims."),
+            ("5. Judgment", "Day of hearing", "If you lose, the court issues a possession order."),
+            ("6. Writ of Restitution", "After judgment", "Sheriff may execute the writ. Tenant must vacate."),
         ],
         "OK": [
             ("1. FED Petition Filed", "After notice", "Landlord files Forcible Entry and Detainer petition in District Court."),
