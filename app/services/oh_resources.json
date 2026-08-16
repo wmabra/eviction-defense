@@ -1,0 +1,378 @@
+{
+  "state": "OH",
+  "statewide": {
+    "HUD": "1-800-569-4287",
+    "211": "2-1-1",
+    "Ohio Legal Help": "ohiolegalhelp.org"
+  },
+  "counties": {
+    "Adams": {
+      "_region": "adams_brown_community_action_partnership"
+    },
+    "Brown": {
+      "_region": "adams_brown_community_action_partnership"
+    },
+    "Allen": {
+      "_region": "west_ohio_community_action_partnership"
+    },
+    "Auglaize": {
+      "_region": "west_ohio_community_action_partnership"
+    },
+    "Mercer": {
+      "_region": "west_ohio_community_action_partnership"
+    },
+    "Van Wert": {
+      "_region": "west_ohio_community_action_partnership"
+    },
+    "Ashland": {
+      "_region": "kno-ho-co-ashland_community_action_commi"
+    },
+    "Coshocton": {
+      "_region": "kno-ho-co-ashland_community_action_commi"
+    },
+    "Holmes": {
+      "_region": "kno-ho-co-ashland_community_action_commi"
+    },
+    "Knox": {
+      "_region": "kno-ho-co-ashland_community_action_commi"
+    },
+    "Ashtabula": {
+      "_region": "ashtabula_county_community_action_agency"
+    },
+    "Athens": {
+      "_region": "hocking_athens_perry_community_action"
+    },
+    "Hocking": {
+      "_region": "hocking_athens_perry_community_action"
+    },
+    "Perry": {
+      "_region": "hocking_athens_perry_community_action"
+    },
+    "Belmont": {
+      "_region": "community_action_commission_of_belmont_c"
+    },
+    "Butler": {
+      "_region": "supports_to_encourage_low-income_familie"
+    },
+    "Carroll": {
+      "_region": "harcatus_tri-county_community_action"
+    },
+    "Harrison": {
+      "_region": "harcatus_tri-county_community_action"
+    },
+    "Tuscarawas": {
+      "_region": "harcatus_tri-county_community_action"
+    },
+    "Champaign": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Delaware": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Logan": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Madison": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Shelby": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Union": {
+      "_region": "bridges_community_action_partnership"
+    },
+    "Clark": {
+      "_region": "oic_of_clark_county"
+    },
+    "Clermont": {
+      "_region": "clermont_county_community_service"
+    },
+    "Clinton": {
+      "_region": "clinton_county_community_action_program"
+    },
+    "Columbiana": {
+      "_region": "community_action_agency_of_columbiana_co"
+    },
+    "Cuyahoga": {
+      "_region": "step_forward_cuyahoga"
+    },
+    "Crawford": {
+      "_region": "ohio_heartland_community_action_commissi"
+    },
+    "Marion": {
+      "_region": "ohio_heartland_community_action_commissi"
+    },
+    "Morrow": {
+      "_region": "ohio_heartland_community_action_commissi"
+    },
+    "Darke": {
+      "_region": "miami_valley_community_action_partnershi"
+    },
+    "Greene": {
+      "_region": "miami_valley_community_action_partnershi"
+    },
+    "Montgomery": {
+      "_region": "miami_valley_community_action_partnershi"
+    },
+    "Preble": {
+      "_region": "miami_valley_community_action_partnershi"
+    },
+    "Franklin": {
+      "_region": "impact_community_action_franklin"
+    },
+    "Gallia": {
+      "_region": "gallia-meigs_community_action_agency"
+    },
+    "Meigs": {
+      "_region": "gallia-meigs_community_action_agency"
+    },
+    "Hancock": {
+      "_region": "hhwp_community_action_commission"
+    },
+    "Hardin": {
+      "_region": "hhwp_community_action_commission"
+    },
+    "Putnam": {
+      "_region": "hhwp_community_action_commission"
+    },
+    "Wyandot": {
+      "_region": "hhwp_community_action_commission"
+    },
+    "Highland": {
+      "_region": "highland_county_community_action_organiz"
+    },
+    "Jackson": {
+      "_region": "jackson-vinton_community_action"
+    },
+    "Vinton": {
+      "_region": "jackson-vinton_community_action"
+    },
+    "Lawrence": {
+      "_region": "ironton-lawrence_county_community_action"
+    },
+    "Miami": {
+      "_region": "miami_county_community_action_council"
+    },
+    "Morgan": {
+      "_region": "washington-morgan_community_action_partn"
+    },
+    "Washington": {
+      "_region": "washington-morgan_community_action_partn"
+    },
+    "Ottawa": {
+      "_region": "great_lakes_community_action_partnership"
+    },
+    "Sandusky": {
+      "_region": "great_lakes_community_action_partnership"
+    },
+    "Seneca": {
+      "_region": "great_lakes_community_action_partnership"
+    },
+    "Wood": {
+      "_region": "great_lakes_community_action_partnership"
+    },
+    "Pike": {
+      "_region": "community_action_committee_of_pike_count"
+    },
+    "Portage": {
+      "_region": "community_action_council_of_portage_coun"
+    },
+    "Ross": {
+      "_region": "ross_county_community_action_commission"
+    },
+    "Scioto": {
+      "_region": "community_action_organization_of_scioto_"
+    },
+    "Summit": {
+      "_region": "community_action_akron_summit"
+    },
+    "Hamilton": {
+      "_region": "community_action_agency_hamilton"
+    },
+    "Mahoning": {
+      "_region": "community_action_agency_of_youngstown_ma"
+    },
+    "Lucas": {
+      "_region": "pathway_lucas"
+    },
+    "Defiance": {
+      "_region": "oacaa_general"
+    },
+    "Erie": {
+      "_region": "oacaa_general"
+    },
+    "Fairfield": {
+      "_region": "oacaa_general"
+    },
+    "Fayette": {
+      "_region": "oacaa_general"
+    },
+    "Fulton": {
+      "_region": "oacaa_general"
+    },
+    "Geauga": {
+      "_region": "oacaa_general"
+    },
+    "Guernsey": {
+      "_region": "oacaa_general"
+    },
+    "Henry": {
+      "_region": "oacaa_general"
+    },
+    "Huron": {
+      "_region": "oacaa_general"
+    },
+    "Jefferson": {
+      "_region": "oacaa_general"
+    },
+    "Lake": {
+      "_region": "oacaa_general"
+    },
+    "Licking": {
+      "_region": "oacaa_general"
+    },
+    "Lorain": {
+      "_region": "oacaa_general"
+    },
+    "Medina": {
+      "_region": "oacaa_general"
+    },
+    "Monroe": {
+      "_region": "oacaa_general"
+    },
+    "Muskingum": {
+      "_region": "oacaa_general"
+    },
+    "Noble": {
+      "_region": "oacaa_general"
+    },
+    "Paulding": {
+      "_region": "oacaa_general"
+    },
+    "Pickaway": {
+      "_region": "oacaa_general"
+    },
+    "Richland": {
+      "_region": "oacaa_general"
+    },
+    "Stark": {
+      "_region": "oacaa_general"
+    },
+    "Trumbull": {
+      "_region": "oacaa_general"
+    },
+    "Warren": {
+      "_region": "oacaa_general"
+    },
+    "Wayne": {
+      "_region": "oacaa_general"
+    },
+    "Williams": {
+      "_region": "oacaa_general"
+    }
+  },
+  "regions": {
+    "adams_brown_community_action_partnership": {
+      "Adams Brown Community Action Partnership": "(937) 378-6041"
+    },
+    "west_ohio_community_action_partnership": {
+      "West Ohio Community Action Partnership": "(419) 227-2586"
+    },
+    "kno-ho-co-ashland_community_action_commi": {
+      "Kno-Ho-Co-Ashland Community Action Commission": "(740) 622-9801"
+    },
+    "ashtabula_county_community_action_agency": {
+      "Ashtabula County Community Action Agency": "(440) 990-1740"
+    },
+    "hocking_athens_perry_community_action": {
+      "Hocking Athens Perry Community Action": "(740) 767-4500"
+    },
+    "community_action_commission_of_belmont_c": {
+      "Community Action Commission of Belmont County": "(740) 695-0293"
+    },
+    "supports_to_encourage_low-income_familie": {
+      "Supports to Encourage Low-Income Families (SELF)": "(513) 868-9300"
+    },
+    "harcatus_tri-county_community_action": {
+      "HARCATUS Tri-County Community Action": "(740) 922-0933"
+    },
+    "bridges_community_action_partnership": {
+      "Bridges Community Action Partnership": "(937) 642-4986"
+    },
+    "oic_of_clark_county": {
+      "OIC of Clark County": "(937) 323-6461"
+    },
+    "clermont_county_community_service": {
+      "Clermont County Community Service": "(513) 732-2277"
+    },
+    "clinton_county_community_action_program": {
+      "Clinton County Community Action Program": "(937) 382-8365"
+    },
+    "community_action_agency_of_columbiana_co": {
+      "Community Action Agency of Columbiana County": "(330) 424-7221"
+    },
+    "step_forward_cuyahoga": {
+      "Step Forward (Cuyahoga)": "(216) 696-9077"
+    },
+    "ohio_heartland_community_action_commissi": {
+      "Ohio Heartland Community Action Commission": "(740) 387-1039"
+    },
+    "miami_valley_community_action_partnershi": {
+      "Miami Valley Community Action Partnership": "(937) 341-5000"
+    },
+    "impact_community_action_franklin": {
+      "IMPACT Community Action (Franklin)": "(614) 252-2799"
+    },
+    "gallia-meigs_community_action_agency": {
+      "Gallia-Meigs Community Action Agency": "(740) 444-4400"
+    },
+    "hhwp_community_action_commission": {
+      "HHWP Community Action Commission": "(419) 423-3755"
+    },
+    "highland_county_community_action_organiz": {
+      "Highland County Community Action Organization": "(937) 393-3458"
+    },
+    "jackson-vinton_community_action": {
+      "Jackson-Vinton Community Action": "(740) 384-3722"
+    },
+    "ironton-lawrence_county_community_action": {
+      "Ironton-Lawrence County Community Action": "(740) 532-3140"
+    },
+    "miami_county_community_action_council": {
+      "Miami County Community Action Council": "(937) 335-7921"
+    },
+    "washington-morgan_community_action_partn": {
+      "Washington-Morgan Community Action Partnership": "(740) 373-3745"
+    },
+    "great_lakes_community_action_partnership": {
+      "Great Lakes Community Action Partnership": "(800) 775-9767"
+    },
+    "community_action_committee_of_pike_count": {
+      "Community Action Committee of Pike County": "(740) 289-2371"
+    },
+    "community_action_council_of_portage_coun": {
+      "Community Action Council of Portage County": "(330) 297-1456"
+    },
+    "ross_county_community_action_commission": {
+      "Ross County Community Action Commission": "(740) 702-7222"
+    },
+    "community_action_organization_of_scioto_": {
+      "Community Action Organization of Scioto County": "(740) 354-7541"
+    },
+    "community_action_akron_summit": {
+      "Community Action Akron Summit": "(330) 376-7730"
+    },
+    "community_action_agency_hamilton": {
+      "Community Action Agency (Hamilton)": "(513) 569-1840"
+    },
+    "community_action_agency_of_youngstown_ma": {
+      "Community Action Agency of Youngstown (Mahoning)": "(330) 747-7921"
+    },
+    "pathway_lucas": {
+      "Pathway (Lucas)": "(419) 242-7304"
+    },
+    "oacaa_general": {
+      "Ohio Association of Community Action Agencies": "(614) 224-8500"
+    }
+  }
+}

@@ -6,7 +6,7 @@ from app.schema.intake import PreScreen
 SUPPORTED_STATES = {
     "AR", "CO", "CT", "GA", "IL", "KY", "LA",
     "IL", "IN", "KY", "LA",
-    "MI", "MN", "MO", "NM", "OK", "OR", "RI", "SC", "TN", "TX", "VA",
+    "MI", "MN", "MO", "NM", "OH", "OK", "OR", "RI", "SC", "TN", "TX", "VA",
 }
 
 # Supported counties by state (from rental assistance resource databases)
@@ -23,6 +23,7 @@ SUPPORTED_COUNTIES = {
     "MN": {'Anoka', 'Beltrami', 'Blue Earth', 'Carver', 'Clay', 'Crow Wing', 'Dakota', 'Hennepin', 'Kandiyohi', 'Olmsted', 'Otter Tail', 'Ramsey', 'Rice', 'Scott', 'Sherburne', 'St. Louis', 'Stearns', 'Washington', 'Winona', 'Wright'},
     "MO": {'St. Louis County', 'Jackson', 'St. Charles', 'Greene', 'St. Louis City', 'Clay', 'Jefferson', 'Boone', 'Jasper', 'Cass', 'Platte', 'Franklin', 'Christian', 'Buchanan', 'Cape Girardeau', 'Cole', 'St. Francois', 'Lincoln', 'Taney', 'Howell'},
     "OK": {'Oklahoma', 'Tulsa', 'Cleveland', 'Canadian', 'Comanche', 'Rogers', 'Payne', 'Wagoner', 'Pottawatomie', 'Creek', 'Garfield', 'Muskogee', 'Grady', 'Le Flore', 'Washington', 'Bryan', 'Logan', 'Carter', 'Okmulgee', 'Osage'},
+    "OH": {'Cuyahoga', 'Franklin', 'Hamilton', 'Summit', 'Montgomery', 'Lucas', 'Stark', 'Butler', 'Lorain', 'Lake', 'Mahoning', 'Warren', 'Clermont', 'Trumbull', 'Delaware', 'Licking', 'Greene', 'Portage', 'Fairfield', 'Medina'},
     "NM": {'Bernalillo', 'Chaves', 'Curry', 'Doña Ana', 'Eddy', 'Grant', 'Lea', 'Los Alamos', 'Luna', 'McKinley', 'Otero', 'Rio Arriba', 'Roosevelt', 'San Juan', 'San Miguel', 'Sandoval', 'Santa Fe', 'Taos', 'Torrance', 'Valencia'},
     "OR": {'Baker', 'Benton', 'Clackamas', 'Coos', 'Crook', 'Deschutes', 'Douglas', 'Jackson', 'Josephine', 'Klamath', 'Lane', 'Linn', 'Malheur', 'Marion', 'Multnomah', 'Polk', 'Umatilla', 'Union', 'Washington', 'Yamhill'},
     "RI": {'Bristol', 'Kent', 'Newport', 'Providence', 'Washington'},

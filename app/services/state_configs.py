@@ -1282,6 +1282,52 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         ],
         "notes": "IN small claims eviction (hearing-based) + General Fee Waiver Motion (fillable, 38 fields).",
     },
+
+    # ══════════════════════════════════════════
+    # OHIO — Answer to FED Complaint (narrative)
+    # Form 20 Civil Fee Waiver (recreated fillable)
+    # ══════════════════════════════════════════
+    "OH": {
+        "name": "Ohio",
+        "answer_form": "oh_eviction_answer.pdf",
+        "fee_waiver_form": "oh_fee_waiver.pdf",
+        "fee_waiver_mapping": {
+            "full_name": "full_name",
+            "total_dependents": "total_dependents",
+            "employment_income": "employment_income",
+            "monthly_gross_income": "monthly_gross_income",
+            "cash_on_hand": "cash_on_hand",
+            "checking_balance": "checking_balance",
+            "rent_or_mortgage": "rent_or_mortgage",
+            "utilities_expense": "utilities_expense",
+            "food_expense": "food_expense",
+            "transportation_expense": "transportation_expense",
+            "child_care_expense": "child_care_expense",
+            "medical_expense": "medical_expense",
+            "debt_payments": "debt_payments",
+            "total_monthly_expenses": "total_monthly_expenses",
+        },
+        "has_fillable_fields": True,
+        "court_type": "Municipal Court",
+        "field_mapping": {
+            "division": "division",
+        },
+        "defense_options": [
+            {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
+            {"key": "def_amount", "label": "I dispute the amount of rent claimed", "field": "defense_amount"},
+            {"key": "def_attempted_pay", "label": "I attempted to pay but the landlord refused", "field": "defense_attempted_pay"},
+            {"key": "def_paid", "label": "I already paid the rent demanded", "field": "defense_paid"},
+            {"key": "def_waived", "label": "The landlord waived or canceled the notice", "field": "defense_waived"},
+            {"key": "def_retaliation", "label": "The eviction is retaliatory", "field": "defense_retaliation"},
+            {"key": "def_fair_housing", "label": "The eviction violates fair housing law", "field": "defense_discrimination"},
+            {"key": "def_accepted_rent", "label": "The landlord accepted rent after notice", "field": "defense_accepted_rent"},
+            {"key": "def_corrected", "label": "I already corrected the issue", "field": "defense_corrected"},
+            {"key": "def_not_owner", "label": "The person suing me is not the owner", "field": "defense_not_owner"},
+            {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "defense_bad_notice"},
+            {"key": "def_other", "label": "Other defenses", "field": "defense_other"},
+        ],
+        "notes": "OH forcible entry and detainer (narrative answer) + Form 20 Civil Fee Waiver (recreated fillable).",
+    },
 }
 
 
