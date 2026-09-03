@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Account — evictions.help</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f6f8;
+        color: #1a1a2e;
+        line-height: 1.55;
+      }
+      .header {
+        background: #1a1a2e;
+        color: #fff;
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .header a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .header span {
+        color: #e94560;
+      }
+      .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .btn-outline {
+        background: transparent;
+        color: #fff;
+        border: 1px solid #555;
+      }
+      .btn-outline:hover {
+        border-color: #e94560;
+        color: #e94560;
+      }
+      .btn-primary {
+        background: #e94560;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #d63851;
+      }
+      .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .btn-success {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #1a1a2e;
+      }
+
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 28px 20px;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 28px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+      }
+      .card h2 {
+        font-size: 20px;
+        margin-bottom: 16px;
+      }
+      .card h3 {
+        font-size: 15px;
+        margin-bottom: 10px;
+        color: #444;
+      }
+
+      .login-box {
+        max-width: 400px;
+        margin: 80px auto;
+        text-align: center;
+      }
+      .login-box h2 {
+        margin-bottom: 6px;
+      }
+      .login-box .sub {
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+      .field {
+        margin-bottom: 14px;
+        text-align: left;
+      }
+      .field label {
+        display: block;
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+      .field input {
+        width: 100%;
+        padding: 11px 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 15px;
+        font-family: inherit;
+      }
+      .field input:focus {
+        border-color: #e94560;
+        outline: none;
+      }
+      .error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 14px;
+        display: none;
+      }
+      .notice {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 14px;
+      }
+      .success {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 14px;
+        display: none;
+      }
+
+      .progress-wrap {
+        margin: 8px 0 6px;
+      }
+      .progress-track {
+        background: #e5e7eb;
+        border-radius: 999px;
+        height: 14px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        background: linear-gradient(90deg, #e94560, #ff7a90);
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.5s ease;
+        width: 0;
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #888;
+        margin-top: 6px;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .badge-ready {
+        background: #d4edda;
+        color: #155724;
+      }
+      .badge-progress {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .badge-neutral {
+        background: #e5e7eb;
+        color: #444;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid #eee;
+        margin: 22px 0;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .muted {
+        color: #888;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <a href="/"><span>evictions.help</span> — My Account</a>
+      <button class="btn btn-outline" id="btn-logout" onclick="logout()">
+        Log out
+      </button>
+    </div>
+
+    <div class="container">
+      <!-- LOGIN -->
+      <div id="login-screen" class="card login-box">
+        <h2>Welcome back</h2>
+        <p class="sub">Log in to continue your eviction paperwork.</p>
+        <div class="error" id="login-error"></div>
+        <div class="notice" id="login-notice" style="display: none">
+          Your account was created and your password was emailed to you. Enter
+          it below to continue.
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input
+            type="email"
+            id="login-email"
+            placeholder="you@email.com"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input
+            type="password"
+            id="login-password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            onkeypress="if (event.key === 'Enter') login();"
+          />
+        </div>
+        <button
+          class="btn btn-primary"
+          style="width: 100%; padding: 12px"
+          onclick="login()"
+        >
+          Log in
+        </button>
+        <p class="muted" style="margin-top: 14px">
+          Forgot your password? Contact
+          <a href="/contact" style="color: #e94560">support</a>.
+        </p>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="hidden">
+        <div class="card">
+          <h2 id="welcome-email">Your account</h2>
+          <div id="change-pw-banner" class="notice hidden">
+            🔒 For your security, please set a new password in Settings below.
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="progress-stage">Getting started</span>
+              <span id="progress-pct">0%</span>
+            </div>
+          </div>
+
+          <div id="case-status" style="margin-top: 16px">
+            <span class="status-badge badge-neutral" id="status-badge"
+              >No case yet</span
+            >
+            <p class="muted" id="status-detail" style="margin-top: 8px"></p>
+          </div>
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              id="btn-start"
+              onclick="startIntake()"
+            >
+              Start Intake
+            </button>
+            <button
+              class="btn btn-success hidden"
+              id="btn-download"
+              onclick="downloadPacket()"
+            >
+              📥 Download Packet
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Settings</h2>
+          <h3>Change password</h3>
+          <div class="success" id="pw-success"></div>
+          <div class="error" id="pw-error"></div>
+          <div class="field">
+            <label>Current password</label>
+            <input
+              type="password"
+              id="cur-pw"
+              autocomplete="current-password"
+            />
+          </div>
+          <div class="field">
+            <label>New password (min 8 characters)</label>
+            <input type="password" id="new-pw" autocomplete="new-password" />
+          </div>
+          <button class="btn btn-secondary" onclick="changePassword()">
+            Update password
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const TOKEN_KEY = "evictions_token";
+      let state = { token: null, user: null, case: null };
+
+      // ------------------------------------------------------------ helpers
+      function esc(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      function authHeaders() {
+        return {
+          Authorization: "Bearer " + state.token,
+          "Content-Type": "application/json",
+        };
+      }
+      function show(el) {
+        document.getElementById(el).classList.remove("hidden");
+      }
+      function hide(el) {
+        document.getElementById(el).classList.add("hidden");
+      }
+
+      const STAGES = {
+        pre_screen: "Eligibility check",
+        payment_pending: "Awaiting payment",
+        intake_in_progress: "Complete your intake",
+        intake_complete: "Review your details",
+        extraction_pending: "Processing documents",
+        confirmation_pending: "Confirm your details",
+        confirmation_complete: "Preparing your packet",
+        packet_ready: "Your packet is ready!",
+        delivered: "Complete",
+      };
+
+      // ------------------------------------------------------------ boot
+      window.addEventListener("DOMContentLoaded", async () => {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get("email");
+        if (email) {
+          document.getElementById("login-email").value = email;
+          let tempPw = "";
+          try {
+            tempPw = sessionStorage.getItem("evictions_temp_pw") || "";
+          } catch (_e) {}
+          const notice = document.getElementById("login-notice");
+          if (tempPw) {
+            notice.textContent = "";
+            const l1 = document.createElement("div");
+            l1.textContent = "Your account is ready.";
+            const l2 = document.createElement("div");
+            l2.textContent = "Username: ";
+            const u = document.createElement("strong");
+            u.textContent = email;
+            l2.appendChild(u);
+            const l3 = document.createElement("div");
+            l3.textContent = "Password: ";
+            const p = document.createElement("strong");
+            p.textContent = tempPw;
+            l3.appendChild(p);
+            const hint = document.createElement("div");
+            hint.style.fontSize = "12px";
+            hint.textContent =
+              "Also emailed to you — please change it in Settings after logging in.";
+            notice.append(l1, l2, l3, hint);
+            try {
+              sessionStorage.removeItem("evictions_temp_pw");
+            } catch (_e) {}
+          } else {
+            notice.textContent =
+              "Your account was created and your password was emailed to you. Enter it below to continue.";
+          }
+          notice.style.display = "block";
+        }
+        state.token = localStorage.getItem(TOKEN_KEY);
+        if (state.token) {
+          const ok = await loadAccount();
+          if (ok) {
+            showDashboard();
+          }
+        }
+      });
+
+      // ------------------------------------------------------------ login
+      async function login() {
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+        const errEl = document.getElementById("login-error");
+        errEl.style.display = "none";
+        if (!email || !password) {
+          errEl.textContent = "Enter your email and password.";
+          errEl.style.display = "block";
+          return;
+        }
+
+        try {
+          const r = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.detail || "Login failed");
+          state.token = data.token;
+          state.user = data.user;
+          localStorage.setItem(TOKEN_KEY, state.token);
+          await loadAccount();
+          showDashboard();
+        } catch (e) {
+          errEl.textContent = e.message || "Login failed";
+          errEl.style.display = "block";
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem(TOKEN_KEY);
+        state = { token: null, user: null, case: null };
+        hide("dashboard");
+        show("login-screen");
+      }
+
+      // ------------------------------------------------------------ account
+      async function loadAccount() {
+        try {
+          const r = await fetch("/api/v1/auth/me", {
+            headers: { Authorization: "Bearer " + state.token },
+          });
+          if (!r.ok) {
+            localStorage.removeItem(TOKEN_KEY);
+            return false;
+          }
+          const data = await r.json();
+          state.user = data.user;
+          state.case = data.case;
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function showDashboard() {
+        hide("login-screen");
+        show("dashboard");
+        document.getElementById("welcome-email").textContent = state.user
+          ? state.user.email
+          : "Your account";
+        if (state.user && state.user.must_change_password)
+          show("change-pw-banner");
+        renderCase();
+      }
+
+      function renderCase() {
+        const c = state.case;
+        const pct = c ? c.progress || 0 : 0;
+        document.getElementById("progress-fill").style.width = pct + "%";
+        document.getElementById("progress-pct").textContent = pct + "%";
+
+        if (!c) {
+          document.getElementById("progress-stage").textContent =
+            "No active case";
+          document.getElementById("status-badge").textContent = "No case";
+          document.getElementById("status-detail").textContent =
+            "Start your intake to begin.";
+          hide("btn-download");
+          document.getElementById("btn-start").textContent = "Start Intake";
+          return;
+        }
+
+        const stage = STAGES[c.status] || c.status || "In progress";
+        document.getElementById("progress-stage").textContent = stage;
+        document.getElementById("status-detail").textContent =
+          (c.state ? c.state + " · " : "") +
+          (c.county || "") +
+          " — status: " +
+          (c.status || "unknown");
+
+        const badge = document.getElementById("status-badge");
+        badge.textContent = stage;
+        badge.className =
+          "status-badge " +
+          (c.packet_ready
+            ? "badge-ready"
+            : pct > 0
+              ? "badge-progress"
+              : "badge-neutral");
+
+        // Start / Resume button
+        const btn = document.getElementById("btn-start");
+        if (c.packet_ready) {
+          btn.textContent = "Review Packet";
+          btn.onclick = () =>
+            alert("Your packet is ready — use the Download button below.");
+        } else if (pct > 0) {
+          btn.textContent = "Continue Intake";
+        } else {
+          btn.textContent = "Start Intake";
+        }
+
+        // Download
+        if (c.packet_ready && c.download_url) show("btn-download");
+        else hide("btn-download");
+      }
+
+      function startIntake() {
+        if (!state.case) {
+          alert("No case found. Please contact support.");
+          return;
+        }
+        // Build a same-origin relative URL only — never a user-controlled host.
+        const target = new URL("/chat", window.location.origin);
+        target.searchParams.set("case_id", state.case.id || "");
+        target.searchParams.set("token", state.token || "");
+        target.searchParams.set(
+          "email",
+          (state.user && state.user.email) || "",
+        );
+        target.searchParams.set("state", state.case.state || "");
+        target.searchParams.set("county", state.case.county || "");
+        window.location.assign(target.pathname + target.search);
+      }
+
+      async function downloadPacket() {
+        if (!state.case || !state.case.download_url) return;
+        const btn = document.getElementById("btn-download");
+        btn.disabled = true;
+        btn.textContent = "Preparing…";
+        try {
+          const r = await fetch(state.case.download_url, {
+            headers: { Authorization: "Bearer " + state.token },
+          });
+          if (!r.ok) {
+            const e = await r.json().catch(() => ({}));
+            throw new Error(e.detail || "Download failed");
+          }
+          const blob = await r.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "eviction_defense_packet.zip";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          alert(e.message || "Download failed");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "📥 Download Packet";
+        }
+      }
+
+      // ------------------------------------------------------------ settings
+      async function changePassword() {
+        const cur = document.getElementById("cur-pw").value;
+        const next = document.getElementById("new-pw").value;
+        const errEl = document.getElementById("pw-error");
+        const okEl = document.getElementById("pw-success");
+        errEl.style.display = "none";
+        okEl.style.display = "none";
+        if (!cur || !next) {
+          errEl.textContent = "Fill in both fields.";
+          errEl.style.display = "block";
+          return;
+        }
+
+        try {
+          const r = await fetch("/api/v1/auth/change-password", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ current_password: cur, new_password: next }),
+          });
+          const data = await r.json();
+          if (!r.ok)
+            throw new Error(data.detail || "Failed to update password");
+          document.getElementById("cur-pw").value = "";
+          document.getElementById("new-pw").value = "";
+          hide("change-pw-banner");
+          okEl.textContent = "Password updated.";
+          okEl.style.display = "block";
+        } catch (e) {
+          errEl.textContent = e.message || "Failed to update password";
+          errEl.style.display = "block";
+        }
+      }
+    </script>
+  </body>
+</html>

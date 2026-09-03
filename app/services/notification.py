@@ -35,10 +35,10 @@ def send_packet_ready_email(
     email_body = f"""
 Hi {customer_name},
 
-Your Florida Eviction Self-Help Paperwork Packet is ready.
+Your Eviction Self-Help Paperwork Packet is ready.
 
 Here's what's included:
-• Form 1.947(b) Answer — Residential Eviction (pre-filled)
+• Official Court Answer Form (pre-filled)
 • Motion to Determine Rent (if applicable)
 • Landlord Payment-Plan Letter
 • Hardship/Extension Letter
@@ -109,8 +109,8 @@ Reason: {reason}
 We have issued a full refund of ${refund_amount:.2f}. Please allow 5-10 business days for the refund to appear on your payment method.
 
 If you need legal assistance, here are some resources:
-• Florida Legal Aid: https://www.floridalawhelp.org
-• Florida Bar Lawyer Referral Service: 1-800-342-8011
+• Legal Aid: find your local office at lsc.gov/find-legal-aid
+• Your state bar's lawyer referral service
 
 — Eviction Defense Team
 """

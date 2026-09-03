@@ -6,8 +6,8 @@ from pydantic import BaseModel, EmailStr, Field
 
 class PreScreen(BaseModel):
     """Pre-payment eligibility check."""
-    state: str = Field(default="FL", description="State of eviction case")
-    county: str = Field(..., description="Florida county")
+    state: str = Field(default="", description="State of eviction case")
+    county: str = Field(..., description="County where the case is filed")
     is_tenant: bool = Field(..., description="Is the user the named tenant?")
     is_residential: bool = Field(..., description="Is this a residential property?")
     received_court_papers: bool = Field(..., description="Has the user been served with summons/complaint?")
@@ -39,11 +39,12 @@ class PersonalInfo(BaseModel):
 
 class LandlordInfo(BaseModel):
     landlord_name: str
-    landlord_address: Optional[str] = None
+    landlord_address: str
     landlord_phone: Optional[str] = None
     landlord_email: Optional[str] = None
     landlord_attorney_name: Optional[str] = None
     landlord_attorney_email: Optional[str] = None
+    landlord_attorney_address: Optional[str] = None
     property_manager: Optional[str] = None
     management_company: Optional[str] = None
 
@@ -197,6 +198,7 @@ class FinancialInfo(BaseModel):
 
 class CompleteIntake(BaseModel):
     """All intake sections together."""
+    state: Optional[str] = None
     personal_info: PersonalInfo
     landlord_info: LandlordInfo
     case_details: CaseDetails

@@ -62,7 +62,11 @@ def submit_intake(payload: CompleteIntake, case_id: str, db: Session = Depends(g
     case.amount_tenant_believes_owed = r.amount_tenant_believes_owed
 
     case.defenses = payload.defenses.model_dump(mode="json")
+    if payload.state:
+        case.state = payload.state.upper()
+    case.intake_data = payload.model_dump(mode="json")
     case.status = "intake_complete"
+    case.progress = 55
 
     db.commit()
     return {"status": "ok", "case_id": case_id}

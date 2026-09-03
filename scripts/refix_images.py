@@ -222,11 +222,10 @@ def get_search_query(url):
     parts = path.split("/")
     state_map = {
         'south-carolina': 'South Carolina', 'tennessee': 'Tennessee', 'texas': 'Texas',
-        'florida': 'Florida', 'california': 'California', 'arizona': 'Arizona',
         'arkansas': 'Arkansas', 'colorado': 'Colorado', 'connecticut': 'Connecticut',
         'georgia': 'Georgia', 'illinois': 'Illinois', 'louisiana': 'Louisiana',
-        'massachusetts': 'Massachusetts', 'michigan': 'Michigan', 'minnesota': 'Minnesota',
-        'nevada': 'Nevada', 'new-mexico': 'New Mexico', 'oregon': 'Oregon',
+        'michigan': 'Michigan', 'minnesota': 'Minnesota',
+        'new-mexico': 'New Mexico', 'oregon': 'Oregon',
         'rhode-island': 'Rhode Island', 'virginia': 'Virginia',
     }
     state = state_map.get(parts[0], parts[0].replace("-", " ").title())

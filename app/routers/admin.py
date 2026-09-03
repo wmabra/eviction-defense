@@ -3,11 +3,30 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, cast
 import json
 
 from app.database import get_db
 from app.database.models import Case
+
+def _dt_str(value: Optional[datetime]) -> Optional[str]:
+    """Format a datetime for JSON, or None."""
+    return str(value) if value is not None else None
+
+
+def _load_defenses(value: object) -> dict:
+    """Return a case's defenses as a dict (JSON columns may hold dict or str)."""
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            return {}
+    return {}
+
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -39,17 +58,22 @@ def get_stats(db: Session = Depends(get_db)):
     
     # Cases by status
     from sqlalchemy import func
-    status_counts = dict(
-        db.query(Case.status, func.count(Case.id))
-        .group_by(Case.status)
+    status_counts = {
+        str(status): count
+        for status, count in db.query(Case.status, func.count(Case.id)).group_by(Case.status).all()
+    }
+
+    # Cases by state (from the `state` column added with account flow)
+    state_counts = {
+        str(state): count
+        for state, count in db.query(Case.state, func.count(Case.id))
+        .filter(Case.state.isnot(None))
+        .group_by(Case.state)
         .all()
-    )
-    
-    # Cases by state (from county field or extracted data)
-    state_counts = {}
-    
-    # Revenue estimate ($399 per case with payment)
-    paid_cases = status_counts.get("packet_ready", 0) + status_counts.get("delivered", 0)
+    }
+
+    # Revenue estimate ($399 per paid case)
+    paid_cases = db.query(Case).filter(Case.payment_status == "paid").count()
     revenue_estimate = paid_cases * 399
     
     return {
@@ -91,8 +115,8 @@ def list_cases(
                 "landlord_name": c.landlord_name,
                 "status": c.status,
                 "payment_status": c.payment_status,
-                "created_at": str(c.created_at) if c.created_at else None,
-                "defenses": json.loads(c.defenses) if c.defenses else {},
+                "created_at": _dt_str(cast(Optional[datetime], c.created_at)),
+                "defenses": _load_defenses(cast(Optional[object], c.defenses)),
             }
             for c in cases
         ],
@@ -124,10 +148,10 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
         "landlord_attorney_name": case.landlord_attorney_name,
         "complaint_amount_claimed": case.complaint_amount_claimed,
         "monthly_rent": case.monthly_rent,
-        "defenses": json.loads(case.defenses) if case.defenses else {},
+        "defenses": _load_defenses(cast(Optional[object], case.defenses)),
         "status": case.status,
         "payment_status": case.payment_status,
-        "created_at": str(case.created_at) if case.created_at else None,
+        "created_at": _dt_str(cast(Optional[datetime], case.created_at)),
     }
 
 
@@ -142,7 +166,7 @@ def resend_packet(case_id: str, db: Session = Depends(get_db)):
     params = "&".join([
         f"full_name={case.full_name or 'Tenant'}",
         f"county={case.county or ''}",
-        f"state=FL",
+        f"state={case.state or ''}",
         f"property_address={case.property_address or ''}",
         f"landlord_name={case.landlord_name or ''}",
         f"case_number={case.case_number or ''}",

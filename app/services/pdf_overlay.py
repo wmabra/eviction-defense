@@ -131,6 +131,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     else:
         _fill_via_overlay(doc, data, config, form_key)
 
+    # Add editable fields at every remaining blank + checkbox (fillable forms too)
+    _make_scanned_form_editable(doc, data)
+
     doc.save(output_path, deflate=True)
     doc.close()
     logger.info(f"✅ {state_code} form saved: {output_path}")
@@ -477,6 +480,234 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                     break
 
 
+_LABEL_FIELDS = [
+    ("court file number", "case_details", "case_number", False),
+    ("case number", "case_details", "case_number", False),
+    ("case type", "case_details", "division", False),
+    ("county of", "personal_info", "county", False),
+    ("judicial district", "case_details", "court_name", False),
+    ("plaintiff", "landlord_info", "landlord_name", False),
+    ("defendant", "personal_info", "full_name", False),
+    ("address", "personal_info", "property_address", False),
+    ("city, state, zip", "personal_info", "property_city_zip", False),
+    ("phone", "personal_info", "phone", False),
+    ("email", "personal_info", "email", False),
+    ("rent or mortgage", "financial_info", "rent_or_mortgage", False),
+    ("utilities", "financial_info", "utilities_expense", False),
+    ("food", "financial_info", "food_expense", False),
+    ("car payments", "financial_info", "transportation_expense", False),
+    ("car insurance", "financial_info", "transportation_expense", False),
+    ("childcare", "financial_info", "child_care_expense", False),
+    ("medical insurance", "financial_info", "medical_expense", False),
+    ("cell phone", "financial_info", "utilities_expense", False),
+    ("cash", "financial_info", "cash_on_hand", False),
+    ("accounts", "financial_info", "bank_total", False),
+    ("total monthly income", "financial_info", "monthly_gross_income", False),
+    ("average monthly income", "financial_info", "monthly_gross_income", False),
+    ("household size", "financial_info", "household_size", False),
+    ("ssi", "financial_info", "receives_ssi", True),
+    ("snap", "financial_info", "receives_snap", True),
+    ("medical assistance", "financial_info", "receives_medicaid", True),
+    ("minnesotacare", "financial_info", "receives_medicaid", True),
+    ("mfip", "financial_info", "receives_tanf", True),
+    ("general assistance", "financial_info", "receives_tanf", True),
+    ("energy", "financial_info", "receives_energy_assistance", True),
+    ("job/wages", "financial_info", "employment_income", True),
+    ("unemployment", "financial_info", "unemployment_income", True),
+    ("social security", "financial_info", "social_security_income", True),
+    ("child support", "financial_info", "child_support_income", True),
+    ("spousal support", "financial_info", "alimony_income", True),
+]
+
+
+def _resolve_field_value(section: str, key: str, data: dict) -> str:
+    if section is None:
+        return ""
+    d = data.get(section) or {}
+    if key == "property_city_zip":
+        return f"{d.get('property_city', '')}, {d.get('property_zip', '')}".strip(", ")
+    if key == "bank_total":
+        c = d.get("checking_balance") or 0
+        s = d.get("savings_balance") or 0
+        return f"{c + s:,.2f}" if (c or s) else ""
+    if key == "household_size":
+        a = d.get("household_adults") or 0
+        ch = d.get("household_children") or 0
+        return str(a + ch) if (a or ch) else ""
+    v = d.get(key)
+    if v is None:
+        return ""
+    if isinstance(v, bool):
+        return "Yes" if v else ""
+    return str(v)
+
+
+def _match_label_field(label: Optional[str]):
+    if not label:
+        return None
+    l = label.lower()
+    for text, section, key, is_checkbox in _LABEL_FIELDS:
+        if text in l:
+            return (section, key, is_checkbox)
+    return None
+
+
+def _find_label_for_line(words, r) -> Optional[str]:
+    best = None
+    best_dist = None
+    for w in words:
+        x0, y0, x1, y1, word = w[0], w[1], w[2], w[3], w[4]
+        if y1 <= r.y0 + 1 and y0 >= r.y0 - 24 and x0 <= r.x0 + 6:
+            dist = (r.y0 - y1) + max(0, r.x0 - x1) * 0.05
+            if best_dist is None or dist < best_dist:
+                best_dist = dist
+                best = word
+        elif abs((y0 + y1) / 2 - r.y0) < 8 and x1 <= r.x0 + 2:
+            dist = r.x0 - x1
+            if best_dist is None or dist < best_dist:
+                best_dist = dist
+                best = word
+    return best
+
+
+def _is_signature_line(page, rect) -> bool:
+    """True if text near rect is a signature/notary area (keep as ink, not editable)."""
+    clip = fitz.Rect(rect.x0 - 60, rect.y0 - 14, rect.x1 + 160, rect.y1 + 14)
+    txt = page.get_text("text", clip=clip).lower()
+    return any(k in txt for k in ("signature", "notary", "affiant", "officer", "sworn", "subscribed", "witness", "deponent", "attesting"))
+
+
+def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
+    """Add editable text/checkbox widgets at every blank + checkbox on a scanned form.
+
+    Handles every blank representation: underscore runs, horizontal lines, rectangle
+    boxes, and checkboxes drawn as "☐" glyphs or small vector squares. Signature/notary
+    lines are left alone so the user signs with ink.
+    """
+    def _label_to_right(words, x0, y0, y1, maxdist=70) -> str:
+        for w in words:
+            wx0, wy0, wx1, wy1, word = w[0], w[1], w[2], w[3], w[4]
+            if abs((wy0 + wy1) / 2 - (y0 + y1) / 2) < 6 and x0 - 1 <= wx0 <= x0 + maxdist:
+                return str(word)
+        return ""
+
+    for pno in range(doc.page_count):
+        page = doc[pno]
+        words = page.get_text("words")
+        drawings = page.get_drawings()
+        covered = []
+
+        def _covered(rect, tol=4):
+            r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
+            return any(r.intersects(e) for e in covered)
+
+        # 1. checkboxes drawn as "☐" glyphs
+        for i, r in enumerate(page.search_for("\u2610")):
+            rr = fitz.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
+            if _covered(rr):
+                continue
+            lb = _label_to_right(words, r.x1, r.y0, r.y1)
+            m = _match_label_field(lb)
+            _add_checkbox_widget(page, rr, f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+            covered.append(rr)
+
+        # 2. checkboxes drawn as small vector squares
+        for i, dr in enumerate(drawings):
+            r = dr["rect"]
+            if 5 <= r.width <= 20 and 5 <= r.height <= 20 and abs(r.width - r.height) <= 5:
+                if _covered(r):
+                    continue
+                lb = _label_to_right(words, r.x1, r.y0, r.y1)
+                m = _match_label_field(lb)
+                _add_checkbox_widget(page, r, f"vcb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+                covered.append(r)
+
+        # 3. underscore runs -> text fields
+        raw = page.get_text("rawdict")
+        runs = []
+        for blk in raw.get("blocks", []):
+            if blk.get("type") != 0:
+                continue
+            for ln in blk.get("lines", []):
+                for sp in ln.get("spans", []):
+                    cur = []
+                    for ch in sp.get("chars", []):
+                        if ch["c"] == "_":
+                            cur.append(ch["bbox"])
+                        else:
+                            if cur:
+                                runs.append(cur); cur = []
+                    if cur:
+                        runs.append(cur)
+        for i, run in enumerate(runs):
+            if len(run) < 3:
+                continue
+            x0 = min(b[0] for b in run); y0 = min(b[1] for b in run)
+            x1 = max(b[2] for b in run); y1 = max(b[3] for b in run)
+            r = fitz.Rect(x0, y1 - 14, max(x1, x0 + 48), y1 + 2)
+            if _covered(r) or _is_signature_line(page, r):
+                continue
+            lb = _find_label_for_line(words, r)
+            m = _match_label_field(lb)
+            if m and not m[2]:
+                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
+            else:
+                _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
+            covered.append(r)
+
+        # 4. horizontal lines -> text fields
+        for i, dr in enumerate([d for d in drawings if d["rect"].height < 3 and d["rect"].width > 15]):
+            r = dr["rect"]
+            if _covered(r) or _is_signature_line(page, r):
+                continue
+            lb = _find_label_for_line(words, r)
+            m = _match_label_field(lb)
+            if m and not m[2]:
+                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
+            else:
+                _add_text_widget(page, r, f"fill_{pno}_{i}", "")
+            covered.append(r)
+
+        # 5. rectangle boxes -> text fields
+        for i, dr in enumerate([d for d in drawings if d["rect"].width > 40 and 3 <= d["rect"].height <= 30]):
+            r = dr["rect"]
+            if _covered(r):
+                continue
+            lb = _find_label_for_line(words, r)
+            m = _match_label_field(lb)
+            if m and not m[2]:
+                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
+            else:
+                _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
+            covered.append(r)
+
+
+def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -> None:
+    """Add a pre-filled, editable text field at the given rect."""
+    if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
+        return
+    if rect.height < 12:
+        rect = fitz.Rect(rect.x0, rect.y0 - 6, rect.x1, rect.y0 + 8)
+    w = cast(Any, fitz.Widget())
+    w.field_name = name
+    w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    w.rect = rect
+    w.field_value = str(value)
+    page.add_widget(w)
+
+
+def _add_checkbox_widget(page, rect, name: str, checked: bool = True) -> None:
+    """Add an editable checkbox at the given rect."""
+    if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
+        return
+    w = cast(Any, fitz.Widget())
+    w.field_name = name
+    w.field_type = fitz.PDF_WIDGET_TYPE_CHECKBOX  # type: ignore[attr-defined]
+    w.rect = rect
+    w.field_value = bool(checked)
+    page.add_widget(w)
+
+
 def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: str = "answer_form"):
     """Overlay text on scanned/non-fillable PDFs using coordinate positions.
     
@@ -531,7 +762,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if fin_lines:
                     fin_text = "\n".join(fin_lines)
                     fin_rect = fitz.Rect(50, 250, 550, 400)
-                    page.insert_textbox(fin_rect, fin_text, fontname="helv", fontsize=9, color=(0, 0, 0))
+                    _add_text_widget(page, fin_rect, "financial_summary", fin_text, font_size=9)
         
         if positions:
             # Use precise coordinates for this state
@@ -539,36 +770,16 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if pos.get("page", 1) - 1 != page_num:
                     continue
                 value = _get_field_value(key, data)
-                if not value:
-                    continue
-                
                 # Check if this is a defense checkbox (small overlay rect)
                 is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
-                
                 if is_checkbox:
-                    # Draw a proper checkmark (✓) using lines
                     cx = pos["x"]
                     cy = pos["y"]
-                    s = pos.get("h", 14)  # use height as scale
-                    # Draw the checkmark as two lines: \ and /
-                    page.draw_line(
-                        fitz.Point(cx, cy + s * 0.5),
-                        fitz.Point(cx + s * 0.35, cy + s * 0.9),
-                        color=(0, 0, 0), width=1.5
-                    )
-                    page.draw_line(
-                        fitz.Point(cx + s * 0.35, cy + s * 0.9),
-                        fitz.Point(cx + s * 0.8, cy + s * 0.15),
-                        color=(0, 0, 0), width=1.5
-                    )
-                else:
+                    s = pos.get("h", 14)
+                    _add_checkbox_widget(page, fitz.Rect(cx, cy, cx + s, cy + s), key, checked=bool(value))
+                elif value:
                     rect = fitz.Rect(pos["x"], pos["y"], pos["x"] + pos.get("w", 200), pos["y"] + pos.get("h", 20))
-                    page.insert_textbox(
-                        rect, str(value),
-                        fontname="helv",
-                        fontsize=pos.get("size", 10),
-                        color=(0, 0, 0),
-                    )
+                    _add_text_widget(page, rect, key, str(value), font_size=pos.get("size", 10))
         else:
             # No position config — stamp info block at top of first page
             if page_num == 0:
@@ -612,7 +823,9 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 
                 text = "\n".join(text_lines)
                 rect = fitz.Rect(50, 50, 550, 300)
-                page.insert_textbox(rect, text, fontname="helv", fontsize=10, color=(0, 0, 0))
+                _add_text_widget(page, rect, "info_block", text, font_size=10)
+
+
 
 
 def _get_field_value(key: str, data: dict) -> Optional[str]:

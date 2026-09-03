@@ -45,7 +45,6 @@ const SUPPORTED_COUNTIES = {
 		"White",
 	],
 
-
 	CO: [
 		"Adams",
 		"Arapahoe",
@@ -123,50 +122,50 @@ const SUPPORTED_COUNTIES = {
 		"Will",
 		"Winnebago",
 	],
-		IN: [
-			"Marion",
-			"Lake",
-			"Allen",
-			"Hamilton",
-			"St. Joseph",
-			"Elkhart",
-			"Tippecanoe",
-			"Vanderburgh",
-			"Porter",
-			"Hendricks",
-			"Johnson",
-			"Monroe",
-			"Madison",
-			"Delaware",
-			"Clark",
-			"Vigo",
-			"Howard",
-			"LaPorte",
-			"Bartholomew",
-			"Boone",
-		],
-		KY: [
-			"Jefferson",
-			"Fayette",
-			"Kenton",
-			"Boone",
-			"Warren",
-			"Hardin",
-			"Daviess",
-			"Campbell",
-			"Madison",
-			"Bullitt",
-			"Christian",
-			"Oldham",
-			"Pulaski",
-			"Laurel",
-			"Scott",
-			"Jessamine",
-			"Franklin",
-			"McCracken",
-			"Hopkins",
-			"Shelby",
-		],
+	IN: [
+		"Marion",
+		"Lake",
+		"Allen",
+		"Hamilton",
+		"St. Joseph",
+		"Elkhart",
+		"Tippecanoe",
+		"Vanderburgh",
+		"Porter",
+		"Hendricks",
+		"Johnson",
+		"Monroe",
+		"Madison",
+		"Delaware",
+		"Clark",
+		"Vigo",
+		"Howard",
+		"LaPorte",
+		"Bartholomew",
+		"Boone",
+	],
+	KY: [
+		"Jefferson",
+		"Fayette",
+		"Kenton",
+		"Boone",
+		"Warren",
+		"Hardin",
+		"Daviess",
+		"Campbell",
+		"Madison",
+		"Bullitt",
+		"Christian",
+		"Oldham",
+		"Pulaski",
+		"Laurel",
+		"Scott",
+		"Jessamine",
+		"Franklin",
+		"McCracken",
+		"Hopkins",
+		"Shelby",
+	],
 	LA: [
 		"Ascension",
 		"Bossier",
@@ -234,28 +233,28 @@ const SUPPORTED_COUNTIES = {
 		"Winona",
 		"Wright",
 	],
-		MO: [
-			"St. Louis County",
-			"Jackson",
-			"St. Charles",
-			"Greene",
-			"St. Louis City",
-			"Clay",
-			"Jefferson",
-			"Boone",
-			"Jasper",
-			"Cass",
-			"Platte",
-			"Franklin",
-			"Christian",
-			"Buchanan",
-			"Cape Girardeau",
-			"Cole",
-			"St. Francois",
-			"Lincoln",
-			"Taney",
-			"Howell",
-		],
+	MO: [
+		"St. Louis County",
+		"Jackson",
+		"St. Charles",
+		"Greene",
+		"St. Louis City",
+		"Clay",
+		"Jefferson",
+		"Boone",
+		"Jasper",
+		"Cass",
+		"Platte",
+		"Franklin",
+		"Christian",
+		"Buchanan",
+		"Cape Girardeau",
+		"Cole",
+		"St. Francois",
+		"Lincoln",
+		"Taney",
+		"Howell",
+	],
 	NM: [
 		"Bernalillo",
 		"Chaves",
@@ -278,50 +277,50 @@ const SUPPORTED_COUNTIES = {
 		"Torrance",
 		"Valencia",
 	],
-		OH: [
-			"Cuyahoga",
-			"Franklin",
-			"Hamilton",
-			"Summit",
-			"Montgomery",
-			"Lucas",
-			"Stark",
-			"Butler",
-			"Lorain",
-			"Lake",
-			"Mahoning",
-			"Warren",
-			"Clermont",
-			"Trumbull",
-			"Delaware",
-			"Licking",
-			"Greene",
-			"Portage",
-			"Fairfield",
-			"Medina",
-		],
-		OK: [
-			"Oklahoma",
-			"Tulsa",
-			"Cleveland",
-			"Canadian",
-			"Comanche",
-			"Rogers",
-			"Payne",
-			"Wagoner",
-			"Pottawatomie",
-			"Creek",
-			"Garfield",
-			"Muskogee",
-			"Grady",
-			"Le Flore",
-			"Washington",
-			"Bryan",
-			"Logan",
-			"Carter",
-			"Okmulgee",
-			"Osage",
-		],
+	OH: [
+		"Cuyahoga",
+		"Franklin",
+		"Hamilton",
+		"Summit",
+		"Montgomery",
+		"Lucas",
+		"Stark",
+		"Butler",
+		"Lorain",
+		"Lake",
+		"Mahoning",
+		"Warren",
+		"Clermont",
+		"Trumbull",
+		"Delaware",
+		"Licking",
+		"Greene",
+		"Portage",
+		"Fairfield",
+		"Medina",
+	],
+	OK: [
+		"Oklahoma",
+		"Tulsa",
+		"Cleveland",
+		"Canadian",
+		"Comanche",
+		"Rogers",
+		"Payne",
+		"Wagoner",
+		"Pottawatomie",
+		"Creek",
+		"Garfield",
+		"Muskogee",
+		"Grady",
+		"Le Flore",
+		"Washington",
+		"Bryan",
+		"Logan",
+		"Carter",
+		"Okmulgee",
+		"Osage",
+	],
 
 	OR: [
 		"Baker",
@@ -467,17 +466,11 @@ function checkEligibility() {
 	const isResidential = document.querySelector(
 		'input[name="el-residential"]:checked',
 	);
-	const isSection8 = document.querySelector(
-		'input[name="el-section8"]:checked',
-	);
-	const isMilitary = document.querySelector(
-		'input[name="el-military"]:checked',
-	);
+	const isSection8 = document.querySelector('input[name="el-section8"]:checked');
+	const isMilitary = document.querySelector('input[name="el-military"]:checked');
 	const isBankruptcy = document.querySelector(
 		'input[name="el-bankruptcy"]:checked',
 	);
-
-	const result = document.getElementById("el-result");
 
 	// Validate all answered
 	if (
@@ -577,7 +570,7 @@ function showResult(type, msg) {
 
 // Payment via Authorize.net — AcceptUI hosted form
 // Called by Authorize.net AcceptUI after the user completes the hosted payment form
-function authNetResponseHandler(response) {
+window.authNetResponseHandler = (response) => {
 	const btn = document.getElementById("btn-pay");
 
 	if (response.messages.resultCode === "Error") {
@@ -608,7 +601,7 @@ function authNetResponseHandler(response) {
 	btn.textContent = "Processing...";
 
 	submitPayment(response.opaqueData, email);
-}
+};
 
 async function submitPayment(opaqueData, email) {
 	try {
@@ -620,32 +613,31 @@ async function submitPayment(opaqueData, email) {
 				order_id: "order-" + Date.now(),
 				customer_email: email,
 				customer_name: "Tenant",
+				state: appState.state || "",
+				county: appState.county || "",
+				property_address: appState.address || "",
+				property_city: appState.city || "",
+				property_zip: appState.zip || "",
 			}),
 		});
-		if (!res.ok) throw new Error("Payment failed");
-		redirectToChat(email);
-	} catch (e) {
+		const data = await res.json();
+		if (!res.ok) throw new Error((data && data.detail) || "Payment failed");
+		redirectToAccount(data);
+	} catch {
 		document.getElementById("btn-pay").disabled = false;
-		document.getElementById("btn-pay").textContent =
-			"Payment Failed — Try Again";
+		document.getElementById("btn-pay").textContent = "Payment Failed — Try Again";
 	}
 }
 
-function redirectToChat(email) {
-	var url =
-		"/chat?state=" +
-		encodeURIComponent(appState.state) +
-		"&email=" +
-		encodeURIComponent(email) +
-		"&address=" +
-		encodeURIComponent(appState.address || "") +
-		"&city=" +
-		encodeURIComponent(appState.city || "") +
-		"&county=" +
-		encodeURIComponent(appState.county || "") +
-		"&zip=" +
-		encodeURIComponent(appState.zip || "") +
-		"&served=" +
-		(appState.wasServed ? "yes" : "no");
-	window.location.href = url;
+function redirectToAccount(data) {
+	const email = (data && data.email) || appState.email;
+	if (data && data.temp_password) {
+		try {
+			sessionStorage.setItem("evictions_temp_pw", data.temp_password);
+		} catch {}
+	}
+	// Same-origin relative redirect only — never a user-controlled host.
+	const target = new URL("/account", window.location.origin);
+	target.searchParams.set("email", email || "");
+	window.location.assign(target.pathname + target.search);
 }

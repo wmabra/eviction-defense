@@ -34,6 +34,34 @@ def send_email(to: str, subject: str, body: str) -> bool:
         return False
 
 
+def send_welcome_email(to: str, temp_password: str) -> bool:
+    """Send the post-payment account-creation email with login credentials."""
+    subject = "Your evictions.help account is ready"
+    base = settings.app_url.rstrip("/")
+
+    body = f"""Welcome to evictions.help — your payment is confirmed and your account is ready.
+
+Your account details:
+  Username: {to}
+  Password: {temp_password}
+
+To get started:
+1. Go to {base}/account
+2. Log in with the username and password above
+3. Click "Start" to begin your intake with our AI assistant
+
+For your security, please change your password after logging in (Settings → Change Password).
+
+You can log back in anytime to pick up right where you left off — your progress is saved automatically.
+
+Need help? Reply to this email or contact support@evictions.help.
+
+— The evictions.help team
+"""
+
+    return send_email(to=to, subject=subject, body=body)
+
+
 def send_callback_email(
     callback_id: str,
     first_name: str,

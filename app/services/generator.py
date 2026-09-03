@@ -44,20 +44,85 @@ from reportlab.platypus import (
     PageBreak, ListFlowable, ListItem, HRFlowable,
 )
 from reportlab.pdfgen import canvas
+from app.services.form_fields import FillableText, FillableCheckbox
 
 logger = logging.getLogger(__name__)
+
+
+def _editable_field(name, value="", width=140, height=16, font_size=9):
+    return FillableText(name, value, width=width, height=height, font_size=font_size)
+
+
+def _editable_checkbox(name, checked=False, size=11):
+    return FillableCheckbox(name, checked, size=size)
+
+
+def _checkbox_table(rows):
+    t = Table(rows, colWidths=[18, 500])
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ]))
+    return t
+
+
+def _field_table(rows, col_widths=(120, 260)):
+    t = Table(rows, colWidths=list(col_widths))
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ]))
+    return t
+
+
+def _editable_caption(data, S, plaintiff_label="Plaintiff", defendant_label="Defendant", division=False):
+    p = data.get("personal_info", {})
+    l = data.get("landlord_info", {})
+    c = data.get("case_details", {})
+    state = data.get("state", "").upper()
+    county = p.get("county", "[COUNTY]")
+    el = [Paragraph(_court_caption(state, county, c.get("court_name", "")), S["Caption"]), Spacer(1, 4)]
+    _party = _field_table([
+        [_editable_field("plaintiff", l.get("landlord_name", ""), width=260), Paragraph(f", {plaintiff_label},", S["Caption"])],
+        [Paragraph("vs.", S["Caption"]), ""],
+        [_editable_field("defendant", p.get("full_name", ""), width=260), Paragraph(f", {defendant_label}.", S["Caption"])],
+    ], col_widths=(260, 140))
+    el.append(_party)
+    el.append(Spacer(1, 4))
+    _case = _field_table([[Paragraph("Case No.:", S["Caption"]), _editable_field("case_number", c.get("case_number", ""), width=200)]], col_widths=(80, 200))
+    el.append(_case)
+    if division:
+        el.append(Spacer(1, 2))
+        el.append(_field_table([[Paragraph("Division:", S["Caption"]), _editable_field("division", "", width=120)]], col_widths=(70, 140)))
+    el.append(HRFlowable(width="100%", thickness=1))
+    el.append(Spacer(1, 14))
+    return el
+
+
+def _editable_signature(data, S):
+    p = data.get("personal_info", {})
+    return [
+        HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"),
+        _field_table([
+            [Paragraph("Name:", S["Body"]), _editable_field("sig_name", p.get("full_name", ""), width=220)],
+            [Paragraph("Address:", S["BodySmall"]), _editable_field("sig_address", p.get("property_address", ""), width=220)],
+            [Paragraph("Phone:", S["BodySmall"]), _editable_field("sig_phone", p.get("phone", ""), width=160)],
+            [Paragraph("Email:", S["BodySmall"]), _editable_field("sig_email", p.get("email", ""), width=220)],
+        ]),
+    ]
 
 
 # ── State-specific court captions & terminology ──
 
 STATE_COURT_CAPTIONS = {
-    "FL": "IN THE COUNTY COURT, IN AND FOR {county} COUNTY, FLORIDA",
-    "CA": "SUPERIOR COURT OF THE STATE OF CALIFORNIA, COUNTY OF {county}",
     "TX": "IN THE JUSTICE COURT, {county} COUNTY, TEXAS",
     "GA": "IN THE MAGISTRATE COURT OF {county} COUNTY, GEORGIA",
     "IL": "IN THE CIRCUIT COURT OF {county} COUNTY, ILLINOIS",
     "MI": "IN THE DISTRICT COURT, {county} COUNTY, MICHIGAN",
-    "NV": "IN THE JUSTICE COURT, {county} TOWNSHIP, NEVADA",
     "OR": "IN THE CIRCUIT COURT OF THE STATE OF OREGON, COUNTY OF {county}",
     "MN": "IN THE DISTRICT COURT, {county} COUNTY, MINNESOTA",
     "CO": "IN THE COUNTY COURT, {county} COUNTY, COLORADO",
@@ -67,9 +132,7 @@ STATE_COURT_CAPTIONS = {
     "TN": "IN THE GENERAL SESSIONS COURT, {county} COUNTY, TENNESSEE",
     "LA": "IN THE {court_name} COURT, PARISH OF {county}, LOUISIANA",
     "AR": "IN THE DISTRICT COURT, {county} COUNTY, ARKANSAS",
-    "AZ": "IN THE JUSTICE COURT, {county} COUNTY, ARIZONA",
     "VA": "IN THE GENERAL DISTRICT COURT, {county} COUNTY, VIRGINIA",
-    "MA": "IN THE HOUSING COURT, {county} DIVISION, MASSACHUSETTS",
     "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
     "MO": "IN THE CIRCUIT COURT OF {county} COUNTY, MISSOURI (ASSOCIATE CIRCUIT DIVISION)",
     "KY": "IN THE DISTRICT COURT OF {county} COUNTY, KENTUCKY",
@@ -79,13 +142,10 @@ STATE_COURT_CAPTIONS = {
 }
 
 WRIT_TERMS = {
-    "FL": "Writ of Possession",
-    "CA": "Writ of Possession",
     "TX": "Writ of Possession",
     "GA": "Writ of Possession",
     "IL": "Order of Possession",
     "MI": "Order of Eviction",
-    "NV": "Order for Summary Eviction",
     "OR": "Notice of Restitution",
     "MN": "Writ of Recovery",
     "CO": "Writ of Restitution",
@@ -95,9 +155,7 @@ WRIT_TERMS = {
     "TN": "Writ of Possession",
     "LA": "Warrant of Eviction",
     "AR": "Writ of Possession",
-    "AZ": "Writ of Restitution",
     "VA": "Writ of Possession",
-    "MA": "Execution",
     "NM": "Writ of Restitution",
     "MO": "Judgment for Restitution of Premises",
     "KY": "Warrant for Possession",
@@ -107,13 +165,10 @@ WRIT_TERMS = {
 }
 
 EVICTION_LAW_CHAPTERS = {
-    "FL": "Florida Statutes Chapter 83",
-    "CA": "California Code of Civil Procedure § 1161 et seq.",
     "TX": "Texas Property Code Chapter 24",
     "GA": "O.C.G.A. Title 44, Chapter 7",
     "IL": "735 ILCS 5, Article IX (Forcible Entry and Detainer)",
     "MI": "MCL 600.5701 et seq. (Summary Proceedings)",
-    "NV": "NRS Chapter 40 (Forcible Entry and Unlawful Detainer)",
     "OR": "ORS Chapter 105 (Forcible Entry and Detainer)",
     "MN": "Minnesota Statutes Chapter 504B",
     "CO": "C.R.S. Title 13, Article 40 (Forcible Entry and Detainer)",
@@ -123,9 +178,7 @@ EVICTION_LAW_CHAPTERS = {
     "TN": "Tennessee Code Annotated § 29-18-101 et seq.",
     "LA": "Louisiana Code of Civil Procedure, Articles 4701-4735",
     "AR": "Arkansas Code Annotated § 18-60-301 et seq.",
-    "AZ": "A.R.S. Title 33, Chapter 10 (Forcible Entry and Detainer)",
     "VA": "Virginia Code § 8.01-124 et seq. (Unlawful Detainer)",
-    "MA": "M.G.L. Chapter 239 (Summary Process)",
     "NM": "NMSA 1978 § 35-10-1 et seq. (Forcible Entry and Detainer)",
     "MO": "RSMo Chapter 535 (Landlord-Tenant Actions) & Chapter 534 (Forcible Entry and Unlawful Detainer)",
     "KY": "KRS 383.200-383.275 (Forcible Entry and Detainer)",
@@ -148,6 +201,22 @@ def _writ_term(state: str) -> str:
 def _eviction_law(state: str) -> str:
     """Get the primary eviction law citation for a state."""
     return EVICTION_LAW_CHAPTERS.get(state.upper(), "applicable state law")
+
+
+def _service_recipient(data: dict) -> tuple:
+    """Return (name, address) of the party to serve court papers on.
+
+    Serve the landlord's attorney (name + address) when one is on file;
+    otherwise serve the landlord directly.
+    """
+    l = data.get("landlord_info", {}) or {}
+    atty_name = (l.get("landlord_attorney_name") or "").strip()
+    atty_addr = (l.get("landlord_attorney_address") or "").strip()
+    landlord_name = l.get("landlord_name") or "the Plaintiff"
+    landlord_addr = l.get("landlord_address") or ""
+    if atty_name:
+        return (f"{atty_name} (attorney for {landlord_name})", atty_addr or "")
+    return (landlord_name, landlord_addr)
 
 
 def generate_packet(case_data: dict, output_dir: str) -> dict:
@@ -304,188 +373,17 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     _generate_cover_page(base, paths, cover_path)
     paths["cover_page"] = cover_path
 
+    # Convert any remaining underscore blanks to editable form fields so the
+    # tenant can verify/correct every value after download.
+    from app.services.form_fields import make_document_editable
+    for _key, _path in list(paths.items()):
+        if _path.endswith(".pdf"):
+            try:
+                make_document_editable(_path)
+            except Exception as _e:
+                logger.warning(f"Could not add editable fields to {_path}: {_e}")
+
     return paths
-
-
-# ======================== FORM 1.947(b) ANSWER ========================
-
-def _generate_answer_form(data: dict, output_path: str):
-    """Generate the Florida Form 1.947(b) Answer — Residential Eviction."""
-    doc = SimpleDocTemplate(
-        output_path, pagesize=letter,
-        topMargin=0.6*inch, bottomMargin=0.6*inch,
-        leftMargin=0.75*inch, rightMargin=0.75*inch,
-    )
-    styles = _get_styles()
-    elements = []
-    S = styles  # shorthand
-
-    p = data.get("personal_info", {})
-    l = data.get("landlord_info", {})
-    c = data.get("case_details", {})
-
-    # Caption
-    caption_text = (
-        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, FLORIDA\n"
-        f"CASE NO.: {c.get('case_number', '_______________')}\n"
-        f"DIVISION: _______________\n\n"
-        f"{l.get('landlord_name', '_____________________________')}, Plaintiff(s),\n"
-        f"vs.\n"
-        f"{p.get('full_name', '_____________________________')}, Defendant(s).\n"
-    )
-    elements.append(Paragraph(caption_text, S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 12))
-
-    # Title
-    elements.append(Paragraph("ANSWER – RESIDENTIAL EVICTION", S["Title"]))
-    elements.append(Spacer(1, 12))
-
-    # Section 1: Answer the complaint
-    elements.append(Paragraph(
-        "<b>1.</b> The defendant answers the complaint as follows: "
-        "(Check <b>ONLY 1</b>, a. or b.)", S["Body"]
-    ))
-    elements.append(Spacer(1, 6))
-
-    # Determine if they generally deny or admit
-    defenses = data.get("defenses", {})
-    checked_defenses = [k for k, v in defenses.items() if isinstance(v, dict) and v.get("checked")]
-    generally_deny = len(checked_defenses) > 0  # If they have defenses, they generally deny
-
-    if generally_deny:
-        elements.append(Paragraph("☑ <b>a.</b> Defendant generally denies each statement of the complaint.", S["Body"]))
-        elements.append(Paragraph("☐ <b>b.</b> Defendant admits that all the statements of the complaint are true EXCEPT:", S["Body"]))
-    else:
-        elements.append(Paragraph("☐ <b>a.</b> Defendant generally denies each statement of the complaint.", S["Body"]))
-        elements.append(Paragraph("☑ <b>b.</b> Defendant admits that all the statements of the complaint are true EXCEPT:", S["Body"]))
-        elements.append(Paragraph(
-            "&nbsp;&nbsp;&nbsp;&nbsp;i. The following statement(s) in paragraph(s) _________ of the complaint is/are false.",
-            S["Body"]
-        ))
-
-    elements.append(Spacer(1, 12))
-
-    # Section 2: Rent deposit warning
-    elements.append(Paragraph(
-        '<b>2.</b> If you write down any defense other than payment of rent, then you must take '
-        'one of the following steps:', S["Body"]
-    ))
-    elements.append(Paragraph(
-        '&nbsp;&nbsp;<b>a.</b> If you agree with the landlord about the rent owed, then you must pay '
-        'the rent owed into the court registry when you file this response.', S["Body"]
-    ))
-    elements.append(Paragraph(
-        '&nbsp;&nbsp;<b>b.</b> If you disagree with the landlord about the rent owed for any reason, '
-        'then you must check box 3(b) below and describe with detail why you disagree.', S["Body"]
-    ))
-    elements.append(Paragraph(
-        '&nbsp;&nbsp;<b>c.</b> You <b>MUST</b> pay the clerk of court the rent each time it becomes due '
-        'until the lawsuit is over. If you fail to follow these instructions, then you will lose your '
-        'defenses. You will not have a hearing in your case and you may be evicted without a court date.',
-        S["BodyWarning"]
-    ))
-    elements.append(Spacer(1, 12))
-
-    # Section 3: Defenses
-    elements.append(Paragraph(
-        "<b>3.</b> The defendant sets forth the following defenses to the complaint: "
-        "(Check ONLY the defenses that apply, and state brief facts to support each checked defense.)",
-        S["Body"]
-    ))
-    elements.append(Spacer(1, 6))
-
-    defense_items = [
-        ("a", "The landlord did not make repairs, and I withheld my rent after sending written notice to the landlord.",
-         "def_repairs", "(Attach a copy of the written notice to the landlord.)"),
-        ("b", "I do not owe the total amount of rent or ongoing amount of rent the landlord claims I owe.",
-         "def_amount", "(Motion to Determine Rent.)"),
-        ("c", "I attempted/offered to pay all the rent due before the notice to pay rent expired, but the landlord did not accept the rent payment.",
-         "def_attempted_pay", ""),
-        ("d", "I paid the rent demanded by the landlord in the notice to pay rent.",
-         "def_paid", ""),
-        ("e", "The landlord waived, changed, or canceled the notice that required me to move out.",
-         "def_waived", ""),
-        ("f", "The landlord filed the eviction in retaliation against me.",
-         "def_retaliation", ""),
-        ("g", "The landlord filed the eviction in violation of the Federal Fair Housing Act and/or the Florida Fair Housing Act.",
-         "def_fair_housing", ""),
-        ("h", "The landlord accepted rent from me after sending me the notice to terminate.",
-         "def_accepted_rent", ""),
-        ("i", "I already corrected the violations claimed by the landlord on the notice to terminate.",
-         "def_corrected", ""),
-        ("j", "The landlord is not the owner of the property where I live.",
-         "def_not_owner", ""),
-        ("k", "I did not receive the notice to terminate or the notice was legally incorrect.",
-         "def_bad_notice", ""),
-        ("l", "Other defenses.",
-         "def_other", ""),
-    ]
-
-    for letter_code, text, def_key, extra in defense_items:
-        defense = defenses.get(def_key, {})
-        checked = defense.get("checked", False) if isinstance(defense, dict) else False
-        explanation = defense.get("explanation", "") if isinstance(defense, dict) else ""
-
-        checkbox = "☑" if checked else "☐"
-        extra_text = f" <i>{extra}</i>" if extra else ""
-        elements.append(Paragraph(
-            f"{checkbox} <b>{letter_code}.</b> {text}{extra_text}",
-            S["Body"]
-        ))
-        if checked and explanation:
-            elements.append(Paragraph(
-                f'&nbsp;&nbsp;&nbsp;&nbsp;<i>Explanation:</i> {explanation}',
-                S["BodySmall"]
-            ))
-        elements.append(Spacer(1, 4))
-
-    elements.append(Spacer(1, 12))
-
-    # Section 4: Jury trial notice
-    elements.append(Paragraph("<b>4.</b> You have a constitutional right to request a trial by jury.", S["Body"]))
-    for sub in ["a", "b", "c", "d"]:
-        jury_texts = {
-            "a": "You may have waived this right in your lease, so review it carefully before requesting a jury trial.",
-            "b": "If you want a jury trial, you should request it in writing when you file your answer.",
-            "c": "Jury trials are not simple to conduct. You will bear some responsibility in the process.",
-            "d": "If you have questions about whether to request a jury trial, you should speak with an attorney.",
-        }
-        elements.append(Paragraph(f"&nbsp;&nbsp;<b>{sub}.</b> {jury_texts[sub]}", S["BodySmall"]))
-
-    elements.append(Spacer(1, 12))
-
-    # Section 5: Trial by judge or jury
-    trial_by = data.get("preferences", {}).get("trial_by", "judge")
-    judge_checked = "☑" if trial_by == "judge" else "☐"
-    jury_checked = "☑" if trial_by == "jury" else "☐"
-
-    elements.append(Paragraph("<b>5.</b> Select whether you want to request a jury trial:", S["Body"]))
-    elements.append(Paragraph(f"{judge_checked} I want a <b>judge</b> to decide my case.", S["Body"]))
-    elements.append(Paragraph(f"{jury_checked} I want a <b>jury</b> to decide my case.", S["Body"]))
-    elements.append(Spacer(1, 12))
-
-    # Signature block
-    today = date.today().strftime("%B %d, %Y")
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(f"Signature: ______________________________", S["Body"]))
-    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '_____________________________')}", S["Body"]))
-    elements.append(Paragraph(f"Date: {today}", S["Body"]))
-    elements.append(Paragraph(f"Address: {p.get('property_address', '_____________________________')}", S["Body"]))
-    elements.append(Paragraph(f"Telephone: {p.get('phone', '_____________________________')}", S["Body"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '_____________________________')}", S["Body"]))
-    elements.append(Spacer(1, 12))
-
-    # Certificate of Service
-    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["Body"]))
-    elements.append(Paragraph(
-        f"I CERTIFY that a copy has been furnished by mail / hand-delivery / portal e-service "
-        f"on this {today}, to {l.get('landlord_name', 'the Plaintiff')}"
-        f" at {l.get('landlord_address', '_____________________________')}.",
-        S["BodySmall"]
-    ))
-
-    doc.build(elements)
 
 
 # ======================== MOTION TO DETERMINE RENT ========================
@@ -503,16 +401,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     c = data.get("case_details", {})
     r = data.get("rent_payment", {})
 
-    caption = (
-        f"IN THE COUNTY COURT, IN AND FOR {c.get('court_name', '_____ COUNTY')} COUNTY, {data.get('state', 'FLORIDA')}\n"
-        f"CASE NO.: {c.get('case_number', '_______________')}\n\n"
-        f"{l.get('landlord_name', 'Plaintiff')},\n"
-        f"vs.\n"
-        f"{p.get('full_name', 'Defendant')},\n"
-    )
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 12))
+    elements.extend(_editable_caption(data, S))
     elements.append(Paragraph("DEFENDANT'S MOTION TO DETERMINE RENT", S["FormTitle"]))
     elements.append(Spacer(1, 12))
 
@@ -554,20 +443,15 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
 
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     today = date.today().strftime("%B %d, %Y")
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing has been furnished "
-        f"to {l.get('landlord_name', 'Plaintiff')} at {l.get('landlord_address', '_________________')} "
+        f"to {svc_name} at {svc_addr or '_________________'} "
         f"on this {today}.", S["BodySmall"]
     ))
     elements.append(Spacer(1, 12))
 
-    hr = HRFlowable(width=3*inch, thickness=1, hAlign="LEFT")
-    elements.append(hr)
-    elements.append(Paragraph(f"Signature: ______________________________", S["Body"]))
-    elements.append(Paragraph(f"Date: {today}", S["Body"]))
-    elements.append(Paragraph(f"{p.get('full_name', '_________________')}, Defendant", S["Body"]))
-    elements.append(Paragraph(f"{p.get('phone', '')}", S["Body"]))
-    elements.append(Paragraph(f"{p.get('email', '')}", S["Body"]))
+    elements.extend(_editable_signature(data, S))
 
     doc.build(elements)
 
@@ -597,8 +481,10 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph(l.get("landlord_name", "Landlord"), S["Body"]))
-    elements.append(Paragraph(l.get("landlord_address", ""), S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("To:", S["Body"]), _editable_field("letter_to_name", l.get("landlord_name", ""), width=200)],
+        [Paragraph("Address:", S["BodySmall"]), _editable_field("letter_to_addr", l.get("landlord_address", ""), width=220)],
+    ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
         f"<b>RE:</b> Payment Plan Request — Property at {p.get('property_address', '')}<br/>"
@@ -606,7 +492,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
         S["Body"]
     ))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Dear {l.get('landlord_name', 'Landlord')},", S["Body"]))
+    elements.append(_field_table([[Paragraph("Dear", S["Body"]), _editable_field("letter_dear", l.get("landlord_name", ""), width=200)]], col_widths=(40, 200)))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         f"I am writing to request a payment plan to address the outstanding rent balance "
@@ -653,8 +539,10 @@ def _generate_hardship_letter(data: dict, output_path: str):
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph(l.get("landlord_name", "Landlord"), S["Body"]))
-    elements.append(Paragraph(l.get("landlord_address", ""), S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("To:", S["Body"]), _editable_field("letter_to_name", l.get("landlord_name", ""), width=200)],
+        [Paragraph("Address:", S["BodySmall"]), _editable_field("letter_to_addr", l.get("landlord_address", ""), width=220)],
+    ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
         f"<b>RE:</b> Hardship Request — {p.get('property_address', '')}<br/>"
@@ -662,7 +550,7 @@ def _generate_hardship_letter(data: dict, output_path: str):
         S["Body"]
     ))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Dear {l.get('landlord_name', 'Landlord')},", S["Body"]))
+    elements.append(_field_table([[Paragraph("Dear", S["Body"]), _editable_field("letter_dear", l.get("landlord_name", ""), width=200)]], col_widths=(40, 200)))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "I am writing to respectfully request additional time regarding my tenancy "
@@ -698,7 +586,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
     styles = _get_styles()
     elements = []
     S = styles
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     p = data.get("personal_info", {})
 
     elements.append(Paragraph("FILING CHECKLIST", S["FormTitle"]))
@@ -716,12 +604,9 @@ def _generate_filing_checklist(data: dict, output_path: str):
 
     # State-specific deadlines
     STATE_DEADLINES = {
-        "FL": "5 business days (excluding weekends and holidays)",
-        "CA": "5 days if served in person, 15 days if served by substituted service",
         "TX": "14 days from the date you were served (or the Monday after if the 14th day falls on a weekend)",
         "IL": "5-10 days depending on the type of eviction (check your summons for the exact date)",
         "MI": "7 days from the date you were served",
-        "NV": "7 days from the date you were served",
         "OR": "7 days from the date you were served",
         "MN": "7 days from the date you were served",
         "CO": "7 days from the date you were served",
@@ -732,9 +617,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
         "LA": "5-10 days depending on the parish (check your summons)",
         "TN": "14 days from the date you were served",
         "AR": "5 days from the date you were served",
-        "AZ": "5 days from the date you were served",
         "VA": "You must appear on the return date shown on your summons",
-        "MA": "You must file your Answer on or before the return date listed on your summons",
         "NM": "10 days from the date you were served",
         "MO": "On or before the return date shown on your summons (rent and possession cases are set for a hearing)",
         "KY": "Appear at the forcible detainer trial on the date shown on your summons (AOC-215 requires at least 3 days\u2019 notice)",
@@ -773,9 +656,10 @@ def _generate_filing_checklist(data: dict, output_path: str):
          "with the court. The e-filing instructions in this packet explain how."),
     ]
 
-    for title, desc in steps:
-        elements.append(Paragraph(title, S["BodyBold"]))
-        elements.append(Paragraph(desc, S["BodySmall"]))
+    for i, (title, desc) in enumerate(steps):
+        title = title.replace("☐ ", "", 1)
+        row = _checkbox_table([[FillableCheckbox(f"filing_cb_{i}"), Paragraph(f"<b>{title}</b><br/>{desc}", S["Body"])]])
+        elements.append(row)
         elements.append(Spacer(1, 6))
 
     _add_disclaimer(elements, S)
@@ -812,8 +696,10 @@ def _generate_court_checklist(data: dict, output_path: str):
         "☐ Your phone (silenced) with important numbers saved",
     ]
 
-    for item in items:
-        elements.append(Paragraph(item, S["Body"]))
+    for i, item in enumerate(items):
+        item = item.replace("☐ ", "", 1)
+        row = _checkbox_table([[FillableCheckbox(f"court_cb_{i}"), Paragraph(item, S["Body"])]])
+        elements.append(row)
         elements.append(Spacer(1, 6))
 
     elements.append(Spacer(1, 12))
@@ -967,7 +853,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
     elements = []
     p = data.get("personal_info", {})
     county = p.get('county', 'your county')
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     
     # Complete state-specific fee waiver info for all 20 states
     WAIVER_INFO = {
@@ -980,15 +866,10 @@ def _generate_fee_waiver(data: dict, output_path: str):
         "CO": {"form": "Motion to File Without Payment (JDF 205)", "site": "www.courts.state.co.us", "fee": "varies by court"},
         "LA": {"form": "Affidavit of Inability to Pay Costs (In Forma Pauperis)", "site": "www.lasc.org", "fee": "varies by parish"},
         "TN": {"form": "Uniform Civil Affidavit of Indigency", "site": "www.tncourts.gov", "fee": "varies by county"},
-        "CA": {"form": "Form FW-001 — Request to Waive Court Fees", "site": "www.courts.ca.gov", "fee": "$240-$450"},
         "AR": {"form": "Affidavit of Indigency (In Forma Pauperis)", "site": "www.arcourts.gov", "fee": "varies by court"},
-        "AZ": {"form": "Application for Deferral/Waiver of Court Fees", "site": "www.azcourts.gov", "fee": "varies by court"},
-        "FL": {"form": "Form 12.902(e) — Affidavit of Indigency", "site": "www.flcourts.gov", "fee": "$295"},
         "MN": {"form": "In Forma Pauperis Affidavit (IFP102)", "site": "www.mncourts.gov", "fee": "varies by court"},
-        "NV": {"form": "Application to Proceed In Forma Pauperis", "site": "www.civillawselfhelpcenter.org", "fee": "varies by court"},
         "OR": {"form": "Application for Deferral or Waiver of Fees", "site": "www.courts.oregon.gov", "fee": "varies by court"},
         "MI": {"form": "MC 20 — Fee Waiver Request", "site": "www.courts.michigan.gov", "fee": "varies by court"},
-        "MA": {"form": "Affidavit of Indigency (Housing Court)", "site": "www.mass.gov/courts", "fee": "varies by court"},
         "NM": {"form": "Application for Free Process (In Forma Pauperis)", "site": "www.nmcourts.gov", "fee": "varies by court"},
         "RI": {"form": "Motion to Proceed In Forma Pauperis", "site": "www.courts.ri.gov", "fee": "varies by court"},
         "MO": {"form": "GN10 - Motion and Affidavit in Support of Request to Proceed as a Poor Person", "site": "www.courts.mo.gov", "fee": "varies by court"},
@@ -1040,7 +921,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = data.get("personal_info", {}).get("county", "your county")
     full_name = data.get("personal_info", {}).get("full_name", "Tenant")
 
@@ -1072,10 +953,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
     db_dir = os.path.join(os.path.dirname(__file__), "..", "..", "databases")
     db_resources = []
     db_files = {
-        "FL": "Florida_Eviction_Support_Verified_Resource_Database_200.xlsx",
-        "AZ": "Arizona_Eviction_Support_Database_Framework_200.xlsx",
         "AR": "Arkansas_Eviction_Support_Database_Framework_200.xlsx",
-        "CA": "California_Eviction_Support_Database_Framework_200.xlsx",
         "CO": "Colorado_Eviction_Support_Database_Framework_200.xlsx",
         "CT": "Connecticut_Eviction_Support_Database_Framework_200.xlsx",
         "GA": "Georgia_Eviction_Support_Database_Framework_200.xlsx",
@@ -1087,7 +965,6 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
         "OK": "Oklahoma_Eviction_Support_Database_Framework_200.xlsx",
         "IN": "Indiana_Eviction_Support_Database_Framework_200.xlsx",
         "OH": "Ohio_Eviction_Support_Database_Framework_200.xlsx",
-        "NV": "Nevada_Eviction_Support_Database_Framework_200.xlsx",
         "NM": "New_Mexico_Eviction_Support_Database_Framework_200.xlsx",
         "RI": "Rhode_Island_Eviction_Support_Database_Framework_200.xlsx",
         "TN": "Tennessee_Eviction_Support_Database_Framework_200.xlsx",
@@ -1311,10 +1188,13 @@ def _generate_emergency_action_plan(data: dict, output_path: str):
         ]),
     ]
 
+    _cb_i = 0
     for title, items in steps:
         elements.append(Paragraph(f"<b>{title}</b>", S["BodyBold"]))
         for item in items:
-            elements.append(Paragraph(f"☐ {item}", S["Body"]))
+            row = _checkbox_table([[FillableCheckbox(f"eap_cb_{_cb_i}"), Paragraph(item, S["Body"])]])
+            elements.append(row)
+            _cb_i += 1
         elements.append(Spacer(1, 8))
 
     elements.append(Spacer(1, 6))
@@ -1335,20 +1215,11 @@ def _generate_eviction_timeline(data: dict, output_path: str):
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     p = data.get("personal_info", {})
 
     # State-specific timeline data
     TIMELINES = {
-        "FL": [
-            ("1. Notice to Pay or Quit", "3-15 days", "Landlord gives you written notice. You have this many days to pay or move out."),
-            ("2. Eviction Complaint Filed", "After notice expires", "Landlord files complaint with the court. You will be served with a summons."),
-            ("3. File Your Answer", "5 business days", "YOU ARE HERE. You must file a written response within 5 business days of being served."),
-            ("4. Rent Deposit to Court Registry", "Same as answer", "If you raise any defense, you must deposit rent with the court clerk."),
-            ("5. Hearing / Trial", "Usually 2-4 weeks", "Judge hears both sides. Bring all evidence. Decision may be same day."),
-            ("6. Judgment", "Day of hearing", "If you lose, the judge issues a Final Judgment for Eviction."),
-            ("7. Writ of Possession", "24-48 hours after judgment", "Sheriff posts a 24-hour notice on your door. You must vacate immediately."),
-        ],
         "TX": [
             ("1. Notice to Vacate", "3-30 days", "Landlord gives you written notice. Timeline depends on lease type."),
             ("2. Eviction Suit Filed", "After notice expires", "Landlord files in Justice Court. You receive a citation with court date."),
@@ -1356,14 +1227,6 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "10-21 days after filing", "Judge hears case. Both sides present evidence. You can appeal within 5 days."),
             ("5. Judgment", "Day of trial", "If you lose, judge signs judgment. You have 5 days to appeal or vacate."),
             ("6. Writ of Possession", "6+ days after judgment", "Constable posts notice. You must vacate. Only constable can remove you."),
-        ],
-        "CA": [
-            ("1. Notice", "3-60 days", "Landlord serves notice (3-day pay or quit, 30/60-day no-fault)."),
-            ("2. Summons & Complaint", "After notice", "You are served with court papers (Unlawful Detainer)."),
-            ("3. File Answer", "5 days", "YOU ARE HERE. 5 days if served in person, 15 days if substituted service."),
-            ("4. Discovery & Settlement", "1-3 weeks", "Parties exchange evidence. Settlement discussions possible."),
-            ("5. Trial", "20 days after request", "Judge or jury trial. Most cases settle before this point."),
-            ("6. Judgment & Lockout", "5 days after judgment", "Sheriff serves 5-day notice. Lockout occurs after notice expires."),
         ],
         "GA": [
             ("1. Notice", "Varies", "Landlord serves demand for possession (immediate) or pay-or-quit notice."),
@@ -1397,14 +1260,6 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("5. Judgment", "Day of trial", "If you lose, judge issues judgment. You have 10 days to appeal."),
             ("6. Writ of Possession", "10+ days after judgment", "Sheriff posts notice and executes eviction."),
         ],
-        "MA": [
-            ("1. Notice to Quit", "14-30 days", "Landlord serves notice to quit. Must be 14 days for nonpayment, 30 days for no-fault."),
-            ("2. Summons & Complaint", "After notice", "Landlord files in Housing Court or District Court. You receive summons."),
-            ("3. File Answer", "By return date", "YOU ARE HERE. File your answer. MA has a right to counsel program."),
-            ("4. Mediation", "Before trial", "Many MA courts require mediation before trial. Opportunity to settle."),
-            ("5. Trial", "1-4 weeks", "Judge hears both sides. You may qualify for free legal representation."),
-            ("6. Judgment & Execution", "Varies", "If you lose, judge issues execution. Stay of execution may be available."),
-        ],
         "CO": [
             ("1. Demand for Possession", "3-10 days", "Landlord serves written demand (3 days for nonpayment, 10 for lease violation)."),
             ("2. Summons in Forcible Entry", "After demand", "Landlord files complaint. You receive summons with court date."),
@@ -1412,14 +1267,6 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "On return date", "Quick hearing. Judge hears both sides. Colorado courts move fast."),
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may have 48 hours to vacate."),
             ("6. Eviction", "48 hours after judgment", "Sheriff can enforce eviction very quickly in Colorado."),
-        ],
-        "AZ": [
-            ("1. Notice", "5-30 days", "Landlord serves written notice (5 days for nonpayment, 10 for material breach, 30 for no-fault)."),
-            ("2. Eviction Complaint", "After notice", "Landlord files complaint. You are served. Your deadline depends on service method."),
-            ("3. File Answer", "5-10 days", "YOU ARE HERE. 5 days if served in person, 10 days if posted on door."),
-            ("4. Trial", "Within 3-10 days", "Quick hearing. Judge hears both sides. Arizona courts process evictions rapidly."),
-            ("5. Judgment", "Day of trial", "If you lose, the judge issues judgment immediately."),
-            ("6. Writ of Restitution", "5 days after judgment", "Constable posts 24-hour notice and executes eviction."),
         ],
         "TN": [
             ("1. Notice", "14-30 days", "Landlord serves written notice (14 days for nonpayment, 30 days for no-fault)."),
@@ -1436,13 +1283,6 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("4. Trial", "Within 15 days", "Judge hears case. Oregon has strong tenant protections and mediation programs."),
             ("5. Judgment", "Day of trial", "If you lose, judgment for possession."),
             ("6. Notice of Restitution", "Varies", "Sheriff posts notice. You may be able to request additional time."),
-        ],
-        "NV": [
-            ("1. Notice", "5-7 days", "Landlord serves eviction notice (5-day pay or quit, or 7-day no cause)."),
-            ("2. Summary Eviction Complaint", "After notice", "Landlord files complaint. You receive summons. NV is a summary eviction state."),
-            ("3. File Answer", "7 days", "YOU ARE HERE. You MUST file answer within 7 days. No exceptions."),
-            ("4. Trial", "Within 10 days", "Quick trial. Judge hears both sides."),
-            ("5. Judgment & Eviction", "Day of trial", "If you lose, eviction order issued immediately. Constable may enforce within 24-48 hours."),
         ],
         "MN": [
             ("1. Notice", "14-30 days", "Landlord serves written notice (14 days for nonpayment, 30 days to terminate no-fault)."),
@@ -1587,7 +1427,7 @@ def _generate_defenses_explained(data: dict, output_path: str):
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
     elements = []
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     defenses = data.get("defenses", {})
 
     # Master defense dictionary — plain English for every defense key used across states
@@ -1696,10 +1536,8 @@ def _generate_defenses_explained(data: dict, output_path: str):
         if key in defenses and isinstance(defenses[key], dict):
             checked = defenses[key].get("checked", False)
 
-        if checked:
-            elements.append(Paragraph(f"<b>☑ {title} ← YOU CHECKED THIS</b>", S["BodyBold"]))
-        else:
-            elements.append(Paragraph(f"<b>☐ {title}</b>", S["Body"]))
+        row = _checkbox_table([[FillableCheckbox(f"def_cb_{key}", checked), Paragraph(f"<b>{title}</b>", S["BodyBold"])]])
+        elements.append(row)
 
         for line in explanation.split("\n"):
             if line.strip():
@@ -1777,7 +1615,14 @@ def _generate_evidence_guide(data: dict, output_path: str):
 
 
 def _generate_income_expense_worksheet(data: dict, output_path: str):
-    """Generate an income and expense worksheet for fee waivers and rental assistance."""
+    """Generate an income and expense worksheet for fee waivers and rental assistance.
+
+    Every value cell is an editable PDF form field, so the tenant can verify and
+    correct each number before printing, signing, and filing.
+    """
+    from app.services.form_fields import FillableText
+    from reportlab.platypus import Table, TableStyle
+
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     S = _get_styles()
@@ -1796,50 +1641,36 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     ))
     elements.append(Spacer(1, 12))
 
-    # Helper to format dollar amounts or show blank
-    def fmt(val):
+    def money_field(name, val, width=110):
+        v = ""
         if val is not None and val != 0:
             try:
-                return f"${float(val):,.2f}"
+                v = f"{float(val):,.2f}"
             except (TypeError, ValueError):
-                return "$___________"
-        return "$___________"
+                v = ""
+        return FillableText(name, v, width=width, height=16, font_size=9)
 
-    def fmt_text(val):
-        return str(val) if val else "_______________"
+    def text_field(name, val, width=180):
+        return FillableText(name, str(val) if val else "", width=width, height=16, font_size=9)
 
-    # Income section
-    elements.append(Paragraph("<b>MONTHLY INCOME</b>", S["BodyBold"]))
-    
-    # Calculate total income
+    def row(label, field):
+        return [Paragraph(label, S["Body"]), field]
+
+    def header(label):
+        return [Paragraph(f"<b>{label}</b>", S["BodyBold"]), ""]
+
+    # Income
     wages = fin.get("employment_income") or fin.get("monthly_gross_income")
     self_emp = fin.get("self_employment_income")
     ss = fin.get("social_security_income") or fin.get("ssi_income")
     unemp = fin.get("unemployment_income")
     child_support = fin.get("child_support_income") or fin.get("alimony_income")
-    pension = fin.get("pension_income")
     other = fin.get("other_income")
-    
     total_income = (wages or 0) + (self_emp or 0) + (ss or 0) + (unemp or 0) + (child_support or 0) + (other or 0)
     if not total_income and fin.get("monthly_gross_income"):
         total_income = fin.get("monthly_gross_income")
 
-    elements.append(Paragraph(f"Wages / salary (after taxes):  {fmt(wages)}", S["Body"]))
-    elements.append(Paragraph(f"Self-employment income:         {fmt(self_emp)}", S["Body"]))
-    elements.append(Paragraph(f"Social Security / SSI / SSDI:   {fmt(ss)}", S["Body"]))
-    elements.append(Paragraph(f"Unemployment benefits:           {fmt(unemp)}", S["Body"]))
-    elements.append(Paragraph(f"Child support / alimony:         {fmt(child_support)}", S["Body"]))
-    elements.append(Paragraph(f"SNAP (food stamps):              {'Yes' if fin.get('receives_snap') else 'No'}", S["Body"]))
-    elements.append(Paragraph(f"TANF / cash assistance:          {'Yes' if fin.get('receives_tanf') else 'No'}", S["Body"]))
-    elements.append(Paragraph(f"SSI:                              {'Yes' if fin.get('receives_ssi') else 'No'}", S["Body"]))
-    elements.append(Paragraph(f"Medicaid:                         {'Yes' if fin.get('receives_medicaid') else 'No'}", S["Body"]))
-    elements.append(Paragraph(f"Other income:                    {fmt(other)}", S["Body"]))
-    elements.append(Paragraph(f"<b>TOTAL MONTHLY INCOME:          {fmt(total_income if total_income else None)}</b>", S["Body"]))
-
-    elements.append(Spacer(1, 16))
-
-    # Expenses section
-    elements.append(Paragraph("<b>MONTHLY EXPENSES</b>", S["BodyBold"]))
+    # Expenses
     rent = fin.get("rent_or_mortgage")
     utils = fin.get("utilities_expense")
     food = fin.get("food_expense")
@@ -1848,39 +1679,63 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     childcare = fin.get("child_care_expense")
     debt = fin.get("debt_payments")
     other_exp = fin.get("other_expenses")
-    
     total_expenses = (rent or 0) + (utils or 0) + (food or 0) + (transport or 0) + (medical or 0) + (childcare or 0) + (debt or 0) + (other_exp or 0)
 
-    elements.append(Paragraph(f"Rent / mortgage:                 {fmt(rent)}", S["Body"]))
-    elements.append(Paragraph(f"Utilities (electric, gas, water):{fmt(utils)}", S["Body"]))
-    elements.append(Paragraph(f"Food / groceries:                 {fmt(food)}", S["Body"]))
-    elements.append(Paragraph(f"Transportation (gas, bus, car):   {fmt(transport)}", S["Body"]))
-    elements.append(Paragraph(f"Health insurance / medical:       {fmt(medical)}", S["Body"]))
-    elements.append(Paragraph(f"Child care:                       {fmt(childcare)}", S["Body"]))
-    elements.append(Paragraph(f"Credit card / loan payments:      {fmt(debt)}", S["Body"]))
-    elements.append(Paragraph(f"Other expenses:                   {fmt(other_exp)}", S["Body"]))
-    elements.append(Paragraph(f"<b>TOTAL MONTHLY EXPENSES:         {fmt(total_expenses if total_expenses else None)}</b>", S["Body"]))
-
-    elements.append(Spacer(1, 16))
-
-    elements.append(Paragraph("<b>ASSETS</b>", S["BodyBold"]))
+    # Assets / household
     cash = fin.get("cash_on_hand")
     checking = fin.get("checking_balance")
     savings = fin.get("savings_balance")
+    bank = (checking or 0) + (savings or 0) if (checking or savings) else None
     vehicle = fin.get("vehicle_make_model")
     vehicle_val = fin.get("vehicle_value")
-    elements.append(Paragraph(f"Cash on hand:                     {fmt(cash)}", S["Body"]))
-    elements.append(Paragraph(f"Bank account(s) balance:          {fmt((checking or 0) + (savings or 0) if (checking or savings) else None)}", S["Body"]))
-    elements.append(Paragraph(f"Vehicle (make/model/year):        {fmt_text(vehicle)}", S["Body"]))
-    elements.append(Paragraph(f"Vehicle value:                    {fmt(vehicle_val)}", S["Body"]))
-    elements.append(Paragraph(f"Other assets:                     {fmt_text(fin.get('other_assets_description'))}", S["Body"]))
-    elements.append(Spacer(1, 12))
-
-    elements.append(Paragraph("<b>HOUSEHOLD INFORMATION</b>", S["BodyBold"]))
+    other_assets = fin.get("other_assets_description")
     adults = fin.get("household_adults")
     children = fin.get("household_children")
-    elements.append(Paragraph(f"Number of adults in home:         {fmt_text(adults)}", S["Body"]))
-    elements.append(Paragraph(f"Number of children in home:       {fmt_text(children)}", S["Body"]))
+
+    yesno = lambda k: FillableText(k, "Yes" if fin.get(k) else "No", width=50, height=16, font_size=9)
+
+    data_rows = [
+        header("MONTHLY INCOME"),
+        row("Wages / salary (after taxes):  $", money_field("income_wages", wages)),
+        row("Self-employment income:  $", money_field("income_self_emp", self_emp)),
+        row("Social Security / SSI / SSDI:  $", money_field("income_ss", ss)),
+        row("Unemployment benefits:  $", money_field("income_unemp", unemp)),
+        row("Child support / alimony:  $", money_field("income_child_support", child_support)),
+        row("SNAP (food stamps):", yesno("receives_snap")),
+        row("TANF / cash assistance:", yesno("receives_tanf")),
+        row("SSI:", yesno("receives_ssi")),
+        row("Medicaid:", yesno("receives_medicaid")),
+        row("Other income:  $", money_field("income_other", other)),
+        [Paragraph("<b>TOTAL MONTHLY INCOME:  $</b>", S["Body"]), money_field("income_total", total_income if total_income else None)],
+        header("MONTHLY EXPENSES"),
+        row("Rent / mortgage:  $", money_field("expense_rent", rent)),
+        row("Utilities (electric, gas, water):  $", money_field("expense_utils", utils)),
+        row("Food / groceries:  $", money_field("expense_food", food)),
+        row("Transportation (gas, bus, car):  $", money_field("expense_transport", transport)),
+        row("Health insurance / medical:  $", money_field("expense_medical", medical)),
+        row("Child care:  $", money_field("expense_childcare", childcare)),
+        row("Credit card / loan payments:  $", money_field("expense_debt", debt)),
+        row("Other expenses:  $", money_field("expense_other", other_exp)),
+        [Paragraph("<b>TOTAL MONTHLY EXPENSES:  $</b>", S["Body"]), money_field("expense_total", total_expenses if total_expenses else None)],
+        header("ASSETS"),
+        row("Cash on hand:  $", money_field("asset_cash", cash)),
+        row("Bank account(s) balance:  $", money_field("asset_bank", bank)),
+        row("Vehicle (make/model/year):", text_field("asset_vehicle", vehicle)),
+        row("Vehicle value:  $", money_field("asset_vehicle_value", vehicle_val)),
+        row("Other assets:", text_field("asset_other", other_assets)),
+        header("HOUSEHOLD INFORMATION"),
+        row("Number of adults in home:", text_field("hh_adults", adults, width=60)),
+        row("Number of children in home:", text_field("hh_children", children, width=60)),
+    ]
+
+    table = Table(data_rows, colWidths=[260, 140])
+    table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(table)
 
     elements.append(Spacer(1, 16))
     elements.append(Paragraph(
@@ -1909,8 +1764,10 @@ def _generate_demand_letter(data: dict, output_path: str):
     elements.append(Spacer(1, 12))
     elements.append(Paragraph("VIA CERTIFIED MAIL — RETURN RECEIPT REQUESTED", S["BodyBold"]))
     elements.append(Spacer(1, 6))
-    elements.append(Paragraph(l.get("landlord_name", "Landlord"), S["Body"]))
-    elements.append(Paragraph(l.get("landlord_address", ""), S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("To:", S["Body"]), _editable_field("letter_to_name", l.get("landlord_name", ""), width=200)],
+        [Paragraph("Address:", S["BodySmall"]), _editable_field("letter_to_addr", l.get("landlord_address", ""), width=220)],
+    ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
         f"<b>RE:</b> DEMAND FOR REPAIRS — {p.get('property_address', '')}<br/>"
@@ -1918,7 +1775,7 @@ def _generate_demand_letter(data: dict, output_path: str):
         S["Body"]
     ))
     elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Dear {l.get('landlord_name', 'Landlord')},", S["Body"]))
+    elements.append(_field_table([[Paragraph("Dear", S["Body"]), _editable_field("letter_dear", l.get("landlord_name", ""), width=200)]], col_widths=(40, 200)))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "I am writing to formally demand that you make necessary repairs to the "
@@ -1988,21 +1845,12 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
 
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
-        f"vs.<br/>"
-        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 14))
+    elements.extend(_editable_caption(data, S))
 
     elements.append(Paragraph("MOTION FOR HEARING", S["FormTitle"]))
     elements.append(Spacer(1, 12))
@@ -2046,19 +1894,22 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
 
     elements.append(Paragraph("Respectfully submitted,", S["Body"]))
     elements.append(Spacer(1, 18))
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '[DEFENDANT]')}", S["Body"]))
-    elements.append(Paragraph(f"Address: {p.get('property_address', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 12))
 
     # Certificate of Service
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Hearing was "
-        f"delivered to {l.get('landlord_name', '[PLAINTIFF]')} "
-        f"on ______, by ☐ Hand Delivery ☐ U.S. Mail ☐ Email.", S["BodySmall"]))
+        f"delivered to {svc_name} at {svc_addr or '[ADDRESS]'}.", S["BodySmall"]))
+    _svc = Table([
+        [FillableCheckbox("mh_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
+         FillableCheckbox("mh_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("mh_svc_2"), Paragraph("Email", S["BodySmall"])],
+    ], colWidths=[18, 110, 18, 90, 18, 70])
+    _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_svc)
 
     doc.build(elements)
 
@@ -2076,24 +1927,13 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     pref = data.get("preferences", {})
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
     reason = pref.get("continuance_reason", "the need for additional time to prepare for the hearing")
 
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
-        f"vs.<br/>"
-        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"Case No.: {c.get('case_number', '[CASE NO.]')}<br/>"
-        f"Division: ______", S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 14))
+    elements.extend(_editable_caption(data, S, division=True))
 
     elements.append(Paragraph("DEFENDANT'S MOTION FOR CONTINUANCE", S["FormTitle"]))
     elements.append(Spacer(1, 12))
@@ -2128,8 +1968,25 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"motion by: _________ on _________ (date), and the Plaintiff's position on this motion "
         f"is: ☐ Consents ☐ Does not oppose ☐ Opposes ☐ Unknown.",
     ]
+    _cont_cb = 0
     for fact in facts:
-        elements.append(Paragraph(fact, S["Body"]))
+        if "☐" not in fact:
+            elements.append(Paragraph(fact, S["Body"]))
+        elif fact.startswith("&nbsp;"):
+            _label = fact.replace("&nbsp;", "").replace("☐", "", 1).strip()
+            elements.append(_checkbox_table([[FillableCheckbox(f"cont_cb_{_cont_cb}"), Paragraph(_label, S["Body"])]]))
+            _cont_cb += 1
+        else:
+            _pre = fact.split("☐")[0]
+            elements.append(Paragraph(_pre, S["Body"]))
+            _cc = Table([
+                [FillableCheckbox("cont_consents"), Paragraph("Consents", S["Body"]),
+                 FillableCheckbox("cont_no_oppose"), Paragraph("Does not oppose", S["Body"]),
+                 FillableCheckbox("cont_opposes"), Paragraph("Opposes", S["Body"]),
+                 FillableCheckbox("cont_unknown"), Paragraph("Unknown", S["Body"])],
+            ], colWidths=[18, 80, 18, 130, 18, 80, 18, 80])
+            _cc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+            elements.append(_cc)
         elements.append(Spacer(1, 4))
 
     elements.append(Spacer(1, 12))
@@ -2142,20 +1999,22 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
 
     elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
     elements.append(Spacer(1, 14))
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(p.get('full_name', '[DEFENDANT]'), S["Body"]))
-    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
-    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 12))
 
     # Certificate of Service
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Continuance "
-        f"was delivered to {l.get('landlord_name', '[PLAINTIFF]')} "
-        f"by ☐ Hand Delivery ☐ U.S. Mail ☐ Email on this _____ day of __________, 20____.",
-        S["BodySmall"]))
+        f"was delivered to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+    _svc = Table([
+        [FillableCheckbox("cont_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
+         FillableCheckbox("cont_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("cont_svc_2"), Paragraph("Email", S["BodySmall"])],
+    ], colWidths=[18, 110, 18, 90, 18, 70])
+    _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_svc)
 
     doc.build(elements)
 
@@ -2173,7 +2032,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     pref = data.get("preferences", {})
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
@@ -2182,16 +2041,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
         "time to address rental arrears, secure rental assistance, or make alternative housing "
         "arrangements.")
 
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
-        f"vs.<br/>"
-        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 14))
+    elements.extend(_editable_caption(data, S))
 
     elements.append(Paragraph("EMERGENCY MOTION TO STAY EVICTION", S["FormTitle"]))
     elements.append(Spacer(1, 12))
@@ -2254,20 +2104,22 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
 
     elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
     elements.append(Spacer(1, 14))
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(p.get('full_name', '[DEFENDANT]'), S["Body"]))
-    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
-    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.extend(_editable_signature(data, S))
     elements.append(Paragraph("Pro Se Defendant", S["BodySmall"]))
     elements.append(Spacer(1, 12))
 
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
-        f"Eviction was furnished to {l.get('landlord_name', '[PLAINTIFF]')} "
-        f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
-        S["BodySmall"]))
+        f"Eviction was furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+    _svc = Table([
+        [FillableCheckbox("ese_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("ese_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
+         FillableCheckbox("ese_svc_2"), Paragraph("Email", S["BodySmall"])],
+    ], colWidths=[18, 90, 18, 110, 18, 70])
+    _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_svc)
 
     doc.build(elements)
 
@@ -2284,23 +2136,14 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
     writ_term = _writ_term(state)
     eviction_law = _eviction_law(state)
 
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff,<br/>"
-        f"vs.<br/>"
-        f"{p.get('full_name', '[DEFENDANT]')}, Defendant.", S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 14))
+    elements.extend(_editable_caption(data, S))
 
     elements.append(Paragraph(f"EMERGENCY MOTION TO STAY THE {writ_term.upper()}", S["FormTitle"]))
     elements.append(Spacer(1, 12))
@@ -2366,19 +2209,21 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
 
     elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
     elements.append(Spacer(1, 14))
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(f"Printed Name: {p.get('full_name', '[DEFENDANT]')}", S["Body"]))
-    elements.append(Paragraph(f"Address: {p.get('property_address', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 12))
 
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
-        f"the {writ_term} has been furnished to {l.get('landlord_name', '[PLAINTIFF]')} "
-        f"by ☐ U.S. Mail ☐ Hand Delivery ☐ Email on this _____ day of __________, 20____.",
-        S["BodySmall"]))
+        f"the {writ_term} has been furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+    _svc = Table([
+        [FillableCheckbox("esw_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("esw_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
+         FillableCheckbox("esw_svc_2"), Paragraph("Email", S["BodySmall"])],
+    ], colWidths=[18, 90, 18, 110, 18, 70])
+    _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_svc)
 
     doc.build(elements)
 
@@ -2396,7 +2241,7 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     pref = data.get("preferences", {})
-    state = data.get("state", "FL").upper()
+    state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
@@ -2409,30 +2254,22 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     bk_atty_phone = pref.get("bankruptcy_attorney_phone", "")
     bk_atty_email = pref.get("bankruptcy_attorney_email", "")
 
-    elements.append(Paragraph(caption, S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(
-        f"{l.get('landlord_name', '[PLAINTIFF]')}, Plaintiff/Landlord,<br/>"
-        f"vs.<br/>"
-        f"{p.get('full_name', '[DEFENDANT]')}, Defendant/Tenant.", S["Caption"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph(f"Case No.: {c.get('case_number', '[CASE NO.]')}", S["Caption"]))
-    elements.append(HRFlowable(width="100%", thickness=1))
-    elements.append(Spacer(1, 14))
+    elements.extend(_editable_caption(data, S, "Plaintiff/Landlord", "Defendant/Tenant"))
 
     elements.append(Paragraph("NOTICE OF AUTOMATIC STAY<br/>DUE TO BANKRUPTCY FILING", S["FormTitle"]))
     elements.append(Spacer(1, 12))
 
     # TO / FROM block
-    elements.append(Paragraph(f"<b>TO:</b> {l.get('landlord_name', '[LANDLORD]')}, Landlord", S["Body"]))
-    elements.append(Paragraph(f"<b>AND TO:</b> The Court", S["Body"]))
+    elements.append(_field_table([[Paragraph("<b>TO (Landlord):</b>", S["Body"]), _editable_field("bk_to", l.get("landlord_name", ""), width=220)]]))
+    elements.append(Paragraph("<b>AND TO:</b> The Court", S["Body"]))
     elements.append(Spacer(1, 6))
-    elements.append(Paragraph(f"<b>FROM:</b> {p.get('full_name', '[TENANT]')}, Tenant", S["Body"]))
-    elements.append(Paragraph(f"<b>ADDRESS:</b> {p.get('property_address', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"<b>PHONE:</b> {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"<b>EMAIL:</b> {p.get('email', '')}", S["BodySmall"]))
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f"<b>PROPERTY:</b> {p.get('property_address', '')}", S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("<b>FROM (Tenant):</b>", S["Body"]), _editable_field("bk_from", p.get("full_name", ""), width=220)],
+        [Paragraph("<b>ADDRESS:</b>", S["BodySmall"]), _editable_field("bk_addr", p.get("property_address", ""), width=220)],
+        [Paragraph("<b>PHONE:</b>", S["BodySmall"]), _editable_field("bk_phone", p.get("phone", ""), width=160)],
+        [Paragraph("<b>EMAIL:</b>", S["BodySmall"]), _editable_field("bk_email", p.get("email", ""), width=220)],
+        [Paragraph("<b>PROPERTY:</b>", S["Body"]), _editable_field("bk_property", p.get("property_address", ""), width=220)],
+    ], col_widths=(110, 230)))
     elements.append(Spacer(1, 12))
 
     elements.append(Paragraph(
@@ -2443,11 +2280,13 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
 
     # Bankruptcy case info
     elements.append(Paragraph("<b>1. BANKRUPTCY FILING INFORMATION</b>", S["BodyBold"]))
-    elements.append(Paragraph(f"Debtor Name: {p.get('full_name', '[TENANT]')}", S["Body"]))
-    elements.append(Paragraph(f"Bankruptcy Court: {bk_court}", S["Body"]))
-    elements.append(Paragraph(f"Case Number: {bk_case}", S["Body"]))
-    elements.append(Paragraph(f"Chapter: {bk_chapter}", S["Body"]))
-    elements.append(Paragraph(f"Date of Filing: {bk_date}", S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("Debtor Name:", S["Body"]), _editable_field("bk_debtor", p.get("full_name", ""), width=220)],
+        [Paragraph("Bankruptcy Court:", S["Body"]), _editable_field("bk_court", bk_court, width=220)],
+        [Paragraph("Case Number:", S["Body"]), _editable_field("bk_case", bk_case, width=160)],
+        [Paragraph("Chapter:", S["Body"]), _editable_field("bk_chapter", bk_chapter, width=80)],
+        [Paragraph("Date of Filing:", S["Body"]), _editable_field("bk_date", bk_date, width=140)],
+    ], col_widths=(120, 240)))
     elements.append(Spacer(1, 10))
 
     elements.append(Paragraph("<b>2. AUTOMATIC STAY IN EFFECT</b>", S["BodyBold"]))
@@ -2519,26 +2358,26 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
 
     elements.append(Paragraph(f"Dated: {today}", S["Body"]))
     elements.append(Spacer(1, 14))
-    elements.append(HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"))
-    elements.append(Paragraph(p.get('full_name', '[TENANT]'), S["Body"]))
-    elements.append(Paragraph("Printed Name", S["BodySmall"]))
-    elements.append(Paragraph(p.get('property_address', ''), S["BodySmall"]))
-    elements.append(Paragraph(f"Phone: {p.get('phone', '')}", S["BodySmall"]))
-    elements.append(Paragraph(f"Email: {p.get('email', '')}", S["BodySmall"]))
+    elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 14))
 
+    svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Notice of Automatic Stay "
         f"Due to Bankruptcy Filing was furnished to:", S["BodySmall"]))
-    elements.append(Paragraph(
-        f"• {l.get('landlord_name', '[LANDLORD]')}, Landlord — "
-        f"☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email", S["BodySmall"]))
-    elements.append(Paragraph(
-        f"• Clerk of Court — ☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email",
-        S["BodySmall"]))
-    elements.append(Paragraph("• Landlord's Attorney (if applicable) — ☐ U.S. Mail ☐ Hand Delivery ☐ Certified Mail ☐ Email",
-        S["BodySmall"]))
+    elements.append(Paragraph(f"• {svc_name} at {svc_addr or '[ADDRESS]'}", S["BodySmall"]))
+    _s1 = Table([[FillableCheckbox("bk_svc1_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc1_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+    _s1.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_s1)
+    elements.append(Paragraph("• Clerk of Court", S["BodySmall"]))
+    _s2 = Table([[FillableCheckbox("bk_svc2_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc2_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+    _s2.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_s2)
+    elements.append(Paragraph("• Landlord's Attorney (if applicable)", S["BodySmall"]))
+    _s3 = Table([[FillableCheckbox("bk_svc3_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc3_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+    _s3.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_s3)
 
     doc.build(elements)
 

@@ -12,15 +12,10 @@ BAD_KW = [
 SAMPLES = [
     ("texas/harris-county/houston", "Houston, TX"),
     ("illinois/cook-county", "Cook County, IL"),
-    ("california/los-angeles-county/los-angeles", "Los Angeles, CA"),
     ("oregon/lane-county/eugene", "Eugene, OR"),
     ("tennessee/davidson-county/nashville", "Nashville, TN"),
-    ("florida", "Florida (state)"),
-    ("arizona", "Arizona (state)"),
     ("virginia/arlington-county", "Arlington, VA"),
     ("georgia/fulton-county/atlanta", "Atlanta, GA"),
-    ("nevada/clark-county/las-vegas", "Las Vegas, NV"),
-    ("massachusetts/suffolk-county/boston", "Boston, MA"),
     ("colorado/denver-county", "Denver, CO"),
 ]
 

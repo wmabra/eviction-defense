@@ -11,14 +11,14 @@ import os
 SEO_DIR = "/opt/eviction-defense/seo"
 
 COVERED_STATES = {
-    'AZ': 'arizona', 'AR': 'arkansas', 'CA': 'california',
+    'AR': 'arkansas',
     'CO': 'colorado', 'CT': 'connecticut',
-    'FL': 'florida', 'GA': 'georgia',
+    'GA': 'georgia',
     'IL': 'illinois',
     'LA': 'louisiana',
-    'MA': 'massachusetts', 'MI': 'michigan',
+    'MI': 'michigan',
     'MN': 'minnesota',
-    'NV': 'nevada', 'NM': 'new-mexico',
+    'NM': 'new-mexico',
     'OR': 'oregon',
     'RI': 'rhode-island', 'SC': 'south-carolina',
     'TN': 'tennessee', 'TX': 'texas',
@@ -85,14 +85,14 @@ def parse_cities(wikitext):
         if len(state_abbr) > 2:
             # It's the full state name, need abbreviation
             state_abbr_map = {
-                'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+                'Arkansas': 'AR',
                 'Colorado': 'CO', 'Connecticut': 'CT',
-                'Florida': 'FL', 'Georgia': 'GA',
+                'Georgia': 'GA',
                 'Illinois': 'IL',
                 'Louisiana': 'LA',
-                'Massachusetts': 'MA', 'Michigan': 'MI',
+                'Michigan': 'MI',
                 'Minnesota': 'MN',
-                'Nevada': 'NV', 'New Mexico': 'NM',
+                'New Mexico': 'NM',
                 'Oregon': 'OR',
                 'Rhode Island': 'RI', 'South Carolina': 'SC',
                 'Tennessee': 'TN', 'Texas': 'TX',

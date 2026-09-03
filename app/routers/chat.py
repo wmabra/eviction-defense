@@ -1,6 +1,7 @@
 """Chat-based intake API endpoints."""
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -70,3 +71,18 @@ def reset_chat(case_id: str | None = None):
     if case_id:
         reset_session(case_id)
     return {"status": "ok", "message": "Chat session reset."}
+
+
+@router.get("/history/{case_id}")
+def get_chat_history(case_id: str, db: Session = Depends(get_db)):
+    """Return the persisted chat history for a case, so a returning customer
+    can pick up the conversation where they left off."""
+    msgs = db.scalars(
+        select(ChatLog)
+        .where(ChatLog.case_id == case_id)
+        .order_by(ChatLog.created_at.asc())
+    ).all()
+    return {
+        "case_id": case_id,
+        "messages": [{"role": m.role, "content": m.content} for m in msgs],
+    }

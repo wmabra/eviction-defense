@@ -147,7 +147,7 @@ def check_legal_risk_flags(case_data: dict) -> list[GateResult]:
             message=(
                 "A writ of possession has been issued or the sheriff is involved. "
                 "This is past the point where our self-help packet can help. "
-                "Please contact a licensed Florida attorney or your local legal aid organization immediately."
+                "Please contact a licensed attorney or your local legal aid organization immediately."
             ),
             requires_action=False,
         ))

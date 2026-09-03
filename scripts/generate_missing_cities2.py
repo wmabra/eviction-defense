@@ -45,14 +45,14 @@ LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1")
 LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-chat")
 
 COVERED_STATES = {
-    'AZ': 'arizona', 'AR': 'arkansas', 'CA': 'california',
+    'AR': 'arkansas',
     'CO': 'colorado', 'CT': 'connecticut',
-    'FL': 'florida', 'GA': 'georgia',
+    'GA': 'georgia',
     'IL': 'illinois',
     'LA': 'louisiana',
-    'MA': 'massachusetts', 'MI': 'michigan',
+    'MI': 'michigan',
     'MN': 'minnesota',
-    'NV': 'nevada', 'NM': 'new-mexico',
+    'NM': 'new-mexico',
     'OR': 'oregon',
     'RI': 'rhode-island', 'SC': 'south-carolina',
     'TN': 'tennessee', 'TX': 'texas',
@@ -60,14 +60,14 @@ COVERED_STATES = {
 }
 
 STATE_ABBR_TO_NAME = {
-    'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+    'AR': 'Arkansas',
     'CO': 'Colorado', 'CT': 'Connecticut',
-    'FL': 'Florida', 'GA': 'Georgia',
+    'GA': 'Georgia',
     'IL': 'Illinois',
     'LA': 'Louisiana',
-    'MA': 'Massachusetts', 'MI': 'Michigan',
+    'MI': 'Michigan',
     'MN': 'Minnesota',
-    'NV': 'Nevada', 'NM': 'New Mexico',
+    'NM': 'New Mexico',
     'OR': 'Oregon',
     'RI': 'Rhode Island', 'SC': 'South Carolina',
     'TN': 'Tennessee', 'TX': 'Texas',
@@ -75,23 +75,11 @@ STATE_ABBR_TO_NAME = {
 }
 
 STATE_RESOURCES = {
-    'CA': [
-        ('State Housing', 'https://www.hcd.ca.gov/', 'California Department of Housing and Community Development', 'Housing programs, homelessness resources, renter assistance, and program notices'),
-        ('State Referral', 'https://www.211ca.org/', '211 California', 'Rent, utilities, shelter, food, and crisis referrals'),
-        ('Legal Aid', 'https://lawhelpca.org/', 'LawHelpCA', 'Eviction legal information and legal-aid routing'),
-        ('Court Self-Help', 'https://selfhelp.courts.ca.gov/eviction', 'California Courts Self-Help — Eviction', 'Landlord-tenant procedures, forms, and court information'),
-    ],
     'TX': [
         ('State Housing', 'https://www.tdhca.texas.gov/', 'Texas Department of Housing and Community Affairs', 'Housing programs, homelessness resources, renter assistance, and program notices'),
         ('State Referral', 'https://www.211texas.org/', '2-1-1 Texas', 'Rent, utilities, shelter, food and crisis referrals'),
         ('Legal Aid', 'https://texaslawhelp.org/', 'TexasLawHelp', 'Eviction legal information and legal-aid routing'),
         ('Court / Tenant Help', 'https://texaslawhelp.org/house-apartment/eviction-other-landlord-issues', 'TexasLawHelp Eviction and Landlord Issues', 'Eviction procedures, forms, and tenant guidance'),
-    ],
-    'FL': [
-        ('State Housing', 'https://www.floridahousing.org/', 'Florida Housing Finance Corporation', 'Housing programs, homelessness resources, renter assistance'),
-        ('State Referral', 'https://www.211.org/', '2-1-1 Florida', 'Rent, utilities, shelter, food and crisis referrals'),
-        ('Legal Aid', 'https://www.floridabar.org/public/consumer/pamphlet014/', 'Florida Bar — Eviction Information', 'Eviction legal information from The Florida Bar'),
-        ('Court / Tenant Help', 'https://www.flcourts.gov/Resources-Services/Office-of-the-State-Courts-Administrator/Self-Help-Information', 'Florida Courts Self-Help', 'Eviction procedures, forms, and tenant guidance'),
     ],
 }
 
@@ -382,7 +370,7 @@ def build_city_page(city_name, state_abbr, state_slug, state_name, county_name, 
 <title>Eviction Help in {city_name}, {state_name} | evictions.help</title><meta name="description" content="Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $399 packet, filing preparation, and resource starting points."><meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="{canonical}"><link rel="icon" href="/assets/favicon.png" type="image/png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="stylesheet" href="/assets/styles.css">
 <meta property="og:type" content="website"><meta property="og:image" content="https://evictions.help/assets/evictions-help-logo.png"><meta property="og:site_name" content="evictions.help"><meta property="og:title" content="Eviction Help in {city_name}, {state_name} | evictions.help"><meta property="og:description" content="Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $399 packet, filing preparation, and resource starting points."><meta property="og:url" content="{canonical}"><meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">&#123;&#34;@context&#34;: &#34;https://schema.org&#34;, &#34;@graph&#34;: [&#123;&#34;@type&#34;: &#34;Organization&#34;, &#34;@id&#34;: &#34;https://evictions.help/#organization&#34;, &#34;name&#34;: &#34;evictions.help&#34;, &#34;url&#34;: &#34;https://evictions.help/&#34;&#125;, &#123;&#34;@type&#34;: &#34;Service&#34;, &#34;@id&#34;: &#34;https://evictions.help/#service&#34;, &#34;name&#34;: &#34;Eviction self-help document preparation&#34;, &#34;provider&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#organization&#34;&#125;, &#34;areaServed&#34;: [&#34;Arkansas&#34;, &#34;Arizona&#34;, &#34;California&#34;, &#34;Colorado&#34;, &#34;Connecticut&#34;, &#34;Florida&#34;, &#34;Georgia&#34;, &#34;Illinois&#34;, &#34;Louisiana&#34;, &#34;Massachusetts&#34;, &#34;Michigan&#34;, &#34;Minnesota&#34;, &#34;New Mexico&#34;, &#34;Nevada&#34;, &#34;Oregon&#34;, &#34;Rhode Island&#34;, &#34;South Carolina&#34;, &#34;Tennessee&#34;, &#34;Texas&#34;, &#34;Virginia&#34;], &#34;offers&#34;: &#123;&#34;@type&#34;: &#34;Offer&#34;, &#34;price&#34;: &#34;299&#34;, &#34;priceCurrency&#34;: &#34;USD&#34;&#125;, &#34;description&#34;: &#34;AI-assisted self-help document preparation for residential tenants facing eviction.&#34;&#125;, &#123;&#34;@type&#34;: &#34;WebPage&#34;, &#34;@id&#34;: &#34;{canonical}#webpage&#34;, &#34;url&#34;: &#34;{canonical}&#34;, &#34;name&#34;: &#34;Eviction Help in {city_name}, {state_name} | evictions.help&#34;, &#34;description&#34;: &#34;Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $399 packet, filing preparation, and resource starting points.&#34;, &#34;isPartOf&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#website&#34;&#125;, &#34;about&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#service&#34;&#125;&#125;, &#123;&#34;@type&#34;: &#34;WebSite&#34;, &#34;@id&#34;: &#34;https://evictions.help/#website&#34;, &#34;url&#34;: &#34;https://evictions.help/&#34;, &#34;name&#34;: &#34;evictions.help&#34;, &#34;publisher&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#organization&#34;&#125;&#125;, &#123;&#34;@type&#34;: &#34;BreadcrumbList&#34;, &#34;itemListElement&#34;: [&#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 1, &#34;name&#34;: &#34;Home&#34;, &#34;item&#34;: &#34;https://evictions.help/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 2, &#34;name&#34;: &#34;{state_name}&#34;, &#34;item&#34;: &#34;https://evictions.help/{state_slug}/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 3, &#34;name&#34;: &#34;{county_name} County&#34;, &#34;item&#34;: &#34;https://evictions.help/{state_slug}/{county_slug}/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 4, &#34;name&#34;: &#34;{city_name}&#34;, &#34;item&#34;: &#34;{canonical}&#34;&#125;]&#125;]&#125;</script></head>
+<script type="application/ld+json">&#123;&#34;@context&#34;: &#34;https://schema.org&#34;, &#34;@graph&#34;: [&#123;&#34;@type&#34;: &#34;Organization&#34;, &#34;@id&#34;: &#34;https://evictions.help/#organization&#34;, &#34;name&#34;: &#34;evictions.help&#34;, &#34;url&#34;: &#34;https://evictions.help/&#34;&#125;, &#123;&#34;@type&#34;: &#34;Service&#34;, &#34;@id&#34;: &#34;https://evictions.help/#service&#34;, &#34;name&#34;: &#34;Eviction self-help document preparation&#34;, &#34;provider&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#organization&#34;&#125;, &#34;areaServed&#34;: [&#34;Arkansas&#34;, &#34;Colorado&#34;, &#34;Connecticut&#34;, &#34;Georgia&#34;, &#34;Illinois&#34;, &#34;Louisiana&#34;, &#34;Michigan&#34;, &#34;Minnesota&#34;, &#34;New Mexico&#34;, &#34;Oregon&#34;, &#34;Rhode Island&#34;, &#34;South Carolina&#34;, &#34;Tennessee&#34;, &#34;Texas&#34;, &#34;Virginia&#34;], &#34;offers&#34;: &#123;&#34;@type&#34;: &#34;Offer&#34;, &#34;price&#34;: &#34;299&#34;, &#34;priceCurrency&#34;: &#34;USD&#34;&#125;, &#34;description&#34;: &#34;AI-assisted self-help document preparation for residential tenants facing eviction.&#34;&#125;, &#123;&#34;@type&#34;: &#34;WebPage&#34;, &#34;@id&#34;: &#34;{canonical}#webpage&#34;, &#34;url&#34;: &#34;{canonical}&#34;, &#34;name&#34;: &#34;Eviction Help in {city_name}, {state_name} | evictions.help&#34;, &#34;description&#34;: &#34;Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $399 packet, filing preparation, and resource starting points.&#34;, &#34;isPartOf&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#website&#34;&#125;, &#34;about&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#service&#34;&#125;&#125;, &#123;&#34;@type&#34;: &#34;WebSite&#34;, &#34;@id&#34;: &#34;https://evictions.help/#website&#34;, &#34;url&#34;: &#34;https://evictions.help/&#34;, &#34;name&#34;: &#34;evictions.help&#34;, &#34;publisher&#34;: &#123;&#34;@id&#34;: &#34;https://evictions.help/#organization&#34;&#125;&#125;, &#123;&#34;@type&#34;: &#34;BreadcrumbList&#34;, &#34;itemListElement&#34;: [&#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 1, &#34;name&#34;: &#34;Home&#34;, &#34;item&#34;: &#34;https://evictions.help/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 2, &#34;name&#34;: &#34;{state_name}&#34;, &#34;item&#34;: &#34;https://evictions.help/{state_slug}/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 3, &#34;name&#34;: &#34;{county_name} County&#34;, &#34;item&#34;: &#34;https://evictions.help/{state_slug}/{county_slug}/&#34;&#125;, &#123;&#34;@type&#34;: &#34;ListItem&#34;, &#34;position&#34;: 4, &#34;name&#34;: &#34;{city_name}&#34;, &#34;item&#34;: &#34;{canonical}&#34;&#125;]&#125;]&#125;</script></head>
 <body data-state="{state_abbr}" data-county="{county_name} County" data-city="{city_name}">
 <header class="site-header"><div class="container nav"><a class="brand" href="/" aria-label="evictions.help home"><img src="/assets/evictions-help-logo.png" alt="evictions.help"></a><nav class="nav-links" aria-label="Primary"><a href="/#included">What's included</a><a href="/#how-it-works">How it works</a><a href="/#states">States</a><a href="/#faq">FAQ</a><a href="/contact">Contact</a><a class="nav-cta" href="#eligibility">Check eligibility</a></nav><button class="mobile-menu" aria-label="Open menu">☰</button></div></header>
 <nav class="breadcrumb container" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/{state_slug}/">{state_name}</a></li><li><a href="/{state_slug}/{county_slug}/">{county_name} County</a></li><li>{city_name}</li></ol></nav>

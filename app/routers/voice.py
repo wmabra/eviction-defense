@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional, cast
 import hashlib
 import hmac
 import json
@@ -149,6 +149,8 @@ def verify_caller(req: CallerVerifyRequest, db: Session = Depends(get_db)):
             ),
         })
 
+    case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
+
     # Phone verification (optional extra security)
     if req.last_four_phone and case.phone:
         if not case.phone.endswith(req.last_four_phone):
@@ -173,6 +175,7 @@ def package_context(case_id: str, db: Session = Depends(get_db)):
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
+    case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
 
     # Build package manifest
     docs = []
@@ -212,6 +215,7 @@ def document_help(req: DocumentHelpRequest, db: Session = Depends(get_db)):
     case = db.query(Case).filter(Case.id == req.case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
+    case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
 
     doc_info = get_doc_help(req.doc_name, case.county or "your county")
 
@@ -301,6 +305,8 @@ def resend_packet(req: CallerVerifyRequest, db: Session = Depends(get_db)):
             "sent": False,
             "message": "I wasn't able to find your order to resend it.",
         })
+
+    case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
 
     if not case.packet_paths:
         return voice_response({
@@ -408,6 +414,7 @@ def request_callback(req: CallbackRequest, db: Session = Depends(get_db)):
 
 def caller_info_from_case(case: Case) -> dict:
     """Build safe caller info response from a case."""
+    case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
     return {
         "verified": True,
         "customer_name": case.full_name or "there",
@@ -446,14 +453,13 @@ def get_doc_help(doc_name: str, county: str) -> dict | None:
         "COURT_FORM_Answer": {
             "found": True,
             "doc_name": "Court Answer Form",
-            "description": "This is the official form 1.947(b) — your formal written response to the eviction complaint filed by your landlord.",
+            "description": "This is the official court answer form — your formal written response to the eviction complaint filed by your landlord.",
             "purpose": "It tells the court which allegations you deny, which defenses you're raising, and what outcome you want.",
             "where_to_sign": "Sign and date at the bottom of the last page where it says 'Signature of Tenant.' If you have co-tenants, each must sign separately.",
             "where_to_file": f"File at the Clerk of Court in {county}. Your Filing Checklist and E-Filing Instructions have the exact address and website.",
             "important_notes": (
-                "You must file this within 5 business days of receiving the summons, "
-                "not counting weekends and legal holidays. The deadline is listed at "
-                "the top of your Filing Checklist."
+                "You must file this by the deadline shown on your summons. "
+                "The deadline is listed at the top of your Filing Checklist."
             ),
         },
         "Fee_Waiver": {

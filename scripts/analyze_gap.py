@@ -14,14 +14,14 @@ import time
 SEO_DIR = "/opt/eviction-defense/seo"
 
 COVERED_STATES = {
-    'AZ': 'arizona', 'AR': 'arkansas', 'CA': 'california',
+    'AR': 'arkansas',
     'CO': 'colorado', 'CT': 'connecticut',
-    'FL': 'florida', 'GA': 'georgia',
+    'GA': 'georgia',
     'IL': 'illinois',
     'LA': 'louisiana',
-    'MA': 'massachusetts', 'MI': 'michigan',
+    'MI': 'michigan',
     'MN': 'minnesota',
-    'NV': 'nevada', 'NM': 'new-mexico',
+    'NM': 'new-mexico',
     'OR': 'oregon',
     'RI': 'rhode-island', 'SC': 'south-carolina',
     'TN': 'tennessee', 'TX': 'texas',
@@ -29,14 +29,14 @@ COVERED_STATES = {
 }
 
 STATE_ABBR_TO_NAME = {
-    'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+    'AR': 'Arkansas',
     'CO': 'Colorado', 'CT': 'Connecticut',
-    'FL': 'Florida', 'GA': 'Georgia',
+    'GA': 'Georgia',
     'IL': 'Illinois',
     'LA': 'Louisiana',
-    'MA': 'Massachusetts', 'MI': 'Michigan',
+    'MI': 'Michigan',
     'MN': 'Minnesota',
-    'NV': 'Nevada', 'NM': 'New Mexico',
+    'NM': 'New Mexico',
     'OR': 'Oregon',
     'RI': 'Rhode Island', 'SC': 'South Carolina',
     'TN': 'Tennessee', 'TX': 'Texas',

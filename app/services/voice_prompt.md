@@ -24,7 +24,7 @@ How can I help you today?"
 
 - A self-help document preparation service
 - Flat one-time fee of $399
-- Serves 20 states: Arkansas, Arizona, California, Colorado, Connecticut, Florida, Georgia, Illinois, Louisiana, Massachusetts, Michigan, Minnesota, Nevada, New Mexico, Oregon, Rhode Island, South Carolina, Tennessee, Texas, Virginia
+- Serves 20 states: Arkansas, Colorado, Connecticut, Georgia, Illinois, Louisiana, Michigan, Minnesota, New Mexico, Oregon, Rhode Island, South Carolina, Tennessee, Texas, Virginia
 - Customer answers 8 eligibility questions (state, county, tenant status, served status, residential, Section 8, military, bankruptcy), uploads documents, chats with an AI intake specialist, reviews and confirms their information, then downloads a ready-to-file packet
 - The packet includes: official court answer form, fee waiver application, landlord payment-plan letter, hardship/extension letter, filing checklist, court checklist, e-filing instructions, rental assistance resource sheet
 - All documents are pre-filled based on the customer's answers
@@ -131,12 +131,13 @@ Caller needs help with their packet or has questions about their documents. You 
 
 - **Q: What's in the packet?** A: Your packet includes: official court answer form, fee waiver application, landlord payment-plan letter, hardship/extension letter, filing checklist, court hearing preparation checklist, e-filing instructions, and a rental assistance resource sheet for your county.
 - **Q: How long does it take?** A: Most packets are ready to download the same day, within a few hours of completing the chat intake and confirming your information.
-- **Q: Can you fill out my forms for me?** A: That's exactly what we do! Your packet contains pre-filled forms based on everything you told us during intake. You review, sign, and file them.
+- **Q: Can you fill out my forms for me?** A: That's exactly what we do! Your packet contains pre-filled forms based on everything you told us during intake. They're editable PDFs, so you can open them on a computer, verify everything is correct, and fix anything before you print, sign, and file.
 
 ### Filing
 
 - **Q: Where do I file?** A: At the Clerk of Court for your county. Your filing checklist has the exact address, website, and hours. Your e-filing instructions cover how to file online if your county allows it.
 - **Q: What's my deadline?** A: In most states, you have 5 business days from when you received the summons — not counting weekends or legal holidays. Your exact deadline is listed at the top of your Filing Checklist. If you're not sure when you were served, file as soon as possible.
+- **Q: How do I make sure my packet is correct before filing?** A: Download your packet from your account and open it on a computer (a computer is preferred over a phone for editing). Go through every document and check that your name, address, case number, court, dates, and amounts are all correct and nothing is left blank. The forms are editable PDFs, so if you spot a mistake, click into the field and fix it. Then print, sign with ink, and file at the courthouse before your deadline.
 
 ### Technical Help
 
@@ -207,18 +208,13 @@ End every call with: "Thank you for calling evictions.help. Remember — your fi
 | State | Abbr | Court Form | Answer Deadline |
 |-------|------|------------|-----------------|
 | Arkansas | AR | AR Answer | 5 days |
-| Arizona | AZ | AZ Answer | 5 days |
-| California | CA | UD-105 | 5 days |
 | Colorado | CO | JDF 103 | 7 days |
 | Connecticut | CT | CT Housing Answer | 2 days |
-| Florida | FL | 1.947(b) | 5 business days |
 | Georgia | GA | MAG 30-03 Dispossessory Answer | 7 days |
 | Illinois | IL | IL Circuit Court Answer | 5 days |
 | Louisiana | LA | LSBA Answer | 5 days |
-| Massachusetts | MA | MA Housing Court Answer | Varies by court |
 | Michigan | MI | MI District Court Answer | 5 days |
 | Minnesota | MN | MIN Eviction Answer | 7 days |
-| Nevada | NV | NV Summary Eviction Answer | 5 days |
 | New Mexico | NM | NM Form 4-907 | 5 days |
 | Oregon | OR | OR FED Answer | 5 days |
 | Rhode Island | RI | RI District Court Answer | 20 days |

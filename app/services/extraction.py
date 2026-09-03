@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # The structured schema we ask the AI to extract
 EXTRACTION_PROMPT = """
-You are a legal document analysis AI. You analyze Florida eviction documents and
+You are a legal document analysis AI. You analyze eviction documents and
 extract structured data from them. You only extract facts — you do NOT give legal
 advice or interpretation.
 

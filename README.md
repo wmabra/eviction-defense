@@ -2,7 +2,7 @@
 
 AI-powered document preparation for tenants facing eviction in 20 states.
 
-**Price:** $299 flat fee  
+**Price:** $399 flat fee  
 **Domain:** evictions.help  
 **Model:** No-touch software workflow — customer answers, uploads, confirms, and receives a ready-to-file paperwork packet.
 
@@ -14,7 +14,7 @@ AI-powered document preparation for tenants facing eviction in 20 states.
 4. Hardship/Extension Letter
 5. Filing Checklist (step-by-step)
 6. Court Checklist (what to bring to hearing)
-7. E-Filing Instructions (myflcourtaccess.com)
+7. E-Filing Instructions (state-specific)
 8. Rental Assistance Resource Sheet (county-specific)
 9. SMS Deadline Reminders
 
@@ -67,4 +67,4 @@ uvicorn app.main:app --reload
 
 ## Legal Notice
 
-This service prepares self-help legal paperwork based on your answers. It does not provide legal advice or representation. You are responsible for reviewing, signing, and submitting all documents. If you need legal advice, consult a licensed Florida attorney.
+This service prepares self-help legal paperwork based on your answers. It does not provide legal advice or representation. You are responsible for reviewing, signing, and submitting all documents. If you need legal advice, consult a licensed attorney in your state.

@@ -81,7 +81,7 @@ def generate_refund_deadline_message(case_id: str) -> str:
 
 
 CHECK_ELIGIBILITY_ROUTE_REFUND_MAP = {
-    "state_not_supported": "We only support Florida at this time.",
+    "state_not_supported": "Your state is not yet supported.",
     "county_not_supported": "Your county is not yet supported.",
     "writ_sheriff_involved": "Writ of possession or sheriff involvement requires legal representation.",
     "section_8": "Section 8/public housing cases require an attorney.",

@@ -24,7 +24,12 @@ class Case(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     status = Column(String, default="pre_screen", index=True)
 
+    # Account linkage + progress (0-100) for resume/progress bar
+    user_id = Column(String, index=True, nullable=True)
+    progress = Column(Integer, default=0)
+
     # Pre-screen
+    state = Column(String, nullable=True)  # 2-letter state code (e.g. "MO")
     county = Column(String, nullable=False)
     eligible = Column(Boolean, default=False)
     ineligibility_reason = Column(Text, nullable=True)
@@ -70,6 +75,10 @@ class Case(Base):
     # Defenses (JSON blob of checked defenses + explanations)
     defenses = Column(JSON, nullable=True)
 
+    # Full intake payload snapshot (JSON) — used to regenerate the packet
+    # and to restore a customer's in-progress intake on resume.
+    intake_data = Column(JSON, nullable=True)
+
     # Preferences
     trial_by = Column(String, default="judge")
     needs_more_time = Column(Boolean, default=False)
@@ -114,3 +123,15 @@ class ChatLog(Base):
     role = Column(String, nullable=False)  # "user" or "assistant"
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class User(Base):
+    """Customer account. Created automatically after successful payment."""
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login_at = Column(DateTime, nullable=True)
+    must_change_password = Column(Boolean, default=True)

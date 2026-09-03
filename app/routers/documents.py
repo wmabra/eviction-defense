@@ -3,17 +3,18 @@ import json
 import os
 import logging
 from datetime import date
-from typing import Optional
+from typing import Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.database.models import Case, Document
+from app.database.models import Case, Document, User
 from app.config import settings
 from app.services.gates import check_document_quality, check_all_document_quality
 from app.services.confirmation import build_confirmation_screen, process_confirmation_submission
+from app.routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -224,6 +225,49 @@ def confirm_extraction(
         "message": "All fields confirmed. Packet generation will begin.",
         "case_id": case_id,
     }
+
+
+@router.get("/download/{case_id}")
+def download_packet(
+    case_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Download the completed packet for the authenticated user's case.
+
+    Regenerates from the stored intake snapshot so the customer can always
+    re-download from their account dashboard.
+    """
+    case = db.query(Case).filter(Case.id == case_id, Case.user_id == user.id).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    status = cast(str, case.status or "")
+    packet_status = cast(str, case.packet_status or "")
+    if status not in ("intake_complete", "confirmation_pending", "confirmation_complete", "packet_ready", "delivered") and packet_status != "generated":
+        raise HTTPException(status_code=409, detail="Your packet is not ready yet")
+
+    intake_data = cast(Optional[dict], case.intake_data)
+    data = dict(intake_data) if intake_data else {}
+    if not data.get("state"):
+        data["state"] = cast(str, case.state or "")
+    data["state"] = str(data["state"]).upper()
+
+    p = data.get("personal_info") or {}
+    l = data.get("landlord_info") or {}
+    c = data.get("case_details") or {}
+
+    return _build_and_return_packet(
+        full_name=p.get("full_name", "Tenant"),
+        county=p.get("county", case.county or ""),
+        state=data["state"],
+        property_address=p.get("property_address", ""),
+        landlord_name=l.get("landlord_name", ""),
+        case_number=c.get("case_number", ""),
+        phone=p.get("phone", ""),
+        email=p.get("email", ""),
+        extra_data=data,
+    )
 
 
 # ======================== INTERNAL HELPERS ========================

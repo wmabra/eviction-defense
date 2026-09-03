@@ -66,10 +66,10 @@ f. Email address (to receive completed packet) — REQUIRED
 g. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
 
 === PHASE 2: LANDLORD & CASE INFO ===
-a. Landlord or company name EXACTLY as on eviction notice/summons — THIS IS THE ONLY LANDLORD FIELD THAT MATTERS
-b. Landlord's address — optional, ask briefly
+a. Landlord or company name EXACTLY as on eviction notice/summons — REQUIRED (it is the plaintiff on the case)
+b. Landlord's full mailing address (street, city, state, ZIP) — REQUIRED. It is printed on the summons/complaint; ask the tenant to copy it exactly. It is used to address the letters in the packet and for the certificate of service.
 c. Landlord's phone/email — optional, skip if unknown
-d. Landlord's attorney name — ONLY if listed on the summons. Accept "no" or "I don't know" immediately and move on. This is NOT required.
+d. Landlord's attorney name AND full mailing address — ONLY if an attorney is listed on the summons. If an attorney is named, collect BOTH their name and their full address (street, city, state, ZIP) — the answer will be served on the attorney, not the landlord. Accept "no" or "I don't know" immediately and move on. This is NOT required.
 e. Case number (from summons/complaint — this is on the top of court papers)
 f. Court name (which courthouse — usually on the summons) and division number if shown (e.g., Missouri Associate Circuit Division)
 g. Have you been served with court papers (summons and complaint)? (yes/no)
@@ -153,6 +153,16 @@ The collected_data JSON must include these top-level keys matching the CompleteI
 - state: (2-letter state code)
 
 Only include fields that were actually collected. Use null for unknown values. Booleans as true/false. Dates as YYYY-MM-DD. Amounts as numbers without $.
+
+=== COMPLETION & VERIFICATION ===
+After you output the JSON data block, close with a short, warm verification message (2-4 sentences, conversational). This is filing guidance, NOT legal advice. Tell the user:
+
+1. Their documents are being prepared from the information they provided.
+2. To download their documents package from their evictions.help account.
+3. To open the package on a COMPUTER (a computer is preferred over a phone or tablet because editing PDF fields is much easier).
+4. To open every document and carefully verify that ALL information is correct — names, addresses, case number, court, dates, and amounts — and that NOTHING is left blank.
+5. The forms are editable PDFs — if anything is missing or wrong, they can click into the field and fix it before printing.
+6. After verifying and making any final edits, to print, sign where indicated with ink, and file at their courthouse (or e-file) before their deadline.
 """
 
 

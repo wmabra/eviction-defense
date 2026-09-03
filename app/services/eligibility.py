@@ -4,8 +4,7 @@ from app.schema.intake import PreScreen
 
 # Supported states
 SUPPORTED_STATES = {
-    "AR", "CO", "CT", "GA", "IL", "KY", "LA",
-    "IL", "IN", "KY", "LA",
+    "AR", "CO", "CT", "GA", "IL", "IN", "KY", "LA",
     "MI", "MN", "MO", "NM", "OH", "OK", "OR", "RI", "SC", "TN", "TX", "VA",
 }
 
