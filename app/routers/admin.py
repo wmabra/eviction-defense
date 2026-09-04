@@ -1,5 +1,5 @@
 """Admin dashboard API — case management, stats, and resend."""
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -33,8 +33,106 @@ router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 ADMIN_PASSWORD = "evictions2026"  # Change this in production!
 
 
+def _default_test_data(state: str, county: str, full_name: str) -> dict:
+    """A complete, valid test case so a packet can be generated with minimal input."""
+    return {
+        "state": state.upper(),
+        "personal_info": {
+            "full_name": full_name or "Test Tenant",
+            "phone": "(555) 123-4567",
+            "email": "test@evictions.help",
+            "property_address": "123 Main St",
+            "property_city": "Springfield",
+            "property_zip": "00000",
+            "county": county or "",
+        },
+        "landlord_info": {
+            "landlord_name": "Test Landlord LLC",
+            "landlord_address": "456 Owner Blvd",
+            "landlord_phone": "(555) 999-9999",
+            "landlord_email": "owner@example.com",
+        },
+        "case_details": {
+            "case_number": "TEST-2024-0001",
+            "court_name": f"{county or 'Your'} Court",
+            "complaint_amount_claimed": "$2,400.00",
+            "summons_service_date": "2024-06-01",
+            "response_deadline": "2024-06-10",
+        },
+        "rent_payment": {
+            "monthly_rent": 1200.0,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 600.0,
+        },
+        "defenses": {
+            "def_repairs": {"checked": True, "explanation": "Heat broken since January."},
+            "def_amount": {"checked": True, "explanation": "Already paid half."},
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+        },
+        "financial_info": {
+            "monthly_gross_income": 2400.0,
+            "employment_income": 2400.0,
+            "rent_or_mortgage": 1200.0,
+            "utilities_expense": 150.0,
+            "food_expense": 300.0,
+            "household_adults": 1,
+            "household_children": 0,
+            "receives_snap": False,
+            "receives_medicaid": True,
+        },
+    }
+
+
 class AdminAuth(BaseModel):
     password: str
+
+
+@router.post("/generate-test-packet")
+async def generate_test_packet(request: Request):
+    """Admin: generate a full test document package from arbitrary data.
+
+    Lets Mark/William generate any packet on demand (unlimited, no customer
+    account needed). Requires the admin password in the JSON body.
+
+    Body may be just {"password": "...", "state": "VA", "county": "Fairfax",
+    "full_name": "Test Tenant"} — everything else is filled with valid defaults —
+    or include any of personal_info / landlord_info / case_details / rent_payment /
+    defenses / preferences / financial_info to override specific sections.
+    """
+    import json as _json
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    if body.get("password") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin password")
+
+    pi = body.get("personal_info") or {}
+    state = str(body.get("state") or "VA").upper()
+    county = body.get("county") or pi.get("county") or ""
+    full_name = body.get("full_name") or pi.get("full_name") or "Test Tenant"
+
+    data = _default_test_data(state, county, full_name)
+    for section in ("personal_info", "landlord_info", "case_details", "rent_payment", "defenses", "preferences", "financial_info"):
+        override = body.get(section)
+        if isinstance(override, dict):
+            data[section].update(override)
+
+    from app.routers.documents import _build_and_return_packet
+    dpi = data["personal_info"]
+    dli = data["landlord_info"]
+    dcd = data["case_details"]
+    return _build_and_return_packet(
+        full_name, county, state,
+        dpi.get("property_address", ""), dli.get("landlord_name", ""),
+        dcd.get("case_number", ""), dpi.get("phone", ""), dpi.get("email", ""),
+        extra_data=data,
+    )
 
 
 @router.post("/auth")

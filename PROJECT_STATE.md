@@ -34,6 +34,9 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
    edit any mistakes, then print / sign / file.
 4. **Internal note:** anti-sharing/reuse protection is required for the account phase
    (see `NOTES.md`).
+5. **Admin test-packet endpoint:** `POST /api/v1/admin/generate-test-packet` lets
+   Mark/William generate any packet on demand (password-gated, unlimited, no customer
+   account) — returns the zip from arbitrary data with sensible defaults.
 
 ## How the editable-field system works
 
@@ -46,8 +49,11 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
 ## Next steps / future work
 
 1. **Customer account + download system** (next phase) — see `NOTES.md` for anti-sharing requirement.
-2. Deploy/publish the SEO city/county pages (scripts in `scripts/`).
-3. (Optional) refine pre-fill field-name matching on the scanned fee-waiver forms.
+2. **Secure the admin panel** — `app/routers/admin.py` endpoints `/stats`, `/cases`, `/cases/{id}`,
+   `/cases/{id}/resend`, and `/chat-sessions` are NOT yet password-gated (only the new
+   `generate-test-packet` endpoint is). Add the admin-password/token check to all of them.
+3. Deploy/publish the SEO city/county pages (scripts in `scripts/`).
+4. (Optional) refine pre-fill field-name matching on the scanned fee-waiver forms.
 
 ## How to resume quickly
 
