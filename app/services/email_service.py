@@ -62,6 +62,31 @@ Need help? Reply to this email or contact support@evictions.help.
     return send_email(to=to, subject=subject, body=body)
 
 
+def send_password_reset_email(to: str, temp_password: str) -> bool:
+    """Send a password-reset email with a new temporary password."""
+    subject = "Your evictions.help password has been reset"
+    base = settings.app_url.rstrip("/")
+
+    body = f"""A password reset was requested for your evictions.help account.
+
+Your new temporary password:
+  Username: {to}
+  Password: {temp_password}
+
+To log in:
+1. Go to {base}/account
+2. Enter the username and password above
+
+For your security, please change this password after logging in (Settings → Change Password).
+
+If you did not request this reset, you can ignore this email — but your previous password is no longer active.
+
+— The evictions.help team
+"""
+
+    return send_email(to=to, subject=subject, body=body)
+
+
 def send_callback_email(
     callback_id: str,
     first_name: str,

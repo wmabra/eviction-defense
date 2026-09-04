@@ -5,7 +5,7 @@ payment router), not through a public registration endpoint.
 """
 # pyright: reportAttributeAccessIssue=false
 from datetime import datetime
-from typing import Optional, cast
+from typing import Any, Optional, cast
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.database.models import Case, User
-from app.services.auth import hash_password, sign_token, verify_password, verify_token
+from app.services.auth import generate_temp_password, hash_password, sign_token, verify_password, verify_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -29,6 +29,10 @@ class LoginRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
 
 
 # --------------------------------------------------------------------------- #
@@ -103,7 +107,10 @@ def progress_for(case: Case) -> int:
 def login(req: LoginRequest, db: Session = Depends(get_db)):
     email = req.email.lower().strip()
     user = db.query(User).filter(User.email == email).first()
-    if not user or not verify_password(req.password, user.password_hash):
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    user = cast(Any, user)
+    if not verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     user.last_login_at = datetime.utcnow()
@@ -147,6 +154,7 @@ def change_password(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    user = cast(Any, user)
     if not verify_password(req.current_password, user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     if len(req.new_password) < 8:
@@ -157,3 +165,22 @@ def change_password(
     db.commit()
 
     return {"status": "ok", "message": "Password updated"}
+
+
+@router.post("/forgot-password")
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Reset a user's password: generate a new temp password and email it.
+
+    Always returns success to avoid revealing whether an account exists.
+    """
+    email = req.email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        user = cast(Any, user)
+        temp_password = generate_temp_password()
+        user.password_hash = hash_password(temp_password)
+        user.must_change_password = True
+        db.commit()
+        from app.services.email_service import send_password_reset_email
+        send_password_reset_email(email, temp_password)
+    return {"status": "ok", "message": "If that email has an account, a new password has been sent."}
