@@ -325,7 +325,7 @@
 
     <script>
       const API = "/api/v1/admin";
-      let sessionToken = null;
+      let adminPassword = null;
 
       function login() {
         const pw = document.getElementById("password").value;
@@ -336,7 +336,7 @@
         })
           .then((r) => (r.ok ? r.json() : Promise.reject("Invalid password")))
           .then((data) => {
-            sessionToken = data.token;
+            adminPassword = pw;
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("dashboard").classList.remove("hidden");
             loadStats();
@@ -350,13 +350,13 @@
       }
 
       function logout() {
-        sessionToken = null;
+        adminPassword = null;
         document.getElementById("login-screen").classList.remove("hidden");
         document.getElementById("dashboard").classList.add("hidden");
       }
 
       function loadStats() {
-        fetch(API + "/stats")
+        fetch(API + "/stats", { headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((data) => {
             document.getElementById("stat-total").textContent =
@@ -374,7 +374,7 @@
       let allCases = [];
 
       function loadCases() {
-        fetch(API + "/cases?limit=100")
+        fetch(API + "/cases?limit=100", { headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((data) => {
             allCases = data.cases || [];
@@ -419,7 +419,7 @@
       }
 
       function viewCase(id) {
-        fetch(API + "/cases/" + id)
+        fetch(API + "/cases/" + id, { headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((c) => {
             const el = document.getElementById("detail-content");
@@ -451,7 +451,7 @@
 
       function resendPacket(id) {
         if (!confirm("Regenerate and download packet for this case?")) return;
-        fetch(API + "/cases/" + id + "/resend", { method: "POST" })
+        fetch(API + "/cases/" + id + "/resend", { method: "POST", headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((data) => {
             if (data.download_url) window.open(data.download_url);
@@ -466,7 +466,7 @@
       }
 
       function loadChatSessions() {
-        fetch(API + "/chat-sessions")
+        fetch(API + "/chat-sessions", { headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((data) => {
             const tbody = document.getElementById("chat-sessions-table");
@@ -490,7 +490,7 @@
       }
 
       function viewChat(caseId) {
-        fetch(API + "/chat-sessions/" + caseId)
+        fetch(API + "/chat-sessions/" + caseId, { headers: { "X-Admin-Password": adminPassword } })
           .then((r) => r.json())
           .then((data) => {
             const el = document.getElementById("chat-messages");

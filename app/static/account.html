@@ -267,22 +267,61 @@
           Log in
         </button>
         <p class="muted" style="margin-top: 14px">
-          <a href="#" onclick="document.getElementById('forgot-box').classList.toggle('hidden'); return false;" style="color: #e94560">Forgot your password?</a>
+          <a
+            href="#"
+            onclick="
+              document.getElementById('forgot-box').classList.toggle('hidden');
+              return false;
+            "
+            style="color: #e94560"
+            >Forgot your password?</a
+          >
         </p>
         <div id="forgot-box" class="hidden" style="margin-top: 12px">
-          <input type="email" id="forgot-email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px" />
-          <button class="btn btn-secondary" onclick="forgotPassword()" style="width:100%">Email me a new password</button>
-          <p class="muted" id="forgot-msg" style="display:none;margin-top:8px"></p>
+          <input
+            type="email"
+            id="forgot-email"
+            placeholder="you@email.com"
+            style="
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #ddd;
+              border-radius: 6px;
+              margin-bottom: 8px;
+            "
+          />
+          <button
+            class="btn btn-secondary"
+            onclick="forgotPassword()"
+            style="width: 100%"
+          >
+            Email me a new password
+          </button>
+          <p
+            class="muted"
+            id="forgot-msg"
+            style="display: none; margin-top: 8px"
+          ></p>
         </div>
         <script>
           async function forgotPassword() {
             const email = document.getElementById("forgot-email").value.trim();
-            if (!email) { alert("Enter your email address."); return; }
-            const r = await fetch("/api/v1/auth/forgot-password", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({email}) });
+            if (!email) {
+              alert("Enter your email address.");
+              return;
+            }
+            const r = await fetch("/api/v1/auth/forgot-password", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
             const d = await r.json();
             const m = document.getElementById("forgot-msg");
             m.style.display = "block";
-            m.textContent = (d && d.message) ? d.message : "If that email has an account, a new password has been sent.";
+            m.textContent =
+              d && d.message
+                ? d.message
+                : "If that email has an account, a new password has been sent.";
           }
         </script>
       </div>

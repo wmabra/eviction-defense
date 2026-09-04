@@ -76,7 +76,7 @@ def test_state(state_code):
         for page in doc:
             try:
                 for w in page.widgets():
-                    if w.field_value:
+                    if getattr(w, "field_value", None):
                         filled += 1
             except:
                 pass
@@ -86,7 +86,7 @@ def test_state(state_code):
             # Check for overlay text
             text = ""
             for page in doc:
-                text += page.get_text()
+                text += str(page.get_text())
             if "Jane" in text or "ABC Properties" in text:
                 print(f"  ✅ Text overlay confirmed (test data present)")
             else:

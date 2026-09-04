@@ -1,5 +1,5 @@
 """Admin dashboard API — case management, stats, and resend."""
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -31,6 +31,13 @@ def _load_defenses(value: object) -> dict:
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
 ADMIN_PASSWORD = "evictions2026"  # Change this in production!
+
+
+def require_admin(x_admin_password: str = Header(default="", alias="X-Admin-Password")):
+    """Dependency: gate admin endpoints by password via the X-Admin-Password header."""
+    if x_admin_password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin password")
+    return True
 
 
 def _default_test_data(state: str, county: str, full_name: str) -> dict:
@@ -144,7 +151,7 @@ def admin_auth(auth: AdminAuth):
 
 
 @router.get("/stats")
-def get_stats(db: Session = Depends(get_db)):
+def get_stats(db: Session = Depends(get_db), _: bool = Depends(require_admin)):
     """Get dashboard statistics."""
     total_cases = db.query(Case).count()
     
@@ -189,6 +196,7 @@ def list_cases(
     limit: int = 50,
     status: Optional[str] = None,
     db: Session = Depends(get_db),
+    _: bool = Depends(require_admin),
 ):
     """List all cases with pagination and filtering."""
     query = db.query(Case).order_by(Case.created_at.desc())
@@ -222,7 +230,7 @@ def list_cases(
 
 
 @router.get("/cases/{case_id}")
-def get_case(case_id: str, db: Session = Depends(get_db)):
+def get_case(case_id: str, db: Session = Depends(get_db), _: bool = Depends(require_admin)):
     """Get detailed info for a single case."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
@@ -254,7 +262,7 @@ def get_case(case_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/cases/{case_id}/resend")
-def resend_packet(case_id: str, db: Session = Depends(get_db)):
+def resend_packet(case_id: str, db: Session = Depends(get_db), _: bool = Depends(require_admin)):
     """Regenerate and return a download URL for a case's packet."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
@@ -280,7 +288,7 @@ def resend_packet(case_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/chat-sessions")
-def list_chat_sessions(page: int = 1, limit: int = 20, db: Session = Depends(get_db)):
+def list_chat_sessions(page: int = 1, limit: int = 20, db: Session = Depends(get_db), _: bool = Depends(require_admin)):
     """List recent chat sessions for review."""
     from app.database.models import ChatLog
     from sqlalchemy import func, distinct
@@ -301,7 +309,7 @@ def list_chat_sessions(page: int = 1, limit: int = 20, db: Session = Depends(get
 
 
 @router.get("/chat-sessions/{case_id}")
-def get_chat_session_log(case_id: str, db: Session = Depends(get_db)):
+def get_chat_session_log(case_id: str, db: Session = Depends(get_db), _: bool = Depends(require_admin)):
     """Get the full chat log for a specific session."""
     from app.database.models import ChatLog
     

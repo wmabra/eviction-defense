@@ -18,6 +18,9 @@ from app.database.models import Case, ChatLog
 from app.services.email_service import send_callback_email
 from app.config import settings
 
+# NOTE: `case` objects are cast to `Any` after fetch (see `case = cast(Any, case)`
+# in each endpoint) because SQLAlchemy Column descriptors aren't typed by pyright.
+
 router = APIRouter(prefix="/api/v1/voice", tags=["voice"])
 
 # ── Pydantic schemas ──────────────────────────────────────────────
@@ -425,8 +428,8 @@ def caller_info_from_case(case: Case) -> dict:
         "package_type": "eviction_defense_v1",
         "packet_ready": case.packet_status == "generated",
         "has_fee_waiver": bool(case.needs_filing_fee_waiver),
-        "response_deadline": str(case.response_deadline) if case.response_deadline else "",
-        "court_date": str(case.court_date) if case.court_date else "",
+        "response_deadline": str(case.response_deadline) if case.response_deadline else "",  # type: ignore[reportGeneralTypeIssues]
+        "court_date": str(case.court_date) if case.court_date else "",  # type: ignore[reportGeneralTypeIssues]
     }
 
 
