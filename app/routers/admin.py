@@ -8,6 +8,7 @@ import json
 
 from app.database import get_db
 from app.database.models import Case
+from app.config import settings
 
 def _dt_str(value: Optional[datetime]) -> Optional[str]:
     """Format a datetime for JSON, or None."""
@@ -30,12 +31,9 @@ def _load_defenses(value: object) -> dict:
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
-ADMIN_PASSWORD = "evictions2026"  # Change this in production!
-
-
 def require_admin(x_admin_password: str = Header(default="", alias="X-Admin-Password")):
     """Dependency: gate admin endpoints by password via the X-Admin-Password header."""
-    if x_admin_password != ADMIN_PASSWORD:
+    if x_admin_password != settings.admin_password:
         raise HTTPException(status_code=401, detail="Invalid admin password")
     return True
 
@@ -116,7 +114,7 @@ async def generate_test_packet(request: Request):
     except Exception:
         body = {}
 
-    if body.get("password") != ADMIN_PASSWORD:
+    if body.get("password") != settings.admin_password:
         raise HTTPException(status_code=401, detail="Invalid admin password")
 
     pi = body.get("personal_info") or {}
@@ -145,7 +143,7 @@ async def generate_test_packet(request: Request):
 @router.post("/auth")
 def admin_auth(auth: AdminAuth):
     """Simple password auth for admin panel."""
-    if auth.password == ADMIN_PASSWORD:
+    if auth.password == settings.admin_password:
         return {"status": "ok", "token": "admin-session"}
     raise HTTPException(status_code=401, detail="Invalid password")
 

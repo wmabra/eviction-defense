@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     app_url: str = "https://evictions.help"
     debug: bool = True
 
+    # Admin panel
+    admin_password: str = "evictions2026"
+
     # Authorize.net
     authorize_login_id: str = ""
     authorize_transaction_key: str = ""
