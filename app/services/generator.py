@@ -49,6 +49,14 @@ from app.services.form_fields import FillableText, FillableCheckbox
 logger = logging.getLogger(__name__)
 
 
+def _full_address(data):
+    """Compose the full property address (street, city, state, zip)."""
+    p = data.get("personal_info", {}) or {}
+    state = (data.get("state") or "").upper()
+    parts = [p.get("property_address", ""), p.get("property_city", ""), state, p.get("property_zip", "")]
+    return ", ".join(x for x in parts if x)
+
+
 def _editable_field(name, value="", width=140, height=16, font_size=9):
     return FillableText(name, value, width=width, height=height, font_size=font_size)
 
@@ -97,7 +105,7 @@ def _editable_caption(data, S, plaintiff_label="Plaintiff", defendant_label="Def
     el.append(_case)
     if division:
         el.append(Spacer(1, 2))
-        el.append(_field_table([[Paragraph("Division:", S["Caption"]), _editable_field("division", "", width=120)]], col_widths=(70, 140)))
+        el.append(_field_table([[Paragraph("Division (if shown):", S["Caption"]), _editable_field("division", "", width=120)]], col_widths=(70, 140)))
     el.append(HRFlowable(width="100%", thickness=1))
     el.append(Spacer(1, 14))
     return el
@@ -109,7 +117,7 @@ def _editable_signature(data, S):
         HRFlowable(width=3*inch, thickness=1, hAlign="LEFT"),
         _field_table([
             [Paragraph("Name:", S["Body"]), _editable_field("sig_name", p.get("full_name", ""), width=220)],
-            [Paragraph("Address:", S["BodySmall"]), _editable_field("sig_address", p.get("property_address", ""), width=220)],
+            [Paragraph("Address:", S["BodySmall"]), _editable_field("sig_address", _full_address(data), width=220)],
             [Paragraph("Phone:", S["BodySmall"]), _editable_field("sig_phone", p.get("phone", ""), width=160)],
             [Paragraph("Email:", S["BodySmall"]), _editable_field("sig_email", p.get("email", ""), width=220)],
         ]),
@@ -414,8 +422,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
 
     elements.append(Paragraph("<b>FACTUAL BACKGROUND</b>", S["BodyBold"]))
     elements.append(Paragraph(
-        f"1. Defendant resides at {p.get('property_address', '_________________')}, "
-        f"{p.get('property_city', '')}, {data.get('state', '')}.", S["Body"]
+        f"1. Defendant resides at {_full_address(data)}.", S["Body"]
     ))
     elements.append(Paragraph(
         f"2. Plaintiff filed a complaint for eviction claiming ${c.get('complaint_amount_claimed', '0')} "
@@ -487,7 +494,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
-        f"<b>RE:</b> Payment Plan Request — Property at {p.get('property_address', '')}<br/>"
+        f"<b>RE:</b> Payment Plan Request — Property at {_full_address(data)}<br/>"
         f"&nbsp;&nbsp;&nbsp;&nbsp;Case No: {c.get('case_number', '')}",
         S["Body"]
     ))
@@ -545,7 +552,7 @@ def _generate_hardship_letter(data: dict, output_path: str):
     ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
-        f"<b>RE:</b> Hardship Request — {p.get('property_address', '')}<br/>"
+        f"<b>RE:</b> Hardship Request — {_full_address(data)}<br/>"
         f"&nbsp;&nbsp;&nbsp;&nbsp;Case No: {c.get('case_number', '')}",
         S["Body"]
     ))
@@ -832,13 +839,6 @@ def _generate_hearing_script(data: dict, output_path: str):
         elements.append(Spacer(1, 3))
     
     elements.append(Spacer(1, 14))
-    elements.append(Paragraph(
-        "<b>IMPORTANT:</b> This guide is provided for informational purposes only. It is not legal "
-        "advice. If you need legal advice, contact a licensed attorney or your local legal aid organization. "
-        "You are responsible for your own case and what you say in court.",
-        S["BodySmall"]
-    ))
-    
     _add_disclaimer(elements, S)
     doc.build(elements)
 
@@ -1770,7 +1770,7 @@ def _generate_demand_letter(data: dict, output_path: str):
     ], col_widths=(60, 220)))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
-        f"<b>RE:</b> DEMAND FOR REPAIRS — {p.get('property_address', '')}<br/>"
+        f"<b>RE:</b> DEMAND FOR REPAIRS — {_full_address(data)}<br/>"
         f"&nbsp;&nbsp;&nbsp;&nbsp;Case No: {c.get('case_number', 'N/A')}",
         S["Body"]
     ))
@@ -1865,8 +1865,7 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
     elements.append(Spacer(1, 10))
 
     facts = [
-        f"1. The Defendant is the tenant residing at {p.get('property_address', '[ADDRESS]')}, "
-        f"{p.get('property_city', '')}, {state}.",
+        f"1. The Defendant is the tenant residing at {_full_address(data)}.",
         f"2. The Plaintiff, {l.get('landlord_name', '[LANDLORD]')}, is the landlord/owner of the subject property.",
         f"3. The Defendant has received an eviction notice and/or summons regarding the property "
         f"and wishes to exercise the right to be heard on all matters related to this dispute.",
@@ -1945,8 +1944,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     elements.append(Spacer(1, 10))
 
     facts = [
-        f"1. The Defendant is {p.get('full_name', '[TENANT]')}, residing at "
-        f"{p.get('property_address', '[ADDRESS]')}, {p.get('property_city', '')}, {state}. "
+        f"1. The Defendant is {p.get('full_name', '[TENANT]')}, residing at {_full_address(data)}. "
         f"The Defendant is the tenant in an eviction action brought by Plaintiff "
         f"{l.get('landlord_name', '[LANDLORD]')}.",
         f"2. A hearing in this matter is currently scheduled for ______ at ______ (time).",
@@ -1965,7 +1963,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"approximately _____ days from the current hearing date, or to such other date as the "
         f"Court deems appropriate.",
         f"7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
-        f"motion by: _________ on _________ (date), and the Plaintiff's position on this motion "
+        f"motion by (email, mail, or hand delivery): _________ on _________ (date), and the Plaintiff's position on this motion "
         f"is: ☐ Consents ☐ Does not oppose ☐ Opposes ☐ Unknown.",
     ]
     _cont_cb = 0
@@ -2055,8 +2053,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
 
     sections = [
         ("1. PARTIES AND JURISDICTION", [
-            f"Defendant {p.get('full_name', '[DEFENDANT]')} is the tenant residing at "
-            f"{p.get('property_address', '[ADDRESS]')}, {p.get('property_city', '')}, {state}. "
+            f"Defendant {p.get('full_name', '[DEFENDANT]')} is the tenant residing at {_full_address(data)}. "
             f"Plaintiff {l.get('landlord_name', '[LANDLORD]')} is the landlord of the subject property. "
             f"This Court has jurisdiction over this eviction matter pursuant to {_eviction_law(state)}.",
         ]),
@@ -2161,7 +2158,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
         ("1. JURISDICTION AND PARTIES", [
             f"This Court has jurisdiction over this matter pursuant to {eviction_law}. "
             f"Plaintiff {l.get('landlord_name', '[LANDLORD]')} is the landlord of the subject "
-            f"property located at {p.get('property_address', '[ADDRESS]')}. "
+            f"property located at {_full_address(data)}. "
             f"Defendant {p.get('full_name', '[DEFENDANT]')} is the tenant currently residing "
             f"at the subject property.",
         ]),
@@ -2265,10 +2262,10 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.append(Spacer(1, 6))
     elements.append(_field_table([
         [Paragraph("<b>FROM (Tenant):</b>", S["Body"]), _editable_field("bk_from", p.get("full_name", ""), width=220)],
-        [Paragraph("<b>ADDRESS:</b>", S["BodySmall"]), _editable_field("bk_addr", p.get("property_address", ""), width=220)],
+        [Paragraph("<b>ADDRESS:</b>", S["BodySmall"]), _editable_field("bk_addr", _full_address(data), width=220)],
         [Paragraph("<b>PHONE:</b>", S["BodySmall"]), _editable_field("bk_phone", p.get("phone", ""), width=160)],
         [Paragraph("<b>EMAIL:</b>", S["BodySmall"]), _editable_field("bk_email", p.get("email", ""), width=220)],
-        [Paragraph("<b>PROPERTY:</b>", S["Body"]), _editable_field("bk_property", p.get("property_address", ""), width=220)],
+        [Paragraph("<b>PROPERTY:</b>", S["Body"]), _editable_field("bk_property", _full_address(data), width=220)],
     ], col_widths=(110, 230)))
     elements.append(Spacer(1, 12))
 
@@ -2300,7 +2297,7 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.append(Paragraph(
         f"The automatic stay took effect immediately upon the filing of the bankruptcy petition. "
         f"This stay applies to all collection activities, including the eviction action concerning "
-        f"the property located at {p.get('property_address', '')}.", S["Body"]))
+        f"the property located at {_full_address(data)}.", S["Body"]))
     elements.append(Spacer(1, 10))
 
     elements.append(Paragraph("<b>3. EFFECT ON PENDING EVICTION PROCEEDINGS</b>", S["BodyBold"]))
