@@ -48,8 +48,9 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
             w = cast(Any, fitz.Widget())
             w.field_name = f"fill_{pno}_{added}"
             w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-            w.rect = fitz.Rect(x0, y1 - 14, max(x1, x0 + 48), y1 + 2)
+            w.rect = fitz.Rect(x0, y1 - 42, max(x1, x0 + 48), y1 + 2)
             w.field_value = ""
+            w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
             page.add_widget(w)
             added += 1
     out = dst_path or src_path
@@ -102,6 +103,7 @@ class FillableText(Flowable):
             height=round(self._height),
             fontName="Helvetica",
             fontSize=self.font_size,
+            fieldFlags="multiline",
         )
 
 

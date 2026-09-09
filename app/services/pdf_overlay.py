@@ -416,6 +416,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             field_name = cast(str, widget.field_name)
             if not field_name:
                 continue
+            if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
+                widget.field_flags = (widget.field_flags or 0) | fitz.PDF_TX_FIELD_IS_MULTILINE
             
             # 1. Check explicit mapping first
             if field_name in values:
@@ -644,7 +646,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                 continue
             x0 = min(b[0] for b in run); y0 = min(b[1] for b in run)
             x1 = max(b[2] for b in run); y1 = max(b[3] for b in run)
-            r = fitz.Rect(x0, y1 - 14, max(x1, x0 + 48), y1 + 2)
+            r = fitz.Rect(x0, y1 - 42, max(x1, x0 + 48), y1 + 2)
             if _covered(r) or _is_signature_line(page, r):
                 continue
             lb = _find_label_for_line(words, r)
@@ -687,12 +689,13 @@ def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -
     if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
         return
     if rect.height < 12:
-        rect = fitz.Rect(rect.x0, rect.y0 - 6, rect.x1, rect.y0 + 8)
+        rect = fitz.Rect(rect.x0, rect.y0 - 34, rect.x1, rect.y0 + 8)
     w = cast(Any, fitz.Widget())
     w.field_name = name
     w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
     w.rect = rect
     w.field_value = str(value)
+    w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
     page.add_widget(w)
 
 
@@ -727,6 +730,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
     
     for page_num in range(len(doc)):
         page = doc[page_num]
+        existing_rects = [w.rect for w in page.widgets()]
         
         # For fee waiver forms, ALWAYS stamp financial info on first page
         if form_key == "fee_waiver_form" and page_num == 0:
@@ -769,6 +773,9 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
             for key, pos in positions.items():
                 if pos.get("page", 1) - 1 != page_num:
                     continue
+                _pr = fitz.Rect(pos["x"], pos["y"], pos["x"] + pos.get("w", 200), pos["y"] + pos.get("h", 20))
+                if any(_pr.intersects(r) for r in existing_rects):
+                    continue  # already filled via a fillable widget (rebuilt form)
                 value = _get_field_value(key, data)
                 # Check if this is a defense checkbox (small overlay rect)
                 is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
