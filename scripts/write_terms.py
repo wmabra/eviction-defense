@@ -32,7 +32,7 @@ content = """<!doctype html><html lang="en"><head>
 <p style="color:var(--muted)">Last updated: January 2026</p>
 
 <h2>1. About evictions.help</h2>
-<p>evictions.help is an automated typing and formatting utility. For a flat fee of $399, we type and format the answers, selections, and information you provide onto official state court forms. You are acting as your own document preparer. We are not a law firm. We do not provide legal advice, legal representation, or legal opinions, and we do not choose, suggest, or recommend any defense, motion, or trial option for you. Nothing on this website or in our communications should be construed as legal advice.</p>
+<p>evictions.help is an automated typing and formatting utility. For a flat fee of $299, we type and format the answers, selections, and information you provide onto official state court forms. You are acting as your own document preparer. We are not a law firm. We do not provide legal advice, legal representation, or legal opinions, and we do not choose, suggest, or recommend any defense, motion, or trial option for you. Nothing on this website or in our communications should be construed as legal advice.</p>
 
 <h2>2. No Attorney-Client Relationship</h2>
 <p>Your use of evictions.help does not create an attorney-client relationship. evictions.help is an automated typing service and is not staffed by attorneys. If you need legal advice, we recommend consulting with a licensed attorney in your state.</p>
@@ -50,7 +50,7 @@ content = """<!doctype html><html lang="en"><head>
 <p>evictions.help does not guarantee any particular outcome in your eviction case. Every case is different, and results depend on many factors including the facts of your case, the judge assigned, local court practices, and the actions of your landlord. We cannot predict or guarantee what will happen in court.</p>
 
 <h2>7. Payment and Refunds</h2>
-<p>The fee for our document typing and formatting service is $399. Payment is processed through Authorize.net. Once your document packet has been generated and delivered, the fee is non-refundable. If we are unable to prepare your packet for any reason before delivery, you will receive a full refund. Refund requests should be directed to support@evictions.help.</p>
+<p>The fee for our document typing and formatting service is $299. Payment is processed through Authorize.net. Once your document packet has been generated and delivered, the fee is non-refundable. If we are unable to prepare your packet for any reason before delivery, you will receive a full refund. Refund requests should be directed to support@evictions.help.</p>
 
 <h2>7. Eligibility</h2>
 <p>Our service is available to residential tenants facing eviction in the 20 states we serve. We reserve the right to decline service to anyone for any reason, including but not limited to cases involving commercial property, cases where the tenant has already been evicted, cases involving criminal activity, or cases that fall outside our service capabilities.</p>
@@ -74,7 +74,7 @@ content = """<!doctype html><html lang="en"><head>
 <p>For questions about these terms, contact us at support@evictions.help.</p>
 </div></section>
 <footer class="footer"><div class="container"><div class="footer-grid">
-<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>AI-assisted self-help document preparation for residential tenants facing eviction. Flat fee: $399.</p></div>
+<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>AI-assisted self-help document preparation for residential tenants facing eviction. Flat fee: $299.</p></div>
 <div><h3>Program</h3><div class="footer-links"><a href="/#included">Packet contents</a><a href="/#how-it-works">How it works</a><a href="/#states">Supported states</a><a href="/#faq">Frequently asked questions</a></div></div>
 <div><h3>Important</h3><div class="footer-links"><a href="/terms/">Terms of use</a><a href="/privacy/">Privacy</a><a href="/disclaimer/">Legal disclaimer</a><a href="mailto:support@evictions.help">support@evictions.help</a></div></div>
 </div><div class="footer-bottom">&copy; 2026 evictions.help. Self-help document preparation. Not a law firm. Not legal advice.</div></div></footer>

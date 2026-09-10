@@ -53,10 +53,15 @@ COVERED_STATES = {
     'CO': 'colorado', 'CT': 'connecticut',
     'GA': 'georgia',
     'IL': 'illinois',
+    'IN': 'indiana',
+    'KY': 'kentucky',
     'LA': 'louisiana',
     'MI': 'michigan',
     'MN': 'minnesota',
+    'MO': 'missouri',
     'NM': 'new-mexico',
+    'OH': 'ohio',
+    'OK': 'oklahoma',
     'OR': 'oregon',
     'RI': 'rhode-island', 'SC': 'south-carolina',
     'TN': 'tennessee', 'TX': 'texas',
@@ -68,10 +73,15 @@ STATE_ABBR_TO_NAME = {
     'CO': 'Colorado', 'CT': 'Connecticut',
     'GA': 'Georgia',
     'IL': 'Illinois',
+    'IN': 'Indiana',
+    'KY': 'Kentucky',
     'LA': 'Louisiana',
     'MI': 'Michigan',
     'MN': 'Minnesota',
+    'MO': 'Missouri',
     'NM': 'New Mexico',
+    'OH': 'Ohio',
+    'OK': 'Oklahoma',
     'OR': 'Oregon',
     'RI': 'Rhode Island', 'SC': 'South Carolina',
     'TN': 'Tennessee', 'TX': 'Texas',
@@ -310,7 +320,7 @@ def build_form_html(state_abbr, county_name, city_name, page_id):
     return f'''<div class="screen-step active"><div class="question-count">Question 1 of 8</div><div class="question">Where is the rental property located?</div>{state_select}</div><div class="screen-step"><div class="question-count">Question 2 of 8</div><div class="question">What county is the eviction case in?</div><select name="county" required aria-label="County"><option value="">Select a county</option></select></div>
 
 <div class="screen-step"><div class="question-count">Question 3 of 8</div><div class="question">Are you the tenant named in the eviction matter?</div><div class="choice-grid"><div class="choice"><input id="tenant-yes-{page_id}" type="radio" name="tenant" value="yes"><label for="tenant-yes-{page_id}">Yes</label></div><div class="choice"><input id="tenant-no-{page_id}" type="radio" name="tenant" value="no"><label for="tenant-no-{page_id}">No</label></div></div></div><div class="screen-step"><div class="question-count">Question 4 of 8</div><div class="question">Have you been served with eviction court papers?</div><div class="choice-grid"><div class="choice"><input id="served-yes-{page_id}" type="radio" name="served" value="yes"><label for="served-yes-{page_id}">Yes</label></div><div class="choice"><input id="served-no-{page_id}" type="radio" name="served" value="no"><label for="served-no-{page_id}">No</label></div></div></div><div class="screen-step"><div class="question-count">Question 5 of 8</div><div class="question">Is this a residential rental property?</div><div class="choice-grid"><div class="choice"><input id="residential-yes-{page_id}" type="radio" name="residential" value="yes"><label for="residential-yes-{page_id}">Yes</label></div><div class="choice"><input id="residential-no-{page_id}" type="radio" name="residential" value="no"><label for="residential-no-{page_id}">No</label></div></div></div><div class="screen-step"><div class="question-count">Question 6 of 8</div><div class="question">Is the home Section 8, voucher-assisted, or public housing?</div><div class="choice-grid"><div class="choice"><input id="subsidized-yes-{page_id}" type="radio" name="subsidized" value="yes"><label for="subsidized-yes-{page_id}">Yes</label></div><div class="choice"><input id="subsidized-no-{page_id}" type="radio" name="subsidized" value="no"><label for="subsidized-no-{page_id}">No</label></div></div></div><div class="screen-step"><div class="question-count">Question 7 of 8</div><div class="question">Are you or another tenant on active military duty?</div><div class="choice-grid"><div class="choice"><input id="military-yes-{page_id}" type="radio" name="military" value="yes"><label for="military-yes-{page_id}">Yes</label></div><div class="choice"><input id="military-no-{page_id}" type="radio" name="military" value="no"><label for="military-no-{page_id}">No</label></div></div></div><div class="screen-step"><div class="question-count">Question 8 of 8</div><div class="question">Have you filed bankruptcy or is a bankruptcy case active?</div><div class="choice-grid"><div class="choice"><input id="bankruptcy-yes-{page_id}" type="radio" name="bankruptcy" value="yes"><label for="bankruptcy-yes-{page_id}">Yes</label></div><div class="choice"><input id="bankruptcy-no-{page_id}" type="radio" name="bankruptcy" value="no"><label for="bankruptcy-no-{page_id}">No</label></div></div></div>
-<div class="screen-step"><div data-result class="result-box result-ok"></div><div data-qualified><div class="form-grid"><div class="field full"><label>Street address</label><input name="street" type="text" autocomplete="street-address" required></div><div class="field"><label>City</label><input name="city" type="text" autocomplete="address-level2" required></div><div class="field"><label>County</label><input name="county" type="text" autocomplete="address-level1" required></div><div class="field"><label>ZIP code</label><input name="zip" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{{5}}" required></div><div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div><div class="field full"><label>Phone</label><input name="phone" type="tel" autocomplete="tel" required></div></div><button class="btn btn-primary" style="max-width:100%;margin-top:16px" type="submit">Continue to secure checkout — $399</button><p class="micro">By continuing, you acknowledge that this is a self-help document preparation service—not a law firm or legal representation.</p></div></div>
+<div class="screen-step"><div data-result class="result-box result-ok"></div><div data-qualified><div class="form-grid"><div class="field full"><label>Street address</label><input name="street" type="text" autocomplete="street-address" required></div><div class="field"><label>City</label><input name="city" type="text" autocomplete="address-level2" required></div><div class="field"><label>County</label><input name="county" type="text" autocomplete="address-level1" required></div><div class="field"><label>ZIP code</label><input name="zip" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{{5}}" required></div><div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" required></div><div class="field full"><label>Phone</label><input name="phone" type="tel" autocomplete="tel" required></div></div><button class="btn btn-primary" style="max-width:100%;margin-top:16px" type="submit">Continue to secure checkout — $299</button><p class="micro">By continuing, you acknowledge that this is a self-help document preparation service—not a law firm or legal representation.</p></div></div>
 <div class="screen-actions"><button data-back class="btn btn-secondary" type="button" hidden>Back</button></div>'''
 
 
@@ -336,10 +346,10 @@ def build_header_and_hero(state_abbr, state_name, state_slug, county_name, count
     if is_city:
         page_path = f"/{state_slug}/{county_slug}/{city_slug}/"
         title = f"Eviction Help in {city_name}, {state_name} | evictions.help"
-        description = f"Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $399 packet, filing preparation, and resource starting points."
+        description = f"Check eligibility for eviction self-help document preparation in {city_name}, {county_name} County. Guided intake, $299 packet, filing preparation, and resource starting points."
         eyebrow = f"{city_name} eviction document help"
         h1 = f"Prepare eviction paperwork from {city_name} with a guided intake"
-        lede = "Your city, county, and state are prefilled. Qualified tenants can continue to a $399 self-help document packet built from their own case information."
+        lede = "Your city, county, and state are prefilled. Qualified tenants can continue to a $299 self-help document packet built from their own case information."
         body_attrs = f'data-state="{state_abbr}" data-county="{county_name} County" data-city="{city_name}"'
         breadcrumb = f'<li><a href="/">Home</a></li><li><a href="/{state_slug}/">{state_name}</a></li><li><a href="/{state_slug}/{county_slug}/">{county_name} County</a></li><li>{city_name}</li>'
         canonical = f"https://evictions.help{page_path}"
@@ -349,7 +359,7 @@ def build_header_and_hero(state_abbr, state_name, state_slug, county_name, count
         description = f"Check eligibility for eviction self-help document preparation in {county_name} County, {state_name}. See packet details, statewide resources, nearby locations, and a prefilled screening form."
         eyebrow = f"{county_name} County eviction document help"
         h1 = f"Eviction paperwork help for tenants in {county_name} County"
-        lede = f"Start with eight questions. Your {state_name} and {county_name} County location is carried into the guided intake and $399 document packet workflow."
+        lede = f"Start with eight questions. Your {state_name} and {county_name} County location is carried into the guided intake and $299 document packet workflow."
         body_attrs = f'data-state="{state_abbr}" data-county="{county_name} County" data-city=""'
         breadcrumb = f'<li><a href="/">Home</a></li><li><a href="/{state_slug}/">{state_name}</a></li><li>{county_name} County</li>'
         canonical = f"https://evictions.help{page_path}"
@@ -367,7 +377,7 @@ def build_header_and_hero(state_abbr, state_name, state_slug, county_name, count
 <body {body_attrs}>
 <header class="site-header"><div class="container nav"><a class="brand" href="/" aria-label="evictions.help home"><img src="/assets/evictions-help-logo.png" alt="evictions.help"></a><nav class="nav-links" aria-label="Primary"><a href="/#included">What's included</a><a href="/#how-it-works">How it works</a><a href="/#states">States</a><a href="/#faq">FAQ</a><a href="/contact">Contact</a><a class="nav-cta" href="#eligibility">Check eligibility</a></nav><button class="mobile-menu" aria-label="Open menu">☰</button></div></header>
 <nav class="breadcrumb container" aria-label="Breadcrumb"><ol>{breadcrumb}</ol></nav>
-<section class="hero"><div class="container hero-grid"><div class="hero-copy"><span class="eyebrow">{eyebrow}</span><h1>{h1}</h1><p class="lede">{lede}</p><div class="price-row"><span class="price">$399</span><span class="price-note">flat fee · digital packet</span></div><div class="trust-row"><span class="trust-chip"><i class="check">✓</i> 8-question screening</span><span class="trust-chip"><i class="check">✓</i> Guided AI intake</span><span class="trust-chip"><i class="check">✓</i> Downloadable packet</span></div><p class="hero-note">Self-help document preparation only. evictions.help is not a law firm and does not provide legal advice or representation. No court outcome is guaranteed.</p></div><form id="eligibility" class="screen-card eligibility-form" {body_attrs}><div class="screen-head"><h2>See whether you can continue</h2><p>Answer eight questions. No payment is collected during eligibility.</p></div><div class="progress" aria-hidden="true"><span></span></div><div class="screen-body">
+<section class="hero"><div class="container hero-grid"><div class="hero-copy"><span class="eyebrow">{eyebrow}</span><h1>{h1}</h1><p class="lede">{lede}</p><div class="price-row"><span class="price">$299</span><span class="price-note">flat fee · digital packet</span></div><div class="trust-row"><span class="trust-chip"><i class="check">✓</i> 8-question screening</span><span class="trust-chip"><i class="check">✓</i> Guided AI intake</span><span class="trust-chip"><i class="check">✓</i> Downloadable packet</span></div><p class="hero-note">Self-help document preparation only. evictions.help is not a law firm and does not provide legal advice or representation. No court outcome is guaranteed.</p></div><form id="eligibility" class="screen-card eligibility-form" {body_attrs}><div class="screen-head"><h2>See whether you can continue</h2><p>Answer eight questions. No payment is collected during eligibility.</p></div><div class="progress" aria-hidden="true"><span></span></div><div class="screen-body">
 '''
 
 
@@ -376,12 +386,12 @@ def build_footer(state_abbr, state_name, state_slug, county_name, county_slug, c
         cta_title = f"Check eligibility from {city_name}"
     else:
         cta_title = f"Start a packet for {county_name} County"
-    cta_p = "The screening above is free to complete. Payment comes only after the program indicates that the tenant can continue." if is_city else "Your state and county are prefilled above. Check eligibility before proceeding to the $399 checkout."
+    cta_p = "The screening above is free to complete. Payment comes only after the program indicates that the tenant can continue." if is_city else "Your state and county are prefilled above. Check eligibility before proceeding to the $299 checkout."
 
     return f'''</div></div></form></div></section>
 <section class="section"><div class="container"><div class="callout"><h2>{cta_title}</h2><p>{cta_p}</p><a class="btn btn-secondary" href="#eligibility">Check Eligibility</a></div></div></section>
 <div class="sticky-mobile"><span>Start with 8 questions<br><small>No payment yet</small></span><a class="btn btn-primary" href="#eligibility">Check eligibility</a></div>
-<footer class="footer"><div class="container"><div class="footer-grid"><div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>AI-assisted self-help document preparation for residential tenants facing eviction. Flat fee: $399.</p></div><div><h3>Program</h3><div class="footer-links"><a href="/#included">Packet contents</a><a href="/#how-it-works">How it works</a><a href="/#states">Supported states</a><a href="/#faq">Frequently asked questions</a></div></div><div><h3>Important</h3><div class="footer-links"><a href="/terms/">Terms of use</a><a href="/privacy/">Privacy</a><a href="/disclaimer/">Legal disclaimer</a><a href="mailto:support@evictions.help">support@evictions.help</a></div></div></div><div class="footer-bottom">© 2026 evictions.help. Self-help document preparation. Not a law firm. Not legal advice. No outcome is guaranteed.</div></div></footer>
+<footer class="footer"><div class="container"><div class="footer-grid"><div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>AI-assisted self-help document preparation for residential tenants facing eviction. Flat fee: $299.</p></div><div><h3>Program</h3><div class="footer-links"><a href="/#included">Packet contents</a><a href="/#how-it-works">How it works</a><a href="/#states">Supported states</a><a href="/#faq">Frequently asked questions</a></div></div><div><h3>Important</h3><div class="footer-links"><a href="/terms/">Terms of use</a><a href="/privacy/">Privacy</a><a href="/disclaimer/">Legal disclaimer</a><a href="mailto:support@evictions.help">support@evictions.help</a></div></div></div><div class="footer-bottom">© 2026 evictions.help. Self-help document preparation. Not a law firm. Not legal advice. No outcome is guaranteed.</div></div></footer>
 <script src="/assets/site.js" defer></script></body></html>'''
 
 

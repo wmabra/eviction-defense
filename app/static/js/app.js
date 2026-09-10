@@ -588,7 +588,7 @@ window.authNetResponseHandler = (response) => {
 	if (!email || !address || !city) {
 		alert("Please fill in your email, address, and city first.");
 		btn.disabled = false;
-		btn.textContent = "Pay $399 — Secure Checkout";
+		btn.textContent = "Pay $299 — Secure Checkout";
 		return;
 	}
 

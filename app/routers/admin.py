@@ -175,9 +175,9 @@ def get_stats(db: Session = Depends(get_db), _: bool = Depends(require_admin)):
         .all()
     }
 
-    # Revenue estimate ($399 per paid case)
+    # Revenue estimate ($299 per paid case)
     paid_cases = db.query(Case).filter(Case.payment_status == "paid").count()
-    revenue_estimate = paid_cases * 399
+    revenue_estimate = paid_cases * 299
     
     return {
         "total_cases": total_cases,

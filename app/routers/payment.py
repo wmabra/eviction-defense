@@ -60,7 +60,7 @@ def process_payment(req: PaymentRequest, db: Session = Depends(get_db)):
 
     result = _charge_card(
         opaque_data=req.opaque_data,
-        amount_cents=39900,  # $399.00 flat — same price for all 20 states
+        amount_cents=29900,  # $299.00 flat — same price for all 20 states
         order_id=req.order_id,
         customer_email=req.customer_email,
         description=f"Eviction Defense Packet — {req.customer_name}"

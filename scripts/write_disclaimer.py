@@ -65,7 +65,7 @@ content = """<!doctype html><html lang="en"><head>
 <p>To the fullest extent permitted by law, evictions.help disclaims all liability for any damages arising from your use of our service or reliance on the documents we prepare. Our liability is limited to the amount you paid for our service.</p>
 </div></section>
 <footer class="footer"><div class="container"><div class="footer-grid">
-<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>Automated typing and formatting for residential tenants facing eviction. Flat fee: $399.</p></div>
+<div><img src="/assets/evictions-help-logo.png" alt="evictions.help"><p>Automated typing and formatting for residential tenants facing eviction. Flat fee: $299.</p></div>
 <div><h3>Program</h3><div class="footer-links"><a href="/#included">Packet contents</a><a href="/#how-it-works">How it works</a><a href="/#states">Supported states</a><a href="/#faq">Frequently asked questions</a></div></div>
 <div><h3>Important</h3><div class="footer-links"><a href="/terms/">Terms of use</a><a href="/privacy/">Privacy</a><a href="/disclaimer/">Legal disclaimer</a><a href="mailto:support@evictions.help">support@evictions.help</a></div></div>
 </div><div class="footer-bottom">&copy; 2026 evictions.help. Automated document typing service. Not a law firm. Not legal advice.</div></div></footer>
