@@ -283,11 +283,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "TX JP Court eviction answer. 57 fillable fields across 3 pages. Defense checkboxes mapped: Box6=paid, Box7=repairs, Box9=retaliation, Box10=notice, Box54=amount dispute, DoesNotLive=moved out, Mitigate=failure to mitigate, FHAM=discrimination, CD=counterclaim. Box2 and Box4 are catch-all other defenses.",
     
         "fee_waiver_overlay": {
-            "address": {"page": 1, "x": 120, "y": 160, "w": 350, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 350, "y": 80, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 120, "y": 100, "w": 200, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 120, "y": 120, "w": 300, "h": 20, "size": 11},
-            "phone": {"page": 1, "x": 120, "y": 180, "w": 200, "h": 20, "size": 11}
+            "case_number": {"page": 1, "x": 210, "y": 63, "w": 150, "h": 16, "size": 10},
+            "full_name": {"page": 1, "x": 160, "y": 235, "w": 200, "h": 16, "size": 10}
         }},
 
     # ══════════════════════════════════════════
@@ -744,12 +741,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and pre-filled into 'at the hearing 1' text area. Tenant can edit before filing.",
     
         "fee_waiver_overlay": {
-            "address": {"page": 1, "x": 120, "y": 210, "w": 350, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 200, "y": 120, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 200, "y": 100, "w": 200, "h": 20, "size": 11},
-            "date": {"page": 2, "x": 400, "y": 600, "w": 150, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 120, "y": 180, "w": 300, "h": 20, "size": 11},
-            "phone": {"page": 1, "x": 120, "y": 240, "w": 200, "h": 20, "size": 11}
+            "case_number": {"page": 1, "x": 440, "y": 53, "w": 60, "h": 16, "size": 10},
+            "county": {"page": 1, "x": 36, "y": 52, "w": 80, "h": 16, "size": 10},
+            "full_name": {"page": 1, "x": 78, "y": 195, "w": 150, "h": 16, "size": 10},
+            "address": {"page": 1, "x": 380, "y": 195, "w": 150, "h": 16, "size": 10},
+            "phone": {"page": 1, "x": 113, "y": 206, "w": 150, "h": 16, "size": 10}
         }},
 
     # ══════════════════════════════════════════
@@ -833,9 +829,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption area.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 350, "y": 100, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 72, "y": 80, "w": 200, "h": 20, "size": 10},
-            "full_name": {"page": 1, "x": 72, "y": 100, "w": 300, "h": 20, "size": 11}
         }},
 
     # ══════════════════════════════════════════
