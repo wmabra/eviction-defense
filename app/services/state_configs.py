@@ -828,31 +828,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": False,
         "court_type": "District Court (Housing)",
         "overlay_positions": {
-            "full_name": {"page": 1, "x": 200, "y": 277, "w": 200, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 200, "y": 188, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 75, "y": 106, "w": 200, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 420, "y": 126, "w": 150, "h": 20, "size": 11},
-            "address": {"page": 1, "x": 72, "y": 327, "w": 300, "h": 20, "size": 11},
-            "phone": {"page": 1, "x": 72, "y": 347, "w": 200, "h": 20, "size": 10},
-            "date": {"page": 1, "x": 400, "y": 347, "w": 150, "h": 20, "size": 10},
-            # Defense checkbox overlay (OCR-verified at 600 DPI)
-            "def_amount": {"page": 2, "x": 93, "y": 470, "w": 14, "h": 14, "size": 10},
-            "def_bad_notice": {"page": 2, "x": 93, "y": 519, "w": 14, "h": 14, "size": 10},
-            "def_other": {"page": 2, "x": 93, "y": 705, "w": 14, "h": 14, "size": 10},
-            "def_repairs": {"page": 3, "x": 95, "y": 162, "w": 14, "h": 14, "size": 10},
-            "def_other2": {"page": 3, "x": 101, "y": 288, "w": 14, "h": 14, "size": 10},
-        
-            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
-        
-            "court_name": {"page": 1, "x": 531, "y": 88, "w": 200, "h": 16, "size": 10},
-            "defense_bad_notice": {"page": 3, "x": 75, "y": 632, "w": 14, "h": 14, "size": 10},
-            "defense_corrected": {"page": 3, "x": 89, "y": 175, "w": 14, "h": 14, "size": 10},
-            "defense_repairs": {"page": 3, "x": 94, "y": 158, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 4, "x": 412, "y": 376, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 4, "x": 396, "y": 246, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 4, "x": 396, "y": 246, "w": 200, "h": 20, "size": 10},
-            "defense_repairs": {"page": 3, "x": 94, "y": 158, "w": 14, "h": 14, "size": 10},
-            "defense_narrative": {"page": 3, "x": 72, "y": 250, "w": 450, "h": 200, "size": 9}},
+            "county": {"page": 1, "x": 130, "y": 110, "w": 190, "h": 16, "size": 11},
+            "case_number": {"page": 1, "x": 460, "y": 129, "w": 110, "h": 16, "size": 10},
+            "landlord_name": {"page": 1, "x": 230, "y": 188, "w": 140, "h": 16, "size": 11},
+            "full_name": {"page": 1, "x": 230, "y": 278, "w": 140, "h": 16, "size": 11},
+            "address": {"page": 1, "x": 130, "y": 328, "w": 200, "h": 16, "size": 11},
+            "defense_narrative": {"page": 4, "x": 90, "y": 355, "w": 430, "h": 190, "size": 9},
+        },
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
     
         "fee_waiver_overlay": {
