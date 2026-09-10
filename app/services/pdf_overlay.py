@@ -914,8 +914,8 @@ def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -
     """Add a pre-filled, editable text field at the given rect."""
     if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
         return
-    if rect.height < 12:
-        rect = fitz.Rect(rect.x0, rect.y0 - 34, rect.x1, rect.y0 + 8)
+    if rect.height < 10:
+        rect = fitz.Rect(rect.x0, rect.y0 - 12, rect.x1, rect.y0 + 4)
     w = cast(Any, fitz.Widget())
     w.field_name = name
     w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]

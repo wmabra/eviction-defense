@@ -283,7 +283,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "TX JP Court eviction answer. 57 fillable fields across 3 pages. Defense checkboxes mapped: Box6=paid, Box7=repairs, Box9=retaliation, Box10=notice, Box54=amount dispute, DoesNotLive=moved out, Mitigate=failure to mitigate, FHAM=discrimination, CD=counterclaim. Box2 and Box4 are catch-all other defenses.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 210, "y": 63, "w": 150, "h": 16, "size": 10},
+            "case_number": {"page": 1, "x": 210, "y": 60, "w": 110, "h": 12, "size": 9},
             "full_name": {"page": 1, "x": 160, "y": 235, "w": 200, "h": 16, "size": 10}
         }},
 
