@@ -117,7 +117,7 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
             if name_counts.get(nm, 0) > 1:
                 continue  # broken native field (Yes+No share a name)
 
-            clip = fitz.Rect(r.x0 - 220, r.y0 - 8, r.x1 + 90, r.y1 + 40)
+            clip = fitz.Rect(r.x0 - 220, r.y0 - 35, r.x1 + 90, r.y1 + 35)
             ctx = page.get_text("text", clip=clip).lower()
             cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
                   and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
