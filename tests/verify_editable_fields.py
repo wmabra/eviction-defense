@@ -32,6 +32,7 @@ FITZ_TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 2)
 FITZ_CHECKBOX = getattr(fitz, "PDF_WIDGET_TYPE_CHECKBOX", 3)
 FITZ_RADIO = getattr(fitz, "PDF_WIDGET_TYPE_RADIOBUTTON", 4)
 FITZ_MULTILINE = getattr(fitz, "PDF_TX_FIELD_IS_MULTILINE", 4096)
+FITZ_READONLY = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
 
 STATES = ["AR", "CO", "CT", "GA", "IL", "IN", "KY", "LA", "MI", "MN",
           "MO", "NM", "OH", "OK", "OR", "RI", "SC", "TN", "TX", "VA"]
@@ -173,7 +174,7 @@ def check_pdf(path, label):
                     r = getattr(w, "rect", None)
                     h = r.height if r else 0
                     issues.append(f"{label}: field '{fname}' may clip (value needs ~{lines} lines, height {h:.0f}pt)")
-                if is_signature_field(w):
+                if is_signature_field(w) and not (flags & FITZ_READONLY):
                     stats["signature_widgets"] += 1
                     issues.append(f"{label}: signature/notary field '{fname}' was made editable (should stay ink)")
             elif ft in (FITZ_CHECKBOX, FITZ_RADIO):

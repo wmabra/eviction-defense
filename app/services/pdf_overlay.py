@@ -62,6 +62,105 @@ def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
     return _fill_form(data, state, output_path, "fee_waiver_form")
 
 
+def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
+    """Check fee-waiver Yes/No and benefit boxes from the intake financial data.
+
+    Fee-waiver forms vary: some use ``Yes ___ No ___`` pairs (employed, owns cash,
+    owns property), others use benefit checklists (SNAP/Medicaid/SSI/TANF). This
+    pass maps each checkbox by the question text on its line (and, for Yes/No
+    pairs, by x-position) to the matching financial field, then checks the box.
+    """
+    fin = data.get("financial_info") or {}
+
+    def has(*keys):
+        return any(bool(fin.get(k)) for k in keys)
+
+    yesno_rules = [
+        (("employed", "salary", "wage", "job", "work", "employment"),
+         has("employment_income", "monthly_gross_income")),
+        (("cash", "checking", "savings", "account", "money"),
+         has("checking_balance", "savings_balance", "cash_on_hand")),
+        (("real estate", "automobile", "vehicle", "stock", "bond", "note"),
+         has("vehicle_make_model")),
+    ]
+    benefit_rules = [
+        (("snap", "food stamp", "food assistance"), bool(fin.get("receives_snap"))),
+        (("medicaid", "medical assistance", "medical"), bool(fin.get("receives_medicaid"))),
+        (("ssi", "supplemental security"), bool(fin.get("receives_ssi"))),
+        (("tanf", "family assistance", "general assistance", "public assistance"),
+         bool(fin.get("receives_tanf"))),
+    ]
+
+    # Count native field names: a name appearing on multiple widgets is a broken
+    # Yes/No pair that shares one field — skip it (the auto-detected checkbox at
+    # that position carries a unique name and is the one we actually set).
+    from collections import Counter
+    name_counts = Counter(
+        str(getattr(w, "field_name", "") or "") for page in doc for w in page.widgets()
+        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX
+    )
+    checked = 0
+    def _bbox(t):
+        try:
+            return (float(t[0]), float(t[1]), float(t[2]), float(t[3]), str(t[4]))
+        except (TypeError, ValueError, IndexError):
+            return (0.0, 0.0, 0.0, 0.0, "")
+
+    for page in doc:
+        words = [_bbox(x) for x in page.get_text("words")]
+        for w in page.widgets():
+            w = cast(Any, w)
+            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                continue
+            r = fitz.Rect(w.rect)
+            nm = str(getattr(w, "field_name", "") or "cb")
+            if name_counts.get(nm, 0) > 1:
+                continue  # broken native field (Yes+No share a name)
+
+            clip = fitz.Rect(r.x0 - 220, r.y0 - 8, r.x1 + 90, r.y1 + 40)
+            ctx = page.get_text("text", clip=clip).lower()
+            cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
+                  and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
+
+            matched_benefit = False
+            for kws, flag in benefit_rules:
+                if any(k in ctx for k in kws):
+                    matched_benefit = True
+                    if flag:
+                        try:
+                            w.field_value = True
+                            w.update()
+                            checked += 1
+                        except Exception:
+                            pass
+                    break
+            if matched_benefit:
+                continue
+
+            yes_x = no_x = None
+            for x in cw:
+                if x[4].lower() == "yes":
+                    yes_x = x[0]
+                elif x[4].lower() == "no":
+                    no_x = x[0]
+            if yes_x is None and no_x is None:
+                continue
+            is_yes = no_x is None or r.x0 < no_x
+            for kws, ans in yesno_rules:
+                if any(k in ctx for k in kws):
+                    if (is_yes and ans) or (not is_yes and not ans):
+                        try:
+                            w.field_value = True
+                            w.update()
+                            checked += 1
+                        except Exception:
+                            pass
+                    break
+    return checked
+
+
+
+
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
@@ -138,6 +237,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # and any signature line must stay blank + non-editable (ink).
     _force_multiline_text_widgets(doc)
     _make_signature_fields_readonly(doc)
+
+    if form_key == "fee_waiver_form":
+        _map_fee_waiver_checkboxes(doc, data)
 
     doc.save(output_path, deflate=True)
     doc.close()
