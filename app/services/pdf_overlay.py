@@ -39,16 +39,12 @@ REBUILT_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "rebuil
 
 
 def _get_form_path(form_filename, state_code=""):
-    """Get the best form to use — rebuilt version for overlay states, original for fillable."""
-    if state_code:
-        rebuilt_name = f"{state_code.lower()}_answer_rebuilt.pdf"
-        rebuilt_path = os.path.join(REBUILT_DIR, rebuilt_name)
-        if os.path.exists(rebuilt_path):
-            # Only use rebuilt form if the original has NO fillable widgets (overlay/scanned)
-            from app.services.state_configs import STATE_CONFIGS
-            cfg = STATE_CONFIGS.get(state_code, {})
-            if not cfg.get("has_fillable_fields", True):
-                return rebuilt_path
+    """Get the best form to use.
+
+    The rebuilt (scanned+widget) forms had misaligned native widgets, so we now
+    always fill the ORIGINAL form via coordinate overlay (which is y-flip
+    corrected in _fill_via_overlay) plus auto-detected blanks.
+    """
     return os.path.join(FORMS_DIR, form_filename)
 
 
@@ -879,12 +875,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
             if _covered(r) or _is_signature_line(page, r):
                 continue
-            lb = _find_label_for_line(words, r)
-            m = _match_label_field(lb)
-            if m and not m[2]:
-                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
-            else:
-                _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
             covered.append(r)
 
         # 4. horizontal lines -> text fields
@@ -892,12 +883,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = dr["rect"]
             if _covered(r) or _is_signature_line(page, r):
                 continue
-            lb = _find_label_for_line(words, r)
-            m = _match_label_field(lb)
-            if m and not m[2]:
-                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
-            else:
-                _add_text_widget(page, r, f"fill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"fill_{pno}_{i}", "")
             covered.append(r)
 
         # 5. rectangle boxes -> text fields
@@ -905,12 +891,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = dr["rect"]
             if _covered(r):
                 continue
-            lb = _find_label_for_line(words, r)
-            m = _match_label_field(lb)
-            if m and not m[2]:
-                _add_text_widget(page, r, f"{m[1]}_{pno}_{i}", _resolve_field_value(m[0], m[1], data))
-            else:
-                _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
             covered.append(r)
 
 
@@ -999,24 +980,27 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     _add_text_widget(page, fin_rect, "financial_summary", fin_text, font_size=9)
         
         if positions:
-            # Use precise coordinates for this state
+            # overlay_positions store y from the TOP of the page; PyMuPDF's
+            # coordinate system is bottom-up, so convert (flip) y.
+            PH = page.rect.height
             for key, pos in positions.items():
                 if pos.get("page", 1) - 1 != page_num:
                     continue
-                _pr = fitz.Rect(pos["x"], pos["y"], pos["x"] + pos.get("w", 200), pos["y"] + pos.get("h", 20))
+                x = pos["x"]
+                w = pos.get("w", 200)
+                h = pos.get("h", 20)
+                y_top = PH - pos["y"]  # top edge, in bottom-up coords
+                _pr = fitz.Rect(x, y_top - h, x + w, y_top)
                 if any(_pr.intersects(r) for r in existing_rects):
                     continue  # already filled via a fillable widget (rebuilt form)
                 value = _get_field_value(key, data)
                 # Check if this is a defense checkbox (small overlay rect)
                 is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
                 if is_checkbox:
-                    cx = pos["x"]
-                    cy = pos["y"]
                     s = pos.get("h", 14)
-                    _add_checkbox_widget(page, fitz.Rect(cx, cy, cx + s, cy + s), key, checked=bool(value))
+                    _add_checkbox_widget(page, fitz.Rect(x, y_top - s, x + s, y_top), key, checked=bool(value))
                 elif value:
-                    rect = fitz.Rect(pos["x"], pos["y"], pos["x"] + pos.get("w", 200), pos["y"] + pos.get("h", 20))
-                    _add_text_widget(page, rect, key, str(value), font_size=pos.get("size", 10))
+                    _add_text_widget(page, _pr, key, str(value), font_size=pos.get("size", 10))
         else:
             # No position config — stamp info block at top of first page
             if page_num == 0:
