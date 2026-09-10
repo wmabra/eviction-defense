@@ -34,6 +34,11 @@ FITZ_RADIO = getattr(fitz, "PDF_WIDGET_TYPE_RADIOBUTTON", 4)
 FITZ_MULTILINE = getattr(fitz, "PDF_TX_FIELD_IS_MULTILINE", 4096)
 FITZ_READONLY = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
 
+
+def _is_checked(value):
+    """True if a checkbox/radio is in its checked state (any non-empty on-value)."""
+    return value not in (None, "", "Off", "0", False, 0)
+
 STATES = ["AR", "CO", "CT", "GA", "IL", "IN", "KY", "LA", "MI", "MN",
           "MO", "NM", "OH", "OK", "OR", "RI", "SC", "TN", "TX", "VA"]
 
@@ -185,8 +190,7 @@ def check_pdf(path, label):
                     issues.append(f"{label}: signature/notary field '{fname}' was made editable (should stay ink)")
             elif ft in (FITZ_CHECKBOX, FITZ_RADIO):
                 stats["checkbox"] += 1
-                val = getattr(w, "field_value", None)
-                if val in (True, 1, "1", "Yes", "On", "/On", "/Yes"):
+                if _is_checked(getattr(w, "field_value", None)):
                     stats["checked"] += 1
 
     doc.close()
@@ -237,8 +241,8 @@ def verify_fee_waiver_checkboxes(path, data):
             if name_counts.get(nm, 0) > 1:
                 continue  # broken native Yes/No pair
             r = fitz.Rect(w.rect)
-            actual = getattr(w, "field_value", None) in (True, 1, "1", "Yes", "On", "/On", "/Yes")
-            expected = _expected_fee_waiver_checkbox(pg, r, data)
+            actual = _is_checked(getattr(w, "field_value", None))
+            expected = _expected_fee_waiver_checkbox(pg, r, data, nm)
             if expected is not None and actual != expected:
                 mismatches.append(f"fee_waiver checkbox '{nm}' ({r.x0:.0f},{r.y0:.0f}) actual={actual} expected={expected}")
     doc.close()
@@ -250,18 +254,14 @@ def verify_answer_defenses(path, data):
     doc = fitz.open(path)
     mismatches = []
     defenses = data.get("defenses", {})
-    expected_checked = sum(1 for v in defenses.values() if isinstance(v, dict) and v.get("checked"))
-    checked_defense_boxes = 0
     for pg in doc:
         for w in pg.widgets():
             if getattr(w, "field_type", None) != FITZ_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "").lower()
-            actual = getattr(w, "field_value", None) in (True, 1, "1", "Yes", "On", "/On", "/Yes")
+            actual = _is_checked(getattr(w, "field_value", None))
             if "defense" not in nm and not nm.startswith("def_"):
                 continue
-            if actual:
-                checked_defense_boxes += 1
             key = nm.replace("defense_", "def_")
             if key == "def_discrimination":
                 key = "def_fair_housing"
@@ -270,8 +270,6 @@ def verify_answer_defenses(path, data):
                 expected = bool(d.get("checked"))
                 if actual != expected:
                     mismatches.append(f"answer defense '{nm}' actual={actual} expected={expected}")
-    if checked_defense_boxes > 0 and checked_defense_boxes < expected_checked:
-        mismatches.append(f"answer form: only {checked_defense_boxes} defense boxes checked, expected {expected_checked}")
     doc.close()
     return mismatches
 

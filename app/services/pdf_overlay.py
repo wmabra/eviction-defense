@@ -62,19 +62,55 @@ def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
     return _fill_form(data, state, output_path, "fee_waiver_form")
 
 
-def _expected_fee_waiver_checkbox(page, r, data):
+def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
     """Compute the expected checked state (True/False/None) for one fee-waiver checkbox.
 
-    Returns None when no rule matches. Handles three shapes: Yes/No pairs
-    (employed/cash/property), single income-source boxes (employment, social
-    security, child support, unemployment, ...), and benefit boxes (SNAP/Medicaid/
-    SSI/TANF). Used both to fill the box and, independently, to verify it.
+    Returns None when no rule matches. Descriptive native field names (e.g.
+    "My employment", "SNAP", "SSI") are matched first because they are precise;
+    otherwise the question/answer text around the box is used (for generic names
+    and auto-detected checkboxes). Used both to fill the box and, independently,
+    to verify it afterwards.
     """
     fin = data.get("financial_info") or {}
 
     def has(*keys):
         return any(bool(fin.get(k)) for k in keys)
 
+    nm = (field_name or "").lower()
+
+    # ---- 1. Field-name rules (precise, ordered so "social security" beats "ssi") ----
+    if nm:
+        income_source_names = [
+            ("social security", "social_security_income"),
+            ("child support", "child_support_income"),
+            ("unemployment", "unemployment_income"),
+            ("pension", "pension_income"),
+            ("annuity", "pension_income"),
+            ("alimony", "alimony_income"),
+            ("spousal support", "alimony_income"),
+            ("self-employment", "self_employment_income"),
+            ("self employment", "self_employment_income"),
+            ("business", "self_employment_income"),
+            ("employment", "employment_income"),
+            ("wages", "employment_income"),
+            ("salary", "employment_income"),
+        ]
+        for k, key in income_source_names:
+            if k in nm:
+                return bool(fin.get(key))
+        if "no income" in nm:
+            return not has("employment_income", "monthly_gross_income")
+        benefit_names = [
+            ("snap", "receives_snap"), ("food stamp", "receives_snap"),
+            ("medicaid", "receives_medicaid"), ("medical", "receives_medicaid"),
+            ("ssi", "receives_ssi"), ("tanf", "receives_tanf"),
+            ("aabd", "receives_tanf"), ("general assistance", "receives_tanf"),
+        ]
+        for k, key in benefit_names:
+            if k in nm:
+                return bool(fin.get(key))
+
+    # ---- 2. Text/position rules (generic or auto-detected checkboxes) ----
     yesno_rules = [
         (("employed", "salary", "wage", "job", "work", "employment"),
          has("employment_income", "monthly_gross_income")),
@@ -83,8 +119,7 @@ def _expected_fee_waiver_checkbox(page, r, data):
         (("real estate", "automobile", "vehicle", "stock", "bond", "note"),
          has("vehicle_make_model")),
     ]
-    # Ordered so "social security" is matched before the "ssi" benefit rule below.
-    income_source_rules = [
+    income_source_text = [
         (("social security",), "social_security_income"),
         (("child support",), "child_support_income"),
         (("unemployment",), "unemployment_income"),
@@ -93,10 +128,13 @@ def _expected_fee_waiver_checkbox(page, r, data):
         (("self-employment", "self employment", "business"), "self_employment_income"),
         (("employment", "wages", "salary", "job"), "employment_income"),
     ]
-    benefit_rules = [
+    benefit_text = [
         (("snap", "food stamp", "food assistance"), bool(fin.get("receives_snap"))),
         (("medicaid", "medical assistance", "medical"), bool(fin.get("receives_medicaid"))),
-        (("ssi", "supplemental security"), bool(fin.get("receives_ssi"))),
+        (("supp. security", "supp security", "supplemental security", "ssi"),
+         bool(fin.get("receives_ssi"))),
+        (("aid to the blind", "aid to blind"), bool(fin.get("receives_ssi"))),
+        (("old age", "old-age"), bool(fin.get("receives_ssi"))),
         (("tanf", "family assistance", "general assistance", "public assistance"),
          bool(fin.get("receives_tanf"))),
     ]
@@ -113,7 +151,7 @@ def _expected_fee_waiver_checkbox(page, r, data):
     cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
           and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
 
-    # 1. Yes/No pair
+    # Yes/No pair
     yes_x = no_x = None
     for x in cw:
         if x[4].lower() == "yes":
@@ -127,15 +165,13 @@ def _expected_fee_waiver_checkbox(page, r, data):
                 return (is_yes and ans) or (not is_yes and not ans)
         return None
 
-    # 2. income-source checkbox (single, no Yes/No)
-    for kws, key in income_source_rules:
-        if any(k in ctx for k in kws):
-            return bool(fin.get(key))
-
-    # 3. benefit checkbox (single)
-    for kws, flag in benefit_rules:
+    for kws, flag in benefit_text:
         if any(k in ctx for k in kws):
             return flag
+
+    for kws, key in income_source_text:
+        if any(k in ctx for k in kws):
+            return bool(fin.get(key))
 
     return None
 
@@ -157,7 +193,7 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
             nm = str(getattr(w, "field_name", "") or "cb")
             if name_counts.get(nm, 0) > 1:
                 continue  # broken native field (Yes+No share a name)
-            if _expected_fee_waiver_checkbox(page, r, data):
+            if _expected_fee_waiver_checkbox(page, r, data, nm):
                 try:
                     w.field_value = True
                     w.update()
