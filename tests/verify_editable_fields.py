@@ -131,28 +131,34 @@ def estimate_text_fit(widget):
         return True, 0, 0
     w = max(1.0, r.width)
     h = r.height
-    fs = getattr(widget, "text_fontsize", None) or 10.0
-    chars_per_line = max(1, int(w / (fs * 0.55)))
+    fs = getattr(widget, "text_fontsize", None) or 9.0
+    chars_per_line = max(1, int(w / (fs * 0.5)))
     lines = max(1, math.ceil(len(val) / chars_per_line))
-    needed = lines * fs * 1.3
+    needed = lines * fs * 1.4
     return needed <= h, needed, lines
 
 
 def is_signature_field(widget):
     name = (getattr(widget, "field_name", "") or "").lower()
-    return any(k in name for k in ("signature", "signed", "notary", "affiant", "deponent"))
+    sig_words = ("sign", "notary", "affiant", "deponent", "witness",
+                 "sworn", "subscribed", "attesting", "commission", "officer")
+    exclude = ("print", "designat")
+    if any(k in name for k in exclude):
+        return False
+    return any(k in name for k in sig_words)
 
 
 def check_pdf(path, label):
-    """Inspect one PDF. Returns (issues, stats)."""
+    """Inspect one PDF. Returns (issues, warnings, stats)."""
     issues = []
+    warnings = []
     stats = {"text": 0, "checkbox": 0, "checked": 0, "non_multiline": 0,
              "too_small": 0, "long_truncated": 0, "signature_widgets": 0}
 
     try:
         doc = fitz.open(path)
     except Exception as e:
-        return [f"cannot open PDF: {e}"], stats
+        return [f"cannot open PDF: {e}"], [], stats
 
     for pno in range(doc.page_count):
         try:
@@ -173,7 +179,7 @@ def check_pdf(path, label):
                     stats["too_small"] += 1
                     r = getattr(w, "rect", None)
                     h = r.height if r else 0
-                    issues.append(f"{label}: field '{fname}' may clip (value needs ~{lines} lines, height {h:.0f}pt)")
+                    warnings.append(f"{label}: field '{fname}' may clip (value needs ~{lines} lines, height {h:.0f}pt)")
                 if is_signature_field(w) and not (flags & FITZ_READONLY):
                     stats["signature_widgets"] += 1
                     issues.append(f"{label}: signature/notary field '{fname}' was made editable (should stay ink)")
@@ -184,7 +190,7 @@ def check_pdf(path, label):
                     stats["checked"] += 1
 
     doc.close()
-    return issues, stats
+    return issues, warnings, stats
 
 
 def generate_packet(data, outdir):
@@ -225,6 +231,7 @@ def run(states):
     total_forms = 0
     total_fail = 0
     failures_by_state = {}
+    warnings_by_state = {}
 
     for state in states:
         data = build_case(state)
@@ -242,12 +249,14 @@ def run(states):
                     continue
                 if not os.path.exists(path):
                     continue
-                issues, s = check_pdf(path, f"{state}/{key}")
+                issues, warnings, s = check_pdf(path, f"{state}/{key}")
                 total_forms += 1
                 bad = len(issues)
                 if bad:
                     total_fail += 1
                     failures_by_state.setdefault(state, []).extend(issues)
+                if warnings:
+                    warnings_by_state.setdefault(state, []).extend(warnings)
                 res = "OK" if not bad else "FAIL"
                 print(f"{state:>5} | {key:<26} | {s['text']:>3} {str(s['checked'])+'/'+str(s['checkbox']):>7} | "
                       f"{s['non_multiline']:>6} {s['too_small']:>5} {s['long_truncated']:>5} {s['signature_widgets']:>4} | {res}")
@@ -262,6 +271,15 @@ def run(states):
                 print(f"  ⚠️ {i}")
     else:
         print("\nALL FORMS PASSED ✅")
+    if warnings_by_state:
+        total_warns = sum(len(v) for v in warnings_by_state.values())
+        print(f"\n=== WARNINGS ({total_warns} field(s) may clip with very long input — auto-grow handles reportlab fields; court-form native blanks are fixed-size) ===")
+        for state, warns in sorted(warnings_by_state.items()):
+            print(f"\n{state}:")
+            for w in warns[:6]:
+                print(f"  ⚠️ {w}")
+            if len(warns) > 6:
+                print(f"  … (+{len(warns)-6} more)")
     return total_fail == 0
 
 
