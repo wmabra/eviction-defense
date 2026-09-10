@@ -59,3 +59,15 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
 
 Just say: *"let's work on the eviction-defense project"* and point me at this file
 (`~/eviction-defense/PROJECT_STATE.md`). I'll read it and continue from here.
+
+## Deployment (production server — evictions.help)
+
+- **Server:** Digital Ocean droplet `167.172.139.63` (hostname `eviction-defense`). SSH: `ssh root@167.172.139.63`.
+- **App dir:** `/opt/eviction-defense` (owned by `deploy` user). Git remote = `https://github.com/wmabra/eviction-defense.git`.
+- **Run by:** systemd `eviction-defense.service` → `uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2` (user `deploy`, env from `/opt/eviction-defense/.env`), fronted by nginx.
+- **Deploy steps:**
+  1. `cd /opt/eviction-defense && sudo -u deploy git pull origin main`  (or run git as root + `chown -R deploy:deploy`)
+  2. `sudo systemctl restart eviction-defense`
+  3. Verify: `curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/`
+- **Backups:** `/opt/backups/` (weekly SQL + pre-deploy tarballs).
+- **Note:** startup occasionally races `create_all()` across the 2 workers ("table users already exists") and self-heals on the next restart — consider a migration/`checkfirst` fix later.
