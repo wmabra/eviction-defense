@@ -259,6 +259,22 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     if form_key == "fee_waiver_form" and config.get("fee_waiver_mapping"):
         has_fields = True  # Treat as fillable if mapping exists
     
+    # Many forms were authored with a top-down y-axis but stored bottom-up,
+    # so their native widget rects are vertically mirrored. Flip them back.
+    if has_fields:
+        for page in doc:
+            PH = page.rect.height
+            for w in page.widgets():
+                w = cast(Any, w)
+                r = w.rect
+                if r.y0 <= 0 and r.y1 >= PH:
+                    continue
+                w.rect = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
+                try:
+                    w.update()
+                except Exception:
+                    pass
+
     if has_fields:
         # Native fillable form: fill its own fields only (no coordinate overlay,
         # which had misaligned positions and stamped text on top of printed text).
