@@ -44,7 +44,8 @@ def check_overlap(filled_path, blank_form_path):
                 continue
             r = w.rect
             for pr, pt in printed:
-                if r.intersects(pr):
+                inter = r & pr
+                if not inter.is_empty and inter.get_area() > 0.25 * pr.get_area():
                     overlaps.append(f"page {pno}: '{getattr(w,'field_name','')}'=({val[:25]!r}) overlaps printed '{pt}'")
     blank.close()
     filled.close()

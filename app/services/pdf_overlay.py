@@ -259,13 +259,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     if form_key == "fee_waiver_form" and config.get("fee_waiver_mapping"):
         has_fields = True  # Treat as fillable if mapping exists
     
-    if has_fields and has_overlay:
-        # Hybrid: both fillable fields AND overlay positions
-        _fill_via_widgets(doc, data, config)
-        _fill_via_overlay(doc, data, config, form_key)
-    elif has_fields:
+    if has_fields:
+        # Native fillable form: fill its own fields only (no coordinate overlay,
+        # which had misaligned positions and stamped text on top of printed text).
         _fill_via_widgets(doc, data, config)
     else:
+        # Scanned/non-fillable form: stamp via coordinate overlay (y-flip corrected).
         _fill_via_overlay(doc, data, config, form_key)
 
     # Add editable fields at every remaining blank + checkbox (fillable forms too)
