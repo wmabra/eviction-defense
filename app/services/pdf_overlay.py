@@ -958,42 +958,6 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
         page = doc[page_num]
         existing_rects = [w.rect for w in page.widgets()]
         
-        # For fee waiver forms, ALWAYS stamp financial info on first page
-        if form_key == "fee_waiver_form" and page_num == 0:
-            fin = data.get("financial_info")
-            if fin:
-                fin_lines = []
-                income = fin.get("monthly_gross_income") or fin.get("employment_income")
-                if income: fin_lines.append(f"Monthly Income: {_money(income, 2)}")
-                adults = fin.get("household_adults")
-                children = fin.get("household_children")
-                if adults or children:
-                    hh = f"Household: {adults or 0} adult(s)"
-                    if children: hh += f", {children} child(ren)"
-                    fin_lines.append(hh)
-                benefits = []
-                if fin.get("receives_snap"): benefits.append("SNAP")
-                if fin.get("receives_medicaid"): benefits.append("Medicaid")
-                if fin.get("receives_ssi"): benefits.append("SSI")
-                if fin.get("receives_tanf"): benefits.append("TANF")
-                if benefits: fin_lines.append(f"Benefits: {', '.join(benefits)}")
-                vehicle = fin.get("vehicle_make_model")
-                vehicle_val = fin.get("vehicle_value")
-                if vehicle:
-                    vtext = f"Vehicle: {vehicle}"
-                    if vehicle_val: vtext += f" ({_money(vehicle_val, 2)})"
-                    fin_lines.append(vtext)
-                checking = fin.get("checking_balance")
-                savings = fin.get("savings_balance")
-                cash = fin.get("cash_on_hand")
-                if checking or savings or cash:
-                    total = (checking or 0) + (savings or 0) + (cash or 0)
-                    fin_lines.append(f"Bank/Cash: {_money(total, 2)}")
-                if fin_lines:
-                    fin_text = "\n".join(fin_lines)
-                    fin_rect = fitz.Rect(50, 250, 550, 400)
-                    _add_text_widget(page, fin_rect, "financial_summary", fin_text, font_size=9)
-        
         if positions:
             # overlay_positions store y from the TOP of the page; PyMuPDF's
             # coordinate system is bottom-up, so convert (flip) y.
@@ -1016,50 +980,6 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     _add_checkbox_widget(page, fitz.Rect(x, y_top - s, x + s, y_top), key, checked=bool(value))
                 elif value:
                     _add_text_widget(page, _pr, key, str(value), font_size=pos.get("size", 10))
-        else:
-            # No position config — stamp info block at top of first page
-            if page_num == 0:
-                text_lines = []
-                if p.get("full_name"): text_lines.append(f"Defendant: {p['full_name']}")
-                if l.get("landlord_name"): text_lines.append(f"Plaintiff: {l['landlord_name']}")
-                if c.get("case_number"): text_lines.append(f"Case No: {c['case_number']}")
-                if p.get("phone"): text_lines.append(f"Phone: {p['phone']}")
-                text_lines.append(f"Date: {date.today().strftime('%m/%d/%Y')}")
-                
-                # Include financial summary when financial_info is present (fee waivers)
-                fin = data.get("financial_info")
-                if fin:
-                    text_lines.append("")
-                    income = fin.get("monthly_gross_income") or fin.get("employment_income")
-                    if income: text_lines.append(f"Monthly Income: {_money(income, 2)}")
-                    adults = fin.get("household_adults")
-                    children = fin.get("household_children")
-                    if adults or children:
-                        hh = f"Household: {adults or 0} adult(s)"
-                        if children: hh += f", {children} child(ren)"
-                        text_lines.append(hh)
-                    benefits = []
-                    if fin.get("receives_snap"): benefits.append("SNAP")
-                    if fin.get("receives_medicaid"): benefits.append("Medicaid")
-                    if fin.get("receives_ssi"): benefits.append("SSI")
-                    if fin.get("receives_tanf"): benefits.append("TANF")
-                    if benefits: text_lines.append(f"Benefits: {', '.join(benefits)}")
-                    vehicle = fin.get("vehicle_make_model")
-                    vehicle_val = fin.get("vehicle_value")
-                    if vehicle:
-                        vtext = f"Vehicle: {vehicle}"
-                        if vehicle_val: vtext += f" ({_money(vehicle_val, 2)})"
-                        text_lines.append(vtext)
-                    checking = fin.get("checking_balance")
-                    savings = fin.get("savings_balance")
-                    cash = fin.get("cash_on_hand")
-                    if checking or savings or cash:
-                        total = (checking or 0) + (savings or 0) + (cash or 0)
-                        text_lines.append(f"Bank/Cash: {_money(total, 2)}")
-                
-                text = "\n".join(text_lines)
-                rect = fitz.Rect(50, 50, 550, 300)
-                _add_text_widget(page, rect, "info_block", text, font_size=10)
 
 
 
