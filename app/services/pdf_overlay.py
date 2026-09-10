@@ -134,6 +134,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # Add editable fields at every remaining blank + checkbox (fillable forms too)
     _make_scanned_form_editable(doc, data)
 
+    # Final safety net: every text field must wrap long input instead of clipping,
+    # and any signature line must stay blank + non-editable (ink).
+    _force_multiline_text_widgets(doc)
+    _make_signature_fields_readonly(doc)
+
     doc.save(output_path, deflate=True)
     doc.close()
     logger.info(f"✅ {state_code} form saved: {output_path}")
@@ -579,6 +584,65 @@ def _is_signature_line(page, rect) -> bool:
     return any(k in txt for k in ("signature", "notary", "affiant", "officer", "sworn", "subscribed", "witness", "deponent", "attesting"))
 
 
+def _force_multiline_text_widgets(doc: fitz.Document) -> int:
+    """Ensure every text widget is multiline so long input wraps instead of clipping.
+
+    Native form fields (especially on fee-waiver forms) often carry only the
+    rich-text flag or no flags at all, so a long value overflows a single line.
+    This is a final, idempotent pass applied to every text widget regardless of
+    how it was created (native AcroForm, overlay, or auto-detected blank).
+    """
+    changed = 0
+    for page in doc:
+        for w in page.widgets():
+            w = cast(Any, w)
+            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_TEXT:
+                continue
+            flags = getattr(w, "field_flags", 0) or 0
+            if not (flags & fitz.PDF_TX_FIELD_IS_MULTILINE):
+                w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                try:
+                    w.update()
+                except Exception:
+                    pass
+                changed += 1
+    return changed
+
+
+def _make_signature_fields_readonly(doc: fitz.Document) -> int:
+    """Blank + read-only any text field that is actually a signature/notary line.
+
+    Signature, notary, affiant, witness, sworn/subscribed, commission, and bank
+    officer lines must stay ink (the tenant or the relevant officer signs by hand).
+    Native form PDFs sometimes ship these as text fields with placeholders like
+    ``/s/`` — we clear them and lock them so they stay blank and non-editable.
+    Printed-name and date fields are left editable on purpose.
+    """
+    readonly = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
+    sig_words = ("sign", "notary", "affiant", "deponent", "witness",
+                 "sworn", "subscribed", "attesting", "commission", "officer")
+    exclude = ("print", "designat")
+    locked = 0
+    for page in doc:
+        for w in page.widgets():
+            w = cast(Any, w)
+            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_TEXT:
+                continue
+            name = (getattr(w, "field_name", "") or "").lower()
+            if not any(k in name for k in sig_words):
+                continue
+            if any(k in name for k in exclude):
+                continue
+            w.field_value = ""
+            w.field_flags = (getattr(w, "field_flags", 0) or 0) | readonly  # type: ignore[attr-defined]
+            try:
+                w.update()
+            except Exception:
+                pass
+            locked += 1
+    return locked
+
+
 def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
     """Add editable text/checkbox widgets at every blank + checkbox on a scanned form.
 
@@ -587,9 +651,14 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
     lines are left alone so the user signs with ink.
     """
     def _label_to_right(words, x0, y0, y1, maxdist=70) -> str:
+        # Label usually sits to the right of the checkbox; some forms put it left.
         for w in words:
             wx0, wy0, wx1, wy1, word = w[0], w[1], w[2], w[3], w[4]
             if abs((wy0 + wy1) / 2 - (y0 + y1) / 2) < 6 and x0 - 1 <= wx0 <= x0 + maxdist:
+                return str(word)
+        for w in words:
+            wx0, wy0, wx1, wy1, word = w[0], w[1], w[2], w[3], w[4]
+            if abs((wy0 + wy1) / 2 - (y0 + y1) / 2) < 6 and x0 - maxdist <= wx1 <= x0 + 1:
                 return str(word)
         return ""
 
@@ -641,12 +710,29 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                                 runs.append(cur); cur = []
                     if cur:
                         runs.append(cur)
-        for i, run in enumerate(runs):
+        # Merge vertically-stacked underscore runs into ONE field so a multi-line
+        # blank accepts the full input across every line (instead of one field
+        # per underscore line, which clips long input to a single line).
+        bboxes = []
+        for run in runs:
             if len(run) < 3:
                 continue
-            x0 = min(b[0] for b in run); y0 = min(b[1] for b in run)
-            x1 = max(b[2] for b in run); y1 = max(b[3] for b in run)
-            r = fitz.Rect(x0, y1 - 42, max(x1, x0 + 48), y1 + 2)
+            bboxes.append([min(b[0] for b in run), max(b[2] for b in run),
+                           min(b[1] for b in run), max(b[3] for b in run)])
+        merged = []
+        for bb in sorted(bboxes, key=lambda b: -b[3]):  # top-to-bottom
+            placed = False
+            for m in merged:
+                if (abs(bb[0] - m[0]) < 8 and abs(bb[1] - m[1]) < 8
+                        and 0 <= (m[2] - bb[3]) < 24):
+                    m[0] = min(m[0], bb[0]); m[1] = max(m[1], bb[1])
+                    m[2] = min(m[2], bb[2])
+                    placed = True
+                    break
+            if not placed:
+                merged.append(bb[:])
+        for i, (x0, x1, y0, y1) in enumerate(merged):
+            r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
             if _covered(r) or _is_signature_line(page, r):
                 continue
             lb = _find_label_for_line(words, r)

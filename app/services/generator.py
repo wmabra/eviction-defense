@@ -58,7 +58,18 @@ def _full_address(data):
 
 
 def _editable_field(name, value="", width=140, height=16, font_size=9):
-    return FillableText(name, value, width=width, height=height, font_size=font_size)
+    # Auto-grow the field height for long values so the full text is visible
+    # (multi-line) when printed, instead of clipping after the first line.
+    v = "" if value is None else str(value)
+    if v:
+        import math
+        try:
+            chars_per_line = max(1, int(width / (font_size * 0.5)))
+        except (TypeError, ValueError, ZeroDivisionError):
+            chars_per_line = 20
+        lines = max(1, math.ceil(len(v) / chars_per_line))
+        height = max(height, lines * font_size * 1.4 + 4)
+    return FillableText(name, v, width=width, height=height, font_size=font_size)
 
 
 def _editable_checkbox(name, checked=False, size=11):
