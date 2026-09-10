@@ -62,13 +62,13 @@ def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
     return _fill_form(data, state, output_path, "fee_waiver_form")
 
 
-def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
-    """Check fee-waiver Yes/No and benefit boxes from the intake financial data.
+def _expected_fee_waiver_checkbox(page, r, data):
+    """Compute the expected checked state (True/False/None) for one fee-waiver checkbox.
 
-    Fee-waiver forms vary: some use ``Yes ___ No ___`` pairs (employed, owns cash,
-    owns property), others use benefit checklists (SNAP/Medicaid/SSI/TANF). This
-    pass maps each checkbox by the question text on its line (and, for Yes/No
-    pairs, by x-position) to the matching financial field, then checks the box.
+    Returns None when no rule matches. Handles three shapes: Yes/No pairs
+    (employed/cash/property), single income-source boxes (employment, social
+    security, child support, unemployment, ...), and benefit boxes (SNAP/Medicaid/
+    SSI/TANF). Used both to fill the box and, independently, to verify it.
     """
     fin = data.get("financial_info") or {}
 
@@ -83,6 +83,16 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
         (("real estate", "automobile", "vehicle", "stock", "bond", "note"),
          has("vehicle_make_model")),
     ]
+    # Ordered so "social security" is matched before the "ssi" benefit rule below.
+    income_source_rules = [
+        (("social security",), "social_security_income"),
+        (("child support",), "child_support_income"),
+        (("unemployment",), "unemployment_income"),
+        (("pension", "annuity", "retirement"), "pension_income"),
+        (("alimony", "spousal support"), "alimony_income"),
+        (("self-employment", "self employment", "business"), "self_employment_income"),
+        (("employment", "wages", "salary", "job"), "employment_income"),
+    ]
     benefit_rules = [
         (("snap", "food stamp", "food assistance"), bool(fin.get("receives_snap"))),
         (("medicaid", "medical assistance", "medical"), bool(fin.get("receives_medicaid"))),
@@ -91,23 +101,54 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
          bool(fin.get("receives_tanf"))),
     ]
 
-    # Count native field names: a name appearing on multiple widgets is a broken
-    # Yes/No pair that shares one field — skip it (the auto-detected checkbox at
-    # that position carries a unique name and is the one we actually set).
-    from collections import Counter
-    name_counts = Counter(
-        str(getattr(w, "field_name", "") or "") for page in doc for w in page.widgets()
-        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX
-    )
-    checked = 0
     def _bbox(t):
         try:
             return (float(t[0]), float(t[1]), float(t[2]), float(t[3]), str(t[4]))
         except (TypeError, ValueError, IndexError):
             return (0.0, 0.0, 0.0, 0.0, "")
 
+    words = [_bbox(x) for x in page.get_text("words")]
+    clip = fitz.Rect(r.x0 - 220, r.y0 - 35, r.x1 + 90, r.y1 + 35)
+    ctx = page.get_text("text", clip=clip).lower()
+    cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
+          and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
+
+    # 1. Yes/No pair
+    yes_x = no_x = None
+    for x in cw:
+        if x[4].lower() == "yes":
+            yes_x = x[0]
+        elif x[4].lower() == "no":
+            no_x = x[0]
+    if yes_x is not None or no_x is not None:
+        is_yes = no_x is None or r.x0 < no_x
+        for kws, ans in yesno_rules:
+            if any(k in ctx for k in kws):
+                return (is_yes and ans) or (not is_yes and not ans)
+        return None
+
+    # 2. income-source checkbox (single, no Yes/No)
+    for kws, key in income_source_rules:
+        if any(k in ctx for k in kws):
+            return bool(fin.get(key))
+
+    # 3. benefit checkbox (single)
+    for kws, flag in benefit_rules:
+        if any(k in ctx for k in kws):
+            return flag
+
+    return None
+
+
+def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
+    """Check fee-waiver Yes/No and benefit boxes from the intake financial data."""
+    from collections import Counter
+    name_counts = Counter(
+        str(getattr(w, "field_name", "") or "") for page in doc for w in page.widgets()
+        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX
+    )
+    checked = 0
     for page in doc:
-        words = [_bbox(x) for x in page.get_text("words")]
         for w in page.widgets():
             w = cast(Any, w)
             if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_CHECKBOX:
@@ -116,49 +157,14 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
             nm = str(getattr(w, "field_name", "") or "cb")
             if name_counts.get(nm, 0) > 1:
                 continue  # broken native field (Yes+No share a name)
-
-            clip = fitz.Rect(r.x0 - 220, r.y0 - 35, r.x1 + 90, r.y1 + 35)
-            ctx = page.get_text("text", clip=clip).lower()
-            cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
-                  and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
-
-            matched_benefit = False
-            for kws, flag in benefit_rules:
-                if any(k in ctx for k in kws):
-                    matched_benefit = True
-                    if flag:
-                        try:
-                            w.field_value = True
-                            w.update()
-                            checked += 1
-                        except Exception:
-                            pass
-                    break
-            if matched_benefit:
-                continue
-
-            yes_x = no_x = None
-            for x in cw:
-                if x[4].lower() == "yes":
-                    yes_x = x[0]
-                elif x[4].lower() == "no":
-                    no_x = x[0]
-            if yes_x is None and no_x is None:
-                continue
-            is_yes = no_x is None or r.x0 < no_x
-            for kws, ans in yesno_rules:
-                if any(k in ctx for k in kws):
-                    if (is_yes and ans) or (not is_yes and not ans):
-                        try:
-                            w.field_value = True
-                            w.update()
-                            checked += 1
-                        except Exception:
-                            pass
-                    break
+            if _expected_fee_waiver_checkbox(page, r, data):
+                try:
+                    w.field_value = True
+                    w.update()
+                    checked += 1
+                except Exception:
+                    pass
     return checked
-
-
 
 
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:

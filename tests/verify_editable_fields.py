@@ -220,6 +220,62 @@ def generate_packet(data, outdir):
     return paths
 
 
+def verify_fee_waiver_checkboxes(path, data):
+    """Verify every mapped fee-waiver checkbox matches intake. Returns mismatch strings."""
+    from app.services.pdf_overlay import _expected_fee_waiver_checkbox
+    from collections import Counter
+    doc = fitz.open(path)
+    mismatches = []
+    name_counts = Counter(str(getattr(w, "field_name", "") or "")
+                          for pg in doc for w in pg.widgets()
+                          if getattr(w, "field_type", None) == FITZ_CHECKBOX)
+    for pg in doc:
+        for w in pg.widgets():
+            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+                continue
+            nm = str(getattr(w, "field_name", "") or "")
+            if name_counts.get(nm, 0) > 1:
+                continue  # broken native Yes/No pair
+            r = fitz.Rect(w.rect)
+            actual = getattr(w, "field_value", None) in (True, 1, "1", "Yes", "On", "/On", "/Yes")
+            expected = _expected_fee_waiver_checkbox(pg, r, data)
+            if expected is not None and actual != expected:
+                mismatches.append(f"fee_waiver checkbox '{nm}' ({r.x0:.0f},{r.y0:.0f}) actual={actual} expected={expected}")
+    doc.close()
+    return mismatches
+
+
+def verify_answer_defenses(path, data):
+    """Verify answer-form defense checkboxes match intake. Returns mismatch strings."""
+    doc = fitz.open(path)
+    mismatches = []
+    defenses = data.get("defenses", {})
+    expected_checked = sum(1 for v in defenses.values() if isinstance(v, dict) and v.get("checked"))
+    checked_defense_boxes = 0
+    for pg in doc:
+        for w in pg.widgets():
+            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+                continue
+            nm = str(getattr(w, "field_name", "") or "").lower()
+            actual = getattr(w, "field_value", None) in (True, 1, "1", "Yes", "On", "/On", "/Yes")
+            if "defense" not in nm and not nm.startswith("def_"):
+                continue
+            if actual:
+                checked_defense_boxes += 1
+            key = nm.replace("defense_", "def_")
+            if key == "def_discrimination":
+                key = "def_fair_housing"
+            d = defenses.get(key)
+            if d is not None:
+                expected = bool(d.get("checked"))
+                if actual != expected:
+                    mismatches.append(f"answer defense '{nm}' actual={actual} expected={expected}")
+    if checked_defense_boxes > 0 and checked_defense_boxes < expected_checked:
+        mismatches.append(f"answer form: only {checked_defense_boxes} defense boxes checked, expected {expected_checked}")
+    doc.close()
+    return mismatches
+
+
 def run(states):
     print("=" * 100)
     print("EDITABLE-FIELD + MULTILINE VERIFICATION")
@@ -250,6 +306,10 @@ def run(states):
                 if not os.path.exists(path):
                     continue
                 issues, warnings, s = check_pdf(path, f"{state}/{key}")
+                if key == "fee_waiver":
+                    issues.extend(verify_fee_waiver_checkboxes(path, data))
+                elif key == "answer_form":
+                    issues.extend(verify_answer_defenses(path, data))
                 total_forms += 1
                 bad = len(issues)
                 if bad:
