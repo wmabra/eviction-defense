@@ -110,10 +110,20 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
     yesno_rules = [
         (("employed", "salary", "wage", "job", "work", "employment"),
          has("employment_income", "monthly_gross_income")),
-        (("cash", "checking", "savings", "account", "money"),
+        (("business", "profession", "self-employment", "self employment"),
+         has("self_employment_income")),
+        (("rent payment", "interest", "dividend"),
+         has("rental_income", "interest_income", "dividend_income")),
+        (("pension", "annuity", "life insurance", "retirement"),
+         has("pension_income")),
+        (("gift", "inherit"),
+         has("gift_income", "other_income", "other_income_description")),
+        (("other source", "other income", "any other"),
+         has("other_income", "other_income_description")),
+        (("cash", "checking", "savings", "account", "money", "bank", "funds"),
          has("checking_balance", "savings_balance", "cash_on_hand")),
         (("real estate", "automobile", "vehicle", "stock", "bond", "note"),
-         has("vehicle_make_model")),
+         has("vehicle_make_model", "real_estate_value")),
     ]
     income_source_text = [
         (("social security",), "social_security_income"),
@@ -173,12 +183,12 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
 
 
 def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
-    """Check fee-waiver Yes/No and benefit boxes from the intake financial data."""
-    from collections import Counter
-    name_counts = Counter(
-        str(getattr(w, "field_name", "") or "") for page in doc for w in page.widgets()
-        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX
-    )
+    """Check fee-waiver Yes/No and benefit boxes from the intake financial data.
+
+    Handles Yes/No pairs that share a single field name (e.g. two 'Check Box1'
+    widgets — one for Yes, one for No) by using each widget's x-position relative
+    to the printed 'Yes'/'No' labels.
+    """
     checked = 0
     for page in doc:
         for w in page.widgets():
@@ -187,8 +197,6 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
                 continue
             r = fitz.Rect(w.rect)
             nm = str(getattr(w, "field_name", "") or "cb")
-            if name_counts.get(nm, 0) > 1:
-                continue  # broken native field (Yes+No share a name)
             if _expected_fee_waiver_checkbox(page, r, data, nm):
                 try:
                     w.field_value = True
@@ -498,6 +506,12 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             val = _get_financial_value(map_key, data)
             if val:
                 values[pdf_field] = str(val)
+
+    # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
+    # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
+    for fname in config.get("fee_waiver_name_fields", []):
+        if fname not in values:
+            values[fname] = p.get("full_name", "")
     
     # Date
     if "date" in mapping:

@@ -764,6 +764,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": "IN RE PETITION OF",
             "cash_on_hand": "has the sum of",
         },
+        "fee_waiver_name_fields": ["I", "Petitioner"],
         "has_fillable_fields": False,
         "court_type": "District Court",
         "overlay_positions": {
@@ -774,6 +775,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "signature": {"page": 9, "x": 408, "y": 685, "w": 92, "h": 20, "size": 10},
             "phone": {"page": 10, "x": 358, "y": 138, "w": 150, "h": 16, "size": 10},
             "date": {"page": 10, "x": 312, "y": 492, "w": 120, "h": 16, "size": 10},
+            "full_name": {"page": 10, "x": 95, "y": 243, "w": 200, "h": 16, "size": 11},
         },
         "notes": "AR Answer, Counterclaim & Objection to Writ — statewide-compliant combined document from Arkansas Justice. Covers both deadlines: 5-day objection to possession AND 30-day answer to complaint. 75/75 counties. Court caption dynamically filled with county and circuit court.",
     },
