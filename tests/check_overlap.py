@@ -43,8 +43,14 @@ def check_overlap(filled_path, blank_form_path):
             if not val:
                 continue
             r = w.rect
+            fs = getattr(w, "text_fontsize", None) or 10.0
+            # approximate the actual text extent (left-aligned), not the full
+            # (often wider) field rect, to avoid false positives.
+            text_w = min(len(val) * fs * 0.52, r.width)
+            text_h = fs * 1.2
+            tr = fitz.Rect(r.x0, r.y0, r.x0 + text_w, r.y0 + text_h)
             for pr, pt in printed:
-                inter = r & pr
+                inter = tr & pr
                 if not inter.is_empty and inter.get_area() > 0.25 * pr.get_area():
                     overlaps.append(f"page {pno}: '{getattr(w,'field_name','')}'=({val[:25]!r}) overlaps printed '{pt}'")
     blank.close()
