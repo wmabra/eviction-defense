@@ -280,25 +280,23 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 except Exception:
                     pass
 
-    # Many forms were authored with a top-down y-axis but stored bottom-up,
-    # so their native widget rects are vertically mirrored. Flip them back.
+    # Native widget rects are already top-down (y=0 = top of page) in PyMuPDF's
+    # Widget API, so do NOT flip y. Only shift caption/address/phone fields right
+    # of their labels where the field starts on top of the label.
     if has_fields:
         for page in doc:
             PH = page.rect.height
             for w in page.widgets():
                 w = cast(Any, w)
                 r = w.rect
-                if r.y0 <= 0 and r.y1 >= PH:
+                if r is None or (r.y0 <= 0 and r.y1 >= PH):
                     continue
                 nm = str(getattr(w, "field_name", "") or "").lower()
-                # Caption name fields were authored starting before their label
-                # (e.g. x=72 while 'Plaintiff,' sits at x=73); shift them right.
                 if r.x0 < 90 and any(k in nm for k in ("plaintiff", "defendant", "printed")):
                     r = fitz.Rect(130, r.y0, r.x1, r.y1)
-                # Right-side fields (Address/Phone) likewise start on top of their label.
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")):
                     r = fitz.Rect(400, r.y0, r.x1, r.y1)
-                w.rect = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
+                w.rect = fitz.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
                     w.update()
                 except Exception:
@@ -309,11 +307,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         # which had misaligned positions and stamped text on top of printed text).
         _fill_via_widgets(doc, data, config)
     else:
-        # Scanned/non-fillable form: stamp via coordinate overlay (y-flip corrected).
+        # Scanned/non-fillable form: stamp via coordinate overlay (top-down y).
         _fill_via_overlay(doc, data, config, form_key)
-
-    # Add editable fields at every remaining blank + checkbox (fillable forms too)
-    _make_scanned_form_editable(doc, data)
+        # Scanned forms have no native fields — auto-detect every blank/checkbox
+        # so the tenant can edit them. (Native forms already have editable fields;
+        # running detection there adds duplicate boxes/fields.)
+        _make_scanned_form_editable(doc, data)
 
     # Final safety net: every text field must wrap long input instead of clipping,
     # and any signature line must stay blank + non-editable (ink).
@@ -852,9 +851,17 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
 
     for pno in range(doc.page_count):
         page = doc[pno]
+        PH = page.rect.height
         words = page.get_text("words")
         drawings = page.get_drawings()
-        covered = []
+        # Native widgets already on the page use top-down rects; flip them to the
+        # page-content (bottom-up) space so auto-detection does not duplicate them.
+        covered = [fitz.Rect(w.rect.x0, PH - w.rect.y1, w.rect.x1, PH - w.rect.y0)
+                   for w in page.widgets() if w.rect is not None]
+
+        def _flip(r):
+            # page content is bottom-up; Widget.rect is top-down. Convert.
+            return fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
 
         def _covered(rect, tol=4):
             r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
@@ -867,7 +874,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                 continue
             lb = _label_to_right(words, r.x1, r.y0, r.y1)
             m = _match_label_field(lb)
-            _add_checkbox_widget(page, rr, f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+            _add_checkbox_widget(page, _flip(rr), f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
             covered.append(rr)
 
         # 2. checkboxes drawn as small vector squares
@@ -878,7 +885,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                     continue
                 lb = _label_to_right(words, r.x1, r.y0, r.y1)
                 m = _match_label_field(lb)
-                _add_checkbox_widget(page, r, f"vcb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+                _add_checkbox_widget(page, _flip(r), f"vcb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
                 covered.append(r)
 
         # 3. underscore runs -> text fields
@@ -923,7 +930,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
             if _covered(r) or _is_signature_line(page, r):
                 continue
-            _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
+            _add_text_widget(page, _flip(r), f"ufill_{pno}_{i}", "")
             covered.append(r)
 
         # 4. horizontal lines -> text fields
@@ -931,7 +938,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = dr["rect"]
             if _covered(r) or _is_signature_line(page, r):
                 continue
-            _add_text_widget(page, r, f"fill_{pno}_{i}", "")
+            _add_text_widget(page, _flip(r), f"fill_{pno}_{i}", "")
             covered.append(r)
 
         # 5. rectangle boxes -> text fields
@@ -939,7 +946,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             r = dr["rect"]
             if _covered(r):
                 continue
-            _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
+            _add_text_widget(page, _flip(r), f"bfill_{pno}_{i}", "")
             covered.append(r)
 
 
@@ -994,17 +1001,16 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
         existing_rects = [w.rect for w in page.widgets()]
         
         if positions:
-            # overlay_positions store y from the TOP of the page; PyMuPDF's
-            # coordinate system is bottom-up, so convert (flip) y.
-            PH = page.rect.height
+            # overlay_positions store y from the TOP of the page, which matches
+            # PyMuPDF's Widget.rect convention (y=0 = top). Use it directly.
             for key, pos in positions.items():
                 if pos.get("page", 1) - 1 != page_num:
                     continue
                 x = pos["x"]
                 w = pos.get("w", 200)
                 h = pos.get("h", 20)
-                y_top = PH - pos["y"]  # top edge, in bottom-up coords
-                _pr = fitz.Rect(x, y_top - h, x + w, y_top)
+                y = pos["y"]
+                _pr = fitz.Rect(x, y, x + w, y + h)
                 if any(_pr.intersects(r) for r in existing_rects):
                     continue  # already filled via a fillable widget (rebuilt form)
                 value = _get_field_value(key, data)
@@ -1012,7 +1018,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
                 if is_checkbox:
                     s = pos.get("h", 14)
-                    _add_checkbox_widget(page, fitz.Rect(x, y_top - s, x + s, y_top), key, checked=bool(value))
+                    _add_checkbox_widget(page, fitz.Rect(x, y, x + s, y + s), key, checked=bool(value))
                 elif value:
                     _add_text_widget(page, _pr, key, str(value), font_size=pos.get("size", 10))
 

@@ -83,6 +83,9 @@ def check_overlap(filled_path, blank_form_path):
             r = w.rect
             if r is None or r.is_empty:
                 continue
+            # Widget.rect is top-down (y=0 = top); OCR words are bottom-up.
+            # Flip the widget rect to bottom-up so the comparison is consistent.
+            r = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
             fs = getattr(w, "text_fontsize", None) or 10.0
             # approximate the actual text extent (left-aligned), not the full
             # (often wider) field rect, to avoid false positives.
