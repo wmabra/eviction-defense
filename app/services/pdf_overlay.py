@@ -259,6 +259,27 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     if form_key == "fee_waiver_form" and config.get("fee_waiver_mapping"):
         has_fields = True  # Treat as fillable if mapping exists
     
+    # Per-form field rect overrides: fix mispositioned native widgets (raw
+    # pre-flip coordinates) before the y-flip below.
+    overrides = (config.get("field_rect_overrides", {}) or {}).get(form_key, {})
+    if overrides and has_fields:
+        for page in doc:
+            for w in page.widgets():
+                w = cast(Any, w)
+                o = overrides.get(str(getattr(w, "field_name", "") or ""))
+                if not o:
+                    continue
+                r = w.rect
+                if r is None:
+                    continue
+                w.rect = fitz.Rect(
+                    o.get("x0", r.x0), o.get("y0", r.y0),
+                    o.get("x1", r.x1), o.get("y1", r.y1))
+                try:
+                    w.update()
+                except Exception:
+                    pass
+
     # Many forms were authored with a top-down y-axis but stored bottom-up,
     # so their native widget rects are vertically mirrored. Flip them back.
     if has_fields:
@@ -274,6 +295,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 # (e.g. x=72 while 'Plaintiff,' sits at x=73); shift them right.
                 if r.x0 < 90 and any(k in nm for k in ("plaintiff", "defendant", "printed")):
                     r = fitz.Rect(130, r.y0, r.x1, r.y1)
+                # Right-side fields (Address/Phone) likewise start on top of their label.
+                elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")):
+                    r = fitz.Rect(400, r.y0, r.x1, r.y1)
                 w.rect = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
                 try:
                     w.update()
@@ -329,7 +353,6 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         "email": p.get("email", ""),
         "date": today.strftime("%m/%d/%Y"),
         "printed_name": p.get("full_name", ""),
-        "signature": "/s/",
         "rent_amount": str(c.get("monthly_rent", "")),
         "amount_claimed": str(c.get("complaint_amount_claimed", "")),
     }
@@ -555,7 +578,6 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         ("property", p.get("property_address", "")),
         ("street", p.get("property_address", "")),
         ("city or town", p.get("property_city", "")),
-        ("signature", "/s/"),
         ("signed", today.strftime("%m/%d/%Y")),
     ]
     # Word-boundary-only rules: match "Date" or "Date3" but not "TrialDate" or "BOPDueDate"
@@ -795,6 +817,12 @@ def _make_signature_fields_readonly(doc: fitz.Document) -> int:
                 continue
             w.field_value = ""
             w.field_flags = (getattr(w, "field_flags", 0) or 0) | readonly  # type: ignore[attr-defined]
+            # Some PDFs ship a '/s/' default (DV) that PyMuPDF's empty field_value
+            # assignment won't override — force-clear the live /V key directly.
+            try:
+                doc.xref_set_key(int(w.xref), "V", "()")
+            except Exception:
+                pass
             try:
                 w.update()
             except Exception:
@@ -956,8 +984,10 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
     if form_key == "fee_waiver_form":
         positions = dict(config.get("fee_waiver_overlay", {}))
     else:
+        # Answer form uses its own overlay positions only. fee_waiver_overlay
+        # describes the *separate* fee-waiver PDF and must not override the
+        # answer form's caption fields (same key, different page/position).
         positions = dict(config.get("overlay_positions", {}))
-        positions.update(config.get("fee_waiver_overlay", {}))
     
     for page_num in range(len(doc)):
         page = doc[page_num]
@@ -1005,7 +1035,6 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "full_name": p.get("full_name"),
         "defendant_name": p.get("full_name"),
         "printed_name": p.get("full_name"),
-        "signature": "/s/",
         "phone": p.get("phone"),
         "phone_bottom": p.get("phone"),
         "email": p.get("email"),

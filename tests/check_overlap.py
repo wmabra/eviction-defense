@@ -9,6 +9,21 @@ from PIL import Image
 
 TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 7)
 
+
+def _is_placeholder_word(t):
+    """True for blank-line/leader dots and pre-printed '$0' financial placeholders.
+
+    The value is *supposed* to land on these (the dotted blank line, or the
+    '$0' that the filled amount replaces), so they are not real overlaps.
+    """
+    if set(t) <= {".", "_", "-", " "}:
+        return True
+    s = t.replace("$", "").replace(",", "").replace(".", "")
+    if s == "" or (s and all(c == "0" for c in s)):
+        return True
+    return False
+
+
 def ocr_words(page, dpi=150):
     """Return [(Rect, text)] of printed words on a page (bottom-left coords)."""
     pix = page.get_pixmap(dpi=dpi)
@@ -19,6 +34,8 @@ def ocr_words(page, dpi=150):
     for i in range(len(data["text"])):
         t = data["text"][i].strip()
         if not t or int(data["conf"][i]) < 40:
+            continue
+        if _is_placeholder_word(t):
             continue
         x = int(data["left"][i]) * scale
         y_top = int(data["top"][i]) * scale
@@ -36,6 +53,27 @@ def check_overlap(filled_path, blank_form_path):
     overlaps = []
     for pno in range(min(blank.page_count, filled.page_count)):
         printed = ocr_words(blank[pno])
+        # The blank form's own field default values (e.g. a pre-printed county
+        # name like "CLARK", or "/s/") render inside their widget rects and are
+        # REPLACED by the fill, not overlaid. Exclude OCR words matching a field
+        # default (native widgets are y-mirrored, so flip their rects first).
+        PH = blank[pno].rect.height
+        field_defaults = []  # (flipped_rect, default_text_lower)
+        for bw in blank[pno].widgets():
+            br = bw.rect
+            if br is None or (br.y0 <= 0 and br.y1 >= PH):
+                continue
+            dv = str(getattr(bw, "field_value", "") or "").strip()
+            if dv:
+                field_defaults.append((fitz.Rect(br.x0, PH - br.y1, br.x1, PH - br.y0), dv.lower()))
+
+        def _is_field_default(pr, pt):
+            for fr, dv in field_defaults:
+                if pr.intersects(fr) and pt.lower() in dv:
+                    return True
+            return False
+
+        printed = [(pr, pt) for (pr, pt) in printed if not _is_field_default(pr, pt)]
         for w in filled[pno].widgets():
             if getattr(w, "field_type", None) != TEXT:
                 continue
@@ -43,6 +81,8 @@ def check_overlap(filled_path, blank_form_path):
             if not val:
                 continue
             r = w.rect
+            if r is None or r.is_empty:
+                continue
             fs = getattr(w, "text_fontsize", None) or 10.0
             # approximate the actual text extent (left-aligned), not the full
             # (often wider) field rect, to avoid false positives.

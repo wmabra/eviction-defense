@@ -284,7 +284,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     
         "fee_waiver_overlay": {
             "case_number": {"page": 1, "x": 210, "y": 60, "w": 110, "h": 12, "size": 9},
-            "full_name": {"page": 1, "x": 160, "y": 235, "w": 200, "h": 16, "size": 10}
+            "full_name": {"page": 1, "x": 165, "y": 233, "w": 180, "h": 10, "size": 10}
         }},
 
     # ══════════════════════════════════════════
@@ -741,11 +741,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and pre-filled into 'at the hearing 1' text area. Tenant can edit before filing.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 440, "y": 53, "w": 60, "h": 16, "size": 10},
+            "case_number": {"page": 1, "x": 488, "y": 68, "w": 75, "h": 12, "size": 10},
             "county": {"page": 1, "x": 36, "y": 52, "w": 80, "h": 16, "size": 10},
-            "full_name": {"page": 1, "x": 78, "y": 195, "w": 150, "h": 16, "size": 10},
-            "address": {"page": 1, "x": 380, "y": 195, "w": 150, "h": 16, "size": 10},
-            "phone": {"page": 1, "x": 113, "y": 206, "w": 150, "h": 16, "size": 10}
+            "full_name": {"page": 1, "x": 95, "y": 194, "w": 130, "h": 12, "size": 10},
+            "address": {"page": 1, "x": 395, "y": 194, "w": 140, "h": 12, "size": 10},
+            "phone": {"page": 1, "x": 130, "y": 205, "w": 120, "h": 12, "size": 10}
         }},
 
     # ══════════════════════════════════════════
@@ -801,7 +801,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 1, "x": 350, "y": 100, "w": 200, "h": 20, "size": 11},
             "county": {"page": 1, "x": 300, "y": 100, "w": 200, "h": 20, "size": 11},
             "date": {"page": 6, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
+            "full_name": {"page": 1, "x": 170, "y": 251, "w": 230, "h": 12, "size": 11}
         }},
 
     # ══════════════════════════════════════════
@@ -901,24 +901,24 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Magistrate Court",
         "overlay_positions": {
             # Page 0 — Court header
-            "court_type": {"page": 0, "x": 90, "y": 114, "w": 96, "h": 16, "size": 10},
-            "county": {"page": 0, "x": 90, "y": 128, "w": 96, "h": 16, "size": 10},
-            "case_number": {"page": 0, "x": 462, "y": 156, "w": 120, "h": 16, "size": 10},
+            "court_type": {"page": 1, "x": 90, "y": 114, "w": 96, "h": 16, "size": 10},
+            "county": {"page": 1, "x": 90, "y": 128, "w": 96, "h": 16, "size": 10},
+            "case_number": {"page": 1, "x": 462, "y": 156, "w": 120, "h": 16, "size": 10},
             # Party names
-            "defendant_name": {"page": 0, "x": 90, "y": 240, "w": 432, "h": 18, "size": 11},
-            "plaintiff_name": {"page": 0, "x": 90, "y": 184, "w": 432, "h": 18, "size": 11},
+            "defendant_name": {"page": 1, "x": 90, "y": 240, "w": 432, "h": 18, "size": 11},
+            "plaintiff_name": {"page": 1, "x": 90, "y": 184, "w": 432, "h": 18, "size": 11},
             # Defense narratives — filled into the blank lines after each "because:"
-            "defense_narrative_1": {"page": 0, "x": 370, "y": 340, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_2": {"page": 0, "x": 370, "y": 394, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_3": {"page": 0, "x": 370, "y": 436, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_4": {"page": 0, "x": 370, "y": 492, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_1": {"page": 1, "x": 370, "y": 340, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_2": {"page": 1, "x": 370, "y": 394, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_3": {"page": 1, "x": 370, "y": 436, "w": 152, "h": 14, "size": 8},
+            "defense_narrative_4": {"page": 1, "x": 370, "y": 492, "w": 152, "h": 14, "size": 8},
             # Signature block
-            "signature": {"page": 0, "x": 162, "y": 547, "w": 260, "h": 25, "size": 11},
-            "printed_name": {"page": 0, "x": 234, "y": 589, "w": 190, "h": 25, "size": 11},
-            "property_address": {"page": 0, "x": 234, "y": 631, "w": 190, "h": 25, "size": 10},
-            "city_state_zip": {"page": 0, "x": 90, "y": 673, "w": 340, "h": 25, "size": 10},
-            # Page 1 — Phone
-            "phone": {"page": 1, "x": 90, "y": 90, "w": 200, "h": 20, "size": 10},
+            "signature": {"page": 1, "x": 162, "y": 547, "w": 260, "h": 25, "size": 11},
+            "printed_name": {"page": 1, "x": 300, "y": 606, "w": 200, "h": 15, "size": 10},
+            "property_address": {"page": 1, "x": 310, "y": 647, "w": 200, "h": 15, "size": 10},
+            "city_state_zip": {"page": 1, "x": 385, "y": 689, "w": 150, "h": 15, "size": 10},
+            # Page 2 — Telephone
+            "phone": {"page": 2, "x": 325, "y": 60, "w": 180, "h": 15, "size": 10},
         },
         "notes": "NM Form 4-907 — statewide for all 33 counties. Works in Magistrate, Metropolitan, and District courts. Narrative-style defenses (write-in).",
         "fee_waiver_overlay": {
@@ -1162,6 +1162,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Municipal Court",
         "field_mapping": {
             "division": "division",
+        },
+        "field_rect_overrides": {
+            # county widget was authored on the "CASE NO." line — move it up to
+            # the "COUNTY, OHIO" line (raw pre-flip coords), narrowed so the name
+            # fits before the (shifted-right) "COUNTY, OHIO" label.
+            "answer_form": {"county": {"x0": 72, "x1": 108, "y0": 66, "y1": 81}},
+            # fee-waiver: county field overlaps "OHIO"; printed_name sits on its label.
+            "fee_waiver_form": {
+                "county": {"x0": 72, "x1": 108},
+                "printed_name": {"x0": 420},
+            },
         },
         "defense_options": [
             {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
