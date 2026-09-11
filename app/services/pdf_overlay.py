@@ -269,6 +269,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 r = w.rect
                 if r.y0 <= 0 and r.y1 >= PH:
                     continue
+                nm = str(getattr(w, "field_name", "") or "").lower()
+                # Caption name fields were authored starting before their label
+                # (e.g. x=72 while 'Plaintiff,' sits at x=73); shift them right.
+                if r.x0 < 90 and any(k in nm for k in ("plaintiff", "defendant", "printed")):
+                    r = fitz.Rect(130, r.y0, r.x1, r.y1)
                 w.rect = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
                 try:
                     w.update()
