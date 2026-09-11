@@ -397,6 +397,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "Housing Court / Superior Court",
         "field_mapping": {
+            "case_name": "CASE[0]",
             "landlord_name": "LANDLORD[0]",
             "landlord_address": "LANDLORD[1]",
             "case_number": "DOCKETNO[0]",

@@ -420,6 +420,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
     if "landlord_city_state_zip" not in _all_data:
         _all_data["landlord_city_state_zip"] = ""  # landlord city/state/zip rarely available
+
+    # Case name for "Name of case" captions (e.g. CT): "Landlord v. Tenant"
+    if "case_name" not in _all_data:
+        _all_data["case_name"] = f"{_all_data.get('landlord_name', '')} v. {_all_data.get('full_name', '')}".strip(" v.")
     
     # Also add state-level data
     state_code = data.get("state", "")
