@@ -4,7 +4,7 @@
 
 ## What this is
 
-evictions.help is a self-help eviction-defense document preparation service (flat fee $399).
+evictions.help is a self-help eviction-defense document preparation service (flat fee $299).
 Flow: **eligibility (8 questions) → payment → chat intake agent → pre-filled editable PDF packet → user verifies/edits → prints/signs/files at court.**
 
 ## The 20 states we cover
@@ -28,6 +28,9 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
 
 1. **Every form is editable.** Every blank and every checkbox across all 20 states is an
    editable PDF field — verified **0 gaps**. Only signature/notary lines stay as ink.
+   **Text-over-text overlap: 0 across all 20 states (answer + fee waiver)** — guarded by
+   `tests/check_all_overlap.py` (OCR-based) and `tests/verify_editable_fields.py`
+   (420 forms, 0 failures).
 2. **Removed-state cleanup done.** CA / AZ / FL / NV / MA (plus never-covered MS / NC)
    references and documents were removed from the project.
 3. **Intake agents instruct the user** (chat + voice) to download, verify on a computer,
