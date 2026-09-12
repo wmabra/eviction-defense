@@ -1,108 +1,84 @@
 #!/usr/bin/env python3
-"""Detect filled-text overlap: does filled text land on top of the form's printed text?"""
-import os, sys, io
+"""Detect filled-text overlap deterministically — no OCR, flip-agnostic.
+
+Renders the blank form to a grayscale image and, for each filled widget, checks
+whether the widget's rendered region contains a *tall band* of printed ink
+(text), as opposed to a thin underline (which the value is supposed to sit on).
+
+This works in rendered pixel space, so it is immune to the y-flip that some
+rebuilt/scanned forms store in their text layer.
+
+`Widget.rect` (PyMuPDF) is top-down (y=0 = top) and matches the rendered
+position, so no coordinate conversion is needed.
+"""
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
 import fitz
-import pytesseract
-from PIL import Image
 
 TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 7)
+DPI = 96
+_THIN_LINE_PX = 4  # an underline is ~1-2pt (1-3px at 96dpi); text is much taller
 
 
-def _is_placeholder_word(t):
-    """True for blank-line/leader dots and pre-printed '$0' financial placeholders.
-
-    The value is *supposed* to land on these (the dotted blank line, or the
-    '$0' that the filled amount replaces), so they are not real overlaps.
-    """
-    if set(t) <= {".", "_", "-", " "}:
-        return True
-    s = t.replace("$", "").replace(",", "").replace(".", "")
-    if s == "" or (s and all(c == "0" for c in s)):
-        return True
-    return False
-
-
-def ocr_words(page, dpi=150):
-    """Return [(Rect, text)] of printed words on a page (bottom-left coords)."""
-    pix = page.get_pixmap(dpi=dpi)
-    img = Image.open(io.BytesIO(pix.tobytes("png")))
-    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-    scale = page.rect.height / pix.height
-    words = []
-    for i in range(len(data["text"])):
-        t = data["text"][i].strip()
-        if not t or int(data["conf"][i]) < 40:
-            continue
-        if _is_placeholder_word(t):
-            continue
-        x = int(data["left"][i]) * scale
-        y_top = int(data["top"][i]) * scale
-        w = int(data["width"][i]) * scale
-        h = int(data["height"][i]) * scale
-        y_bottom = page.rect.height - y_top  # OCR y is top-down; convert to bottom-up
-        words.append((fitz.Rect(x, y_bottom - h, x + w, y_bottom), t))
-    return words
+def _region_has_text_ink(samples, width, height, px0, py0, px1, py1) -> bool:
+    """True if the pixel region contains a vertical band of ink taller than an
+    underline (i.e. printed text, not a blank line)."""
+    px0 = max(0, px0); py0 = max(0, py0)
+    px1 = min(width, px1); py1 = min(height, py1)
+    if px1 <= px0 or py1 <= py0:
+        return False
+    max_run = run = 0
+    for y in range(py0, py1):
+        row = samples[y * width + px0: y * width + px1]
+        if any(b < 160 for b in row):
+            run += 1
+            max_run = max(max_run, run)
+        else:
+            run = 0
+    return max_run > _THIN_LINE_PX
 
 
-def check_overlap(filled_path, blank_form_path):
-    """Return list of overlap descriptions: filled widget value sits on printed text."""
+def check_overlap(filled_path: str, blank_form_path: str) -> list:
+    """Return a list of overlap descriptions: a filled value sits on printed text."""
     blank = fitz.open(blank_form_path)
     filled = fitz.open(filled_path)
     overlaps = []
+    scale = DPI / 72.0
     for pno in range(min(blank.page_count, filled.page_count)):
-        printed = ocr_words(blank[pno])
-        # The blank form's own field default values (e.g. a pre-printed county
-        # name like "CLARK", or "/s/") render inside their widget rects and are
-        # REPLACED by the fill, not overlaid. Exclude OCR words matching a field
-        # default (native widgets are y-mirrored, so flip their rects first).
-        PH = blank[pno].rect.height
-        field_defaults = []  # (flipped_rect, default_text_lower)
-        for bw in blank[pno].widgets():
-            br = bw.rect
-            if br is None or (br.y0 <= 0 and br.y1 >= PH):
+        # annots=False hides the blank form's own field default values (e.g. a
+        # pre-printed "CLARK" county or "$0" totals), which the fill REPLACES
+        # rather than overlaps.
+        pix = blank[pno].get_pixmap(dpi=DPI, colorspace=fitz.csGRAY, annots=False)
+        samples = pix.samples
+        w, h = pix.width, pix.height
+        for wdg in filled[pno].widgets():
+            if getattr(wdg, "field_type", None) != TEXT:
                 continue
-            dv = str(getattr(bw, "field_value", "") or "").strip()
-            if dv:
-                field_defaults.append((fitz.Rect(br.x0, PH - br.y1, br.x1, PH - br.y0), dv.lower()))
-
-        def _is_field_default(pr, pt):
-            for fr, dv in field_defaults:
-                if pr.intersects(fr) and pt.lower() in dv:
-                    return True
-            return False
-
-        printed = [(pr, pt) for (pr, pt) in printed if not _is_field_default(pr, pt)]
-        for w in filled[pno].widgets():
-            if getattr(w, "field_type", None) != TEXT:
-                continue
-            val = str(getattr(w, "field_value", "") or "").strip()
+            val = str(getattr(wdg, "field_value", "") or "").strip()
             if not val:
                 continue
-            r = w.rect
+            r = wdg.rect  # top-down, rendered
             if r is None or r.is_empty:
                 continue
-            # Widget.rect is top-down (y=0 = top); OCR words are bottom-up.
-            # Flip the widget rect to bottom-up so the comparison is consistent.
-            r = fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
-            fs = getattr(w, "text_fontsize", None) or 10.0
-            # approximate the actual text extent (left-aligned), not the full
-            # (often wider) field rect, to avoid false positives.
-            text_w = min(len(val) * fs * 0.52, r.width)
-            text_h = fs * 1.2
-            tr = fitz.Rect(r.x0, r.y0, r.x0 + text_w, r.y0 + text_h)
-            for pr, pt in printed:
-                inter = tr & pr
-                if not inter.is_empty and inter.get_area() > 0.25 * pr.get_area():
-                    overlaps.append(f"page {pno}: '{getattr(w,'field_name','')}'=({val[:25]!r}) overlaps printed '{pt}'")
+            fs = getattr(wdg, "text_fontsize", None) or 10.0
+            vw = fitz.get_text_length(val, fontname="helv", fontsize=fs)
+            # value text extent (left-aligned): x from r.x0, width = text width
+            x0 = r.x0
+            x1 = min(r.x0 + vw, r.x1)
+            # check the widget's full height band
+            px0 = int(x0 * scale); px1 = int(x1 * scale)
+            py0 = int(r.y0 * scale); py1 = int(r.y1 * scale)
+            if _region_has_text_ink(samples, w, h, px0, py0, px1, py1):
+                overlaps.append(
+                    f"page {pno}: '{getattr(wdg,'field_name','')}'=({val[:25]!r}) "
+                    f"sits on printed text")
     blank.close()
     filled.close()
     return overlaps
 
 
 if __name__ == "__main__":
-    # quick self-test on a freshly generated AR answer form
     from app.services.pdf_overlay import fill_answer_form
     data = {
         "personal_info": {"full_name": "John Doe", "county": "Benton", "property_address": "123 Main St",
