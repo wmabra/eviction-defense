@@ -926,6 +926,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "NM Form 4-907 — statewide for all 33 counties. Works in Magistrate, Metropolitan, and District courts. Narrative-style defenses (write-in).",
         "fee_waiver_overlay": {
             "county": {"page": 1, "x": 300, "y": 120, "w": 200, "h": 20, "size": 11},
+            "case_number": {"page": 1, "x": 385, "y": 230, "w": 115, "h": 16, "size": 11},
             "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
             "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
         }},
@@ -1114,6 +1115,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "transportation_expense": "MonthlyTransportation",
             "other_expenses": "MonthlyOtherExpenses",
             "total_monthly_expenses": "MonthlyExpensesTotal",
+        },
+        "fee_waiver_overlay": {
+            "case_number": {"page": 1, "x": 355, "y": 62, "w": 140, "h": 16, "size": 11},
         },
         "has_fillable_fields": True,
         "court_type": "Small Claims Court",

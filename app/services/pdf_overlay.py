@@ -314,6 +314,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         # Native fillable form: fill its own fields only (no coordinate overlay,
         # which had misaligned positions and stamped text on top of printed text).
         _fill_via_widgets(doc, data, config)
+        # Fee waivers may also need overlay for blanks the native form lacks
+        # (e.g. a "CAUSE NO." line with no native widget). The overlay skips
+        # positions that already have a widget.
+        if form_key == "fee_waiver_form" and config.get("fee_waiver_overlay"):
+            _fill_via_overlay(doc, data, config, form_key)
     else:
         # Scanned/non-fillable form: stamp via coordinate overlay (top-down y).
         _fill_via_overlay(doc, data, config, form_key)
