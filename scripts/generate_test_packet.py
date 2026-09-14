@@ -515,7 +515,100 @@ GA = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA}
+# ── Fake John Doe — Illinois (Cook County / Chicago) ───────────────────
+IL = {
+    "full_name": FULL_NAME,
+    "county": "Cook",
+    "label": "IL",
+    "data": {
+        "state": "IL",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(312) 555-0163",
+            "email": "john.doe.il@example.com",
+            "property_address": "4823 S Kedzie Avenue",
+            "property_city": "Chicago",
+            "property_zip": "60632",
+            "county": "Cook",
+        },
+        "landlord_info": {
+            "landlord_name": "Windy City Property Management, LLC",
+            "landlord_address": "200 W Madison Street, Chicago, IL 60606",
+            "landlord_phone": "(312) 555-0117",
+            "landlord_email": "leasing@windycitypm.example",
+        },
+        "case_details": {
+            "case_number": "2024M1123456",
+            "court_name": "Circuit Court of Cook County",
+            "complaint_amount_claimed": 2400.00,
+            "summons_service_date": "2024-05-02",
+            "response_deadline": "2024-05-12",
+            "court_date": "2024-05-15",
+        },
+        "rent_payment": {
+            "monthly_rent": 1200.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 960.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The heat and hot water have been intermittent since January and the landlord has not repaired them despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive a proper written notice before the eviction was filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in February and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and bank statements for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-09876",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Northern District of Illinois",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-28",
+            "bankruptcy_attorney_name": "Laura Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(312) 555-0121",
+            "bankruptcy_attorney_email": "ladvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2000.00,
+            "employment_income": 2000.00,
+            "social_security_income": 0.00,
+            "child_support_income": 0.00,
+            "unemployment_income": 0.00,
+            "pension_income": 0.00,
+            "rent_or_mortgage": 1200.00,
+            "utilities_expense": 180.00,
+            "food_expense": 380.00,
+            "medical_expense": 110.00,
+            "child_care_expense": 0.00,
+            "cash_on_hand": 60.00,
+            "vehicle_value": 4800.00,
+            "household_adults": 1,
+            "household_children": 1,
+            "receives_snap": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+            "receives_county_assistance": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL}
 
 
 def main() -> int:
