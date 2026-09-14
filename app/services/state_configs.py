@@ -574,6 +574,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         
             "cos_mail": "CoS_Mail",
             "defense_narrative": "8.0"},
+        "radio_selections": {
+            "Group1.1": {"value": "county court"},
+            "Group6.0": {"data": "receives_public_benefits", "yes": "yes", "no": "no"},
+            "Group7.1": {"data": "owns_real_estate", "yes": "own", "no": "rent"},
+            "Group7.3": {"data": "employment_income", "yes": "yes", "no": "no"},
+            "Group7A.0": {"any_defense": ["def_paid", "def_attempted_pay", "def_amount", "def_other"], "yes": "yes", "no": "no"},
+            "Group7B.0": {"any_defense": ["def_repairs", "def_did_repairs", "def_landlord_breach"], "yes": "yes", "no": "no"},
+            "Group7C.0": {"any_defense": ["def_bad_notice", "def_wrong_reason"], "yes": "yes", "no": "no"},
+            "Group7D.0": {"any_defense": ["def_retaliation", "def_discrimination"], "yes": "yes", "no": "no"},
+        },
         "defense_options": [
             # Section 7A — Non-Payment Defenses
             {"key": "def_paid", "label": "I paid all rent owed", "field": "7A.1"},

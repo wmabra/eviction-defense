@@ -208,6 +208,67 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
     return checked
 
 
+def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
+    """Set mutually-exclusive radio groups to a single selection (or blank).
+
+    Radio groups otherwise ship with every option 'On' — a form that shows both
+    "Yes" and "No" checked. Each group resolves via config["radio_selections"]:
+      * {"data": <key>, "yes": <substr>, "no": <substr>} — pick the option whose
+        on_state contains the chosen substring (truthy value → yes, else no).
+      * {"any_defense": [<keys>], "yes": <substr>, "no": <substr>} — pick "yes"
+        if any listed defense is checked, else "no".
+    Groups without a rule are cleared to 'Off' so no conflicting choice ships.
+    """
+    selections = config.get("radio_selections", {}) or {}
+    fin = data.get("financial_info", {}) or {}
+    pi = data.get("personal_info", {}) or {}
+    defenses = data.get("defenses", {}) or {}
+    resolved = 0
+    for page in doc:
+        groups: dict[str, list] = {}
+        for w in page.widgets():
+            w = cast(Any, w)
+            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_RADIOBUTTON:
+                continue
+            groups.setdefault(str(getattr(w, "field_name", "") or ""), []).append(w)
+        for gname, ws in groups.items():
+            rule = selections.get(gname)
+            needle = None
+            if rule:
+                if "any_defense" in rule:
+                    _checked = any(
+                        isinstance(defenses.get(k), dict) and defenses[k].get("checked")
+                        for k in rule["any_defense"]
+                    )
+                    needle = rule.get("yes") if _checked else rule.get("no")
+                elif "data" in rule:
+                    _val = fin.get(rule["data"])
+                    if _val is None:
+                        _val = pi.get(rule["data"])
+                    if _val is not None:
+                        needle = rule.get("yes") if _val else rule.get("no")
+                elif "value" in rule:
+                    needle = rule["value"]
+            choice = None
+            for w in ws:
+                try:
+                    _os = re.sub(r"#([0-9A-Fa-f]{2})", lambda m: chr(int(m.group(1), 16)), str(w.on_state()))
+                except Exception:
+                    _os = ""
+                if needle and needle.lower() in _os.lower():
+                    choice = w
+                    break
+            for w in ws:
+                try:
+                    w.field_value = w.on_state() if w is choice else False
+                    w.update()
+                except Exception:
+                    pass
+            if choice is not None:
+                resolved += 1
+    return resolved
+
+
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
@@ -342,6 +403,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # and any signature line must stay blank + non-editable (ink).
     _force_multiline_text_widgets(doc)
     _make_signature_fields_readonly(doc)
+    _resolve_radio_groups(doc, data, config)
 
     if form_key == "fee_waiver_form":
         _map_fee_waiver_checkboxes(doc, data)
