@@ -7,6 +7,7 @@ For scanned PDFs: overlays text at exact coordinates (works on any form).
 # pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
 
 import os
+import re
 import logging
 from typing import Any, Dict, Optional, cast
 from datetime import date
@@ -813,6 +814,73 @@ def _force_multiline_text_widgets(doc: fitz.Document) -> int:
     return changed
 
 
+# Field names that mark a signature / notary area. Rebuilt forms commonly use
+# "Sig1_Date", "Sig1_Month", "Sig1_Year", "Sig1_State" - these do NOT contain
+# the substring "sign", so a word list alone silently misses them and the
+# fields stay editable instead of staying ink.
+_SIG_WORDS = ("sign", "notary", "affiant", "deponent", "witness",
+              "sworn", "subscribed", "attesting", "commission", "officer")
+# "assign" / "design" / "consign" contain the substring "sign" but are not
+# signature fields. Without these the substring test wrongly locks them, so an
+# exclusion list is required — a word-boundary match is not an option, because
+# it would stop matching camelCase names like "DefendantSignature".
+_SIG_EXCLUDE = ("print", "design", "assign", "consign")
+_SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d")
+
+
+def _is_signature_name(name: str) -> bool:
+    """True if a PDF field name denotes a signature/notary line (must stay ink)."""
+    n = (name or "").lower()
+    if any(k in n for k in _SIG_EXCLUDE):
+        return False
+    return any(k in n for k in _SIG_WORDS) or bool(_SIG_NUMBERED_RE.search(n))
+
+
+# Field names that denote a date. Used only to decide whether a date field is
+# part of a signature block — never to decide whether a date is fillable.
+_DATE_NAME_RE = re.compile(r"(?<![a-z])(date|dated|day|month|year)(?![a-z])",
+                           re.IGNORECASE)
+
+
+def _row_center(widget) -> float:
+    """Vertical centre of a widget, for same-row (signature block) tests."""
+    r = getattr(widget, "rect", None)
+    return (r.y0 + r.y1) / 2 if r is not None else 0.0
+
+
+# Fill characters that MAKE UP a blank are not "printed text" — an underscore
+# run, a rule, or a dotted leader must not veto a candidate blank.
+_DECOR_CHARS = set("_.-\u2010\u2011\u2012\u2013\u2014\u00b7 ")
+
+
+def _is_decorative_word(word: str) -> bool:
+    """True for underscore / dash / rule runs — a blank, not printed text."""
+    return bool(word) and all(ch in _DECOR_CHARS for ch in word)
+
+
+def _over_printed_text(words, rect, tol: float = 1.5) -> bool:
+    """True if real printed text already occupies rect.
+
+    A rule or underscore detected inside body prose is not an input blank.
+    Stamping an editable field there puts a ghost field on top of the court's
+    own printed text: it pollutes the tab order and lets the tenant type over
+    the form. Measured on the AR answer form, 64% of auto-detected candidates
+    were over printed prose.
+
+    `words` is the page's ``get_text("words")`` list. Defined at module level
+    and shared with the audit tooling on purpose, so the measurement uses the
+    exact definition the fill path enforces — a metric that measures with a
+    different ruler than the fix produces numbers that disagree with reality.
+    """
+    r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
+    for wd in words:
+        if _is_decorative_word(str(wd[4])):
+            continue
+        if r.intersects(fitz.Rect(wd[0], wd[1], wd[2], wd[3])):
+            return True
+    return False
+
+
 def _make_signature_fields_readonly(doc: fitz.Document) -> int:
     """Blank + read-only any text field that is actually a signature/notary line.
 
@@ -823,19 +891,26 @@ def _make_signature_fields_readonly(doc: fitz.Document) -> int:
     Printed-name and date fields are left editable on purpose.
     """
     readonly = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
-    sig_words = ("sign", "notary", "affiant", "deponent", "witness",
-                 "sworn", "subscribed", "attesting", "commission", "officer")
-    exclude = ("print", "designat")
     locked = 0
     for page in doc:
-        for w in page.widgets():
-            w = cast(Any, w)
-            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_TEXT:
-                continue
-            name = (getattr(w, "field_name", "") or "").lower()
-            if not any(k in name for k in sig_words):
-                continue
-            if any(k in name for k in exclude):
+        text_widgets = [cast(Any, w) for w in page.widgets()
+                        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_TEXT]
+        # Rows that already contain a signature/notary field. A DATE field sharing
+        # such a row belongs to the same signature block. The Michigan fee waiver
+        # is the live example: its `Date` sits directly under "I declare under the
+        # penalties of perjury ..." on the same line as `Signature`. Pre-filling it
+        # made the packet assert a sworn date that the tenant never signed — while
+        # the Signature blank beside it stayed empty.
+        sig_rows = [_row_center(w) for w in text_widgets
+                    if _is_signature_name(getattr(w, "field_name", "") or "")]
+        for w in text_widgets:
+            name = getattr(w, "field_name", "") or ""
+            is_sig = _is_signature_name(name)
+            if not is_sig and _DATE_NAME_RE.search(name):
+                cy = _row_center(w)
+                if any(abs(cy - sy) < 12 for sy in sig_rows):
+                    is_sig = True
+            if not is_sig:
                 continue
             w.field_value = ""
             w.field_flags = (getattr(w, "field_flags", 0) or 0) | readonly  # type: ignore[attr-defined]
@@ -889,6 +964,11 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         def _covered(rect, tol=4):
             r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
             return any(r.intersects(e) for e in covered)
+
+        # Fill characters that DO make up a blank are not "printed text" — an
+        # underscore run, a rule, or a dotted leader must not veto the candidate.
+        def _over_text(rect) -> bool:
+            return _over_printed_text(words, rect)
 
         # 1. checkboxes drawn as "☐" glyphs
         for i, r in enumerate(page.search_for("\u2610")):
@@ -951,7 +1031,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                 merged.append(bb[:])
         for i, (x0, x1, y0, y1) in enumerate(merged):
             r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
-            if _covered(r) or _is_signature_line(page, r):
+            if _covered(r) or _is_signature_line(page, r) or _over_text(_flip(r)):
                 continue
             _add_text_widget(page, _flip(r), f"ufill_{pno}_{i}", "")
             covered.append(r)
@@ -959,7 +1039,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         # 4. horizontal lines -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].height < 3 and d["rect"].width > 15]):
             r = dr["rect"]
-            if _covered(r) or _is_signature_line(page, r):
+            if _covered(r) or _is_signature_line(page, r) or _over_text(_flip(r)):
                 continue
             _add_text_widget(page, _flip(r), f"fill_{pno}_{i}", "")
             covered.append(r)
@@ -967,7 +1047,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         # 5. rectangle boxes -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].width > 40 and 3 <= d["rect"].height <= 30]):
             r = dr["rect"]
-            if _covered(r):
+            if _covered(r) or _over_text(_flip(r)):
                 continue
             _add_text_widget(page, _flip(r), f"bfill_{pno}_{i}", "")
             covered.append(r)

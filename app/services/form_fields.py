@@ -14,11 +14,30 @@ import os
 import fitz
 
 
+# Text that marks a line as part of a signature / attestation / service block.
+# Those lines stay ink — the tenant or officer signs and dates them by hand,
+# which is the same rule _make_signature_fields_readonly enforces on court forms.
+_INK_LINE_MARKERS = (
+    "day of", "respectfully submitted", "served by", "subscribed",
+    "notary", "signature", "sworn", "affiant", "witness",
+)
+
+
 def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
     """Add editable text fields over every underscore blank in a PDF.
 
-    Returns the number of text fields added. Signature *lines* (drawn rules,
-    not underscores) are left alone so the user can sign with ink.
+    Returns the number of text fields added.
+
+    Two kinds of underscore run are deliberately NOT turned into fields:
+
+    * a line made up of nothing but underscores is a decorative divider, not an
+      input — the generated documents use an 80-underscore rule as a section
+      break;
+    * a signature / attestation / service-date line ("this ___ day of ___,
+      20__") stays ink so it can be signed and dated by hand.
+
+    Runs that sit inside a sentence and are not signature-related ARE genuine
+    blanks ("scheduled for ___ at ___ (time)", "approximately ___ days").
     """
     doc = fitz.open(src_path)
     added = 0
@@ -30,17 +49,38 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
             if block.get("type") != 0:
                 continue
             for line in block.get("lines", []):
+                # The line's own text decides whether an underscore run on it is
+                # an input at all. See the docstring: dividers and signature /
+                # service-date lines are not inputs.
+                line_text = "".join(
+                    str(ch.get("c", ""))
+                    for sp in line.get("spans", [])
+                    for ch in sp.get("chars", [])
+                )
+                _stripped = line_text.strip()
+                if _stripped and all(c in "_ \t" for c in _stripped):
+                    continue                      # decorative divider
+                if any(k in line_text.lower() for k in _INK_LINE_MARKERS):
+                    continue                      # signature / service-date line
                 for span in line.get("spans", []):
+                    # A malformed /size can be non-numeric or absurd on damaged
+                    # PDFs; a packet must not die over a font-size lookup.
+                    try:
+                        size = float(span.get("size") or 10.0)
+                    except (TypeError, ValueError):
+                        size = 10.0
+                    if not (4.0 <= size <= 72.0):
+                        size = 10.0
                     cur = []
                     for ch in span.get("chars", []):
                         if ch["c"] == "_":
                             cur.append(ch["bbox"])
                         else:
                             if cur:
-                                runs.append(cur); cur = []
+                                runs.append((cur, size)); cur = []
                     if cur:
-                        runs.append(cur)
-        for r in runs:
+                        runs.append((cur, size))
+        for r, size in runs:
             if len(r) < 3:
                 continue
             x0 = min(b[0] for b in r); y0 = min(b[1] for b in r)
@@ -48,7 +88,11 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
             w = cast(Any, fitz.Widget())
             w.field_name = f"fill_{pno}_{added}"
             w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-            w.rect = fitz.Rect(x0, y1 - 42, max(x1, x0 + 48), y1 + 2)
+            # Size the field to its own text line. The previous fixed 44pt box
+            # (y1-42) reached ~3 lines above the underscore and covered the
+            # printed line above it on every generated document.
+            _h = max(12.0, min(28.0, size * 1.35 + 2.0))
+            w.rect = fitz.Rect(x0, y1 - _h, max(x1, x0 + 48), y1 + 2)
             w.field_value = ""
             w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
             page.add_widget(w)

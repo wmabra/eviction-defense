@@ -24,8 +24,8 @@ def test_full_pipeline():
     # Step 1: Pre-screen — eligibility check
     print("=== 1. Pre-screen ===")
     resp = client.post("/api/v1/intake/pre-screen", json={
-        "state": "FL",
-        "county": "Miami-Dade",
+        "state": "VA",
+        "county": "Norfolk",
         "is_tenant": True,
         "is_residential": True,
         "received_court_papers": True,
@@ -45,19 +45,19 @@ def test_full_pipeline():
         "personal_info": {
             "full_name": "Jane Doe",
             "property_address": "123 Main St, Apt 4B",
-            "property_city": "Miami",
-            "property_zip": "33101",
-            "county": "Miami-Dade",
+            "property_city": "Norfolk",
+            "property_zip": "23510",
+            "county": "Norfolk",
             "phone": "(305) 555-1234",
             "email": "jane@example.com",
         },
         "landlord_info": {
             "landlord_name": "Bayview Apartments LLC",
-            "landlord_address": "456 Owner Blvd, Miami, FL 33101",
+            "landlord_address": "456 Owner Blvd, Norfolk, VA 23510",
         },
         "case_details": {
             "case_number": "CACE-24-54321",
-            "court_name": "Miami-Dade County",
+            "court_name": "Norfolk General District Court",
             "received_3day_notice": True,
             "summons_service_date": "2026-06-28",
             "complaint_amount_claimed": 2850.00,
@@ -97,7 +97,7 @@ def test_full_pipeline():
     # Step 4: Upload a document
     print("=== 4. Upload document ===")
     doc_content = (
-        "IN THE COUNTY COURT IN AND FOR MIAMI-DADE COUNTY, FLORIDA\n"
+        "IN THE GENERAL DISTRICT COURT IN AND FOR NORFOLK, VIRGINIA\n"
         "CASE NO.: CACE-24-54321\n"
         "BAYVIEW APARTMENTS LLC, Plaintiff,\n"
         "vs.\n"
@@ -147,7 +147,7 @@ def test_full_pipeline():
     confirmation_fields = {
         "full_name": {"value": "Jane Doe", "confirmed": True},
         "property_address": {"value": "123 Main St, Apt 4B", "confirmed": True},
-        "county": {"value": "Miami-Dade", "confirmed": True},
+        "county": {"value": "Norfolk", "confirmed": True},
         "case_number": {"value": "CACE-24-54321", "confirmed": True},
         "landlord_name": {"value": "Bayview Apartments LLC", "confirmed": True},
         "amount_claimed": {"value": "$2,850.00", "confirmed": True},

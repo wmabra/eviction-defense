@@ -57,6 +57,19 @@ def _full_address(data):
     return ", ".join(x for x in parts if x)
 
 
+def _fmt_date(v) -> str:
+    """Format a date-ish value (date object or 'YYYY-MM-DD' string) as MM/DD/YYYY."""
+    if not v:
+        return ""
+    if hasattr(v, "strftime"):
+        return v.strftime("%m/%d/%Y")
+    s = str(v).strip()
+    parts = s.split("-")
+    if len(parts) == 3 and all(p.isdigit() for p in parts) and len(parts[0]) == 4:
+        return f"{parts[1]}/{parts[2]}/{parts[0]}"
+    return s
+
+
 def _editable_field(name, value="", width=140, height=16, font_size=9):
     # Auto-grow the field height for long values so the full text is visible
     # (multi-line) when printed, instead of clipping after the first line.
@@ -425,7 +438,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     elements.append(Spacer(1, 12))
 
     elements.append(Paragraph(
-        f"Defendant, {p.get('full_name', '_________________')}, by and through this self-help filing, "
+        f"Defendant, {p.get('full_name', '[FULL NAME]')}, by and through this self-help filing, "
         f"respectfully requests this Court to determine the amount of rent to be deposited "
         f"into the Court Registry.", S["Body"]
     ))
@@ -464,7 +477,7 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     svc_name, svc_addr = _service_recipient(data)
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing has been furnished "
-        f"to {svc_name} at {svc_addr or '_________________'} "
+        f"to {svc_name} at {svc_addr or '[ADDRESS]'} "
         f"on this {today}.", S["BodySmall"]
     ))
     elements.append(Spacer(1, 12))
@@ -1954,49 +1967,79 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"in this eviction proceeding, and in support thereof states as follows:", S["Body"]))
     elements.append(Spacer(1, 10))
 
-    facts = [
+    elements.append(Paragraph(
         f"1. The Defendant is {p.get('full_name', '[TENANT]')}, residing at {_full_address(data)}. "
         f"The Defendant is the tenant in an eviction action brought by Plaintiff "
-        f"{l.get('landlord_name', '[LANDLORD]')}.",
-        f"2. A hearing in this matter is currently scheduled for ______ at ______ (time).",
+        f"{l.get('landlord_name', '[LANDLORD]')}.", S["Body"]))
+    elements.append(Spacer(1, 4))
+
+    elements.append(_field_table([[
+        Paragraph("2. A hearing in this matter is currently scheduled for", S["Body"]),
+        _editable_field("continuance_hearing_date", _fmt_date(c.get("court_date")), width=90),
+        Paragraph("at", S["Body"]),
+        _editable_field("continuance_hearing_time", "", width=65),
+        Paragraph("(time).", S["Body"]),
+    ]], col_widths=(265, 90, 16, 65, 40)))
+    elements.append(Spacer(1, 4))
+
+    elements.append(Paragraph(
         f"3. The Defendant respectfully requests a continuance of the scheduled hearing for "
-        f"the following reasons: {reason}.",
-        f"4. The Defendant needs additional time to: (check all that apply)",
-        f"&nbsp;&nbsp;&nbsp;☐ Secure legal representation or consult with an attorney",
-        f"&nbsp;&nbsp;&nbsp;☐ Gather necessary documents and evidence to present to the Court",
-        f"&nbsp;&nbsp;&nbsp;☐ Arrange for funds to pay the amount owed or negotiate a payment arrangement",
-        f"&nbsp;&nbsp;&nbsp;☐ Address personal or family circumstances that prevent readiness for the hearing",
-        f"&nbsp;&nbsp;&nbsp;☐ Other: ________________________________________________",
+        f"the following reasons: {reason}.", S["Body"]))
+    elements.append(Spacer(1, 4))
+
+    elements.append(Paragraph("4. The Defendant needs additional time to: (check all that apply)", S["Body"]))
+    _cont_cb = 0
+    for _label in [
+        "Secure legal representation or consult with an attorney",
+        "Gather necessary documents and evidence to present to the Court",
+        "Arrange for funds to pay the amount owed or negotiate a payment arrangement",
+        "Address personal or family circumstances that prevent readiness for the hearing",
+    ]:
+        elements.append(_checkbox_table([[FillableCheckbox(f"cont_cb_{_cont_cb}"), Paragraph(_label, S["Body"])]]))
+        _cont_cb += 1
+    _other = Table([[
+        FillableCheckbox(f"cont_cb_{_cont_cb}"),
+        Paragraph("Other:", S["Body"]),
+        _editable_field("continuance_other_reason", "", width=220),
+    ]], colWidths=[18, 45, 220])
+    _other.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_other)
+    elements.append(Spacer(1, 4))
+
+    elements.append(Paragraph(
         f"5. The Defendant is not seeking this continuance for purposes of delay or to prejudice "
         f"the Plaintiff, but rather to ensure adequate time to prepare a proper response and "
-        f"defense to the eviction action and to address the circumstances giving rise to this matter.",
-        f"6. The Defendant respectfully requests that this Court grant a continuance to a date "
-        f"approximately _____ days from the current hearing date, or to such other date as the "
-        f"Court deems appropriate.",
-        f"7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
-        f"motion by (email, mail, or hand delivery): _________ on _________ (date), and the Plaintiff's position on this motion "
-        f"is: ☐ Consents ☐ Does not oppose ☐ Opposes ☐ Unknown.",
-    ]
-    _cont_cb = 0
-    for fact in facts:
-        if "☐" not in fact:
-            elements.append(Paragraph(fact, S["Body"]))
-        elif fact.startswith("&nbsp;"):
-            _label = fact.replace("&nbsp;", "").replace("☐", "", 1).strip()
-            elements.append(_checkbox_table([[FillableCheckbox(f"cont_cb_{_cont_cb}"), Paragraph(_label, S["Body"])]]))
-            _cont_cb += 1
-        else:
-            _pre = fact.split("☐")[0]
-            elements.append(Paragraph(_pre, S["Body"]))
-            _cc = Table([
-                [FillableCheckbox("cont_consents"), Paragraph("Consents", S["Body"]),
-                 FillableCheckbox("cont_no_oppose"), Paragraph("Does not oppose", S["Body"]),
-                 FillableCheckbox("cont_opposes"), Paragraph("Opposes", S["Body"]),
-                 FillableCheckbox("cont_unknown"), Paragraph("Unknown", S["Body"])],
-            ], colWidths=[18, 80, 18, 130, 18, 80, 18, 80])
-            _cc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-            elements.append(_cc)
-        elements.append(Spacer(1, 4))
+        f"defense to the eviction action and to address the circumstances giving rise to this matter.", S["Body"]))
+    elements.append(Spacer(1, 4))
+
+    elements.append(_field_table([[
+        Paragraph("6. The Defendant respectfully requests that this Court grant a continuance "
+                  "to a date approximately", S["Body"]),
+        _editable_field("continuance_days", "", width=40),
+        Paragraph("days from the current hearing date, or to such other date as the Court deems "
+                  "appropriate.", S["Body"]),
+    ]], col_widths=(330, 40, 120)))
+    elements.append(Spacer(1, 4))
+
+    elements.append(_field_table([[
+        Paragraph("7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel "
+                  "of this motion by (email, mail, or hand delivery):", S["Body"]),
+        _editable_field("continuance_notify_method", "", width=85),
+        Paragraph("on", S["Body"]),
+        _editable_field("continuance_notify_date", "", width=75),
+        Paragraph("(date).", S["Body"]),
+    ]], col_widths=(280, 85, 14, 75, 40)))
+    elements.append(Spacer(1, 2))
+    elements.append(Paragraph("The Plaintiff's position on this motion is:", S["Body"]))
+    _cc = Table([
+        [FillableCheckbox("cont_consents"), Paragraph("Consents", S["Body"]),
+         FillableCheckbox("cont_no_oppose"), Paragraph("Does not oppose", S["Body"]),
+         FillableCheckbox("cont_opposes"), Paragraph("Opposes", S["Body"]),
+         FillableCheckbox("cont_unknown"), Paragraph("Unknown", S["Body"])],
+    ], colWidths=[18, 80, 18, 130, 18, 80, 18, 80])
+    _cc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    elements.append(_cc)
+    elements.append(Spacer(1, 4))
 
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
@@ -2093,8 +2136,11 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
         ("4. RELIEF REQUESTED", [
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court:",
-            f"A. Grant an emergency stay of all eviction proceedings for a period of _____ days, "
-            f"or such other period as the Court deems just and appropriate;",
+            _field_table([[
+                Paragraph("A. Grant an emergency stay of all eviction proceedings for a period of", S["Body"]),
+                _editable_field("stay_eviction_days", "", width=40),
+                Paragraph("days, or such other period as the Court deems just and appropriate;", S["Body"]),
+            ]], col_widths=(300, 40, 160)),
             f"B. Schedule an expedited hearing on this Motion to allow Defendant to present evidence "
             f"and explore resolution options;",
             f"C. Impose any conditions on the stay that the Court deems appropriate to protect the "
@@ -2106,7 +2152,10 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     for heading, items in sections:
         elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
         for item in items:
-            elements.append(Paragraph(item, S["Body"]))
+            if isinstance(item, str):
+                elements.append(Paragraph(item, S["Body"]))
+            else:
+                elements.append(item)
             elements.append(Spacer(1, 3))
         elements.append(Spacer(1, 6))
 
@@ -2196,8 +2245,11 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court grant this Emergency Motion to Stay the {writ_term} and:",
             f"a. Issue an immediate stay of the {writ_term} to prevent the scheduled eviction and lockout;",
-            f"b. Grant Defendant additional time of _____ days to vacate the premises voluntarily or "
-            f"to cure the default;",
+            _field_table([[
+                Paragraph("b. Grant Defendant additional time of", S["Body"]),
+                _editable_field("stay_writ_days", "", width=40),
+                Paragraph("days to vacate the premises voluntarily or to cure the default;", S["Body"]),
+            ]], col_widths=(180, 40, 280)),
             f"c. Schedule an emergency hearing on this Motion at the earliest possible date;",
             f"d. Grant such other and further relief as this Court deems just and proper.",
         ]),
@@ -2211,7 +2263,10 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     for heading, items in sections:
         elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
         for item in items:
-            elements.append(Paragraph(item, S["Body"]))
+            if isinstance(item, str):
+                elements.append(Paragraph(item, S["Body"]))
+            else:
+                elements.append(item)
             elements.append(Spacer(1, 3))
         elements.append(Spacer(1, 6))
 

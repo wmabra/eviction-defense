@@ -18,14 +18,32 @@ reportlab>=4.2.0
 # PDF form filling + Excel resource databases
 PyMuPDF>=1.24.0
 openpyxl>=3.1.0
+# Text extraction / form handling, used by app/routers/documents.py
+PyPDF2>=3.0.1
+# pdfminer.six is a lazy fallback in app/routers/documents.py and is imported
+# inside a try/except, so it is deliberately NOT required here.
 
 # OCR / AI
 openai>=1.51.0
 google-cloud-documentai>=2.30.0
+# OCR of scanned forms (app/routers/documents.py, ocr_checkboxes.py).
+# pytesseract also needs the `tesseract` SYSTEM binary on PATH at runtime
+# (a pip install alone is not enough):
+#   Debian/Ubuntu:  apt-get install tesseract-ocr
+pytesseract>=0.3.13
+Pillow>=10.0.0
 
 # Payments
 stripe>=10.12.0
-authorizenet>=1.1.6
+# Authorize.net is intentionally NOT installed by default. Do not uncomment this
+# blindly: authorizenet 1.1.6 requires `lxml==4.*`, and lxml 4.9.4 ships no wheel
+# for Python 3.14, so pip falls back to building it from source and fails with
+# "Please make sure the libxml2 and libxslt development packages are installed".
+# That makes the whole of `pip install -r requirements.txt` fail.
+# app/services/payment.py is imported lazily and app/routers/payment.py catches
+# the ImportError and degrades to HTTP 503, so running without it is supported
+# (and is how every current environment runs).
+# authorizenet>=1.1.6
 
 # SMS / Email
 twilio>=9.3.0

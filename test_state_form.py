@@ -1,6 +1,12 @@
 """
 Test script — fills a state's eviction answer form and verifies output.
 Usage: python3 test_state_form.py VA
+
+NOTE: this is a manual script, not a pytest module. The runner below is
+intentionally named ``run_state`` and not ``test_state`` — when it was called
+``test_state`` pytest collected it and errored with "fixture 'state_code' not
+found", because the only caller is the ``__main__`` block. Keep it off the
+test_* prefix.
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(__file__))
@@ -39,7 +45,7 @@ SAMPLE_DATA = {
 OUTPUT_DIR = "/tmp/eviction_test"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-def test_state(state_code):
+def run_state(state_code):
     print(f"\n{'='*60}")
     print(f"Testing {state_code}...")
     print('='*60)
@@ -98,7 +104,8 @@ def test_state(state_code):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         state = sys.argv[1].upper()
-        test_state(state)
+        run_state(state)
     else:
-        for s in ["VA", "SC", "GA", "TX", "IL", "CT", "NC", "RI", "CO", "LA", "MS", "TN", "CA", "AR", "AZ", "MN", "NM", "FL"]:
-            test_state(s)
+        for s in ["AR", "CO", "CT", "GA", "IL", "IN", "KY", "LA", "MI", "MN",
+                  "MO", "NM", "OH", "OK", "OR", "RI", "SC", "TN", "TX", "VA"]:
+            run_state(s)

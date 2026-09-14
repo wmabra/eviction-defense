@@ -144,13 +144,15 @@ def estimate_text_fit(widget):
 
 
 def is_signature_field(widget):
-    name = (getattr(widget, "field_name", "") or "").lower()
-    sig_words = ("sign", "notary", "affiant", "deponent", "witness",
-                 "sworn", "subscribed", "attesting", "commission", "officer")
-    exclude = ("print", "designat")
-    if any(k in name for k in exclude):
-        return False
-    return any(k in name for k in sig_words)
+    """Delegate to the production classifier so the verifier and the filler can
+    never disagree about what counts as a signature/notary line.
+
+    Shared on purpose: two hand-maintained copies of this word list drifting
+    apart is exactly how this project ended up with three tools reporting three
+    different answers.
+    """
+    from app.services.pdf_overlay import _is_signature_name
+    return _is_signature_name(getattr(widget, "field_name", "") or "")
 
 
 def check_pdf(path, label):
