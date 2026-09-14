@@ -19,11 +19,12 @@ import fitz
 TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 7)
 DPI = 96
 _THIN_LINE_PX = 4  # an underline is ~1-2pt (1-3px at 96dpi); text is much taller
+_MIN_LINE_RUN_PX = 20  # a real underline is at least ~15pt wide (~20px at 96dpi)
 
 
 def _region_has_text_ink(samples, width, height, px0, py0, px1, py1) -> bool:
-    """True if the pixel region contains a vertical band of ink taller than an
-    underline (i.e. printed text, not a blank line)."""
+    """True if the region contains a vertical band of ink taller than an underline
+    (i.e. printed text/label, not a blank line)."""
     px0 = max(0, px0); py0 = max(0, py0)
     px1 = min(width, px1); py1 = min(height, py1)
     if px1 <= px0 or py1 <= py0:
@@ -37,6 +38,26 @@ def _region_has_text_ink(samples, width, height, px0, py0, px1, py1) -> bool:
         else:
             run = 0
     return max_run > _THIN_LINE_PX
+
+
+def _region_has_line_ink(samples, width, height, px0, py0, px1, py1) -> bool:
+    """True if the region contains a wide, thin horizontal line (an underline)."""
+    px0 = max(0, px0); py0 = max(0, py0)
+    px1 = min(width, px1); py1 = min(height, py1)
+    if px1 <= px0 or py1 <= py0:
+        return False
+    for y in range(py0, py1):
+        row = samples[y * width + px0: y * width + px1]
+        hrun = max_hrun = 0
+        for b in row:
+            if b < 160:
+                hrun += 1
+                max_hrun = max(max_hrun, hrun)
+            else:
+                hrun = 0
+        if max_hrun >= _MIN_LINE_RUN_PX:
+            return True
+    return False
 
 
 def check_overlap(filled_path: str, blank_form_path: str) -> list:
@@ -70,9 +91,20 @@ def check_overlap(filled_path: str, blank_form_path: str) -> list:
             px0 = int(x0 * scale); px1 = int(x1 * scale)
             py0 = int(r.y0 * scale); py1 = int(r.y1 * scale)
             if _region_has_text_ink(samples, w, h, px0, py0, px1, py1):
+                # Value sits on printed text/label — always a real overlap.
                 overlaps.append(
                     f"page {pno}: '{getattr(wdg,'field_name','')}'=({val[:25]!r}) "
                     f"sits on printed text")
+                continue
+            if _region_has_line_ink(samples, w, h, px0, py0, px1, py1):
+                # Value sits on an underline: OK only if the widget's white
+                # background fill masks the line (the strikethrough fix).
+                fc = getattr(wdg, "fill_color", None)
+                if fc and all(c >= 0.95 for c in fc):
+                    continue
+                overlaps.append(
+                    f"page {pno}: '{getattr(wdg,'field_name','')}'=({val[:25]!r}) "
+                    f"sits on an underline")
     blank.close()
     filled.close()
     return overlaps

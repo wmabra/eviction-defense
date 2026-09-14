@@ -798,12 +798,17 @@ def _is_signature_line(page, rect) -> bool:
 
 
 def _force_multiline_text_widgets(doc: fitz.Document) -> int:
-    """Ensure every text widget is multiline so long input wraps instead of clipping.
+    """Ensure every text widget is multiline and mask filled values' underlines.
 
     Native form fields (especially on fee-waiver forms) often carry only the
     rich-text flag or no flags at all, so a long value overflows a single line.
     This is a final, idempotent pass applied to every text widget regardless of
     how it was created (native AcroForm, overlay, or auto-detected blank).
+
+    It also gives any widget that already has a value an opaque white background
+    so the template's pre-printed underline/line art does not strike through the
+    overlaid or native text. Empty fields (and signature lines) stay transparent
+    so their printed baseline remains visible.
     """
     changed = 0
     for page in doc:
@@ -811,9 +816,15 @@ def _force_multiline_text_widgets(doc: fitz.Document) -> int:
             w = cast(Any, w)
             if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_TEXT:
                 continue
+            dirty = False
             flags = getattr(w, "field_flags", 0) or 0
             if not (flags & fitz.PDF_TX_FIELD_IS_MULTILINE):
                 w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                dirty = True
+            if str(getattr(w, "field_value", "") or "").strip():
+                w.fill_color = (1, 1, 1)  # opaque white — mask pre-printed underline
+                dirty = True
+            if dirty:
                 try:
                     w.update()
                 except Exception:
