@@ -579,7 +579,11 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                 checked = def_data.get("checked", False) if isinstance(def_data, dict) else False
                 if checked:
                     values[field_name] = "Yes"
-    
+
+    # Master "Affirmative Defenses" checkbox — auto-select when any defense applies.
+    if any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
+        values["√ Affirmative Defenses"] = "Yes"
+
     # Static values: fixed text that doesn't come from user data
     # Used for fields like CA's "In Pro Per" attorney firm notation
     static_values = config.get("static_values", {})
@@ -1315,6 +1319,12 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         return str(val) if val else None
     
     # Household numbers
+    if key == "household_size":
+        try:
+            _total = int(financial.get("household_adults") or 0) + int(financial.get("household_children") or 0)
+        except (TypeError, ValueError):
+            _total = 0
+        return str(_total) if _total else None
     if key in ["household_adults", "household_children", "total_dependents"]:
         val = financial.get(key)
         return str(val) if val is not None else None
