@@ -1989,13 +1989,13 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"{l.get('landlord_name', '[LANDLORD]')}.", S["Body"]))
     elements.append(Spacer(1, 4))
 
-    elements.append(_field_table([[
-        Paragraph("2. A hearing in this matter is currently scheduled for", S["Body"]),
-        _editable_field("continuance_hearing_date", _fmt_date(c.get("court_date")), width=90),
-        Paragraph("at", S["Body"]),
-        _editable_field("continuance_hearing_time", "", width=65),
-        Paragraph("(time).", S["Body"]),
-    ]], col_widths=(265, 90, 16, 65, 40)))
+    elements.append(Paragraph(
+        "2. A hearing in this matter is currently scheduled for the following date and time:",
+        S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _fmt_date(c.get("court_date")), width=110)],
+        [Paragraph("Hearing time:", S["Body"]), _editable_field("continuance_hearing_time", "", width=80)],
+    ], col_widths=(110, 200)))
     elements.append(Spacer(1, 4))
 
     elements.append(Paragraph(
@@ -2028,23 +2028,22 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"defense to the eviction action and to address the circumstances giving rise to this matter.", S["Body"]))
     elements.append(Spacer(1, 4))
 
-    elements.append(_field_table([[
-        Paragraph("6. The Defendant respectfully requests that this Court grant a continuance "
-                  "to a date approximately", S["Body"]),
-        _editable_field("continuance_days", "", width=40),
-        Paragraph("days from the current hearing date, or to such other date as the Court deems "
-                  "appropriate.", S["Body"]),
-    ]], col_widths=(330, 40, 120)))
+    elements.append(Paragraph(
+        "6. The Defendant respectfully requests that this Court grant a continuance to a date "
+        "a specified number of days from the current hearing date, or to such other date as the "
+        "Court deems appropriate:", S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("Number of days requested:", S["Body"]), _editable_field("continuance_days", "", width=40)],
+    ], col_widths=(180, 80)))
     elements.append(Spacer(1, 4))
 
-    elements.append(_field_table([[
-        Paragraph("7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel "
-                  "of this motion by (email, mail, or hand delivery):", S["Body"]),
-        _editable_field("continuance_notify_method", "", width=85),
-        Paragraph("on", S["Body"]),
-        _editable_field("continuance_notify_date", "", width=75),
-        Paragraph("(date).", S["Body"]),
-    ]], col_widths=(280, 85, 14, 75, 40)))
+    elements.append(Paragraph(
+        "7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
+        "motion by (email, mail, or hand delivery):", S["Body"]))
+    elements.append(_field_table([
+        [Paragraph("Delivery method:", S["Body"]), _editable_field("continuance_notify_method", "", width=130)],
+        [Paragraph("Date:", S["Body"]), _editable_field("continuance_notify_date", "", width=90)],
+    ], col_widths=(120, 200)))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("The Plaintiff's position on this motion is:", S["Body"]))
     _cc = Table([
@@ -2152,11 +2151,11 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
         ("4. RELIEF REQUESTED", [
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court:",
+            f"A. Grant an emergency stay of all eviction proceedings for a period of days, "
+            f"or such other period as the Court deems just and appropriate:",
             _field_table([[
-                Paragraph("A. Grant an emergency stay of all eviction proceedings for a period of", S["Body"]),
-                _editable_field("stay_eviction_days", "", width=40),
-                Paragraph("days, or such other period as the Court deems just and appropriate;", S["Body"]),
-            ]], col_widths=(300, 40, 160)),
+                Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", "", width=40),
+            ]], col_widths=(140, 80)),
             f"B. Schedule an expedited hearing on this Motion to allow Defendant to present evidence "
             f"and explore resolution options;",
             f"C. Impose any conditions on the stay that the Court deems appropriate to protect the "
@@ -2261,11 +2260,11 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court grant this Emergency Motion to Stay the {writ_term} and:",
             f"a. Issue an immediate stay of the {writ_term} to prevent the scheduled eviction and lockout;",
+            f"b. Grant Defendant additional time to vacate the premises voluntarily or to cure "
+            f"the default:",
             _field_table([[
-                Paragraph("b. Grant Defendant additional time of", S["Body"]),
-                _editable_field("stay_writ_days", "", width=40),
-                Paragraph("days to vacate the premises voluntarily or to cure the default;", S["Body"]),
-            ]], col_widths=(180, 40, 280)),
+                Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", "", width=40),
+            ]], col_widths=(140, 80)),
             f"c. Schedule an emergency hearing on this Motion at the earliest possible date;",
             f"d. Grant such other and further relief as this Court deems just and proper.",
         ]),
