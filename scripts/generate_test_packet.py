@@ -324,7 +324,103 @@ CO_DENVER = {
     },
 }
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER}
+# ── Fake John Doe — Connecticut (Hartford Judicial District) ──────────────
+CT = {
+    "full_name": FULL_NAME,
+    "county": "Hartford",
+    "label": "CT",
+    "data": {
+        "state": "CT",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(860) 555-0171",
+            "email": "john.doe.ct@example.com",
+            "property_address": "238 Maple Avenue",
+            "property_city": "Hartford",
+            "property_zip": "06112",
+            "county": "Hartford",
+        },
+        "landlord_info": {
+            "landlord_name": "Nutmeg State Properties, LLC",
+            "landlord_address": "100 Constitution Plaza, Hartford, CT 06103",
+            "landlord_phone": "(860) 555-0118",
+            "landlord_email": "leasing@nutmegstate.example",
+        },
+        "case_details": {
+            "case_number": "HFH-CV24-6012345",
+            "court_name": "Hartford Housing Court",
+            "complaint_amount_claimed": 2400.00,
+            "summons_service_date": "2024-05-15",
+            "response_deadline": "2024-05-22",
+            "court_date": "2024-05-29",
+        },
+        "rent_payment": {
+            "monthly_rent": 1200.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 960.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The heating system has been broken since January and the landlord has not repaired it despite written notice.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_paid": {
+                "checked": True,
+                "explanation": "I paid rent in full for the months claimed except for one disputed balance.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I lost my job in February and have been covering rent from savings while seeking new work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain bank statements and repair receipts for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-20678",
+            "bankruptcy_court": "U.S. Bankruptcy Court, District of Connecticut",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-05-10",
+            "bankruptcy_attorney_name": "Maria Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(860) 555-0133",
+            "bankruptcy_attorney_email": "madvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2800.00,
+            "monthly_net_income": 2200.00,
+            "employment_income": 2800.00,
+            "rent_or_mortgage": 1200.00,
+            "utilities_expense": 200.00,
+            "food_expense": 420.00,
+            "transportation_expense": 160.00,
+            "medical_expense": 100.00,
+            "child_care_expense": 0.00,
+            "debt_payments": 250.00,
+            "total_monthly_expenses": 2330.00,
+            "cash_on_hand": 100.00,
+            "checking_balance": 200.00,
+            "savings_balance": 50.00,
+            "vehicle_value": 6000.00,
+            "vehicle_loan_owed": 2500.00,
+            "household_adults": 2,
+            "household_children": 1,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT}
 
 
 def main() -> int:
