@@ -1191,6 +1191,21 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     # Handle defense narrative text generation
     if key == "defense_narrative":
         return _build_defense_narrative(defenses)
+
+    # Tenant's responses to the complaint allegations (Item 1 on AR answer).
+    if key == "response_narrative":
+        return ("Defendant denies each and every allegation contained in the "
+                "Complaint except as expressly admitted herein, and demands "
+                "strict proof thereof.")
+
+    # Tenant's counterclaims against the landlord (Item 5 on AR answer).
+    if key == "counterclaim_narrative":
+        _dr = defenses.get("def_repairs", {})
+        if isinstance(_dr, dict) and _dr.get("checked"):
+            return ("Defendant asserts a counterclaim against Plaintiff for breach "
+                    "of the warranty of habitability and for the cost of necessary "
+                    "repairs to the premises.")
+        return "Defendant reserves the right to assert counterclaims against Plaintiff."
     
     # Handle numbered defense narrative lines (NM 4-907 style)
     if key.startswith("defense_narrative_"):
