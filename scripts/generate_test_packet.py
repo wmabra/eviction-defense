@@ -420,7 +420,102 @@ CT = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT}
+# ── Fake John Doe — Georgia (Fulton County / Atlanta) ────────────────────
+GA = {
+    "full_name": FULL_NAME,
+    "county": "Fulton",
+    "label": "GA",
+    "data": {
+        "state": "GA",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(404) 555-0167",
+            "email": "john.doe.ga@example.com",
+            "property_address": "857 Peachtree Street NE",
+            "property_city": "Atlanta",
+            "property_zip": "30309",
+            "county": "Fulton",
+        },
+        "landlord_info": {
+            "landlord_name": "Peach State Properties, LLC",
+            "landlord_address": "3344 Piedmont Road NE, Atlanta, GA 30305",
+            "landlord_phone": "(404) 555-0119",
+            "landlord_email": "leasing@peachstate.example",
+        },
+        "case_details": {
+            "case_number": "24D0012345",
+            "court_name": "Magistrate Court of Fulton County",
+            "complaint_amount_claimed": 2600.00,
+            "summons_service_date": "2024-05-10",
+            "response_deadline": "2024-05-17",
+            "court_date": "2024-05-24",
+        },
+        "rent_payment": {
+            "monthly_rent": 1300.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 1040.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The air conditioning and plumbing have been broken since March and the landlord has not repaired them despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes late fees that are not allowed and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive a proper written demand for possession before the dispossessory was filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in February and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and bank statements for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-53412-pmb",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Northern District of Georgia",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-05-06",
+            "bankruptcy_attorney_name": "David Counsel, Esq.",
+            "bankruptcy_attorney_phone": "(404) 555-0128",
+            "bankruptcy_attorney_email": "dcounsel@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2200.00,
+            "employment_income": 2200.00,
+            "rent_or_mortgage": 1300.00,
+            "utilities_expense": 190.00,
+            "food_expense": 410.00,
+            "transportation_expense": 170.00,
+            "medical_expense": 90.00,
+            "debt_payments": 200.00,
+            "total_monthly_expenses": 2360.00,
+            "cash_on_hand": 80.00,
+            "checking_balance": 120.00,
+            "savings_balance": 40.00,
+            "vehicle_make_model": "2014 Nissan Altima",
+            "vehicle_value": 5200.00,
+            "owns_real_estate": False,
+            "household_adults": 2,
+            "household_children": 1,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA}
 
 
 def main() -> int:

@@ -195,6 +195,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": "2 Current Address",
             "case_number": "FILE NO",
             "checking_balance": "What is the current balance in your account",
+            "court_level": "COURT OF",
+            "county": "COUNTY",
             "debt_payments": "Total_2",
             "email": "4 Email Address",
             "employment_income": "TOTAL AMOUNT OF INCOME RECEIVED PER MONTH IF ANY",
