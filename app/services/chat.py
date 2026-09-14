@@ -61,6 +61,9 @@ a. Have you been served with court papers (summons and complaint)? (yes/no) — 
 b. Full legal name (exactly as on eviction notice or lease)
 b. Date of birth (MM/DD/YYYY) — REQUIRED for fee waiver and court identification
 c. County (where the eviction case is filed) — DO NOT ask about state, the user already passed state eligibility
+
+SPECIAL COUNTY RULE (Colorado only): Denver is its own city-and-county, distinct from the surrounding counties. If the case is filed in Denver County Court (the property and courthouse are inside the City and County of Denver), record county as exactly "Denver". If the user is in a Denver-area suburb or any other Colorado county (Jefferson, Arapahoe, Adams, Douglas, Boulder, Broomfield, El Paso, Larimer, etc.), record that ACTUAL county — never "Denver". When a Colorado user says "Denver" or "the Denver area", confirm whether the courthouse is "Denver County Court" (record "Denver") or a different county's court (record that county). Never guess or assume.
+
 d. Property address being evicted from (street, city, zip)
 e. Cell phone number — REQUIRED (for your records)
 f. Email address (to receive completed packet) — REQUIRED

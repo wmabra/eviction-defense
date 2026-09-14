@@ -224,8 +224,18 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # County-specific form override: check if this county needs a different form
     county = (data.get("personal_info", {}) or {}).get("county", "").strip()
     county_overrides = config.get("county_form_overrides", {})
-    if county and county in county_overrides and form_key == "answer_form":
-        override = county_overrides[county]
+    _county_key = county
+    if county and county_overrides:
+        # Normalize spellings ("Denver County" / "City and County of Denver" →
+        # "Denver") so the county-specific form is selected regardless of how the
+        # intake agent recorded the county.
+        _c = county.lower().replace("city and county of", "").replace("county", "").strip()
+        for _k in county_overrides:
+            if _k.lower().replace("city and county of", "").replace("county", "").strip() == _c:
+                _county_key = _k
+                break
+    if _county_key and _county_key in county_overrides and form_key == "answer_form":
+        override = county_overrides[_county_key]
         override_filename = override.get("answer_form")
         if override_filename:
             logger.info(f"Using county-specific form for {state_code}/{county}: {override_filename}")
