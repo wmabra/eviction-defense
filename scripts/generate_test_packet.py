@@ -32,6 +32,7 @@ FULL_NAME = "John Doe"
 AR = {
     "full_name": FULL_NAME,
     "county": "Pulaski",
+    "label": "AR",
     "data": {
         "state": "AR",
         "personal_info": {
@@ -122,6 +123,7 @@ AR = {
 CO = {
     "full_name": FULL_NAME,
     "county": "Jefferson",
+    "label": "CO",
     "data": {
         "state": "CO",
         "personal_info": {
@@ -220,7 +222,109 @@ CO = {
     },
 }
 
-PACKETS = {"AR": AR, "CO": CO}
+CO_DENVER = {
+    "full_name": FULL_NAME,
+    "county": "Denver",
+    "label": "CO_Denver",
+    "data": {
+        "state": "CO",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(720) 555-0149",
+            "email": "john.doe.denver@example.com",
+            "property_address": "1450 S Pearl Street",
+            "property_city": "Denver",
+            "property_zip": "80210",
+            "county": "Denver",
+        },
+        "landlord_info": {
+            "landlord_name": "Mile High Property Group, LLC",
+            "landlord_address": "1745 Larimer Street, Denver, CO 80202",
+            "landlord_phone": "(720) 555-0114",
+            "landlord_email": "leasing@milehighpg.example",
+        },
+        "case_details": {
+            "case_number": "2024CV12345",
+            "court_name": "Denver County Court",
+            "complaint_amount_claimed": 2600.00,
+            "summons_service_date": "2024-05-20",
+            "response_deadline": "2024-05-27",
+            "court_date": "2024-06-05",
+        },
+        "rent_payment": {
+            "monthly_rent": 1300.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 1040.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The heating system has been broken since January and the "
+                               "landlord has refused to repair it despite multiple written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes a charge for a month I already paid and "
+                               "unauthorized pet fees.",
+            },
+            "def_retaliation": {
+                "checked": True,
+                "explanation": "The landlord filed this eviction after I reported the broken "
+                               "heater to the Denver Department of Public Health.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in March and have been covering rent from "
+                               "savings while I look for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need time to obtain bank statements and the city "
+                                  "inspection report for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure a new rental while my rental "
+                                     "assistance application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-13579-EEB",
+            "bankruptcy_court": "U.S. Bankruptcy Court, District of Colorado",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-05-24",
+            "bankruptcy_attorney_name": "Susan Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(720) 555-0177",
+            "bankruptcy_attorney_email": "sadvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 3200.00,
+            "employment_income": 3200.00,
+            "unemployment_income": 0.00,
+            "rent_or_mortgage": 1300.00,
+            "utilities_expense": 260.00,
+            "food_expense": 520.00,
+            "transportation_expense": 200.00,
+            "medical_expense": 150.00,
+            "child_care_expense": 400.00,
+            "total_monthly_expenses": 2830.00,
+            "cash_on_hand": 200.00,
+            "checking_balance": 100.00,
+            "savings_balance": 50.00,
+            "vehicle_make_model": "2016 Toyota Corolla",
+            "vehicle_value": 7500.00,
+            "vehicle_loan_owed": 3000.00,
+            "owns_real_estate": False,
+            "household_adults": 2,
+            "household_children": 2,
+            "receives_public_benefits": True,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER}
 
 
 def main() -> int:
@@ -234,7 +338,7 @@ def main() -> int:
     data = pkg["data"]
 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    pkg_name = f"{state}_{full_name.replace(' ', '_')}"
+    pkg_name = f"{pkg.get('label', state)}_{full_name.replace(' ', '_')}"
     out_dir = os.path.join(base_dir, "test_packages", pkg_name)
     try:
         os.makedirs(out_dir, exist_ok=True)
