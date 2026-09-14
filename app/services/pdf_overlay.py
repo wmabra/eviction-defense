@@ -444,6 +444,14 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     if state_code:
         _all_data["state"] = state_code
         _all_data["state_code"] = state_code
+
+    # Court caption slots for "IN THE ___ COURT ___" fee-waiver captions:
+    # the court level (e.g. "District") precedes COURT, the county follows it.
+    if "court_level" not in _all_data:
+        _ct = str(config.get("court_type", "") or "")
+        _all_data["court_level"] = _ct.replace("Court", "").replace(" court", "").strip()
+    if "court_caption_county" not in _all_data and "county" in _all_data:
+        _all_data["court_caption_county"] = _all_data["county"]
     
     # Certificate of Service mailing address — use property address as default
     if "cos_mail" not in _all_data and "property_address" in _all_data:
@@ -1065,6 +1073,10 @@ def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -
     w.rect = rect
     w.field_value = str(value)
     w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+    # Opaque white background masks the template's pre-printed underline so it
+    # doesn't strike through the overlaid text; zero border = no visible box.
+    w.fill_color = (1, 1, 1)
+    w.border_width = 0
     page.add_widget(w)
 
 

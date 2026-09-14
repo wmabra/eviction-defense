@@ -70,6 +70,17 @@ def _fmt_date(v) -> str:
     return s
 
 
+def _money(v, dec: int = 2) -> str:
+    """Format a numeric or '$...' amount as a clean dollar string (no double $)."""
+    if v is None or v == "":
+        return "$0.00"
+    s = str(v).replace("$", "").replace(",", "").strip()
+    try:
+        return f"${float(s):,.{dec}f}"
+    except (TypeError, ValueError):
+        return str(v)
+
+
 def _editable_field(name, value="", width=140, height=16, font_size=9):
     # Auto-grow the field height for long values so the full text is visible
     # (multi-line) when printed, instead of clipping after the first line.
@@ -449,19 +460,23 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
         f"1. Defendant resides at {_full_address(data)}.", S["Body"]
     ))
     elements.append(Paragraph(
-        f"2. Plaintiff filed a complaint for eviction claiming ${c.get('complaint_amount_claimed', '0')} "
-        f"in unpaid rent.", S["Body"]
+        f"2. Plaintiff filed a complaint for eviction claiming "
+        f"{_money(c.get('complaint_amount_claimed', 0))} in unpaid rent.", S["Body"]
     ))
     elements.append(Paragraph(
         f"3. Defendant believes the amount claimed is incorrect.", S["Body"]
     ))
+    _num = 3
     if r.get("why_disagree"):
+        _num += 1
         elements.append(Paragraph(
-            f"4. Specifically: {r['why_disagree']}", S["Body"]
+            f"{_num}. Specifically: {r['why_disagree']}", S["Body"]
         ))
+    _num += 1
+    _owed = r.get("amount_tenant_believes_owed")
+    _owed_str = _money(_owed) if _owed else "an amount to be determined by the Court"
     elements.append(Paragraph(
-        f"5. Defendant believes the correct amount owed is "
-        f"${r.get('amount_tenant_believes_owed', 'an amount to be determined by the Court')}.", S["Body"]
+        f"{_num}. Defendant believes the correct amount owed is {_owed_str}.", S["Body"]
     ))
     elements.append(Spacer(1, 8))
 
@@ -503,12 +518,14 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     today = date.today().strftime("%B %d, %Y")
     
     amount_claimed = c.get('complaint_amount_claimed', 0)
+    _amount_num = None
+    try:
+        _amount_num = float(str(amount_claimed).replace("$", "").replace(",", "").strip())
+    except (TypeError, ValueError):
+        _amount_num = None
     plan_amount = pref.get('payment_plan_amount', '')
-    if not plan_amount and amount_claimed:
-        try:
-            plan_amount = f"${float(amount_claimed) / 4:,.0f}"
-        except (TypeError, ValueError):
-            plan_amount = "$_____"
+    if not plan_amount and _amount_num:
+        plan_amount = _money(_amount_num / 4, 0)
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
@@ -527,12 +544,15 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         f"I am writing to request a payment plan to address the outstanding rent balance "
-        f"of ${amount_claimed}. I am committed to fulfilling my obligations under the lease "
+        f"of {_money(amount_claimed)}. I am committed to fulfilling my obligations under the lease "
         f"and propose the following payment arrangement:",
         S["Body"]
     ))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph(f"<b>Monthly payment:</b> {plan_amount}", S["Body"]))
+    elements.append(_field_table([[
+        Paragraph("<b>Monthly payment:</b>", S["Body"]),
+        _editable_field("payment_plan_amount", plan_amount, width=120),
+    ]], col_widths=(110, 120)))
     elements.append(Paragraph("<b>Payment due on:</b> The 1st day of each month", S["Body"]))
     elements.append(Paragraph(f"<b>Start date:</b> {date.today().strftime('%B 1, %Y')}", S["Body"]))
     elements.append(Spacer(1, 10))
@@ -1808,18 +1828,14 @@ def _generate_demand_letter(data: dict, output_path: str):
         S["Body"]
     ))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph(
-        "________________________________________________________________________________",
-        S["Body"]
-    ))
-    elements.append(Paragraph(
-        "________________________________________________________________________________",
-        S["Body"]
-    ))
-    elements.append(Paragraph(
-        "________________________________________________________________________________",
-        S["Body"]
-    ))
+    _repair_text = ""
+    _d_repairs = data.get("defenses", {}).get("def_repairs", {})
+    if isinstance(_d_repairs, dict):
+        _repair_text = _d_repairs.get("explanation", "") or ""
+    if not _repair_text:
+        _rp = data.get("rent_payment", {}) or {}
+        _repair_text = _rp.get("repair_notice_details", "") or ""
+    elements.append(_editable_field("demand_repairs", _repair_text, width=500))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "These conditions affect the health and safety of my household. I have previously "

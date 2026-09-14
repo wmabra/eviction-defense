@@ -760,6 +760,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_mapping": {
             "case_number": "NO",
             "county": "COUNTY OF",
+            "court_level": "IN THE",
+            "court_caption_county": "COURT",
             "date": "day of",
             "full_name": "IN RE PETITION OF",
             "cash_on_hand": "has the sum of",
