@@ -525,19 +525,29 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     if "court_caption_county" not in _all_data and "county" in _all_data:
         _all_data["court_caption_county"] = _all_data["county"]
     
-    # Certificate of Service mailing address — use property address as default
-    if "cos_mail" not in _all_data and "property_address" in _all_data:
-        _all_data["cos_mail"] = _all_data["property_address"]
+    # Certificate of Service recipient — the landlord (or their attorney), never
+    # the tenant. The tenant certifies they SERVED the landlord, so the recipient
+    # name/address must be the landlord's (or counsel's), not the tenant's own.
+    _cert_name_key = "landlord_name"
+    _cert_addr_key = "landlord_address"
+    if (l.get("landlord_attorney_name") or "").strip():
+        _cert_name_key = "landlord_attorney_name"
+        if (l.get("landlord_attorney_address") or "").strip():
+            _cert_addr_key = "landlord_attorney_address"
+
+    # Certificate of Service mailing address — the landlord's address.
+    if "cos_mail" not in _all_data and _cert_addr_key in _all_data:
+        _all_data["cos_mail"] = _all_data[_cert_addr_key]
     if "mailing_address" not in _all_data and "property_address" in _all_data:
         _all_data["mailing_address"] = _all_data["property_address"]
     
     # Certificate fields for CT, LA, and other states — derive from existing data
     cert_synthesis = {
-        "cert_name": "full_name",
-        "cert_address": "property_address", 
+        "cert_name": _cert_name_key,
+        "cert_address": _cert_addr_key,
         "cert_date_signed": None,
         "cert_date": None,
-        "cert_mail": "property_address",
+        "cert_mail": _cert_addr_key,
         "cert_phone": "phone",
         "note": None,
         "notified": None,
@@ -1453,6 +1463,32 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
             financial.get("vehicle_loan_owed"),
         ]
         total = sum(_to_float(v) for v in debt_vals if v)
+        return f"${total:,.2f}" if total else None
+
+    # Equity/total fields for CT JD-CV-120 and similar forms whose totals are
+    # normally computed by Acrobat client-side JavaScript that PyMuPDF never runs.
+    if key == "total_monthly_income":
+        net_inc = _to_float(financial.get("monthly_net_income") or financial.get("monthly_gross_income"))
+        other_inc = _to_float(financial.get("other_income"))
+        return f"${net_inc + other_inc:,.2f}"
+    if key == "equity_real_estate":
+        val = _to_float(financial.get("real_estate_value")) - _to_float(financial.get("real_estate_loan_owed"))
+        return f"${max(0.0, val):,.2f}" if val else None
+    if key == "equity_vehicle":
+        val = _to_float(financial.get("vehicle_value")) - _to_float(financial.get("vehicle_loan_owed"))
+        return f"${max(0.0, val):,.2f}" if val else None
+    if key == "equity_other_property":
+        val = _to_float(financial.get("other_assets_value"))
+        return f"${max(0.0, val):,.2f}" if val else None
+    if key == "total_assets_equity":
+        re_eq = max(0.0, _to_float(financial.get("real_estate_value")) - _to_float(financial.get("real_estate_loan_owed")))
+        mv_eq = max(0.0, _to_float(financial.get("vehicle_value")) - _to_float(financial.get("vehicle_loan_owed")))
+        opp_eq = max(0.0, _to_float(financial.get("other_assets_value")))
+        total = (_to_float(financial.get("cash_on_hand")) + _to_float(financial.get("checking_balance"))
+                 + _to_float(financial.get("savings_balance")) + re_eq + mv_eq + opp_eq)
+        return f"${total:,.2f}" if total else None
+    if key == "total_debt_owed":
+        total = _to_float(financial.get("real_estate_loan_owed")) + _to_float(financial.get("vehicle_loan_owed"))
         return f"${total:,.2f}" if total else None
 
     return None
