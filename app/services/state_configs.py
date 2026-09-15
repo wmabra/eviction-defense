@@ -351,7 +351,36 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": "2 - Plaintiff Name (First, Middle, Last)",
             "case_number": "9 - Case Number",
             "property_address": "10 - Property Address",
+            # Page 4 primary certification (735 ILCS 5/1-109)
+            "printed_name": "117",
+            "address": "120",
+            "city_state_zip": "121",
+            "phone": "118",
+            "email": "122",
+            # Page 5 proof of delivery (recipient = landlord)
+            "plaintiff": "1A - Full Name of Party - Page 4",
+            "landlord_address": "1A - Full Address of Party - Page 4",
         },
+        "static_values": {
+            "11 - Checkboxes": "I deny the claims made by the Plaintiff (landlord) in their Eviction Complaint ",
+            "3 - Plaintiff Name (First, Middle, Last)": "",
+            "4 - Plaintiff Name (First, Middle, Last)": "",
+            "6 - Defendants (First, middle, last name)": "",
+            "7 - Defendants (First, middle, last name)": "",
+            "116": "/s/",
+            "1A - Email of Party - Page 4": "",
+            "4 - Address or Intersection": "",
+            "4 - Delivery Address": "",
+            "4B - Full Name of Party - Page 4": "",
+            "4B - Full Address of Party - Page 4": "",
+            "4B - Email of Party - Page 4": "",
+            "4B - Address or Intersection": "",
+            "6 - I am completing the form myself checkbox": "Yes",
+            "Last - Lawyer Email": "",
+            "Last - Lawyer Address": "",
+            "6 - Last - Lawyer completing the form checkbox": "Off",
+        },
+        "strip_dollar_signs": True,
         "defense_options": [
             # IL uses paragraph admit/deny/do-not-know triads.
             # When tenant has any defense, DENY all complaint paragraphs.

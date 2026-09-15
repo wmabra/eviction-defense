@@ -627,6 +627,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         else:
             val = _get_financial_value(map_key, data)
             if val:
+                if config.get("strip_dollar_signs"):
+                    val = str(val).lstrip("$")
                 values[pdf_field] = str(val)
 
     # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
@@ -739,7 +741,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
                                 r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
-                                r'birth|employer|immovable|(property.*tax|tax.*property)|complaint', re.IGNORECASE)
+                                r'birth|employer|immovable|(property.*tax|tax.*property)|complaint|'
+                                r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
+                                r'date.*(start|fixed|repair|lease|rent|notice|problem)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
