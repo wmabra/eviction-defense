@@ -795,7 +795,100 @@ KY = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY}
+# ── Fake John Doe — Louisiana (Orleans Parish / New Orleans) ────────────
+LA = {
+    "full_name": FULL_NAME,
+    "county": "Orleans",
+    "label": "LA",
+    "data": {
+        "state": "LA",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(504) 555-0147",
+            "email": "john.doe.la@example.com",
+            "property_address": "2845 Dauphine Street",
+            "property_city": "New Orleans",
+            "property_zip": "70117",
+            "county": "Orleans",
+        },
+        "landlord_info": {
+            "landlord_name": "Crescent City Property Management, LLC",
+            "landlord_address": "909 Poydras Street, New Orleans, LA 70112",
+            "landlord_phone": "(504) 555-0118",
+            "landlord_email": "leasing@crescentcitypm.example",
+        },
+        "case_details": {
+            "case_number": "2024-012345",
+            "court_name": "First City Court",
+            "complaint_amount_claimed": 2100.00,
+            "summons_service_date": "2024-04-08",
+            "response_deadline": "2024-04-15",
+            "court_date": "2024-04-16",
+        },
+        "rent_payment": {
+            "monthly_rent": 1050.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 840.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "I used my rent money to make repairs that the landlord did not take care of.",
+            },
+            "def_accepted_rent": {
+                "checked": True,
+                "explanation": "The landlord accepted some payment of rent after issuing me a Notice to Vacate.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive a written Notice to Vacate explaining the reason for eviction.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in January and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and gather evidence for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-10321",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Eastern District of Louisiana",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-03",
+            "bankruptcy_attorney_name": "Paul Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(504) 555-0116",
+            "bankruptcy_attorney_email": "padvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2000.00,
+            "employment_income": 2000.00,
+            "disability_income": 0.00,
+            "unemployment_income": 0.00,
+            "child_support_income": 0.00,
+            "rent_or_mortgage": 1050.00,
+            "utilities_expense": 150.00,
+            "food_expense": 320.00,
+            "transportation_expense": 130.00,
+            "medical_expense": 80.00,
+            "child_care_expense": 0.00,
+            "debt_payments": 180.00,
+            "total_monthly_expenses": 1910.00,
+            "cash_on_hand": 40.00,
+            "household_adults": 1,
+            "household_children": 2,
+            "receives_snap": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA}
 
 
 def main() -> int:
