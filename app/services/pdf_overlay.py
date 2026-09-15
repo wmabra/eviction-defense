@@ -1128,17 +1128,11 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
 
     for pno in range(doc.page_count):
         page = doc[pno]
-        PH = page.rect.height
         words = page.get_text("words")
         drawings = page.get_drawings()
-        # Native widgets already on the page use top-down rects; flip them to the
-        # page-content (bottom-up) space so auto-detection does not duplicate them.
-        covered = [fitz.Rect(w.rect.x0, PH - w.rect.y1, w.rect.x1, PH - w.rect.y0)
-                   for w in page.widgets() if w.rect is not None]
-
-        def _flip(r):
-            # page content is bottom-up; Widget.rect is top-down. Convert.
-            return fitz.Rect(r.x0, PH - r.y1, r.x1, PH - r.y0)
+        # PyMuPDF search_for/get_drawings/get_text all return top-down
+        # coordinates, and widget rects are top-down too — no flipping needed.
+        covered = [fitz.Rect(w.rect) for w in page.widgets() if w.rect is not None]
 
         def _covered(rect, tol=4):
             r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
@@ -1156,7 +1150,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                 continue
             lb = _label_to_right(words, r.x1, r.y0, r.y1)
             m = _match_label_field(lb)
-            _add_checkbox_widget(page, _flip(rr), f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+            _add_checkbox_widget(page, rr, f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
             covered.append(rr)
 
         # 2. checkboxes drawn as small vector squares
@@ -1167,7 +1161,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                     continue
                 lb = _label_to_right(words, r.x1, r.y0, r.y1)
                 m = _match_label_field(lb)
-                _add_checkbox_widget(page, _flip(r), f"vcb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
+                _add_checkbox_widget(page, r, f"vcb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
                 covered.append(r)
 
         # 3. underscore runs -> text fields
@@ -1210,25 +1204,25 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
                 merged.append(bb[:])
         for i, (x0, x1, y0, y1) in enumerate(merged):
             r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
-            if _covered(r) or _is_signature_line(page, r) or _over_text(_flip(r)):
+            if _covered(r) or _is_signature_line(page, r) or _over_text(r):
                 continue
-            _add_text_widget(page, _flip(r), f"ufill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
             covered.append(r)
 
         # 4. horizontal lines -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].height < 3 and d["rect"].width > 15]):
             r = dr["rect"]
-            if _covered(r) or _is_signature_line(page, r) or _over_text(_flip(r)):
+            if _covered(r) or _is_signature_line(page, r) or _over_text(r):
                 continue
-            _add_text_widget(page, _flip(r), f"fill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"fill_{pno}_{i}", "")
             covered.append(r)
 
         # 5. rectangle boxes -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].width > 40 and 3 <= d["rect"].height <= 30]):
             r = dr["rect"]
-            if _covered(r) or _over_text(_flip(r)):
+            if _covered(r) or _over_text(r):
                 continue
-            _add_text_widget(page, _flip(r), f"bfill_{pno}_{i}", "")
+            _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
             covered.append(r)
 
 
@@ -1343,6 +1337,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "landlord_phone": l.get("landlord_phone"),
         "landlord_email": l.get("landlord_email"),
         "case_number": c.get("case_number"),
+        "date": date.today().strftime("%m/%d/%Y"),
         "court_name": c.get("court_name"),
         "monthly_rent": str(c.get("monthly_rent", "")),
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
@@ -1424,6 +1419,15 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             return "X"  # triggers overlay to draw checkmark lines
         return None
     
+    # Defense explanation routing (e.g. MN HOU202 items 5/6/9) — place a
+    # specific defense's explanation at a specific overlay position.
+    if key.startswith("explanation_"):
+        _dk = key[len("explanation_"):]
+        _d = defenses.get(_dk, {})
+        if isinstance(_d, dict) and _d.get("checked"):
+            return _d.get("explanation", "")
+        return None
+
     return mapper.get(key)
 
 

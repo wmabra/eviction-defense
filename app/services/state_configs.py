@@ -905,15 +905,30 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": {"page": 1, "x": 76, "y": 186, "w": 235, "h": 16, "size": 11},
             "full_name": {"page": 1, "x": 76, "y": 275, "w": 235, "h": 16, "size": 11},
             "address": {"page": 1, "x": 76, "y": 323, "w": 235, "h": 16, "size": 11},
-            "defense_narrative": {"page": 3, "x": 108, "y": 300, "w": 440, "h": 80, "size": 9},
+            # Defense explanations routed to their matching items
+            "explanation_def_amount": {"page": 2, "x": 108, "y": 425, "w": 440, "h": 80, "size": 8},
+            "explanation_def_bad_notice": {"page": 2, "x": 108, "y": 552, "w": 440, "h": 80, "size": 8},
+            "explanation_def_repairs": {"page": 3, "x": 108, "y": 195, "w": 440, "h": 80, "size": 8},
+            # Page 4: verification + signature block + contact info
+            "date": {"page": 4, "x": 110, "y": 229, "w": 80, "h": 14, "size": 10},
+            "printed_name": {"page": 4, "x": 330, "y": 289, "w": 210, "h": 14, "size": 10},
+            "property_address": {"page": 4, "x": 340, "y": 311, "w": 200, "h": 14, "size": 10},
+            "city_state_zip": {"page": 4, "x": 370, "y": 333, "w": 170, "h": 14, "size": 10},
+            "phone": {"page": 4, "x": 350, "y": 354, "w": 190, "h": 14, "size": 10},
+            "email": {"page": 4, "x": 370, "y": 377, "w": 170, "h": 14, "size": 10},
         },
-        "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
+        "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay; defense explanations routed to items 5/6/9; verification/contact block on page 4. OCR-verified at 600 DPI.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 350, "y": 100, "w": 200, "h": 20, "size": 11},
-            "county": {"page": 1, "x": 300, "y": 100, "w": 200, "h": 20, "size": 11},
-            "date": {"page": 6, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 170, "y": 251, "w": 230, "h": 12, "size": 11}
+            "county": {"page": 1, "x": 132, "y": 116, "w": 150, "h": 16, "size": 10},
+            "case_number": {"page": 1, "x": 408, "y": 116, "w": 132, "h": 16, "size": 10},
+            "full_name": {"page": 1, "x": 172, "y": 248, "w": 230, "h": 16, "size": 11},
+            "date": {"page": 6, "x": 110, "y": 332, "w": 80, "h": 14, "size": 10},
+            "printed_name": {"page": 6, "x": 115, "y": 380, "w": 200, "h": 14, "size": 10},
+            "property_address": {"page": 6, "x": 125, "y": 396, "w": 240, "h": 14, "size": 10},
+            "city_state_zip": {"page": 6, "x": 155, "y": 412, "w": 220, "h": 14, "size": 10},
+            "phone": {"page": 6, "x": 118, "y": 427, "w": 180, "h": 14, "size": 10},
+            "email": {"page": 6, "x": 112, "y": 443, "w": 240, "h": 14, "size": 10},
         }},
 
     # ══════════════════════════════════════════
