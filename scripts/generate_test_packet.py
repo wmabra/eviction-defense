@@ -682,6 +682,7 @@ IN = {
             "unemployment_income": 0.00,
             "ssi_income": 0.00,
             "child_support_income": 0.00,
+            "cash_on_hand": 40.00,
             "rent_or_mortgage": 1100.00,
             "utilities_expense": 170.00,
             "food_expense": 360.00,

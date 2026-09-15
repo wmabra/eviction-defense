@@ -1414,14 +1414,18 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                      "other_income", "rent_or_mortgage", "utilities_expense",
                      "food_expense", "transportation_expense", "medical_expense",
                      "child_care_expense", "debt_payments", "other_expenses",
-                     "total_monthly_expenses", "cash_on_hand", "checking_balance",
-                     "savings_balance", "vehicle_value", "vehicle_loan_owed",
-                     "real_estate_value", "real_estate_loan_owed", "other_assets_value"]
+                     "total_monthly_expenses", "total_expenses_table", "cash_on_hand",
+                     "checking_balance", "savings_balance", "vehicle_value",
+                     "vehicle_loan_owed", "real_estate_value", "real_estate_loan_owed",
+                     "other_assets_value"]
     if key in dollar_fields:
         val = financial.get(key)
         # Fallback: employment_income from monthly_gross_income
         if val is None and key == "employment_income":
             val = financial.get("monthly_gross_income")
+        # Fallback: total_expenses_table is an alias for total_monthly_expenses
+        if val is None and key == "total_expenses_table":
+            val = financial.get("total_monthly_expenses")
         if val is not None and val != 0:
             return f"{_money(val, 2)}"
         return None
