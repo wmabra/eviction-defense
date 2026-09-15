@@ -172,10 +172,22 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": "Plaintiff.SEQ001.Name.Full",
             "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
             "landlord_city_state_zip": "Plaintiff.SEQ001.HomeAddress.CityStateZip",
+            "plaintiff_2": "Plaintiff.SEQ002.Name.Full",
+            "defendant_2": "Defendant.SEQ002.Name.Full",
+            "defendant_home_full": "Defendant.SEQ001.HomeAddress.Full",
         },
         "static_values": {
             "IsDefendant": "Yes",
             "Reason.ResidentTenant": "Yes",
+            "Plaintiff.SEQ002.Name.Full": "",
+            "Defendant.SEQ002.Name.Full": "",
+            "Defendant.SEQ001.HomeAddress.Full": "",
+            "Check Box61": "Yes",
+        },
+        "field_rect_overrides": {
+            "fee_waiver_form": {
+                "COURT OF": {"text_fontsize": 9},
+            },
         },
         "defense_options": [
             {"key": "def_not_owner", "label": "No landlord-tenant relationship", "field": "NoLTRel"},
@@ -210,6 +222,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "vehicle_make_model": "Make",
             "vehicle_value": "What is the approximate value of the vehicle",
         },
+        "fee_waiver_name_fields": [
+            "undefined_3",
+            "do hereby swear",
+            "Print name",
+            "1 Name",
+        ],
     },
 
     # ══════════════════════════════════════════

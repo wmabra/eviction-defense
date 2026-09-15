@@ -123,8 +123,10 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
          has("other_income", "other_income_description")),
         (("cash", "checking", "savings", "account", "money", "bank", "funds"),
          has("checking_balance", "savings_balance", "cash_on_hand")),
-        (("real estate", "automobile", "vehicle", "stock", "bond", "note"),
-         has("vehicle_make_model", "real_estate_value")),
+        (("automobile", "vehicle", "car", "truck"),
+         has("vehicle_make_model", "vehicle_value")),
+        (("real estate", "home or other", "own a home"),
+         has("real_estate_value", "real_estate_loan_owed", "owns_real_estate")),
     ]
     income_source_text = [
         (("social security",), "social_security_income"),
@@ -153,20 +155,21 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
             return (0.0, 0.0, 0.0, 0.0, "")
 
     words = [_bbox(x) for x in page.get_text("words")]
-    clip = fitz.Rect(r.x0 - 220, r.y0 - 35, r.x1 + 90, r.y1 + 35)
+    clip = fitz.Rect(70, r.y0 - 20, r.x1 + 90, r.y1 + 20)
     ctx = page.get_text("text", clip=clip).lower()
     cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
-          and x[0] >= r.x0 - 220 and x[2] <= r.x1 + 90]
+          and x[0] >= 70 and x[2] <= r.x1 + 90]
 
-    # Yes/No pair
+    # Yes/No pair — a box is "Yes" only if it is closer to the "Yes" label than
+    # to the "No" label (the old `r.x0 < no_x` matched BOTH boxes in a pair).
     yes_x = no_x = None
     for x in cw:
         if x[4].lower() == "yes":
             yes_x = x[0]
         elif x[4].lower() == "no":
             no_x = x[0]
-    if yes_x is not None or no_x is not None:
-        is_yes = no_x is None or r.x0 < no_x
+    if yes_x is not None and no_x is not None:
+        is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
         for kws, ans in yesno_rules:
             if any(k in ctx for k in kws):
                 return (is_yes and ans) or (not is_yes and not ans)
@@ -321,7 +324,18 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     defenses = data.get("defenses", {})
 
     doc = fitz.open(form_path)
-    
+
+    # Sanitize ZapfDingbats fonts that ship with a bogus /Encoding /WinAnsiEncoding.
+    # Poppler/CUPS (and Linux print spoolers) drop the checkmark glyph, so the
+    # official filing's checkboxes render blank when printed. Strip that key.
+    for _xr in range(1, doc.xref_length()):
+        try:
+            _obj = doc.xref_object(_xr)
+            if "/ZapfDingbats" in _obj and "/WinAnsiEncoding" in _obj:
+                doc.update_object(_xr, _obj.replace("/Encoding /WinAnsiEncoding", ""))
+        except Exception:
+            pass
+
     # Check if form has fillable fields
     has_fields = False
     try:
@@ -355,6 +369,8 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 w.rect = fitz.Rect(
                     o.get("x0", r.x0), o.get("y0", r.y0),
                     o.get("x1", r.x1), o.get("y1", r.y1))
+                if "text_fontsize" in o:
+                    w.text_fontsize = o["text_fontsize"]
                 try:
                     w.update()
                 except Exception:
@@ -710,7 +726,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)|'
                                 r'landlord.*(accepted|date|payment|partial)|'
                                 r'(notice|amount|date).*(landlord)|'
-                                r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)', re.IGNORECASE)
+                                r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
+                                r'(real.*estate|home|property.*owned|mortgage|other.*assets)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
