@@ -246,6 +246,12 @@ def _writ_term(state: str) -> str:
     return WRIT_TERMS.get(state.upper(), "Writ of Possession")
 
 
+def _submitted_today() -> str:
+    """Today's date formatted for motion signature blocks (e.g. "15 day of September, 2026")."""
+    d = date.today()
+    return f"{d.day} day of {d.strftime('%B')}, {d.year}"
+
+
 def _eviction_law(state: str) -> str:
     """Get the primary eviction law citation for a state."""
     return EVICTION_LAW_CHAPTERS.get(state.upper(), "applicable state law")
@@ -296,7 +302,7 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
 
     # Generate all supporting documents. Always-present docs use sequential
     # numbering. Conditional docs use higher numbers so there are never gaps.
-    seq = 0  # will increment before each use
+    seq = 2  # 01/02 reserved for answer + fee-waiver court forms
 
     # Always-present documents
     seq += 1
@@ -417,7 +423,7 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
         paths["notice_automatic_stay_bankruptcy"] = bankruptcy_path
 
     # Cover page — generated last so it knows all included documents
-    cover_path = os.path.join(output_dir, "01_cover_page.pdf")
+    cover_path = os.path.join(output_dir, "00_cover_page.pdf")
     _generate_cover_page(base, paths, cover_path)
     paths["cover_page"] = cover_path
 
@@ -2069,7 +2075,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"just and proper.", S["Body"]))
     elements.append(Spacer(1, 14))
 
-    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Paragraph(f"Respectfully submitted this {_submitted_today()}.", S["Body"]))
     elements.append(Spacer(1, 14))
     elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 12))
@@ -2079,7 +2085,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Continuance "
-        f"was delivered to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+        f"was delivered to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
     _svc = Table([
         [FillableCheckbox("cont_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
          FillableCheckbox("cont_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
@@ -2179,7 +2185,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
             elements.append(Spacer(1, 3))
         elements.append(Spacer(1, 6))
 
-    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Paragraph(f"Respectfully submitted this {_submitted_today()}.", S["Body"]))
     elements.append(Spacer(1, 14))
     elements.extend(_editable_signature(data, S))
     elements.append(Paragraph("Pro Se Defendant", S["BodySmall"]))
@@ -2189,7 +2195,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
-        f"Eviction was furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+        f"Eviction was furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
     _svc = Table([
         [FillableCheckbox("ese_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
          FillableCheckbox("ese_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
@@ -2290,7 +2296,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
             elements.append(Spacer(1, 3))
         elements.append(Spacer(1, 6))
 
-    elements.append(Paragraph(f"Respectfully submitted this _____ day of __________, 20____.", S["Body"]))
+    elements.append(Paragraph(f"Respectfully submitted this {_submitted_today()}.", S["Body"]))
     elements.append(Spacer(1, 14))
     elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 12))
@@ -2299,7 +2305,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
-        f"the {writ_term} has been furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this _____ day of __________, 20____. Served by:", S["BodySmall"]))
+        f"the {writ_term} has been furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
     _svc = Table([
         [FillableCheckbox("esw_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
          FillableCheckbox("esw_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
@@ -2502,6 +2508,7 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
     elements.append(Paragraph("<b>DOCUMENTS IN THIS PACKET</b>", S["BodyBold"]))
     elements.append(Spacer(1, 8))
 
+    writ_term = _writ_term(state)
     DOC_DESCRIPTIONS = {
         "emergency_action_plan": ("Emergency Action Plan", "What to do today — step-by-step 24-hour action plan"),
         "eviction_timeline": ("Eviction Process Timeline", "Understand the entire eviction process from notice to judgment"),
@@ -2511,7 +2518,6 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
         "filing_checklist": ("Filing Checklist", "Step-by-step instructions to file your Answer with the court"),
         "court_checklist": ("Court Hearing Checklist", "What to bring and what to expect at your hearing"),
         "hearing_script": ("Hearing Script", "What to say to the judge — personalized for your case"),
-        "fee_waiver": ("Fee Waiver Instructions", "How to file your case for free if you can't afford the fee"),
         "rental_assistance": ("Rental Assistance Resources", "Local organizations that can help with rent and housing"),
         "motion_for_hearing": ("Motion for Hearing", "Formal request to the court to schedule your hearing"),
         "demand_letter": ("Demand Letter to Landlord", "Formal written demand for repairs — critical for building your case"),
@@ -2520,41 +2526,33 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
         "hardship_letter": ("Hardship Letter", "Request for more time due to financial hardship"),
         "motion_of_continuance": ("Motion of Continuance", "Request to reschedule your hearing to a later date"),
         "emergency_motion_stay_eviction": ("Emergency Motion to Stay Eviction", "Emergency request to pause eviction proceedings (pre-judgment)"),
-        "emergency_motion_stay_writ": ("Emergency Motion to Stay Writ of Possession", "Emergency request to stop lockout (post-judgment)"),
+        "emergency_motion_stay_writ": (f"Emergency Motion to Stay {writ_term}", "Emergency request to stop lockout (post-judgment)"),
         "notice_automatic_stay_bankruptcy": ("Notice of Automatic Stay — Bankruptcy", "Federal bankruptcy filing notice — stops all proceedings under 11 U.S.C. § 362"),
     }
 
-    ALWAYS_DOCS = ["emergency_action_plan", "eviction_timeline", "defenses_explained",
-                   "evidence_guide", "income_expense_worksheet", "filing_checklist",
-                   "court_checklist", "hearing_script", "fee_waiver",
-                   "rental_assistance", "motion_for_hearing"]
-    COND_DOCS = ["demand_letter", "motion_to_determine_rent", "payment_plan_letter",
-                 "hardship_letter", "motion_of_continuance", "emergency_motion_stay_eviction",
-                 "emergency_motion_stay_writ", "notice_automatic_stay_bankruptcy"]
+    def _doc_prefix(_path):
+        try:
+            return int(os.path.basename(_path).split("_")[0])
+        except (ValueError, IndexError):
+            return 999
 
-    doc_num = 1
-    for key in ALWAYS_DOCS:
-        if key in paths:
-            desc = DOC_DESCRIPTIONS.get(key, (key, ""))
-            elements.append(Paragraph(
-                f"<b>Document {doc_num}:</b> {desc[0]} — {desc[1]}",
-                S["Body"]
-            ))
-            doc_num += 1
+    # Official court pleadings always occupy the 01_ and 02_ prefixes (filled
+    # separately via fill_answer_form / fill_fee_waiver).
+    court_forms = [
+        ("Answer to Eviction (FILE THIS)", "Official court answer form — file with the court"),
+        ("Fee Waiver Application (FILE THIS)", "Application to waive court filing fees (In Forma Pauperis)"),
+    ]
+    elements.append(Paragraph(f"<b>Document 1:</b> {court_forms[0][0]} — {court_forms[0][1]}", S["Body"]))
+    elements.append(Paragraph(f"<b>Document 2:</b> {court_forms[1][0]} — {court_forms[1][1]}", S["Body"]))
 
-    # Conditional docs
-    has_conditional = any(k in paths for k in COND_DOCS)
-    if has_conditional:
-        elements.append(Spacer(1, 8))
-        elements.append(Paragraph("<b>ADDITIONAL DOCUMENTS:</b>", S["BodyBold"]))
-        for key in COND_DOCS:
-            if key in paths:
-                desc = DOC_DESCRIPTIONS.get(key, (key, ""))
-                elements.append(Paragraph(
-                    f"<b>Document {doc_num}:</b> {desc[0]} — {desc[1]}",
-                    S["Body"]
-                ))
-                doc_num += 1
+    # List remaining docs in numeric filename-prefix order so the cover page
+    # numbers align 1:1 with the output file prefixes.
+    for key, path in sorted(paths.items(), key=lambda kv: _doc_prefix(kv[1])):
+        if key == "cover_page":
+            continue
+        desc = DOC_DESCRIPTIONS.get(key, (key, ""))
+        _n = _doc_prefix(path)
+        elements.append(Paragraph(f"<b>Document {_n}:</b> {desc[0]} — {desc[1]}", S["Body"]))
 
     elements.append(Spacer(1, 0.5*inch))
     elements.append(HRFlowable(width="100%", thickness=1))

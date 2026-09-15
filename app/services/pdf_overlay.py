@@ -102,6 +102,8 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
             ("medicaid", "receives_medicaid"), ("medical", "receives_medicaid"),
             ("ssi", "receives_ssi"), ("tanf", "receives_tanf"),
             ("aabd", "receives_tanf"), ("general assistance", "receives_tanf"),
+            ("family independence", "receives_tanf"),  # MI TANF (SCAO MC 20)
+            ("women infants", "receives_wic"),  # MI WIC (SCAO MC 20)
         ]
         for k, key in benefit_names:
             if k in nm:
@@ -679,18 +681,19 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Defense key aliases — maps chatbot's standard keys to state-specific keys used in configs
     DEFENSE_ALIASES = {
-        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability", "def_disagree_6", "box 6.", "def_no_free_pay", "def_costs_not_rent", "def_deny_all"],
-        "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount", "def_disagree_5", "def_disagree_8", "8. disagree that", "def_admit_partial", "def_deny_all"],
+        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability", "def_disagree_7", "box 7.", "def_no_free_pay", "def_costs_not_rent", "def_deny_all"],
+        "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount", "def_disagree_5", "def_disagree_8", "8. disagree that", "def_disagree_9", "9. disagree", "def_admit_partial", "def_deny_all"],
         "def_attempted_pay": ["def_attempted_pay", "def_offered_pay", "def_offered_refused", "def_tried_to_pay", "def_refused_payment", "def_refused_rent", "def_partial_payment", "def_deny_all"],
         "def_paid": ["def_paid", "def_rent_paid", "def_rent_paid_full", "def_admit_all", "def_deny_all"],
         "def_waived": ["def_waived", "def_waiver", "def_deny_all"],
-        "def_retaliation": ["def_retaliation", "def_disagree_7", "def_contest", "def_deny_all"],
+        "def_retaliation": ["def_retaliation", "def_contest", "def_deny_all"],
         "def_fair_housing": ["def_fair_housing", "def_discrimination", "def_deny_all"],
         "def_accepted_rent": ["def_accepted_rent", "def_accepted_late", "def_foreclosure", "def_deny_all"],
         "def_corrected": ["def_corrected", "def_cured", "def_did_repairs", "def_moved_out", "def_deny_all"],
-        "def_not_owner": ["def_not_owner", "def_landlord_not_entitled", "def_ownership", "def_disagree_4", "def_deny_all"],
-        "def_bad_notice": ["def_bad_notice", "def_no_notice", "def_invalid", "def_improper_notice", "def_disagree_3", "def_late_fee", "def_deny_all"],
-        "def_other": ["def_other", "def_other2", "def_other_defenses", "def_admit_all", "def_partial", "def_deny_all", "def_contest", "def_jury_trial", "def_no_breach", "def_lease_violation", "def_justifiable", "def_disagree_9", "def_disagree_10", "9. disagree", "10 disagree", "def_costs_not_rent", "def_no_free_pay", "def_late_fee", "def_foreclosure", "def_moved_out", "def_partial_payment", "def_discrimination"],
+        "def_not_owner": ["def_not_owner", "def_landlord_not_entitled", "def_ownership", "def_disagree_3", "def_deny_all"],
+        "def_regulated_housing": ["def_regulated_housing", "def_disagree_6", "box 6.", "def_deny_all"],
+        "def_bad_notice": ["def_bad_notice", "def_no_notice", "def_invalid", "def_improper_notice", "def_late_fee", "def_deny_all"],
+        "def_other": ["def_other", "def_other2", "def_other_defenses", "def_admit_all", "def_partial", "def_deny_all", "def_contest", "def_jury_trial", "def_no_breach", "def_lease_violation", "def_justifiable", "def_disagree_10", "10 disagree", "def_costs_not_rent", "def_no_free_pay", "def_late_fee", "def_foreclosure", "def_moved_out", "def_partial_payment", "def_discrimination"],
     }
     
     for opt in defense_opts:
@@ -717,6 +720,19 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     # Master "Affirmative Defenses" checkbox — auto-select when any defense applies.
     if any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
         values["√ Affirmative Defenses"] = "Yes"
+
+    # Populate per-item explanation text areas (e.g. DC 111a "details N" fields)
+    # with the tenant's defense explanations.
+    for detail in config.get("defense_details", []):
+        dkey = detail.get("key", "")
+        dfld = detail.get("field", "")
+        if not dkey or not dfld:
+            continue
+        ddata = defenses.get(dkey, {})
+        if isinstance(ddata, dict) and ddata.get("checked"):
+            explanation = ddata.get("explanation", "")
+            if explanation:
+                values[dfld] = explanation
 
     # Static values: fixed text that doesn't come from user data
     # Used for fields like CA's "In Pro Per" attorney firm notation
