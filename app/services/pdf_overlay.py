@@ -107,14 +107,22 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
             if k in nm:
                 return bool(fin.get(key))
 
+        # KY AOC-026 page-1 expense-type checkboxes (rent vs mortgage).
+        if nm in ("check box 3", "check box3") and 480 < r.y0 < 500:
+            return bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")
+        if nm in ("check box 2", "check box2") and 480 < r.y0 < 500:
+            return bool(fin.get("owns_real_estate"))
+
     # ---- 2. Text/position rules (generic or auto-detected checkboxes) ----
     yesno_rules = [
         (("employed", "salary", "wage", "job", "work", "employment"),
          has("employment_income", "monthly_gross_income")),
         (("business", "profession", "self-employment", "self employment"),
          has("self_employment_income")),
-        (("rent payment", "interest", "dividend"),
-         has("rental_income", "interest_income", "dividend_income")),
+        (("rent payment", "rent"),
+         bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")),
+        (("mortgage", "home loan"),
+         bool(fin.get("owns_real_estate")) or bool(fin.get("real_estate_loan_owed"))),
         (("pension", "annuity", "life insurance", "retirement"),
          has("pension_income")),
         (("gift", "inherit"),
@@ -498,7 +506,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Synthesize aliases — field_mapping keys must match _all_data keys
     aliases = {
-        "full_name": ["name", "defendant_name", "printed_name"],
+        "full_name": ["name", "defendant_name", "printed_name", "full_name_applicant"],
         "property_address": ["address", "street", "mailing_address", "property"],
         "property_city": ["city", "town"],
         "property_zip": ["zip", "postal_code"],
@@ -513,6 +521,19 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             for tk in target_keys:
                 if tk not in _all_data:
                     _all_data[tk] = _all_data[source_key]
+
+    # Split the phone number for forms with separate area-code / number fields.
+    if "phone_area_code" not in _all_data or "phone_number_only" not in _all_data:
+        import re as _re
+        _m = _re.search(r'\(?(\d{3})\)?[\s.-]*(\d{3})[\s.-]*(\d{4})', str(p.get("phone", "") or ""))
+        if "phone_area_code" not in _all_data:
+            _all_data["phone_area_code"] = _m.group(1) if _m else ""
+        if "phone_number_only" not in _all_data:
+            _all_data["phone_number_only"] = f"{_m.group(2)}-{_m.group(3)}" if _m else ""
+
+    # Today's date for execution/signature date fields.
+    if "date" not in _all_data:
+        _all_data["date"] = date.today().strftime("%m/%d/%Y")
     
     # Synthesize city_state_zip from city + state + zip
     state_code = data.get("state", "")
