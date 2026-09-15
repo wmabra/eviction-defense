@@ -24,6 +24,38 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
   - `app/services/voice_prompt.md` — phone/voice agent prompt
   - `app/services/eligibility.py` — 20-state + county eligibility
 
+## State-by-state review progress (developer QA)
+
+We're doing a state-by-state QA pass: generate a "John Doe" test packet, read the
+developer's Google-Doc review comments for that state, fix every flagged issue, commit.
+
+**Round 1 — fixed + committed (11 states, alphabetical):**
+`AR · CO · CO_Denver · CT · GA · IL · IN · KY · LA · MI · MN`
+
+**Round 2 — recheck with developer (in progress):**
+- ✅ **AR** — regenerated fresh from the current codebase (commit `fb137a0`):
+  0 overlaps on answer + fee waiver, signature date fixed, dynamic motion dates.
+- ⏳ Next: **CO** (and CO_Denver), then CT, GA, IL, IN, KY, LA, MI, MN.
+
+**Not yet started (remaining 10 states):**
+`MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
+
+### Key cross-cutting fixes landed in this pass
+- Document-wide field detection (widgets summed across all pages) — stops multi-page
+  answer forms (LA 14-page) being misflagged as non-fillable.
+- Hybrid overlay: run coordinate overlay on answer forms that have fillable checkboxes
+  but no caption widgets (LA caption).
+- Removed legacy `_flip()` in `_make_scanned_form_editable()` — auto-detected
+  checkboxes/blanks were being placed upside down on scanned forms.
+- Cover-page manifest renumbered so Document N matches each file; court Answer + Fee
+  Waiver are Documents 1–2, supporting docs 03+.
+- Motion date declarations now dynamic (`f"…this {d.day} day of {d.strftime('%B')}, {d.year}."`)
+  instead of static `_____ day of __________, 20____`.
+- State-specific writ terminology in cover page + stay-writ motion (MI "Order of
+  Eviction", MN "Writ of Recovery") and LA caption "Court COURT" dedupe.
+- New `defense_details` config (per-item explanation text) + `explanation_*` overlay
+  routing (MN HOU202 items 5/6/9); corrected MI DC 111a defense→item mapping.
+
 ## Current state (fully working)
 
 1. **Every form is editable.** Every blank and every checkbox across all 20 states is an
