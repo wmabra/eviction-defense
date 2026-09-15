@@ -34,9 +34,12 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 
 **Round 2 — recheck with developer (in progress):**
 
-- ✅ **AR** — regenerated fresh from the current codebase (commit `fb137a0`):
-  0 overlaps on answer + fee waiver, signature date fixed, dynamic motion dates.
-- ⏳ Next: **CO** (and CO_Denver), then CT, GA, IL, IN, KY, LA, MI, MN.
+- ✅ **AR** — regenerated fresh (commit `585618d`): 0 overlaps, Yes/No pairs
+  single-selected.
+- ✅ **CO + CO_Denver** — regenerated (commit `5a16f6a`): 0 overlaps.
+- ✅ **CT** — regenerated (commit `5a16f6a`): Yes/No single-selected; 12 overlaps are
+  the accepted white-fill pattern (financial `$` values + court caption).
+- ⏳ Next: **GA**, then IL, IN, KY, LA, MI, MN.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
@@ -59,6 +62,8 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   (driven by the widget's own `on_state`, not an ambiguous x-distance) and
   explicitly deselect the other half; "employed" no longer falls back to gross
   income, and long-question clip capture was widened.
+- PyMuPDF deprecation migration: `import fitz` → `import pymupdf as fitz` across 16
+  files (drop-in alias; `fitz.Rect/open/Widget` are the same objects as `pymupdf.*`).
 - New `defense_details` config (per-item explanation text) + `explanation_*` overlay
   routing (MN HOU202 items 5/6/9); corrected MI DC 111a defense→item mapping.
 
