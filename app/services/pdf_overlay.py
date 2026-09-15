@@ -523,6 +523,16 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     if "landlord_city_state_zip" not in _all_data:
         _all_data["landlord_city_state_zip"] = ""  # landlord city/state/zip rarely available
 
+    # Composite caption fields (MI DC 111a): name + address + phone in one field.
+    if "defendant_composite" not in _all_data:
+        _all_data["defendant_composite"] = "\n".join(x for x in (
+            p.get("full_name", ""), p.get("property_address", ""), p.get("phone", "")
+        ) if x)
+    if "plaintiff_composite" not in _all_data:
+        _all_data["plaintiff_composite"] = "\n".join(x for x in (
+            l.get("landlord_name", ""), l.get("landlord_address", ""), l.get("landlord_phone", "")
+        ) if x)
+
     # Case name for "Name of case" captions (e.g. CT): "Landlord v. Tenant"
     if "case_name" not in _all_data:
         _all_data["case_name"] = f"{_all_data.get('landlord_name', '')} v. {_all_data.get('full_name', '')}".strip(" v.")
@@ -643,7 +653,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Defense key aliases — maps chatbot's standard keys to state-specific keys used in configs
     DEFENSE_ALIASES = {
-        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability", "def_disagree_6", "def_agree_6", "box 6.", "def_no_free_pay", "def_costs_not_rent", "def_deny_all"],
+        "def_repairs": ["def_repairs", "def_conditions", "def_failed_repair", "def_repair", "def_failed_maintain", "def_habitability", "def_disagree_6", "box 6.", "def_no_free_pay", "def_costs_not_rent", "def_deny_all"],
         "def_amount": ["def_amount", "def_amount_wrong", "def_disagree_amount", "def_no_rent_due", "def_not_owed", "def_dispute_amount", "def_disagree_5", "def_disagree_8", "8. disagree that", "def_admit_partial", "def_deny_all"],
         "def_attempted_pay": ["def_attempted_pay", "def_offered_pay", "def_offered_refused", "def_tried_to_pay", "def_refused_payment", "def_refused_rent", "def_partial_payment", "def_deny_all"],
         "def_paid": ["def_paid", "def_rent_paid", "def_rent_paid_full", "def_admit_all", "def_deny_all"],
@@ -729,7 +739,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
                                 r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
-                                r'birth|employer|immovable|(property.*tax|tax.*property)', re.IGNORECASE)
+                                r'birth|employer|immovable|(property.*tax|tax.*property)|complaint', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):

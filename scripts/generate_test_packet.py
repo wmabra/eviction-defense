@@ -888,7 +888,97 @@ LA = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA}
+# ── Fake John Doe — Michigan (Wayne County / Detroit) ───────────────────
+MI = {
+    "full_name": FULL_NAME,
+    "county": "Wayne",
+    "label": "MI",
+    "data": {
+        "state": "MI",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(313) 555-0142",
+            "email": "john.doe.mi@example.com",
+            "property_address": "14257 Greenfield Road",
+            "property_city": "Detroit",
+            "property_zip": "48227",
+            "county": "Wayne",
+        },
+        "landlord_info": {
+            "landlord_name": "Motor City Property Management, LLC",
+            "landlord_address": "500 Woodward Avenue, Detroit, MI 48226",
+            "landlord_phone": "(313) 555-0114",
+            "landlord_email": "leasing@motorcitypm.example",
+        },
+        "case_details": {
+            "case_number": "24LT012345",
+            "court_name": "36th District Court",
+            "complaint_amount_claimed": 1800.00,
+            "summons_service_date": "2024-04-11",
+            "response_deadline": "2024-04-18",
+            "court_date": "2024-04-22",
+        },
+        "rent_payment": {
+            "monthly_rent": 900.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 720.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The furnace and plumbing have been broken since January and the landlord has not repaired them despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive proper written notice before the summary proceedings were filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in January and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and gather evidence for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-45678-mar",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Eastern District of Michigan",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-06",
+            "bankruptcy_attorney_name": "Karen Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(313) 555-0126",
+            "bankruptcy_attorney_email": "kadvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2000.00,
+            "other_income_description": "Employment",
+            "household_adults": 1,
+            "household_children": 2,
+            "cash_on_hand": 60.00,
+            "checking_balance": 150.00,
+            "savings_balance": 30.00,
+            "vehicle_make_model": "2013 Ford Focus",
+            "vehicle_value": 4000.00,
+            "vehicle_loan_owed": 1500.00,
+            "debt_payments": 200.00,
+            "receives_public_benefits": True,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA, "MI": MI}
 
 
 def main() -> int:
