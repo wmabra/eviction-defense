@@ -843,10 +843,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "overlay_positions": {
             "county": {"page": 1, "x": 130, "y": 110, "w": 190, "h": 16, "size": 11},
             "case_number": {"page": 1, "x": 460, "y": 129, "w": 110, "h": 16, "size": 10},
-            "landlord_name": {"page": 1, "x": 230, "y": 188, "w": 140, "h": 16, "size": 11},
-            "full_name": {"page": 1, "x": 230, "y": 278, "w": 140, "h": 16, "size": 11},
-            "address": {"page": 1, "x": 130, "y": 328, "w": 200, "h": 16, "size": 11},
-            "defense_narrative": {"page": 4, "x": 90, "y": 355, "w": 430, "h": 190, "size": 9},
+            "landlord_name": {"page": 1, "x": 76, "y": 186, "w": 235, "h": 16, "size": 11},
+            "full_name": {"page": 1, "x": 76, "y": 275, "w": 235, "h": 16, "size": 11},
+            "address": {"page": 1, "x": 76, "y": 323, "w": 235, "h": 16, "size": 11},
+            "defense_narrative": {"page": 3, "x": 108, "y": 300, "w": 440, "h": 80, "size": 9},
         },
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay. Defense checkboxes on pages 2-3 (Q5=amount dispute, Q6=improper notice, Q8=lease dispute, Q9=repairs, Q10=other). OCR-verified at 600 DPI.",
     

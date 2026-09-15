@@ -978,7 +978,94 @@ MI = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA, "MI": MI}
+# ── Fake John Doe — Minnesota (Hennepin County / Minneapolis) ───────────
+MN = {
+    "full_name": FULL_NAME,
+    "county": "Hennepin",
+    "label": "MN",
+    "data": {
+        "state": "MN",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(612) 555-0139",
+            "email": "john.doe.mn@example.com",
+            "property_address": "3240 Lyndale Avenue S",
+            "property_city": "Minneapolis",
+            "property_zip": "55408",
+            "county": "Hennepin",
+        },
+        "landlord_info": {
+            "landlord_name": "North Star Rental Properties, LLC",
+            "landlord_address": "80 S 8th Street, Minneapolis, MN 55402",
+            "landlord_phone": "(612) 555-0112",
+            "landlord_email": "leasing@northstarrentals.example",
+        },
+        "case_details": {
+            "case_number": "27-HC-24-1234",
+            "court_name": "Hennepin County Housing Court",
+            "complaint_amount_claimed": 1750.00,
+            "summons_service_date": "2024-04-05",
+            "response_deadline": "2024-04-12",
+            "court_date": "2024-04-19",
+        },
+        "rent_payment": {
+            "monthly_rent": 950.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 760.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The furnace and windows have been broken since January and the landlord has not repaired them despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive proper written notice before the eviction was filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in January and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and gather evidence for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-31245",
+            "bankruptcy_court": "U.S. Bankruptcy Court, District of Minnesota",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-01",
+            "bankruptcy_attorney_name": "Linda Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(612) 555-0127",
+            "bankruptcy_attorney_email": "ladvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2100.00,
+            "employment_income": 2100.00,
+            "rent_or_mortgage": 950.00,
+            "utilities_expense": 155.00,
+            "food_expense": 330.00,
+            "transportation_expense": 140.00,
+            "medical_expense": 90.00,
+            "household_adults": 1,
+            "household_children": 1,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA, "MI": MI, "MN": MN}
 
 
 def main() -> int:
