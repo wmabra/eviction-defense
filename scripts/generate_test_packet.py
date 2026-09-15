@@ -701,7 +701,101 @@ IN = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN}
+# ── Fake John Doe — Kentucky (Jefferson County / Louisville) ─────────────
+KY = {
+    "full_name": FULL_NAME,
+    "county": "Jefferson",
+    "label": "KY",
+    "data": {
+        "state": "KY",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(502) 555-0143",
+            "email": "john.doe.ky@example.com",
+            "property_address": "1523 W Broadway",
+            "property_city": "Louisville",
+            "property_zip": "40203",
+            "county": "Jefferson",
+        },
+        "landlord_info": {
+            "landlord_name": "Bluegrass Property Group, LLC",
+            "landlord_address": "400 W Market Street, Louisville, KY 40202",
+            "landlord_phone": "(502) 555-0115",
+            "landlord_email": "leasing@bluegrasspg.example",
+        },
+        "case_details": {
+            "case_number": "24-F-012345",
+            "court_name": "Jefferson District Court",
+            "complaint_amount_claimed": 1900.00,
+            "summons_service_date": "2024-04-15",
+            "response_deadline": "2024-04-25",
+            "court_date": "2024-04-28",
+        },
+        "rent_payment": {
+            "monthly_rent": 950.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 760.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The furnace has been broken since January and the landlord has not repaired it despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive proper written notice before the forcible detainer was filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in January and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and bank statements for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-31012-tnw",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Western District of Kentucky",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-10",
+            "bankruptcy_attorney_name": "Sarah Advocate, Esq.",
+            "bankruptcy_attorney_phone": "(502) 555-0122",
+            "bankruptcy_attorney_email": "sadvocate@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 1900.00,
+            "employment_income": 1900.00,
+            "social_security_income": 0.00,
+            "unemployment_income": 0.00,
+            "pension_income": 0.00,
+            "child_support_income": 0.00,
+            "alimony_income": 0.00,
+            "rent_or_mortgage": 950.00,
+            "utilities_expense": 160.00,
+            "food_expense": 340.00,
+            "transportation_expense": 140.00,
+            "medical_expense": 85.00,
+            "total_monthly_expenses": 1675.00,
+            "cash_on_hand": 50.00,
+            "household_adults": 1,
+            "household_children": 2,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY}
 
 
 def main() -> int:
