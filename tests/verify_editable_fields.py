@@ -229,22 +229,20 @@ def generate_packet(data, outdir):
 def verify_fee_waiver_checkboxes(path, data):
     """Verify every mapped fee-waiver checkbox matches intake. Returns mismatch strings."""
     from app.services.pdf_overlay import _expected_fee_waiver_checkbox
-    from collections import Counter
     doc = fitz.open(path)
     mismatches = []
-    name_counts = Counter(str(getattr(w, "field_name", "") or "")
-                          for pg in doc for w in pg.widgets()
-                          if getattr(w, "field_type", None) == FITZ_CHECKBOX)
     for pg in doc:
         for w in pg.widgets():
             if getattr(w, "field_type", None) != FITZ_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "")
-            if name_counts.get(nm, 0) > 1:
-                continue  # broken native Yes/No pair
             r = fitz.Rect(w.rect)
+            try:
+                _os = str(w.on_state())
+            except Exception:
+                _os = ""
             actual = _is_checked(getattr(w, "field_value", None))
-            expected = _expected_fee_waiver_checkbox(pg, r, data, nm)
+            expected = _expected_fee_waiver_checkbox(pg, r, data, nm, _os)
             if expected is not None and actual != expected:
                 mismatches.append(f"fee_waiver checkbox '{nm}' ({r.x0:.0f},{r.y0:.0f}) actual={actual} expected={expected}")
     doc.close()

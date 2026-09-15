@@ -59,7 +59,7 @@ def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
     return _fill_form(data, state, output_path, "fee_waiver_form")
 
 
-def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
+def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
     """Compute the expected checked state (True/False/None) for one fee-waiver checkbox.
 
     Returns None when no rule matches. Descriptive native field names (e.g.
@@ -117,11 +117,13 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
 
     # ---- 2. Text/position rules (generic or auto-detected checkboxes) ----
     yesno_rules = [
-        (("employed", "salary", "wage", "job", "work", "employment"),
-         has("employment_income", "monthly_gross_income")),
+        (("employed", "salary", "wage", "job", "work"),
+         has("employment_income", "self_employment_income")),
         (("business", "profession", "self-employment", "self employment"),
          has("self_employment_income")),
-        (("rent payment", "rent"),
+        (("interest", "dividend"),
+         has("other_income", "other_income_description")),
+        (("rent or mortgage", "rent or own", "pay rent"),
          bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")),
         (("mortgage", "home loan"),
          bool(fin.get("owns_real_estate")) or bool(fin.get("real_estate_loan_owed"))),
@@ -165,13 +167,14 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
             return (0.0, 0.0, 0.0, 0.0, "")
 
     words = [_bbox(x) for x in page.get_text("words")]
-    clip = fitz.Rect(70, r.y0 - 20, r.x1 + 90, r.y1 + 20)
+    clip = fitz.Rect(70, r.y0 - 50, r.x1 + 90, r.y1 + 20)
     ctx = page.get_text("text", clip=clip).lower()
     cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
           and x[0] >= 70 and x[2] <= r.x1 + 90]
 
-    # Yes/No pair — a box is "Yes" only if it is closer to the "Yes" label than
-    # to the "No" label (the old `r.x0 < no_x` matched BOTH boxes in a pair).
+    # Yes/No pair — the box's own on_state ('Yes'/'No') is the most reliable
+    # way to tell the two halves apart; the x-distance heuristic was ambiguous
+    # when the label sits to the LEFT of the box ("Yes [ ] No [ ]").
     yes_x = no_x = None
     for x in cw:
         if x[4].lower() == "yes":
@@ -179,7 +182,13 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name=""):
         elif x[4].lower() == "no":
             no_x = x[0]
     if yes_x is not None and no_x is not None:
-        is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
+        _os = (on_state or "").strip().lower()
+        if _os == "yes":
+            is_yes = True
+        elif _os == "no":
+            is_yes = False
+        else:
+            is_yes = r.x0 < no_x  # YES box sits left of the "No" label
         for kws, ans in yesno_rules:
             if any(k in ctx for k in kws):
                 return (is_yes and ans) or (not is_yes and not ans)
@@ -211,11 +220,26 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
                 continue
             r = fitz.Rect(w.rect)
             nm = str(getattr(w, "field_name", "") or "cb")
-            if _expected_fee_waiver_checkbox(page, r, data, nm):
+            try:
+                _os = str(w.on_state())
+            except Exception:
+                _os = ""
+            exp = _expected_fee_waiver_checkbox(page, r, data, nm, _os)
+            if exp is None:
+                continue
+            if exp:
                 try:
                     w.field_value = True
                     w.update()
                     checked += 1
+                except Exception:
+                    pass
+            else:
+                # Explicitly deselect the other half of a Yes/No pair so only
+                # one option ships checked.
+                try:
+                    w.field_value = False
+                    w.update()
                 except Exception:
                     pass
     return checked

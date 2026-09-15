@@ -33,6 +33,7 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 `AR · CO · CO_Denver · CT · GA · IL · IN · KY · LA · MI · MN`
 
 **Round 2 — recheck with developer (in progress):**
+
 - ✅ **AR** — regenerated fresh from the current codebase (commit `fb137a0`):
   0 overlaps on answer + fee waiver, signature date fixed, dynamic motion dates.
 - ⏳ Next: **CO** (and CO_Denver), then CT, GA, IL, IN, KY, LA, MI, MN.
@@ -41,6 +42,7 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
 
 ### Key cross-cutting fixes landed in this pass
+
 - Document-wide field detection (widgets summed across all pages) — stops multi-page
   answer forms (LA 14-page) being misflagged as non-fillable.
 - Hybrid overlay: run coordinate overlay on answer forms that have fillable checkboxes
@@ -53,6 +55,10 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   instead of static `_____ day of __________, 20____`.
 - State-specific writ terminology in cover page + stay-writ motion (MI "Order of
   Eviction", MN "Writ of Recovery") and LA caption "Court COURT" dedupe.
+- YES/NO checkbox exclusivity: fee-waiver Yes/No pairs now check exactly one box
+  (driven by the widget's own `on_state`, not an ambiguous x-distance) and
+  explicitly deselect the other half; "employed" no longer falls back to gross
+  income, and long-question clip capture was widened.
 - New `defense_details` config (per-item explanation text) + `explanation_*` overlay
   routing (MN HOU202 items 5/6/9); corrected MI DC 111a defense→item mapping.
 
