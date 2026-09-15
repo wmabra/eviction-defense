@@ -720,6 +720,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         (re.compile(r'(?<![a-zA-Z])address|(?<=[a-z])Address', re.IGNORECASE), p.get("property_address", "")),
         (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])|(?<=[a-z])Date$', re.IGNORECASE), today.strftime("%m/%d/%Y")),
         (re.compile(r'(?<![a-zA-Z])court(?![a-zA-Z])', re.IGNORECASE), c.get("court_name", "")),
+        (re.compile(r'city\s*(?:and|&)\s*state', re.IGNORECASE), f"{p.get('property_city', '')}, {state_code}".strip(", ")),
         (re.compile(r'(?<![a-zA-Z])city', re.IGNORECASE), p.get("property_city", "")),
     ]
     # Field names that should NOT receive auto-fill from substring rules
@@ -727,7 +728,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                                 r'landlord.*(accepted|date|payment|partial)|'
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
-                                r'(real.*estate|home|property.*owned|mortgage|other.*assets)', re.IGNORECASE)
+                                r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
+                                r'birth|employer|immovable|(property.*tax|tax.*property)', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):
