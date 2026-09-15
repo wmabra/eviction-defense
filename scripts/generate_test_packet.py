@@ -608,7 +608,100 @@ IL = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL}
+# ── Fake John Doe — Indiana (Marion County / Indianapolis) ───────────────
+IN = {
+    "full_name": FULL_NAME,
+    "county": "Marion",
+    "label": "IN",
+    "data": {
+        "state": "IN",
+        "personal_info": {
+            "full_name": FULL_NAME,
+            "phone": "(317) 555-0145",
+            "email": "john.doe.in@example.com",
+            "property_address": "3125 E Washington Street",
+            "property_city": "Indianapolis",
+            "property_zip": "46201",
+            "county": "Marion",
+        },
+        "landlord_info": {
+            "landlord_name": "Circle City Rentals, LLC",
+            "landlord_address": "1 N Meridian Street, Indianapolis, IN 46204",
+            "landlord_phone": "(317) 555-0113",
+            "landlord_email": "leasing@circlecityrentals.example",
+        },
+        "case_details": {
+            "case_number": "49D01-2405-SC-012345",
+            "court_name": "Marion County Small Claims Court",
+            "complaint_amount_claimed": 2200.00,
+            "summons_service_date": "2024-04-22",
+            "response_deadline": "2024-05-05",
+            "court_date": "2024-05-08",
+        },
+        "rent_payment": {
+            "monthly_rent": 1100.00,
+            "agree_with_amount": False,
+            "amount_tenant_believes_owed": 880.00,
+        },
+        "defenses": {
+            "def_repairs": {
+                "checked": True,
+                "explanation": "The furnace and water heater have been broken since February and the landlord has not repaired them despite written requests.",
+            },
+            "def_amount": {
+                "checked": True,
+                "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "I did not receive proper written notice before the eviction was filed.",
+            },
+        },
+        "preferences": {
+            "trial_by": "judge",
+            "needs_more_time": True,
+            "wants_payment_plan": True,
+            "hardship_reason": "I was laid off in February and have been covering rent from savings while looking for work.",
+            "needs_continuance": True,
+            "continuance_reason": "I need additional time to obtain repair receipts and bank statements for the hearing.",
+            "needs_emergency_stay": True,
+            "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+            "facing_writ_possession": True,
+            "filing_bankruptcy": True,
+            "bankruptcy_case_number": "24-04567-jmc",
+            "bankruptcy_court": "U.S. Bankruptcy Court, Southern District of Indiana",
+            "bankruptcy_chapter": "7",
+            "bankruptcy_filing_date": "2024-04-18",
+            "bankruptcy_attorney_name": "Mark Counsel, Esq.",
+            "bankruptcy_attorney_phone": "(317) 555-0124",
+            "bankruptcy_attorney_email": "mcounsel@example.com",
+        },
+        "financial_info": {
+            "monthly_gross_income": 2100.00,
+            "employment_income": 2100.00,
+            "unemployment_income": 0.00,
+            "ssi_income": 0.00,
+            "child_support_income": 0.00,
+            "rent_or_mortgage": 1100.00,
+            "utilities_expense": 170.00,
+            "food_expense": 360.00,
+            "child_care_expense": 0.00,
+            "medical_expense": 95.00,
+            "transportation_expense": 150.00,
+            "other_expenses": 60.00,
+            "total_monthly_expenses": 1935.00,
+            "household_adults": 1,
+            "household_children": 2,
+            "receives_snap": True,
+            "receives_medicaid": True,
+            "receives_ssi": False,
+            "receives_tanf": False,
+        },
+    },
+}
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN}
 
 
 def main() -> int:
