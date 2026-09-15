@@ -11,7 +11,7 @@ from typing import Any, cast
 
 import os
 
-import fitz
+import pymupdf as fitz
 
 
 # Text that marks a line as part of a signature / attestation / service block.

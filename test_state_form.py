@@ -76,7 +76,7 @@ def run_state(state_code):
     
     # Verify PDF fields were filled
     try:
-        import fitz
+        import pymupdf as fitz
         doc = fitz.open(answer_path)
         filled = 0
         for page in doc:

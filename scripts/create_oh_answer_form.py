@@ -6,7 +6,7 @@ Kentucky has no statewide tenant answer form — forcible detainer is
 hearing-based (KRS 383.200-383.275). This recreates the court-accepted
 "Answer to Complaint in Forcible Entry and Detainer" structure as a fillable PDF.
 """
-import fitz
+import pymupdf as fitz
 
 OUT = "app/templates/counties/oh_eviction_answer.pdf"
 

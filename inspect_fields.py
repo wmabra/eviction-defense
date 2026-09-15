@@ -2,7 +2,7 @@
 # pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-import fitz
+import pymupdf as fitz
 
 def inspect_state(state_code):
     from app.services.state_configs import STATE_CONFIGS

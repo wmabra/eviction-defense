@@ -4,7 +4,7 @@ Add fillable widgets to the OFFICIAL Oklahoma Pauper's Affidavit (flat PDF),
 preserving the exact official form 1:1. Fillable fields are placed at the
 exact blank positions so the filled form is court-accepted.
 """
-import fitz
+import pymupdf as fitz
 
 SRC = "app/templates/counties/ok_fee_waiver.pdf"
 OUT = "app/templates/counties/ok_fee_waiver_fillable.pdf"

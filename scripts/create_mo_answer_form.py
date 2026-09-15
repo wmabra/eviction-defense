@@ -7,7 +7,7 @@ This recreates the court-accepted "Answer to Plaintiff's Rent and Possession
 Complaint" structure as a fillable PDF with standardized field names so the
 existing pdf_overlay.py unified mapping fills it correctly.
 """
-import fitz
+import pymupdf as fitz
 
 OUT = "app/templates/counties/mo_eviction_answer.pdf"
 

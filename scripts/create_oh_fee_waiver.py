@@ -5,7 +5,7 @@ Create a fillable Ohio fee waiver (Form 20 — Civil Fee Waiver Affidavit).
 Ohio Form 20 is a flat statewide form; this recreates its key fields as a
 fillable PDF with standardized field names.
 """
-import fitz
+import pymupdf as fitz
 
 OUT = "app/templates/counties/oh_fee_waiver.pdf"
 

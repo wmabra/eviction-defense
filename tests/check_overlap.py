@@ -14,7 +14,7 @@ position, so no coordinate conversion is needed.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
-import fitz
+import pymupdf as fitz
 
 TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 7)
 DPI = 96

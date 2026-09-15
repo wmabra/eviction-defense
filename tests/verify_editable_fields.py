@@ -25,7 +25,7 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
 
-import fitz  # noqa: E402
+import pymupdf as fitz  # noqa: E402
 
 # PyMuPDF constants are not in the type stubs — resolve defensively.
 FITZ_TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 2)

@@ -8,7 +8,7 @@ Result: identical to the official form but with clean, predictable field names.
 # pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 
 import os
-import fitz
+import pymupdf as fitz
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
 """OCR-based checkbox detection for overlay-only state forms."""
-import fitz, subprocess, tempfile, os, json, re, sys
+import pymupdf as fitz, subprocess, tempfile, os, json, re, sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from app.services.state_configs import get_state_config

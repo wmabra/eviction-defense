@@ -7,7 +7,7 @@ hearing-based (KRS 383.200-383.275). This recreates the court-accepted
 "Answer to Forcible Detainer Complaint" structure as a fillable PDF with a
 KY CR 5.03 Certificate of Service.
 """
-import fitz
+import pymupdf as fitz
 
 OUT = "app/templates/counties/ky_eviction_answer.pdf"
 

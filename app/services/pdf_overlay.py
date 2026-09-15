@@ -29,7 +29,7 @@ def _money(val, dec: int = 2) -> str:
         return "$0.00"
 
 
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 
 from app.services.state_configs import get_state_config
 
