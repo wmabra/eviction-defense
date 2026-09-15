@@ -344,12 +344,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         except Exception:
             pass
 
-    # Check if form has fillable fields
+    # Check if form has fillable fields — across ALL pages. Multi-page filings
+    # with cover sheets/introductory instructions on page 0 (e.g. LA's 14-page
+    # answer) must not be falsely flagged as non-fillable.
     has_fields = False
     try:
-        widgets_list = list(doc.load_page(0).widgets())
-        fields_count = len(widgets_list)
-        has_fields = fields_count > 0
+        total_widgets = sum(len(list(p.widgets())) for p in doc)
+        has_fields = total_widgets > 0
     except Exception:
         pass
 
@@ -407,13 +408,14 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                     pass
 
     if has_fields:
-        # Native fillable form: fill its own fields only (no coordinate overlay,
-        # which had misaligned positions and stamped text on top of printed text).
+        # Native fillable form: fill its own widgets.
         _fill_via_widgets(doc, data, config)
-        # Fee waivers may also need overlay for blanks the native form lacks
-        # (e.g. a "CAUSE NO." line with no native widget). The overlay skips
-        # positions that already have a widget.
+        # Hybrid forms (fillable checkboxes + static caption/header text with no
+        # native widget) still need the coordinate overlay for the unmapped
+        # caption lines. The overlay skips positions that already have a widget.
         if form_key == "fee_waiver_form" and config.get("fee_waiver_overlay"):
+            _fill_via_overlay(doc, data, config, form_key)
+        elif form_key == "answer_form" and config.get("overlay_positions"):
             _fill_via_overlay(doc, data, config, form_key)
     else:
         # Scanned/non-fillable form: stamp via coordinate overlay (top-down y).
@@ -506,7 +508,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     
     # Synthesize aliases — field_mapping keys must match _all_data keys
     aliases = {
-        "full_name": ["name", "defendant_name", "printed_name", "full_name_applicant"],
+        "full_name": ["name", "defendant_name", "printed_name", "full_name_applicant",
+                      "full_name_mover", "full_name_tp", "full_name_order"],
         "property_address": ["address", "street", "mailing_address", "property"],
         "property_city": ["city", "town"],
         "property_zip": ["zip", "postal_code"],
@@ -514,7 +517,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         "landlord_name": ["plaintiff", "plaintiff_name", "landlord"],
         "phone": ["telephone", "phone_number", "cell"],
         "email": ["e_mail", "email_address"],
-        "county": ["county_name"],
+        "county": ["county_name", "county_mover", "county_tp"],
     }
     for source_key, target_keys in aliases.items():
         if source_key in _all_data:
@@ -764,7 +767,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
                                 r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
                                 r'birth|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
-                                r'date.*(start|fixed|repair|lease|rent|notice|problem)', re.IGNORECASE)
+                                r'date.*(start|fixed|repair|lease|rent|notice|problem)|'
+                                r'telephone|utility|expense|bill|monthly|section', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):

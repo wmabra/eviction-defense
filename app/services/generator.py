@@ -173,7 +173,7 @@ STATE_COURT_CAPTIONS = {
     "RI": "IN THE DISTRICT COURT, {county} COUNTY, RHODE ISLAND",
     "SC": "IN THE MAGISTRATES COURT, {county} COUNTY, SOUTH CAROLINA",
     "TN": "IN THE GENERAL SESSIONS COURT, {county} COUNTY, TENNESSEE",
-    "LA": "IN THE {court_name} COURT, PARISH OF {county}, LOUISIANA",
+    "LA": "IN THE {court_name}, PARISH OF {county}, LOUISIANA",
     "AR": "IN THE DISTRICT COURT, {county} COUNTY, ARKANSAS",
     "VA": "IN THE GENERAL DISTRICT COURT, {county} COUNTY, VIRGINIA",
     "NM": "IN THE METROPOLITAN COURT, {county} COUNTY, NEW MEXICO",
@@ -233,7 +233,12 @@ def _court_caption(state: str, county: str, court_name: str = "") -> str:
     """Generate the correct court caption header for a state."""
     template = STATE_COURT_CAPTIONS.get(state.upper(),
         "IN THE COURT OF {county} COUNTY")
-    return template.format(county=county or "[COUNTY]", court_name=court_name or "[COURT]")
+    cn = (court_name or "[COURT]").strip()
+    # Append "Court" only when the name doesn't already end in it, so a court
+    # like "First City Court" doesn't become "First City Court COURT".
+    if cn != "[COURT]" and not cn.lower().endswith("court"):
+        cn = f"{cn} Court"
+    return template.format(county=county or "[COUNTY]", court_name=cn)
 
 
 def _writ_term(state: str) -> str:
