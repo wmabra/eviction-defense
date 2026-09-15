@@ -881,7 +881,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "counterclaim_narrative": {"page": 8, "x": 90, "y": 590, "w": 420, "h": 25, "size": 9},
             "signature": {"page": 9, "x": 408, "y": 685, "w": 92, "h": 20, "size": 10},
             "phone": {"page": 10, "x": 358, "y": 138, "w": 150, "h": 16, "size": 10},
-            "date": {"page": 10, "x": 312, "y": 492, "w": 120, "h": 16, "size": 10},
+            "date": {"page": 10, "x": 355, "y": 496, "w": 145, "h": 12, "size": 10},
             "full_name": {"page": 10, "x": 95, "y": 243, "w": 200, "h": 16, "size": 11},
             "landlord_name": {"page": 10, "x": 70, "y": 293, "w": 350, "h": 16, "size": 10},
             "landlord_address": {"page": 10, "x": 70, "y": 330, "w": 350, "h": 14, "size": 10},
