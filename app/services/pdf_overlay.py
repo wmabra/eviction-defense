@@ -709,7 +709,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         "cert_address": "landlord_service_address",
         "cert_date_signed": None,
         "cert_date": None,
-        "cert_mail": "city_state_zip",
+        "cert_mail": "full_address",
         "cert_phone": "phone",
         "note": None,
         "notified": None,
