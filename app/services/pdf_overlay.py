@@ -1735,18 +1735,20 @@ def _build_defense_narrative(defenses: dict) -> str:
             explanation = d.get("explanation", "")
             text = label
             if explanation:
-                # Replace placeholder with actual explanation
-                text = text.replace("[describe specific repair issues]", explanation)
-                text = text.replace("[state amount and reason]", explanation)
-                text = text.replace("[describe receipts, bank statements, etc.]", explanation)
-                text = text.replace("[date(s)]", explanation)
-                text = text.replace("[complained to code enforcement / requested repairs / etc.]", explanation)
-                text = text.replace("[protected characteristic]", explanation)
-                text = text.replace("[defective / not served properly / missing required information]", explanation)
-                text = text.replace("[describe violation]", explanation)
-                text = text.replace("[accepting rent after notice / telling me I could stay / etc.]", explanation)
-                text = text.replace("[Describe here]", explanation)
-                text = text.replace("[state reason]", explanation)
+                # Normalize the tenant's explanation for insertion: strip its
+                # trailing period (the label supplies its own punctuation, which
+                # was producing "notice..") and lowercase the first letter so it
+                # reads naturally after a connector like "This includes" or "the
+                # correct amount is". Keep it capitalized when the placeholder
+                # begins a new sentence (def_other's "[Describe here]") or when
+                # the first word is the pronoun "I".
+                expl = explanation.strip().rstrip(".")
+                if expl:
+                    _m = re.search(r"\[[^\]]*\]", text)
+                    _at_sentence_start = bool(_m) and text[max(0, _m.start() - 2):_m.start()] == ". "
+                    if not _at_sentence_start and not expl.startswith("I "):
+                        expl = expl[0].lower() + expl[1:]
+                    text = re.sub(r"\[[^\]]*\]", expl, text)
             checked.append(text)
     
     if not checked:
