@@ -229,7 +229,24 @@ def generate_packet(data, outdir):
 def verify_fee_waiver_checkboxes(path, data):
     """Verify every mapped fee-waiver checkbox matches intake. Returns mismatch strings."""
     from app.services.pdf_overlay import _expected_fee_waiver_checkbox
+    from app.services.state_configs import get_state_config
+    config = get_state_config(data.get("state", "").upper()) or {}
+    checkbox_map = config.get("fee_waiver_checkbox_map") or {}
     doc = fitz.open(path)
+    # Pre-scan on_state patterns so the check mirrors the fill logic (trust
+    # on_state when a pair's widgets carry DIFFERENT on_states 'Yes'/'No').
+    on_state_sets = {}
+    for pg in doc:
+        for w in pg.widgets():
+            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+                continue
+            nm = str(getattr(w, "field_name", "") or "")
+            try:
+                _os = str(getattr(w, "on_state", lambda: "")()).strip().lower()
+            except Exception:
+                _os = ""
+            if _os in ("yes", "no"):
+                on_state_sets.setdefault(nm, set()).add(_os)
     mismatches = []
     for pg in doc:
         for w in pg.widgets():
@@ -238,11 +255,12 @@ def verify_fee_waiver_checkboxes(path, data):
             nm = str(getattr(w, "field_name", "") or "")
             r = fitz.Rect(w.rect)
             try:
-                _os = str(w.on_state())
+                _os = str(getattr(w, "on_state", lambda: "")())
             except Exception:
                 _os = ""
             actual = _is_checked(getattr(w, "field_value", None))
-            expected = _expected_fee_waiver_checkbox(pg, r, data, nm, _os)
+            trust = "yes" in on_state_sets.get(nm, set()) and "no" in on_state_sets.get(nm, set())
+            expected = _expected_fee_waiver_checkbox(pg, r, data, nm, _os, trust, checkbox_map)
             if expected is not None and actual != expected:
                 mismatches.append(f"fee_waiver checkbox '{nm}' ({r.x0:.0f},{r.y0:.0f}) actual={actual} expected={expected}")
     doc.close()

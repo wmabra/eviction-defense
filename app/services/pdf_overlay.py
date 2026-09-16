@@ -59,7 +59,7 @@ def fill_fee_waiver(data: dict, state: str, output_path: str) -> bool:
     return _fill_form(data, state, output_path, "fee_waiver_form")
 
 
-def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
+def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", trust_on_state=False, checkbox_map=None):
     """Compute the expected checked state (True/False/None) for one fee-waiver checkbox.
 
     Returns None when no rule matches. Descriptive native field names (e.g.
@@ -197,7 +197,19 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
         elif _w == "no":
             no_x = x[0]
     if yes_x is not None and no_x is not None:
-        is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
+        _os = (on_state or "").strip().lower()
+        if trust_on_state and _os == "yes":
+            is_yes = True
+        elif trust_on_state and _os == "no":
+            is_yes = False
+        else:
+            is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
+        # Explicit per-form Yes/No map (e.g. AR's "Check BoxN" financial
+        # indicators whose question text sits on the line above the box).
+        if checkbox_map and field_name in checkbox_map:
+            _keys = checkbox_map[field_name]
+            _ans = any(bool(fin.get(k)) for k in _keys) if _keys else False
+            return (is_yes and _ans) or (not is_yes and not _ans)
         for kws, key in income_source_yesno:
             if any(k in ctx for k in kws):
                 _ans = bool(fin.get(key))
@@ -218,13 +230,30 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
     return None
 
 
-def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
+def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> int:
     """Check fee-waiver Yes/No and benefit boxes from the intake financial data.
 
     Handles Yes/No pairs that share a single field name (e.g. two 'Check Box1'
-    widgets — one for Yes, one for No) by using each widget's x-position relative
-    to the printed 'Yes'/'No' labels.
+    widgets — one for Yes, one for No). When a pair's widgets carry DIFFERENT
+    on_states ('Yes'/'No'), the on_state is reliable and is trusted over
+    x-proximity (which is ambiguous on tight layouts like AR's).
     """
+    checkbox_map = config.get("fee_waiver_checkbox_map") or {}
+    # Pre-scan on_state patterns so we know when 'Yes'/'No' actually disambiguates.
+    on_state_sets: dict = {}
+    for page in doc:
+        for w in page.widgets():
+            w = cast(Any, w)
+            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                continue
+            nm = str(getattr(w, "field_name", "") or "cb")
+            try:
+                _os = str(w.on_state()).strip().lower()
+            except Exception:
+                _os = ""
+            if _os in ("yes", "no"):
+                on_state_sets.setdefault(nm, set()).add(_os)
+
     checked = 0
     for page in doc:
         for w in page.widgets():
@@ -237,7 +266,8 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict) -> int:
                 _os = str(w.on_state())
             except Exception:
                 _os = ""
-            exp = _expected_fee_waiver_checkbox(page, r, data, nm, _os)
+            trust = "yes" in on_state_sets.get(nm, set()) and "no" in on_state_sets.get(nm, set())
+            exp = _expected_fee_waiver_checkbox(page, r, data, nm, _os, trust, checkbox_map)
             if exp is None:
                 continue
             if exp:
@@ -487,7 +517,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     _resolve_radio_groups(doc, data, config)
 
     if form_key == "fee_waiver_form":
-        _map_fee_waiver_checkboxes(doc, data)
+        _map_fee_waiver_checkboxes(doc, data, config)
 
     # PyMuPDF adds a fresh ZapfDingbats font (with /WinAnsiEncoding) while
     # generating checkbox appearance streams during widget.update(); strip it
@@ -1426,10 +1456,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "counterclaim_narrative":
         _dr = defenses.get("def_repairs", {})
         if isinstance(_dr, dict) and _dr.get("checked"):
-            # Keep this to a single line so it never wraps onto (and collides
-            # with) the self-help instruction block below Item 5.
             return ("Defendant asserts a counterclaim against Plaintiff for breach "
-                    "of the warranty of habitability.")
+                    "of the warranty of habitability and for the cost of necessary "
+                    "repairs to the premises.")
         return "Defendant reserves the right to assert counterclaims against Plaintiff."
     
     # Handle numbered defense narrative lines (NM 4-907 style)
