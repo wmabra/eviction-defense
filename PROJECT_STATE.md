@@ -39,7 +39,11 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 - ✅ **CO + CO_Denver** — regenerated (commit `5a16f6a`): 0 overlaps.
 - ✅ **CT** — regenerated (commit `5a16f6a`): Yes/No single-selected; 12 overlaps are
   the accepted white-fill pattern (financial `$` values + court caption).
-- ⏳ Next: **GA**, then IL, IN, KY, LA, MI, MN.
+- ✅ **GA** — regenerated (commit `577a055`): Yes/No pairs single-selected (income
+  sources land on "No" when absent), real-estate asset "Address" no longer gets
+  the rental address, plaintiff caption filled, ZapfDingbats re-sanitized, State/Zip
+  filled, second vehicle row blank.
+- ⏳ Next: **IL**, then IN, KY, LA, MI, MN.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
@@ -59,9 +63,19 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 - State-specific writ terminology in cover page + stay-writ motion (MI "Order of
   Eviction", MN "Writ of Recovery") and LA caption "Court COURT" dedupe.
 - YES/NO checkbox exclusivity: fee-waiver Yes/No pairs now check exactly one box
-  (driven by the widget's own `on_state`, not an ambiguous x-distance) and
-  explicitly deselect the other half; "employed" no longer falls back to gross
-  income, and long-question clip capture was widened.
+  (decided by proximity to the printed Yes/No labels — `on_state` proved unreliable
+  because some templates give every box the same on-state) and explicitly deselect
+  the other half; "employed" no longer falls back to gross income.
+- Income-source Yes/No rows (workers comp, insurance, pension, child support,
+  alimony, social security, unemployment) map to specific financial keys and check
+  "No" when absent, instead of false-matching `work` → `workers` → employment.
+- Checkbox keyword matching now restricted to the checkbox's own row (the ±8pt
+  band) so an adjacent row's label can't leak into the question text.
+- ZapfDingbats `/WinAnsiEncoding` sanitize now runs BOTH on the source template and
+  again right before save (PyMuPDF re-adds the bad encoding when it generates
+  checkbox appearance streams during `widget.update()`).
+- Repeated-row guard: substring auto-fill no longer copies one row's value into a
+  sibling (`…value of the vehicle` vs `…value of the vehicle_2`).
 - PyMuPDF deprecation migration: `import fitz` → `import pymupdf as fitz` across 16
   files (drop-in alias; `fitz.Rect/open/Widget` are the same objects as `pymupdf.*`).
 - New `defense_details` config (per-item explanation text) + `explanation_*` overlay
