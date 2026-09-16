@@ -406,25 +406,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "strip_dollar_signs": True,
         "defense_options": [
-            # IL uses paragraph admit/deny/do-not-know triads.
-            # When tenant has any defense, DENY all complaint paragraphs.
-            {"key": "def_repairs", "label": "Deny complaint paragraphs (all)", "field": "14 - Admit/Deny/Do Not Know"},
-            # Set second widget of each triad = Deny
-            {"key": "def_retaliation", "label": "", "field": "17 - Admit/Deny/Do Not Know"},
-            {"key": "def_bad_notice", "label": "", "field": "20 - Admit/Deny/Do Not Know"},
-            {"key": "def_amount", "label": "", "field": "23 - Admit/Deny/Do Not Know"},
-            {"key": "def_paid", "label": "", "field": "26 - Admit/Deny/Do Not Know"},
-            {"key": "def_waived", "label": "", "field": "29 - Admit/Deny/Do Not Know"},
-            {"key": "def_accepted_rent", "label": "", "field": "32 - Admit/Deny/Do Not Know"},
-            {"key": "def_discrimination", "label": "", "field": "35 - Admit/Deny/Do Not Know"},
-            {"key": "def_other", "label": "", "field": "38 - Admit/Deny/Do Not Know"},
-            {"key": "def_other", "label": "", "field": "41 - Admit/Deny/Do Not Know"},
-            # Specific defense checkboxes (pages 2-3)
-            {"key": "def_repairs", "label": "Conditions/repairs defense", "field": "43 - Checkbox"},
-            {"key": "def_retaliation", "label": "Retaliation lockout defense", "field": "44 - Checkbox"},
-            {"key": "def_bad_notice", "label": "Improper notice defense", "field": "45 - Checkbox"},
-            {"key": "def_discrimination", "label": "Fair housing defense", "field": "46 - Checkbox"},
-            {"key": "def_other", "label": "Other defense", "field": "52 - Checkbox"},
+            # Section 2 affirmative defenses (pages 2-3). Section 1a General Denial
+            # (checked via static_values) handles the complaint paragraphs, so the
+            # admit/deny/do-not-know triads stay blank.
+            {"key": "def_bad_notice", "label": "No/Improper Notice", "field": "43 - Checkbox"},
+            {"key": "def_corrected", "label": "Cure lease violation", "field": "48 - Checkbox"},
+            {"key": "def_repairs", "label": "Bad Property Conditions", "field": "52 - Checkbox"},
+            {"key": "def_retaliation", "label": "Retaliation", "field": "63 - Checkbox"},
+            {"key": "def_waived", "label": "Waiver/Accepted rent", "field": "77 - Checkbox"},
+            {"key": "def_attempted_pay", "label": "Refusal to accept rent payment", "field": "84 - Checkbox"},
+            {"key": "def_other", "label": "Other affirmative defense", "field": "90 - Checkbox"},
         ],
         "notes": "IL Circuit Court eviction answer — statewide form with 189 field widgets across 6 pages. Cook County has preferred local forms but Illinois law does not mandate a county-specific answer form.",
         "county_form_overrides": {},
