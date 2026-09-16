@@ -30,7 +30,7 @@ using each state's official court PDF for guaranteed court acceptance.
 
 import os
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from io import BytesIO
 from typing import Optional
 
@@ -41,7 +41,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, ListFlowable, ListItem, HRFlowable,
+    PageBreak, ListFlowable, ListItem, HRFlowable, KeepTogether,
 )
 from reportlab.pdfgen import canvas
 from app.services.form_fields import FillableText, FillableCheckbox
@@ -68,6 +68,23 @@ def _fmt_date(v) -> str:
     if len(parts) == 3 and all(p.isdigit() for p in parts) and len(parts[0]) == 4:
         return f"{parts[1]}/{parts[2]}/{parts[0]}"
     return s
+
+
+def _hearing_date_or_blank(v) -> str:
+    """Formatted hearing date, or blank when it is already in the past.
+
+    Stale test dates (e.g. 05/08/2024) must not be printed into a motion as if
+    they were upcoming — leave the line blank for a manual write-in instead.
+    """
+    fmt = _fmt_date(v)
+    if not fmt:
+        return ""
+    try:
+        if datetime.strptime(fmt, "%m/%d/%Y").date() < date.today():
+            return ""
+    except ValueError:
+        pass
+    return fmt
 
 
 def _money(v, dec: int = 2) -> str:
@@ -565,7 +582,8 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
         _editable_field("payment_plan_amount", plan_amount, width=120),
     ]], col_widths=(110, 120)))
     elements.append(Paragraph("<b>Payment due on:</b> The 1st day of each month", S["Body"]))
-    elements.append(Paragraph(f"<b>Start date:</b> {date.today().strftime('%B 1, %Y')}", S["Body"]))
+    _next_first = (date.today().replace(day=1) + timedelta(days=32)).replace(day=1)
+    elements.append(Paragraph(f"<b>Start date:</b> {_next_first.strftime('%B 1, %Y')}", S["Body"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "I am requesting this arrangement due to temporary financial hardship. "
@@ -2004,7 +2022,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         "2. A hearing in this matter is currently scheduled for the following date and time:",
         S["Body"]))
     elements.append(_field_table([
-        [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _fmt_date(c.get("court_date")), width=110)],
+        [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _hearing_date_or_blank(c.get("court_date")), width=110)],
         [Paragraph("Hearing time:", S["Body"]), _editable_field("continuance_hearing_time", "", width=80)],
     ], col_widths=(110, 200)))
     elements.append(Spacer(1, 4))
@@ -2162,11 +2180,13 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
         ("4. RELIEF REQUESTED", [
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court:",
-            f"A. Grant an emergency stay of all eviction proceedings for a period of days, "
-            f"or such other period as the Court deems just and appropriate:",
-            _field_table([[
-                Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", "", width=40),
-            ]], col_widths=(140, 80)),
+            KeepTogether([
+                Paragraph("A. Grant an emergency stay of all eviction proceedings for a period of days, "
+                          "or such other period as the Court deems just and appropriate:", S["Body"]),
+                _field_table([[
+                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", "", width=40),
+                ]], col_widths=(140, 80)),
+            ]),
             f"B. Schedule an expedited hearing on this Motion to allow Defendant to present evidence "
             f"and explore resolution options;",
             f"C. Impose any conditions on the stay that the Court deems appropriate to protect the "
@@ -2271,11 +2291,13 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court grant this Emergency Motion to Stay the {writ_term} and:",
             f"a. Issue an immediate stay of the {writ_term} to prevent the scheduled eviction and lockout;",
-            f"b. Grant Defendant additional time to vacate the premises voluntarily or to cure "
-            f"the default:",
-            _field_table([[
-                Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", "", width=40),
-            ]], col_widths=(140, 80)),
+            KeepTogether([
+                Paragraph("b. Grant Defendant additional time to vacate the premises voluntarily or to cure "
+                          "the default:", S["Body"]),
+                _field_table([[
+                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", "", width=40),
+                ]], col_widths=(140, 80)),
+            ]),
             f"c. Schedule an emergency hearing on this Motion at the earliest possible date;",
             f"d. Grant such other and further relief as this Court deems just and proper.",
         ]),

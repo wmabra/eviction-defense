@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Create a fillable Kentucky Answer form (Forcible Detainer).
+Create a fillable Indiana Answer form (Notice of Claim / Eviction).
 
-Kentucky has no statewide tenant answer form — forcible detainer is
-hearing-based (KRS 383.200-383.275). This recreates the court-accepted
-"Answer to Notice of Claim" structure as a fillable PDF.
+Indiana small-claims eviction is hearing-based. This recreates the
+court-accepted "Answer to Notice of Claim" structure as a fillable PDF,
+including the court caption and a Trial Rule 5(D)-compliant Certificate
+of Service.
 """
 import pymupdf as fitz
 
@@ -31,25 +32,28 @@ def field(name, x, y, w, h, fontsize: float = 10, multiline=False):
     page.add_widget(wd)
 
 
-# ── Caption ──────────────────────────────────────────────
-text(72, 60, "STATE OF INDIANA", 12, bold=True)
-text(72, 78, "COUNTY OF", 11)
+# ── Header & Court Name ─────────────────────────────────
+text(72, 50, "STATE OF INDIANA", 12, bold=True)
+text(72, 66, "COUNTY OF", 11)
 lead = fitz.get_text_length("COUNTY OF ", fontname="helv", fontsize=11)
-text(72, 96, "")
-field("county", 72 + lead, 70, 150, 16, 10)
-text(72, 116, "CASE NO.", 10)
-field("case_number", 120, 108, 180, 16, 10)
+field("county", 72 + lead, 58, 140, 15, 10)
+
+text(300, 50, "IN THE", 11)
+field("court_name", 340, 42, 200, 15, 10)
+text(300, 66, "DIVISION:", 11)
+field("division", 355, 58, 185, 15, 10)
+
+text(72, 96, "CASE NO.", 10)
+field("case_number", 125, 88, 180, 15, 10)
 
 # ── Party block ──────────────────────────────────────────
-field("plaintiff_name", 72, 150, 280, 18, 11)
-text(72, 172, "Plaintiff,", 11)
-text(400, 152, "DIVISION NO.", 10)
-field("division", 465, 146, 80, 18, 10)
+field("plaintiff_name", 72, 130, 280, 18, 11)
+text(72, 152, "Plaintiff / Landlord,", 10)
 
-text(72, 200, "v.", 11)
+text(72, 180, "v.", 11)
 
-field("defendant_name", 72, 225, 280, 18, 11)
-text(72, 247, "Defendant.", 11)
+field("defendant_name", 72, 200, 280, 18, 11)
+text(72, 222, "Defendant / Tenant.", 10)
 
 # ── Title ────────────────────────────────────────────────
 text(72, 285, "ANSWER TO NOTICE OF CLAIM (EVICTION)", 11, bold=True)
@@ -79,10 +83,13 @@ text(360, 660, "Address", 9)
 field("phone", 360, 600, 180, 18, 10)
 text(360, 620, "Phone", 9)
 
-# ── Certificate of Service ───────────────────────────────
-text(72, 710, "CERTIFICATE OF SERVICE", 11, bold=True)
-text(72, 730, "I certify that a copy of this Answer was served on the Plaintiff or Plaintiff's", 9.5)
-text(84, 746, "attorney on the date above.", 9.5)
+# ── Certificate of Service (Ind. Tr. R. 5(D)) ───────────
+text(72, 692, "CERTIFICATE OF SERVICE", 11, bold=True)
+text(72, 708, "I certify that on the date above, a true and correct copy of this Answer was served", 9.5)
+text(72, 722, "upon the Plaintiff or Plaintiff's attorney of record by:  [ ] U.S. Mail  [ ] Hand Delivery  [ ] IEFS / Email", 9.5)
+text(72, 742, "Served to: ____________________________________________________________________", 9.5)
+text(72, 764, "______________________________________", 10)
+text(72, 778, "Signature of Person Serving", 8.5)
 
 doc.save(OUT, deflate=True)
 doc.close()

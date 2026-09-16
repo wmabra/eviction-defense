@@ -1375,6 +1375,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     When key starts with 'def_', returns 'X' if the defense is checked (triggers checkmark).
     When key is 'defense_narrative', returns formatted defense explanation text.
     """
+    # Allow page-suffixed overlay keys (e.g. case_number_page3) to resolve to the
+    # base field name so one field can be overlaid on multiple pages of a form.
+    key = re.sub(r'_(?:p|page)\d+$', '', key)
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
