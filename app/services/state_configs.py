@@ -170,18 +170,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": "Defendant.SEQ001.HomeAddress.Street",
             "city_state_zip": "Defendant.SEQ001.HomeAddress.CityStateZip",
             "landlord_name": "Plaintiff.SEQ001.Name.Full",
-            "landlord_address": "Plaintiff.SEQ001.HomeAddress.Street",
+            "landlord_street": "Plaintiff.SEQ001.HomeAddress.Street",
             "landlord_city_state_zip": "Plaintiff.SEQ001.HomeAddress.CityStateZip",
             "plaintiff_2": "Plaintiff.SEQ002.Name.Full",
             "defendant_2": "Defendant.SEQ002.Name.Full",
-            "defendant_home_full": "Defendant.SEQ001.HomeAddress.Full",
+            "full_address": "Defendant.SEQ001.HomeAddress.Full",
         },
         "static_values": {
             "IsDefendant": "Yes",
-            "Reason.ResidentTenant": "Yes",
             "Plaintiff.SEQ002.Name.Full": "",
             "Defendant.SEQ002.Name.Full": "",
-            "Defendant.SEQ001.HomeAddress.Full": "",
             "Check Box61": "Yes",
             # Real-estate asset "Address" (fee waiver p4) must NOT receive the
             # tenant's rental address (perjury hazard). We don't collect a real
@@ -192,6 +190,24 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "fee_waiver_form": {
                 "COURT OF": {"text_fontsize": 9},
             },
+            "answer_form": {
+                # Native "additional reasons" widgets ship ~5.6pt wide in the
+                # bottom margin; widen them to the printed blank line.
+                "Answer.AdditionalReasons": {"x1": 493, "text_fontsize": 9},
+                "CounterClaim.AdditionalReasons": {"x1": 493, "text_fontsize": 9},
+            },
+        },
+        "fee_waiver_checkbox_map": {
+            "Check Box24": ["receives_tanf"],
+            "Check Box25": ["receives_tanf"],
+            "Check Box26": ["receives_snap"],
+            "Check Box27": ["receives_snap"],
+            "Check Box30": ["receives_medicaid"],
+            "Check Box31": ["receives_medicaid"],
+            "Check Box36": ["employment_income"],
+            "Check Box37": ["employment_income"],
+            "Check Box38": ["other_income"],
+            "Check Box39": ["other_income"],
         },
         "defense_options": [
             {"key": "def_not_owner", "label": "No landlord-tenant relationship", "field": "NoLTRel"},

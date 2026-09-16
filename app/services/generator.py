@@ -264,9 +264,14 @@ def _writ_term(state: str) -> str:
 
 
 def _submitted_today() -> str:
-    """Today's date formatted for motion signature blocks (e.g. "15 day of September, 2026")."""
+    """Today's date formatted for motion signature blocks (e.g. "15th day of September, 2026")."""
     d = date.today()
-    return f"{d.day} day of {d.strftime('%B')}, {d.year}"
+    day = d.day
+    if 11 <= day <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return f"{day}{suffix} day of {d.strftime('%B')}, {d.year}"
 
 
 def _eviction_law(state: str) -> str:
@@ -1312,7 +1317,7 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("1. Notice", "Varies", "Landlord serves demand for possession (immediate) or pay-or-quit notice."),
             ("2. Dispossessory Filed", "After notice", "Landlord files dispossessory warrant. You are served with summons."),
             ("3. File Answer", "7 days", "YOU ARE HERE. Answer must be filed within 7 days of service."),
-            ("4. Trial", "Within 7-14 days", "Judge hears both sides. You can request a jury trial."),
+            ("4. Trial", "Within 7-14 days", "Magistrate judge hears both sides. Georgia Magistrate Courts are bench trials (no jury)."),
             ("5. Judgment & Appeal", "Day of trial", "You have 7 days to appeal. You may need to pay rent into court registry."),
             ("6. Writ of Possession", "7 days after judgment", "Sheriff executes eviction."),
         ],

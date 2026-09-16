@@ -190,7 +190,13 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     # pair the same on_state (e.g. both report "Yes"), which made both halves
     # check at once.
     yes_x = no_x = None
-    for x in cw:
+    # Yes/No labels sit on the checkbox's own printed line ("[ ] Yes [ ] No").
+    # Detect them from a TIGHT vertical band: a helper line just below the box
+    # (e.g. "If yes, please list all other income sources...") contains the word
+    # "yes," and would otherwise overwrite the real label x-position.
+    for x in words:
+        if not (x[1] < r.y1 + 2 and x[3] > r.y0 - 8 and x[0] >= 70 and x[2] <= r.x1 + 90):
+            continue
         _w = str(x[4]).lower().strip("[](),.")
         if _w == "yes":
             yes_x = x[0]
@@ -647,8 +653,18 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         city = _all_data.get("property_city", "")
         zipcode = _all_data.get("property_zip", "")
         _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
-    if "landlord_city_state_zip" not in _all_data:
-        _all_data["landlord_city_state_zip"] = ""  # landlord city/state/zip rarely available
+    # Landlord street + city/state/zip (for forms with separate fields, e.g. GA):
+    # split the landlord's full address string. Keep "landlord_address" intact for
+    # cover pages / certificates of service that want the whole string.
+    if "landlord_street" not in _all_data:
+        _laddr = str(_all_data.get("landlord_address", "") or "")
+        if "," in _laddr:
+            _lstreet, _sep, _lrest = _laddr.partition(",")
+            _all_data["landlord_street"] = _lstreet.strip()
+            _all_data["landlord_city_state_zip"] = _lrest.strip()
+        else:
+            _all_data["landlord_street"] = _laddr
+            _all_data["landlord_city_state_zip"] = _laddr
     # Full mailing address (street + city/state/zip) for one-line address fields.
     if "full_address" not in _all_data:
         _all_data["full_address"] = ", ".join(x for x in (
