@@ -333,6 +333,9 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
                         _val = pi.get(rule["data"])
                     if _val is not None:
                         needle = rule.get("yes") if _val else rule.get("no")
+                elif "any_financial" in rule:
+                    _checked = any(bool(fin.get(k)) for k in rule["any_financial"])
+                    needle = rule.get("yes") if _checked else rule.get("no")
                 elif "value" in rule:
                     needle = rule["value"]
             choice = None
@@ -500,7 +503,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
     if has_fields:
         # Native fillable form: fill its own widgets.
-        _fill_via_widgets(doc, data, config)
+        _fill_via_widgets(doc, data, config, form_key)
         # Hybrid forms (fillable checkboxes + static caption/header text with no
         # native widget) still need the coordinate overlay for the unmapped
         # caption lines. The overlay skips positions that already have a widget.
@@ -536,7 +539,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     return True
 
 
-def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
+def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: str = ""):
     """Fill a PDF's form fields using widget/field mapping + smart auto-fill."""
     mapping = config.get("field_mapping", {})
     p = data.get("personal_info", {})
@@ -733,37 +736,40 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         if map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
     
-    # Also apply fee_waiver_mapping if present (different field names for fee waivers)
     fw_mapping = config.get("fee_waiver_mapping", {})
-    financial = data.get("financial_info", {})
-    # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
-    # and the tenant receives categorical assistance, leave the income/expense/asset
-    # fields blank (they are only required when categorical assistance is absent).
-    skip_financial = config.get("skip_financial_when_categorical") and any(
-        financial.get(k) for k in ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
-    )
-    for map_key, pdf_field in fw_mapping.items():
-        # Handle financial boolean fields as checkboxes
-        if map_key.startswith("receives_") or map_key in ("income_below_threshold", "unable_to_pay_fees"):
-            val = _get_financial_value(map_key, data)
-            if val:
-                values[pdf_field] = "Yes"
-        elif map_key in _all_data:
-            values[pdf_field] = str(_all_data[map_key])
-        else:
-            if skip_financial:
-                continue
-            val = _get_financial_value(map_key, data)
-            if val:
-                if config.get("strip_dollar_signs"):
-                    val = str(val).lstrip("$")
-                values[pdf_field] = str(val)
+    # fee_waiver_mapping is ONLY for the fee-waiver form. Apply it strictly when
+    # filling the fee waiver — otherwise its field names (e.g. "6.5" on JDF 205)
+    # collide with unrelated widgets on the ANSWER form (e.g. "6.5" on JDF 103).
+    if form_key == "fee_waiver_form":
+        financial = data.get("financial_info", {})
+        # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
+        # and the tenant receives categorical assistance, leave the income/expense/asset
+        # fields blank (they are only required when categorical assistance is absent).
+        skip_financial = config.get("skip_financial_when_categorical") and any(
+            financial.get(k) for k in ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
+        )
+        for map_key, pdf_field in fw_mapping.items():
+            # Handle financial boolean fields as checkboxes
+            if map_key.startswith("receives_") or map_key in ("income_below_threshold", "unable_to_pay_fees"):
+                val = _get_financial_value(map_key, data)
+                if val:
+                    values[pdf_field] = "Yes"
+            elif map_key in _all_data:
+                values[pdf_field] = str(_all_data[map_key])
+            else:
+                if skip_financial:
+                    continue
+                val = _get_financial_value(map_key, data)
+                if val:
+                    if config.get("strip_dollar_signs"):
+                        val = str(val).lstrip("$")
+                    values[pdf_field] = str(val)
 
-    # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
-    # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
-    for fname in config.get("fee_waiver_name_fields", []):
-        if fname not in values:
-            values[fname] = p.get("full_name", "")
+        # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
+        # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
+        for fname in config.get("fee_waiver_name_fields", []):
+            if fname not in values:
+                values[fname] = p.get("full_name", "")
     
     # Date
     if "date" in mapping:
@@ -1113,7 +1119,7 @@ _SIG_WORDS = ("sign", "notary", "affiant", "deponent", "witness",
 # exclusion list is required — a word-boundary match is not an option, because
 # it would stop matching camelCase names like "DefendantSignature".
 _SIG_EXCLUDE = ("print", "design", "assign", "consign")
-_SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d")
+_SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d+\b")
 
 
 def _is_signature_name(name: str) -> bool:

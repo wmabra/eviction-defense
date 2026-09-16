@@ -617,7 +617,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "vehicle_loan_owed": "10B.1C",
             "real_estate_value": "10B.2A",
             "real_estate_loan_owed": "10B.2C",
-            "receives_public_benefits": "6.1",
             "receives_ssi": "6.3",
             "receives_tanf": "6.4",
             "receives_snap": "6.5",
@@ -643,10 +642,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "court_address": "Court Address",
         
             "cos_mail": "CoS_Mail",
-            "defense_narrative": "8.0"},
+            "defense_narrative": "8.0",
+            "day": "Sig1_Date",
+            "month": "Sig1_Month",
+            "year": "Sig1_Year",
+            "property_city": "Sig1_City",
+            "state_code": "Sig1_State",
+            "defendant_name": "Sig1_Name"},
         "radio_selections": {
             "Group1.1": {"value": "county court"},
-            "Group6.0": {"data": "receives_public_benefits", "yes": "yes", "no": "no"},
+            "Group6.0": {"any_financial": ["receives_ssi", "receives_tanf", "receives_snap"], "yes": "yes", "no": "no"},
+            "Group_CoS": {"value": "regular mail"},
             "Group7.1": {"data": "owns_real_estate", "yes": "own", "no": "rent"},
             "Group7.3": {"data": "employment_income", "yes": "yes", "no": "no"},
             "Group7A.0": {"any_defense": ["def_paid", "def_attempted_pay", "def_amount", "def_other"], "yes": "yes", "no": "no"},
@@ -657,11 +663,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "defense_options": [
             # Section 7A — Non-Payment Defenses
             {"key": "def_paid", "label": "I paid all rent owed", "field": "7A.1"},
+            {"key": "def_amount", "label": "I disagree with the amount claimed", "field": "7A.1"},
             {"key": "def_attempted_pay", "label": "I tried to pay but landlord refused", "field": "7A.2"},
-            {"key": "def_amount", "label": "I disagree with the amount claimed", "field": "7A.3"},
-            {"key": "def_other", "label": "Other reasons rent not paid", "field": "7A.4"},
+            {"key": "def_other", "label": "Other reasons rent not paid", "field": "7A.3"},
+            {"key": "def_repairs", "label": "Warranty of Habitability — premises uninhabitable", "field": "7A.4"},
             # Section 7B — Habitability / Condition Defenses
-            {"key": "def_repairs", "label": "Premises uninhabitable — landlord failed to maintain", "field": "7B.1"},
             {"key": "def_did_repairs", "label": "I paid for repairs landlord should have made", "field": "7B.2"},
             {"key": "def_landlord_breach", "label": "Landlord breached the rental agreement", "field": "7B.3"},
             # Section 7C — Notice Defenses
