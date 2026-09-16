@@ -505,7 +505,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
             "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
         
-            "court_name": {"page": 1, "x": 350, "y": 46, "w": 150, "h": 16, "size": 10},
             "date": {"page": 1, "x": 144, "y": 299, "w": 120, "h": 16, "size": 10},
             "defense_accepted_rent": {"page": 1, "x": 45, "y": 225, "w": 14, "h": 14, "size": 10},
             "defense_amount": {"page": 1, "x": 97, "y": 129, "w": 14, "h": 14, "size": 10},
