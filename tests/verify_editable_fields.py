@@ -232,6 +232,10 @@ def verify_fee_waiver_checkboxes(path, data):
     from app.services.state_configs import get_state_config
     config = get_state_config(data.get("state", "").upper()) or {}
     checkbox_map = config.get("fee_waiver_checkbox_map") or {}
+    _fw_mapping = config.get("fee_waiver_mapping") or {}
+    # Benefit boxes explicitly mapped via fee_waiver_mapping receives_* are filled
+    # by _fill_via_widgets, not by _expected_fee_waiver_checkbox — skip them here.
+    explicit_benefit_fields = {v for k, v in _fw_mapping.items() if k.startswith("receives_")}
     doc = fitz.open(path)
     # Pre-scan on_state patterns so the check mirrors the fill logic (trust
     # on_state when a pair's widgets carry DIFFERENT on_states 'Yes'/'No').
@@ -253,6 +257,8 @@ def verify_fee_waiver_checkboxes(path, data):
             if getattr(w, "field_type", None) != FITZ_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "")
+            if nm in explicit_benefit_fields:
+                continue
             r = fitz.Rect(w.rect)
             try:
                 _os = str(getattr(w, "on_state", lambda: "")())

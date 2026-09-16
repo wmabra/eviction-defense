@@ -1149,7 +1149,9 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
             for cat, items in sorted(by_cat.items()):
                 elements.append(Paragraph(f"<b>{cat}</b>", S["BodyBold"]))
                 for item in items:
-                    org = item["organization"]
+                    org = (item["organization"] or "").strip()
+                    if not org:
+                        continue  # skip orphan bullets (missing organization name)
                     phone = item.get("phone", "").strip()
                     web = item.get("website", "").strip()
                     if phone in placeholder_phones:

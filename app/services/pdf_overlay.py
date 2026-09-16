@@ -239,6 +239,10 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
     x-proximity (which is ambiguous on tight layouts like AR's).
     """
     checkbox_map = config.get("fee_waiver_checkbox_map") or {}
+    # Benefit boxes explicitly mapped via fee_waiver_mapping receives_* are already
+    # filled by _fill_via_widgets; don't re-evaluate (and uncheck) them here.
+    _fw_mapping = config.get("fee_waiver_mapping") or {}
+    explicit_benefit_fields = {v for k, v in _fw_mapping.items() if k.startswith("receives_")}
     # Pre-scan on_state patterns so we know when 'Yes'/'No' actually disambiguates.
     on_state_sets: dict = {}
     for page in doc:
@@ -262,6 +266,8 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
                 continue
             r = fitz.Rect(w.rect)
             nm = str(getattr(w, "field_name", "") or "cb")
+            if nm in explicit_benefit_fields:
+                continue
             try:
                 _os = str(w.on_state())
             except Exception:
@@ -730,6 +736,12 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
     # Also apply fee_waiver_mapping if present (different field names for fee waivers)
     fw_mapping = config.get("fee_waiver_mapping", {})
     financial = data.get("financial_info", {})
+    # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
+    # and the tenant receives categorical assistance, leave the income/expense/asset
+    # fields blank (they are only required when categorical assistance is absent).
+    skip_financial = config.get("skip_financial_when_categorical") and any(
+        financial.get(k) for k in ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
+    )
     for map_key, pdf_field in fw_mapping.items():
         # Handle financial boolean fields as checkboxes
         if map_key.startswith("receives_") or map_key in ("income_below_threshold", "unable_to_pay_fees"):
@@ -739,6 +751,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
         elif map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
         else:
+            if skip_financial:
+                continue
             val = _get_financial_value(map_key, data)
             if val:
                 if config.get("strip_dollar_signs"):
@@ -1238,8 +1252,8 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         def _over_text(rect) -> bool:
             return _over_printed_text(words, rect)
 
-        # 1. checkboxes drawn as "☐" glyphs
-        for i, r in enumerate(page.search_for("\u2610")):
+        # 1. checkboxes drawn as "☐" (U+2610) or "❑" (U+2751) glyphs
+        for i, r in enumerate(list(page.search_for("\u2610")) + list(page.search_for("\u2751"))):
             rr = fitz.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
             if _covered(rr):
                 continue
@@ -1391,7 +1405,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     continue  # already filled via a fillable widget (rebuilt form)
                 value = _get_field_value(key, data)
                 # Check if this is a defense checkbox (small overlay rect)
-                is_checkbox = key.startswith("def_") and pos.get("h", 20) <= 20
+                is_checkbox = (key.startswith("def_") or key.startswith("checkbox_")) and pos.get("h", 20) <= 20
                 if is_checkbox:
                     s = pos.get("h", 14)
                     _add_checkbox_widget(page, fitz.Rect(x, y, x + s, y + s), key, checked=bool(value))
@@ -1440,6 +1454,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "court_name": c.get("court_name"),
         "monthly_rent": str(c.get("monthly_rent", "")),
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
+        "cos_date": date.today().strftime("%m/%d/%Y"),
+        "cos_recipient": l.get("landlord_name"),
+        "cos_address": l.get("landlord_address"),
     }
     
     # Handle defense narrative text generation
@@ -1495,6 +1512,18 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "financial_summary":
         return _build_financial_summary(data.get("financial_info", {}))
     
+    # Handle procedural checkbox overlay keys (hearing mode, trial mode, etc.)
+    if key.startswith("checkbox_"):
+        pref = data.get("preferences", {}) or {}
+        _cb_map = {
+            "checkbox_trial_to_court": "X" if pref.get("trial_by") == "judge" else None,
+            "checkbox_trial_jury": "X" if pref.get("trial_by") == "jury" else None,
+            "checkbox_hearing_in_person": "X" if pref.get("hearing_mode", "in person") == "in person" else None,
+            "checkbox_hearing_remote": "X" if pref.get("hearing_mode") == "remote" else None,
+            "checkbox_cos_mail": "X",
+        }
+        return _cb_map.get(key)
+
     # Handle defense checkbox overlay keys
     if key.startswith("def_"):
         # Map aliases for state-specific defense keys
@@ -1747,8 +1776,7 @@ def _build_defense_narrative(defenses: dict) -> str:
         "def_attempted_pay": "I tried to pay my rent but the landlord refused to accept payment. "
                            "I made a good faith effort to pay on [date(s)].",
         "def_retaliation": "The landlord is evicting me in retaliation for exercising my legal rights. "
-                         "Specifically, after I [complained to code enforcement / requested repairs / etc.], "
-                         "the landlord filed this eviction.",
+                         "[Describe the protected activity and the landlord's retaliatory response]",
         "def_discrimination": "The eviction is discriminatory and violates fair housing laws. "
                              "I believe I am being treated differently because of [protected characteristic].",
         "def_bad_notice": "The landlord did not provide proper legal notice before filing this eviction. "
