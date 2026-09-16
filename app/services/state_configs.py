@@ -799,10 +799,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "District Court / City Court",
         "field_mapping": {},
         "overlay_positions": {
-            "landlord_name": {"page": 3, "x": 150, "y": 85, "w": 155, "h": 16, "size": 8},
-            "case_number": {"page": 3, "x": 405, "y": 87, "w": 135, "h": 16, "size": 10},
-            "full_name": {"page": 3, "x": 153, "y": 189, "w": 155, "h": 16, "size": 10},
-            "county": {"page": 3, "x": 470, "y": 191, "w": 70, "h": 16, "size": 10},
+            "landlord_name": {"page": 3, "x": 150, "y": 85, "w": 230, "h": 16, "size": 10},
+            "case_number": {"page": 3, "x": 390, "y": 87, "w": 180, "h": 16, "size": 10},
+            "full_name": {"page": 3, "x": 150, "y": 189, "w": 230, "h": 16, "size": 10},
+            "court_name": {"page": 3, "x": 460, "y": 191, "w": 180, "h": 16, "size": 9},
         },
         "defense_options": [
             {"key": "def_continuance", "label": "Request continuance to reschedule hearing", "field": "I would like to request that the court grant a continuance and reschedule my hearing"},
