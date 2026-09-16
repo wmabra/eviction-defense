@@ -861,6 +861,13 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     for pdf_field, static_text in static_values.items():
         values[pdf_field] = static_text
 
+    # CO JDF 103: bind the statutory late-fee defense (7E.2) when the defense
+    # narrative alleges unauthorized late fees.
+    if config.get("bind_late_fee_defense"):
+        _narr = str(values.get("defense_narrative", "")).lower()
+        if "late fee" in _narr or "unauthorized fee" in _narr:
+            values["7E.2"] = "Yes"
+
     # Smart auto-fill for common field names not in explicit mapping
     # Uses word-boundary matching to avoid false positives:
     #   "address" matches "AddressName2" but NOT "CourtAddress"

@@ -641,6 +641,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": True,
         "court_type": "County Court",
         "skip_financial_when_categorical": True,
+        "bind_late_fee_defense": True,
         "field_mapping": {
             "full_name": "∆",
             "landlord_name": "π",
@@ -671,9 +672,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Group7.1": {"skip_when_categorical": True, "data": "owns_real_estate", "yes": "own", "no": "rent"},
             "Group7.3": {"skip_when_categorical": True, "data": "employment_income", "yes": "yes", "no": "no"},
             "Group7A.0": {"any_defense": ["def_paid", "def_attempted_pay", "def_amount", "def_other"], "yes": "yes", "no": "no"},
-            "Group7B.0": {"any_defense": ["def_repairs", "def_did_repairs", "def_landlord_breach"], "yes": "yes", "no": "no"},
+            "Group7B.0": {"any_defense": ["def_did_repairs", "def_landlord_breach"], "yes": "yes", "no": "no"},
             "Group7C.0": {"any_defense": ["def_bad_notice", "def_wrong_reason"], "yes": "yes", "no": "no"},
-            "Group7D.0": {"any_defense": ["def_retaliation", "def_discrimination"], "yes": "yes", "no": "no"},
+            "Group7D.0": {"any_defense": ["def_retaliation", "def_discrimination"], "yes": "no", "no": "yes"},
         },
         "defense_options": [
             # Section 7A — Non-Payment Defenses
