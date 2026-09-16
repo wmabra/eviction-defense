@@ -664,7 +664,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "year": "Sig1_Year",
             "property_city": "Sig1_City",
             "state_code": "Sig1_State",
-            "defendant_name": "Sig1_Name"},
+            "defendant_name": "Sig1_Name",
+            "printed_name": "Name"},
         "radio_selections": {
             "Group1.1": {"value": "county court"},
             "Group6.0": {"any_financial": ["receives_ssi", "receives_tanf", "receives_snap"], "yes": "yes", "no": "no"},
