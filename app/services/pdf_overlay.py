@@ -321,7 +321,11 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
             rule = selections.get(gname)
             needle = None
             if rule:
-                if "any_defense" in rule:
+                if rule.get("skip_when_categorical") and any(
+                    bool(fin.get(k)) for k in ("receives_ssi", "receives_tanf", "receives_snap")
+                ):
+                    needle = None  # categorical assistance → skip Sections 7-10
+                elif "any_defense" in rule:
                     _checked = any(
                         isinstance(defenses.get(k), dict) and defenses[k].get("checked")
                         for k in rule["any_defense"]
@@ -1457,6 +1461,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "city": p.get("property_city"),
         "zip": p.get("property_zip"),
         "city_state_zip": f"{p.get('property_city', '')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", "),
+        "party_info": "\n".join(x for x in (
+            p.get("full_name", ""),
+            f"{p.get('property_address', '')}, {p.get('property_city', '')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", ")
+        ) if x),
         "county": p.get("county"),
         "court_type": "Magistrate Court",  # default, overridden for Bernalillo County
         "landlord_name": l.get("landlord_name"),
