@@ -904,6 +904,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": {"page": 1, "x": 76, "y": 186, "w": 235, "h": 16, "size": 11},
             "full_name": {"page": 1, "x": 76, "y": 275, "w": 235, "h": 16, "size": 11},
             "address": {"page": 1, "x": 76, "y": 323, "w": 235, "h": 16, "size": 11},
+            # Form HOU202 defense checkboxes (Q5/Q6/Q9/Q10)
+            "def_amount": {"page": 2, "x": 95, "y": 472, "w": 14, "h": 14},
+            "def_bad_notice": {"page": 2, "x": 95, "y": 527, "w": 14, "h": 14},
+            "def_repairs": {"page": 3, "x": 95, "y": 76, "w": 14, "h": 14},
+            "def_other": {"page": 3, "x": 95, "y": 136, "w": 14, "h": 14},
             # Defense explanations routed to their matching items
             "explanation_def_amount": {"page": 2, "x": 108, "y": 425, "w": 440, "h": 80, "size": 8},
             "explanation_def_bad_notice": {"page": 2, "x": 108, "y": 552, "w": 440, "h": 80, "size": 8},
