@@ -670,6 +670,14 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["full_address"] = ", ".join(x for x in (
             _all_data.get("property_address", ""), _all_data.get("city_state_zip", "")) if x).strip()
 
+    # Judicial district (MI MC 20): extract the leading ordinal from the court
+    # name ("36th District Court" -> "36th") for the district header field.
+    if "judicial_district" not in _all_data:
+        _cn = str(_all_data.get("court_name", "") or "").strip()
+        _first = _cn.split()[0] if _cn else ""
+        # "36th District Court" -> "36th"; otherwise fall back to the court name.
+        _all_data["judicial_district"] = _first if (_first and _first[:-2].isdigit() and _first[-2:].lower() in ("st", "nd", "rd", "th")) else _cn
+
     # Composite caption fields (MI DC 111a): name + address + phone in one field.
     if "defendant_composite" not in _all_data:
         _all_data["defendant_composite"] = "\n".join(x for x in (
@@ -871,6 +879,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             if explanation:
                 values[dfld] = explanation
 
+    # Aggregate several affirmative defenses into one "Other statements" field
+    # (e.g. MI DC 111a Item 11 collects retaliation, notice, fair-housing, etc.).
+    for _target_field, _agg_keys in (config.get("defense_details_aggregate") or {}).items():
+        _parts = []
+        for _k in _agg_keys:
+            _d = defenses.get(_k, {})
+            if isinstance(_d, dict) and _d.get("checked"):
+                _parts.append(_d.get("explanation") or _d.get("label") or _k)
+        if _parts:
+            values[_target_field] = "; ".join(_parts)
+
     # Static values: fixed text that doesn't come from user data
     # Used for fields like CA's "In Pro Per" attorney firm notation
     static_values = config.get("static_values", {})
@@ -920,7 +939,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         (re.compile(r'(?<![a-zA-Z])city', re.IGNORECASE), p.get("property_city", "")),
     ]
     # Field names that should NOT receive auto-fill from substring rules
-    auto_fill_skip = re.compile(r'(court|trial|bop|file|attorney|judge|jury).*(address|date)|'
+    auto_fill_skip = re.compile(r'(court|ct|trial|bop|file|attorney|judge|jury|clerk|issue|order).*(address|date)|'
                                 r'landlord.*(accepted|date|payment|partial)|'
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'

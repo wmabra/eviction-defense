@@ -1032,9 +1032,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "assets_description": "Assets",
             "case_number": "caseno",
             "county": "county",
+            "court_name": "ctaddress",
             "date": "Date",
             "full_name": "dname",
             "household_size": "Number in household",
+            "judicial_district": "district",
+            "landlord_name": "pname",
             "monthly_gross_income": "My Gross Household Income is in Dollars",
             "obligations_description": "Obligations",
             "other_income_description": "My Source Of Income Is",
@@ -1044,6 +1047,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "receives_ssi": "Supplemental Security Income (SSI)",
             "receives_tanf": "Family Independence Program",
         },
+        "fee_waiver_name_fields": ["printed"],
         "static_values": {
             "Week and or Two Weeks and or  Month and or Year ": "Month",
         },
@@ -1071,8 +1075,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_not_owner", "field": "details 3"},
             {"key": "def_amount", "field": "details 5"},
             {"key": "def_repairs", "field": "details 7"},
-            {"key": "def_bad_notice", "field": "11. Other statements related to this case are: Use a separate sheet of paper if needed"},
         ],
+        "defense_details_aggregate": {
+            "11. Other statements related to this case are: Use a separate sheet of paper if needed": ["def_retaliation", "def_bad_notice", "def_fair_housing", "def_other"],
+        },
         "notes": "MI DC 111a Answer — Nonpayment of Rent. 48 fields across 2 pages with agree/disagree paragraph structure. Defendant and plaintiff fields are composite (name+address+phone in one field).",
     },
 
