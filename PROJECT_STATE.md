@@ -55,7 +55,19 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 - ✅ **KY** — regenerated (commit `c2dde85`): fee-waiver AOC-026 mapping, rent/mortgage
   checkbox detection, CR 5.03 CoS, phone split, and warrant-for-possession
   terminology (motion title, cover page, and filename) all confirmed/fixed.
-- ⏳ Next: **LA**, then MI, MN.
+- ✅ **LA** — regenerated (commit `7d41906`): all 5 dev issues confirmed fixed
+  (document-wide field detection, hybrid overlay on the 14-page answer, caption
+  geometry, fee-waiver mappings with no `$ $`/boolean-into-dollar/phone-into-utility,
+  Mover/Order names filled, no `Court COURT`).
+- ✅ **MI** — regenerated (commit `a2ed72a`): DC 111a defense→item mapping +
+  details/Item-11 narratives, MC 20 caption/benefit checkboxes (fixed an `ssi`
+  substring false-match on "assistance" fields via word-boundary matching),
+  household size, income frequency, and "Order of Eviction" terminology.
+- ✅ **MN** — regenerated (commit `86d8204`): `_flip` removal, FEE102 caption/verification,
+  cover page, dynamic dates + "Writ of Recovery", and added the HOU202 defense
+  checkboxes (Q5/Q6/Q9/Q10).
+
+**Round 2 complete for the 11 states (AR–MN).**
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
