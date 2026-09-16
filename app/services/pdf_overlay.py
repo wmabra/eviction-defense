@@ -116,23 +116,31 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
             return bool(fin.get("owns_real_estate"))
 
     # ---- 2. Text/position rules (generic or auto-detected checkboxes) ----
+    # Income-source Yes/No rows map to a specific financial key so a tenant with
+    # no such income gets "No" (not an ambiguous unchecked/checked pair). These
+    # are checked BEFORE the asset/housing rules below so a specific source like
+    # "workers compensation" or "child support" wins over broad keywords.
+    income_source_yesno = [
+        (("workers compensation", "workers comp", "workers' comp"), "other_income"),
+        (("insurance benefits", "insurance proceeds"), "other_income"),
+        (("pension", "annuity", "retirement"), "pension_income"),
+        (("child support",), "child_support_income"),
+        (("alimony", "spousal support"), "alimony_income"),
+        (("social security",), "social_security_income"),
+        (("unemployment",), "unemployment_income"),
+        (("self-employment", "self employment", "business", "profession"),
+         "self_employment_income"),
+        (("interest", "dividend"), "other_income"),
+        (("gift", "inherit"), "other_income"),
+        (("other source", "other income", "any other"), "other_income"),
+    ]
     yesno_rules = [
-        (("employed", "salary", "wage", "job", "work"),
+        (("employed", "salary", "wage", "job", "employment"),
          has("employment_income", "self_employment_income")),
-        (("business", "profession", "self-employment", "self employment"),
-         has("self_employment_income")),
-        (("interest", "dividend"),
-         has("other_income", "other_income_description")),
         (("rent or mortgage", "rent or own", "pay rent"),
          bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")),
         (("mortgage", "home loan"),
          bool(fin.get("owns_real_estate")) or bool(fin.get("real_estate_loan_owed"))),
-        (("pension", "annuity", "life insurance", "retirement"),
-         has("pension_income")),
-        (("gift", "inherit"),
-         has("gift_income", "other_income", "other_income_description")),
-        (("other source", "other income", "any other"),
-         has("other_income", "other_income_description")),
         (("cash", "checking", "savings", "account", "money", "bank", "funds"),
          has("checking_balance", "savings_balance", "cash_on_hand")),
         (("automobile", "vehicle", "car", "truck"),
@@ -167,28 +175,30 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
             return (0.0, 0.0, 0.0, 0.0, "")
 
     words = [_bbox(x) for x in page.get_text("words")]
-    clip = fitz.Rect(70, r.y0 - 50, r.x1 + 90, r.y1 + 20)
-    ctx = page.get_text("text", clip=clip).lower()
     cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
           and x[0] >= 70 and x[2] <= r.x1 + 90]
+    # Match keywords only against words on the checkbox's own row (the ±8pt
+    # band) so labels from adjacent rows (e.g. "value of the vehicle" just above
+    # the "own real estate?" row) can't leak into this checkbox's question text.
+    ctx = " ".join(str(x[4]) for x in cw).lower()
 
-    # Yes/No pair — the box's own on_state ('Yes'/'No') is the most reliable
-    # way to tell the two halves apart; the x-distance heuristic was ambiguous
-    # when the label sits to the LEFT of the box ("Yes [ ] No [ ]").
+    # Yes/No pair — decide which side this box is by proximity to the printed
+    # labels. on_state is unreliable here: some templates give every box in a
+    # pair the same on_state (e.g. both report "Yes"), which made both halves
+    # check at once.
     yes_x = no_x = None
     for x in cw:
-        if x[4].lower() == "yes":
+        _w = str(x[4]).lower().strip("[](),.")
+        if _w == "yes":
             yes_x = x[0]
-        elif x[4].lower() == "no":
+        elif _w == "no":
             no_x = x[0]
     if yes_x is not None and no_x is not None:
-        _os = (on_state or "").strip().lower()
-        if _os == "yes":
-            is_yes = True
-        elif _os == "no":
-            is_yes = False
-        else:
-            is_yes = r.x0 < no_x  # YES box sits left of the "No" label
+        is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
+        for kws, key in income_source_yesno:
+            if any(k in ctx for k in kws):
+                _ans = bool(fin.get(key))
+                return (is_yes and _ans) or (not is_yes and not _ans)
         for kws, ans in yesno_rules:
             if any(k in ctx for k in kws):
                 return (is_yes and ans) or (not is_yes and not ans)
@@ -306,6 +316,29 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
     return resolved
 
 
+def _sanitize_zapfdingbats(doc: fitz.Document) -> int:
+    """Strip a bogus /Encoding /WinAnsiEncoding from ZapfDingbats fonts.
+
+    ZapfDingbats is a symbol font whose built-in encoding maps the checkmark
+    glyph; attaching /WinAnsiEncoding makes Poppler/CUPS (and Linux print
+    spoolers) render a digit instead of a checkmark — or drop it entirely — so
+    the official filing's checkboxes print blank. PyMuPDF re-adds the bad
+    encoding to a fresh ZapfDingbats font while generating checkbox appearance
+    streams during widget.update(), so this must also run after all updates,
+    immediately before save.
+    """
+    fixed = 0
+    for _xr in range(1, doc.xref_length()):
+        try:
+            _obj = doc.xref_object(_xr)
+            if "/ZapfDingbats" in _obj and "/WinAnsiEncoding" in _obj:
+                doc.update_object(_xr, _obj.replace("/Encoding /WinAnsiEncoding", ""))
+                fixed += 1
+        except Exception:
+            pass
+    return fixed
+
+
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
@@ -359,16 +392,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
     doc = fitz.open(form_path)
 
-    # Sanitize ZapfDingbats fonts that ship with a bogus /Encoding /WinAnsiEncoding.
-    # Poppler/CUPS (and Linux print spoolers) drop the checkmark glyph, so the
-    # official filing's checkboxes render blank when printed. Strip that key.
-    for _xr in range(1, doc.xref_length()):
-        try:
-            _obj = doc.xref_object(_xr)
-            if "/ZapfDingbats" in _obj and "/WinAnsiEncoding" in _obj:
-                doc.update_object(_xr, _obj.replace("/Encoding /WinAnsiEncoding", ""))
-        except Exception:
-            pass
+    # Sanitize ZapfDingbats fonts in the SOURCE template (some ship with a bogus
+    # /Encoding /WinAnsiEncoding on the /ZaDb font).
+    _sanitize_zapfdingbats(doc)
 
     # Check if form has fillable fields — across ALL pages. Multi-page filings
     # with cover sheets/introductory instructions on page 0 (e.g. LA's 14-page
@@ -459,6 +485,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
     if form_key == "fee_waiver_form":
         _map_fee_waiver_checkboxes(doc, data)
+
+    # PyMuPDF adds a fresh ZapfDingbats font (with /WinAnsiEncoding) while
+    # generating checkbox appearance streams during widget.update(); strip it
+    # again right before save so checkmarks print correctly.
+    _sanitize_zapfdingbats(doc)
 
     doc.save(output_path, deflate=True)
     doc.close()
@@ -831,6 +862,13 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict):
             matched_substring = False
             for val_key, val_value in list(values.items()):
                 if len(val_key) > 30 and len(field_name) > 20:
+                    # Skip sibling rows of a repeated section: "…value of the
+                    # vehicle" vs "…value of the vehicle_2" are distinct fields;
+                    # substring-matching one row's value into another would fill
+                    # a second vehicle/account the tenant never reported.
+                    if re.sub(r'_\d+$', '', field_name) == re.sub(r'_\d+$', '', val_key) \
+                            and field_name != val_key:
+                        continue
                     if field_name in val_key or val_key in field_name:
                         widget.field_value = val_value
                         widget.update()

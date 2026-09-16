@@ -183,6 +183,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Defendant.SEQ002.Name.Full": "",
             "Defendant.SEQ001.HomeAddress.Full": "",
             "Check Box61": "Yes",
+            # Real-estate asset "Address" (fee waiver p4) must NOT receive the
+            # tenant's rental address (perjury hazard). We don't collect a real
+            # estate address, so leave it blank.
+            "Address": "",
         },
         "field_rect_overrides": {
             "fee_waiver_form": {
@@ -207,6 +211,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": "2 Current Address",
             "case_number": "FILE NO",
             "checking_balance": "What is the current balance in your account",
+            "city": "City",
             "court_level": "COURT OF",
             "county": "COUNTY",
             "debt_payments": "Total_2",
@@ -214,10 +219,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "employment_income": "TOTAL AMOUNT OF INCOME RECEIVED PER MONTH IF ANY",
             "full_name": "1 Name",
             "household_children": "2 How many people not including yourself do you currently support",
+            "landlord_name": "undefined",
             "phone": "3 Best Telephone Number to Reach You",
+            "property_zip": "Zip Code",
             "real_estate_loan_owed": "How much do you owe on the property mortgage balance",
             "real_estate_value": "What is the approximate value of the property",
             "savings_balance": "What is the current balance in your account_2",
+            "state": "State",
             "total_monthly_expenses": "Total_3",
             "vehicle_make_model": "Make",
             "vehicle_value": "What is the approximate value of the vehicle",
