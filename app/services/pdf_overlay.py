@@ -1423,9 +1423,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "counterclaim_narrative":
         _dr = defenses.get("def_repairs", {})
         if isinstance(_dr, dict) and _dr.get("checked"):
+            # Keep this to a single line so it never wraps onto (and collides
+            # with) the self-help instruction block below Item 5.
             return ("Defendant asserts a counterclaim against Plaintiff for breach "
-                    "of the warranty of habitability and for the cost of necessary "
-                    "repairs to the premises.")
+                    "of the warranty of habitability.")
         return "Defendant reserves the right to assert counterclaims against Plaintiff."
     
     # Handle numbered defense narrative lines (NM 4-907 style)

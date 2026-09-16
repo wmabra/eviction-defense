@@ -877,7 +877,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "defendant_name": {"page": 6, "x": 67, "y": 292, "w": 333, "h": 16, "size": 11},
             "response_narrative": {"page": 7, "x": 90, "y": 85, "w": 420, "h": 40, "size": 9},
             "defense_narrative": {"page": 8, "x": 90, "y": 350, "w": 420, "h": 120, "size": 9},
-            "counterclaim_narrative": {"page": 8, "x": 65, "y": 590, "w": 500, "h": 130, "size": 9},
+            "counterclaim_narrative": {"page": 8, "x": 90, "y": 590, "w": 420, "h": 25, "size": 9},
             "signature": {"page": 9, "x": 408, "y": 685, "w": 92, "h": 20, "size": 10},
             "phone": {"page": 10, "x": 358, "y": 138, "w": 150, "h": 16, "size": 10},
             "date": {"page": 10, "x": 355, "y": 496, "w": 145, "h": 12, "size": 10},
