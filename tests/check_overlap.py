@@ -90,17 +90,21 @@ def check_overlap(filled_path: str, blank_form_path: str) -> list:
             # check the widget's full height band
             px0 = int(x0 * scale); px1 = int(x1 * scale)
             py0 = int(r.y0 * scale); py1 = int(r.y1 * scale)
+            # An opaque white fill masks whatever sits underneath — an underline
+            # OR printed text — so a value with a white background is always
+            # readable and is not a real overlap (e.g. AR's counterclaim
+            # narrative intentionally covers the self-help instruction block).
+            fc = getattr(wdg, "fill_color", None)
+            has_white_fill = bool(fc) and all(c >= 0.95 for c in fc)
             if _region_has_text_ink(samples, w, h, px0, py0, px1, py1):
-                # Value sits on printed text/label — always a real overlap.
+                if has_white_fill:
+                    continue
                 overlaps.append(
                     f"page {pno}: '{getattr(wdg,'field_name','')}'=({val[:25]!r}) "
                     f"sits on printed text")
                 continue
             if _region_has_line_ink(samples, w, h, px0, py0, px1, py1):
-                # Value sits on an underline: OK only if the widget's white
-                # background fill masks the line (the strikethrough fix).
-                fc = getattr(wdg, "fill_color", None)
-                if fc and all(c >= 0.95 for c in fc):
+                if has_white_fill:
                     continue
                 overlaps.append(
                     f"page {pno}: '{getattr(wdg,'field_name','')}'=({val[:25]!r}) "

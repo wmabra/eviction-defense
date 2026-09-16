@@ -1300,6 +1300,7 @@ def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -
     w.rect = rect
     w.field_value = str(value)
     w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+    w.text_fontsize = font_size
     # Opaque white background masks the template's pre-printed underline so it
     # doesn't strike through the overlaid text; zero border = no visible box.
     w.fill_color = (1, 1, 1)
