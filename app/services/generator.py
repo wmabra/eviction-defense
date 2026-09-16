@@ -2208,13 +2208,19 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     ]
 
     for heading, items in sections:
-        elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
+        block: list = [Paragraph(f"<b>{heading}</b>", S["BodyBold"])]
         for item in items:
             if isinstance(item, str):
-                elements.append(Paragraph(item, S["Body"]))
+                block.append(Paragraph(item, S["Body"]))
             else:
-                elements.append(item)
-            elements.append(Spacer(1, 3))
+                block.append(item)
+            block.append(Spacer(1, 3))
+        # Keep the relief-request block (heading + WHEREFORE + items) together so
+        # the requested relief doesn't orphan its heading across a page break.
+        if "RELIEF REQUESTED" in heading:
+            elements.append(KeepTogether(block))
+        else:
+            elements.extend(block)
         elements.append(Spacer(1, 6))
 
     elements.append(Paragraph(f"Respectfully submitted this {_submitted_today()}.", S["Body"]))
@@ -2321,13 +2327,17 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     ]
 
     for heading, items in sections:
-        elements.append(Paragraph(f"<b>{heading}</b>", S["BodyBold"]))
+        block: list = [Paragraph(f"<b>{heading}</b>", S["BodyBold"])]
         for item in items:
             if isinstance(item, str):
-                elements.append(Paragraph(item, S["Body"]))
+                block.append(Paragraph(item, S["Body"]))
             else:
-                elements.append(item)
-            elements.append(Spacer(1, 3))
+                block.append(item)
+            block.append(Spacer(1, 3))
+        if "RELIEF REQUESTED" in heading:
+            elements.append(KeepTogether(block))
+        else:
+            elements.extend(block)
         elements.append(Spacer(1, 6))
 
     elements.append(Paragraph(f"Respectfully submitted this {_submitted_today()}.", S["Body"]))
