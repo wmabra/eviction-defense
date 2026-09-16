@@ -986,6 +986,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 1, "x": 408, "y": 116, "w": 132, "h": 16, "size": 10},
             "full_name": {"page": 1, "x": 172, "y": 248, "w": 230, "h": 16, "size": 11},
             "date": {"page": 6, "x": 110, "y": 332, "w": 80, "h": 14, "size": 10},
+            "county_page6": {"page": 6, "x": 230, "y": 340, "w": 180, "h": 16, "size": 10},
             "printed_name": {"page": 6, "x": 115, "y": 380, "w": 200, "h": 14, "size": 10},
             "property_address": {"page": 6, "x": 125, "y": 396, "w": 240, "h": 14, "size": 10},
             "city_state_zip": {"page": 6, "x": 155, "y": 412, "w": 220, "h": 14, "size": 10},
