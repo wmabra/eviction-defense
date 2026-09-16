@@ -431,7 +431,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "answer_form": "ct_eviction_answer.pdf",
         "fee_waiver_form": "ct_fee_waiver.pdf",
         "fee_waiver_mapping": {
-            "address": "topmostSubform[0].Page1[0].ADDRAPP[0]",
+            "full_address": "topmostSubform[0].Page1[0].ADDRAPP[0]",
+            "case_name": "NAMECASE[0]",
             "case_number": "DOCKETNO[0]",
             "cash_on_hand": "CASH",
             "checking_balance": "CHECKING",
@@ -504,7 +505,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
             "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
         
-            "court_name": {"page": 1, "x": 546, "y": 46, "w": 200, "h": 16, "size": 10},
+            "court_name": {"page": 1, "x": 350, "y": 46, "w": 150, "h": 16, "size": 10},
             "date": {"page": 1, "x": 144, "y": 299, "w": 120, "h": 16, "size": 10},
             "defense_accepted_rent": {"page": 1, "x": 45, "y": 225, "w": 14, "h": 14, "size": 10},
             "defense_amount": {"page": 1, "x": 97, "y": 129, "w": 14, "h": 14, "size": 10},
@@ -536,6 +537,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_repairs", "label": "Landlord failed to fix conditions / I notified them", "field": "form1[0].FRONT[0].NOTIFIED[0]"},
             {"key": "def_foreclosure", "label": "Property in foreclosure", "field": "form1[0].FRONT[0].FORECLOSE[0]"},
             {"key": "def_pre_termination", "label": "Pre-termination mediation required", "field": "form1[0].FRONT[0].PRETERMINATION[0]"},
+        ],
+        "static_values": {
+            # Part 1 — deny (Disagree) every complaint paragraph 1-8.
+            "PARA1[1]": "Yes", "PARA2[1]": "Yes", "PARA3[1]": "Yes", "PARA4[1]": "Yes",
+            "PARA5[1]": "Yes", "PARA6[1]": "Yes", "PARA7[1]": "Yes", "PARA8[1]": "Yes",
+            # Part 2e — notification recipient (the landlord).
+            "NOTE[0]": "Yes",
+            # Fee waiver (JD-CV-120) — session, case type, filing fee.
+            "topmostSubform[0].Page1[0].COURT[0]": "Yes",
+            "topmostSubform[0].Page1[0].TYPE[1]": "Yes",
+            "topmostSubform[0].Page1[0].FILING[0]": "Yes",
+        },
+        "defense_details": [
+            {"key": "def_repairs", "field": "CODEVIOLA[0]"},
         ],
         "notes": "CT JD-HM-5 form — 62 fillable fields but NO defendant name/address field (form assumes case caption provides it). Tenant data (name, address, phone) uses overlay positions. Landlord info, docket number, and defense checkboxes use fillable fields (full XFA dotted paths).",
     },

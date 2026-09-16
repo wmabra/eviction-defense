@@ -220,11 +220,11 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
         return None
 
     for kws, flag in benefit_text:
-        if any(k in ctx for k in kws):
+        if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
             return flag
 
     for kws, key in income_source_text:
-        if any(k in ctx for k in kws):
+        if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
             return bool(fin.get(key))
 
     return None
@@ -645,6 +645,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
     if "landlord_city_state_zip" not in _all_data:
         _all_data["landlord_city_state_zip"] = ""  # landlord city/state/zip rarely available
+    # Full mailing address (street + city/state/zip) for one-line address fields.
+    if "full_address" not in _all_data:
+        _all_data["full_address"] = ", ".join(x for x in (
+            _all_data.get("property_address", ""), _all_data.get("city_state_zip", "")) if x).strip()
 
     # Composite caption fields (MI DC 111a): name + address + phone in one field.
     if "defendant_composite" not in _all_data:
@@ -691,12 +695,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["mailing_address"] = _all_data["property_address"]
     
     # Certificate fields for CT, LA, and other states — derive from existing data
+    # Certificate of service: the FILER (tenant) signs it and names the RECIPIENT
+    # (landlord or counsel). cert_name/cert_mail/cert_phone are the tenant's own
+    # details; cert_address is the landlord's (or counsel's) name + address.
+    _all_data["landlord_service_address"] = "\n".join(x for x in (
+        _all_data.get(_cert_name_key, ""), _all_data.get(_cert_addr_key, "")) if x).strip()
     cert_synthesis = {
-        "cert_name": _cert_name_key,
-        "cert_address": _cert_addr_key,
+        "cert_name": "full_name",
+        "cert_address": "landlord_service_address",
         "cert_date_signed": None,
         "cert_date": None,
-        "cert_mail": _cert_addr_key,
+        "cert_mail": "city_state_zip",
         "cert_phone": "phone",
         "note": None,
         "notified": None,
@@ -1118,7 +1127,7 @@ _SIG_WORDS = ("sign", "notary", "affiant", "deponent", "witness",
 # signature fields. Without these the substring test wrongly locks them, so an
 # exclusion list is required — a word-boundary match is not an option, because
 # it would stop matching camelCase names like "DefendantSignature".
-_SIG_EXCLUDE = ("print", "design", "assign", "consign")
+_SIG_EXCLUDE = ("print", "design", "assign", "consign", "date", "name")
 _SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d+\b")
 
 

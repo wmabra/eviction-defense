@@ -368,10 +368,6 @@ CT = {
                 "checked": True,
                 "explanation": "The ledger includes unauthorized late fees and charges a month I already paid.",
             },
-            "def_paid": {
-                "checked": True,
-                "explanation": "I paid rent in full for the months claimed except for one disputed balance.",
-            },
         },
         "preferences": {
             "trial_by": "judge",
