@@ -43,7 +43,12 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   sources land on "No" when absent), real-estate asset "Address" no longer gets
   the rental address, plaintiff caption filled, ZapfDingbats re-sanitized, State/Zip
   filled, second vehicle row blank.
-- ⏳ Next: **IL**, then IN, KY, LA, MI, MN.
+- ✅ **IL** — regenerated (commit `ae315a9`): all 6 dev issues confirmed fixed
+  (Circuit Court fee-waiver template, 1a General Denial, no phantom dates, page-4
+  certification, proof-of-delivery → landlord, caption not triplicated); fixed the
+  paragraph-triad radio multi-select and remapped affirmative defenses to their
+  correct 2a–2g checkboxes.
+- ⏳ Next: **IN**, then KY, LA, MI, MN.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
