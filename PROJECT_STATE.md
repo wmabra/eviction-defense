@@ -52,7 +52,10 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   no `$ $`, case number on the page-3 Order, court header + Trial Rule 5(D)
   Certificate of Service added to the rebuilt answer form, stale continuance date
   blanked, payment-plan start date → next month, orphaned page breaks fixed.
-- ⏳ Next: **KY**, then LA, MI, MN.
+- ✅ **KY** — regenerated (commit `c2dde85`): fee-waiver AOC-026 mapping, rent/mortgage
+  checkbox detection, CR 5.03 CoS, phone split, and warrant-for-possession
+  terminology (motion title, cover page, and filename) all confirmed/fixed.
+- ⏳ Next: **LA**, then MI, MN.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
