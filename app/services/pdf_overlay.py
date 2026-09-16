@@ -93,20 +93,23 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state=""):
             ("salary", "employment_income"),
         ]
         for k, key in income_source_names:
-            if k in nm:
+            if re.search(rf'\b{re.escape(k)}\b', nm):
                 return bool(fin.get(key))
         if "no income" in nm:
             return not has("employment_income", "monthly_gross_income")
         benefit_names = [
             ("snap", "receives_snap"), ("food stamp", "receives_snap"),
+            ("food assistance", "receives_snap"),
+            ("general assistance", "receives_tanf"),
+            ("receive public assistance", "receives_public_benefits"),
             ("medicaid", "receives_medicaid"), ("medical", "receives_medicaid"),
             ("ssi", "receives_ssi"), ("tanf", "receives_tanf"),
-            ("aabd", "receives_tanf"), ("general assistance", "receives_tanf"),
+            ("aabd", "receives_tanf"),
             ("family independence", "receives_tanf"),  # MI TANF (SCAO MC 20)
             ("women infants", "receives_wic"),  # MI WIC (SCAO MC 20)
         ]
         for k, key in benefit_names:
-            if k in nm:
+            if re.search(rf'\b{re.escape(k)}\b', nm):
                 return bool(fin.get(key))
 
         # KY AOC-026 page-1 expense-type checkboxes (rent vs mortgage).
