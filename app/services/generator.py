@@ -428,7 +428,12 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     # Emergency Motion to Stay Writ — post-judgment, facing lockout
     if pref.get("facing_writ_possession"):
         cond_seq += 1
-        stay_writ_path = os.path.join(output_dir, f"{cond_seq:02d}_emergency_motion_stay_writ.pdf")
+        # Kentucky calls this a "Warrant for Possession" (AOC-220); keep the
+        # filename consistent with the state's terminology.
+        _stay_fname = (f"{cond_seq:02d}_emergency_motion_stay_warrant.pdf"
+                       if base.get("state", "").upper() == "KY"
+                       else f"{cond_seq:02d}_emergency_motion_stay_writ.pdf")
+        stay_writ_path = os.path.join(output_dir, _stay_fname)
         _generate_emergency_motion_stay_writ(base, stay_writ_path)
         paths["emergency_motion_stay_writ"] = stay_writ_path
 
