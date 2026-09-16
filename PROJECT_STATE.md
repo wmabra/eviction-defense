@@ -48,7 +48,11 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   certification, proof-of-delivery → landlord, caption not triplicated); fixed the
   paragraph-triad radio multi-select and remapped affirmative defenses to their
   correct 2a–2g checkboxes.
-- ⏳ Next: **IN**, then KY, LA, MI, MN.
+- ✅ **IN** — regenerated (commit `5d370ce`): inverted parties (tenant=Petitioner),
+  no `$ $`, case number on the page-3 Order, court header + Trial Rule 5(D)
+  Certificate of Service added to the rebuilt answer form, stale continuance date
+  blanked, payment-plan start date → next month, orphaned page breaks fixed.
+- ⏳ Next: **KY**, then LA, MI, MN.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
