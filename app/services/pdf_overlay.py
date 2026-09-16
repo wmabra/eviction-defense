@@ -391,6 +391,26 @@ def _sanitize_zapfdingbats(doc: fitz.Document) -> int:
     return fixed
 
 
+def _unhide_filled_widgets(doc: fitz.Document) -> None:
+    """Clear the /F (Hidden) annotation flag on every populated widget.
+
+    Some official templates (e.g. Colorado JDF 103) ship conditional child
+    fields with /F 2 (Hidden); Adobe Acrobat's embedded JS normally unhides
+    them when a parent radio is toggled. Programmatic filling sets the value
+    (/V) and appearance stream (/AP) but leaves /F intact, so the values stay
+    invisible in viewers and prints. field_display = 0 forces visible+print.
+    """
+    for page in doc:
+        for w in page.widgets():
+            val = getattr(w, "field_value", None)
+            if val not in ("", "Off", None, False) and getattr(w, "field_display", 0) != 0:
+                w.field_display = 0
+                try:
+                    w.update()
+                except Exception:
+                    pass
+
+
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
@@ -537,6 +557,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
     if form_key == "fee_waiver_form":
         _map_fee_waiver_checkboxes(doc, data, config)
+
+    # Unhide any filled widgets that still carry the template's /F (Hidden) flag.
+    _unhide_filled_widgets(doc)
 
     # PyMuPDF adds a fresh ZapfDingbats font (with /WinAnsiEncoding) while
     # generating checkbox appearance streams during widget.update(); strip it

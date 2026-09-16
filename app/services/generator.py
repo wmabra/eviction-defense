@@ -1346,7 +1346,7 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("6. Writ of Possession", "10+ days after judgment", "Sheriff posts notice and executes eviction."),
         ],
         "CO": [
-            ("1. Demand for Possession", "3-10 days", "Landlord serves written demand (3 days for nonpayment, 10 for lease violation)."),
+            ("1. Demand for Possession", "10 days", "Landlord serves written demand (10 days for nonpayment under C.R.S. § 13-40-104(1)(d), 10 for lease violation)."),
             ("2. Summons in Forcible Entry", "After demand", "Landlord files complaint. You receive summons with court date."),
             ("3. File Answer", "By court date", "YOU ARE HERE. File answer before or at the return date on the summons."),
             ("4. Trial", "On return date", "Quick hearing. Judge hears both sides. Colorado courts move fast."),
@@ -1876,7 +1876,7 @@ def _generate_demand_letter(data: dict, output_path: str):
     if not _repair_text:
         _rp = data.get("rent_payment", {}) or {}
         _repair_text = _rp.get("repair_notice_details", "") or ""
-    elements.append(_editable_field("demand_repairs", _repair_text, width=500))
+    elements.append(_editable_field("demand_repairs", _repair_text, width=500, height=48))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(
         "These conditions affect the health and safety of my household. I have previously "
@@ -1979,17 +1979,19 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
 
     # Certificate of Service
     svc_name, svc_addr = _service_recipient(data)
-    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
-    elements.append(Paragraph(
-        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Hearing was "
-        f"delivered to {svc_name} at {svc_addr or '[ADDRESS]'}.", S["BodySmall"]))
     _svc = Table([
         [FillableCheckbox("mh_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
          FillableCheckbox("mh_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
          FillableCheckbox("mh_svc_2"), Paragraph("Email", S["BodySmall"])],
     ], colWidths=[18, 110, 18, 90, 18, 70])
     _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    elements.append(_svc)
+    elements.append(KeepTogether([
+        Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]),
+        Paragraph(
+            f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Hearing was "
+            f"delivered to {svc_name} at {svc_addr or '[ADDRESS]'}.", S["BodySmall"]),
+        _svc,
+    ]))
 
     doc.build(elements)
 
@@ -2041,7 +2043,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
 
     elements.append(Paragraph(
         f"3. The Defendant respectfully requests a continuance of the scheduled hearing for "
-        f"the following reasons: {reason}.", S["Body"]))
+        f"the following reasons: {reason.rstrip('.')}.", S["Body"]))
     elements.append(Spacer(1, 4))
 
     elements.append(Paragraph("4. The Defendant needs additional time to: (check all that apply)", S["Body"]))
@@ -2078,13 +2080,15 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     ], col_widths=(180, 80)))
     elements.append(Spacer(1, 4))
 
-    elements.append(Paragraph(
-        "7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
-        "motion by (email, mail, or hand delivery):", S["Body"]))
-    elements.append(_field_table([
-        [Paragraph("Delivery method:", S["Body"]), _editable_field("continuance_notify_method", "", width=130)],
-        [Paragraph("Date:", S["Body"]), _editable_field("continuance_notify_date", "", width=90)],
-    ], col_widths=(120, 200)))
+    elements.append(KeepTogether([
+        Paragraph(
+            "7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
+            "motion by (email, mail, or hand delivery):", S["Body"]),
+        _field_table([
+            [Paragraph("Delivery method:", S["Body"]), _editable_field("continuance_notify_method", "", width=130)],
+            [Paragraph("Date:", S["Body"]), _editable_field("continuance_notify_date", "", width=90)],
+        ], col_widths=(120, 200)),
+    ]))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("The Plaintiff's position on this motion is:", S["Body"]))
     _cc = Table([
@@ -2495,22 +2499,24 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.append(Spacer(1, 14))
 
     svc_name, svc_addr = _service_recipient(data)
-    elements.append(Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]))
-    elements.append(Paragraph(
-        f"I HEREBY CERTIFY that a true and correct copy of the foregoing Notice of Automatic Stay "
-        f"Due to Bankruptcy Filing was furnished to:", S["BodySmall"]))
-    elements.append(Paragraph(f"• {svc_name} at {svc_addr or '[ADDRESS]'}", S["BodySmall"]))
     _s1 = Table([[FillableCheckbox("bk_svc1_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc1_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
     _s1.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    elements.append(_s1)
-    elements.append(Paragraph("• Clerk of Court", S["BodySmall"]))
     _s2 = Table([[FillableCheckbox("bk_svc2_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc2_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
     _s2.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    elements.append(_s2)
-    elements.append(Paragraph("• Landlord's Attorney (if applicable)", S["BodySmall"]))
     _s3 = Table([[FillableCheckbox("bk_svc3_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc3_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
     _s3.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    elements.append(_s3)
+    elements.append(KeepTogether([
+        Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]),
+        Paragraph(
+            f"I HEREBY CERTIFY that a true and correct copy of the foregoing Notice of Automatic Stay "
+            f"Due to Bankruptcy Filing was furnished to:", S["BodySmall"]),
+        Paragraph(f"• {svc_name} at {svc_addr or '[ADDRESS]'}", S["BodySmall"]),
+        _s1,
+        Paragraph("• Clerk of Court", S["BodySmall"]),
+        _s2,
+        Paragraph("• Landlord's Attorney (if applicable)", S["BodySmall"]),
+        _s3,
+    ]))
 
     doc.build(elements)
 
