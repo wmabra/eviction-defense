@@ -162,6 +162,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "ga_fee_waiver.pdf",
         "has_fillable_fields": True,
         "court_type": "Magistrate Court",
+        "strip_dollar_signs": True,
         "field_mapping": {
             "date": "Date.CurrentDate.SlashMDY",
             "county": "County.Selection",
@@ -185,6 +186,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             # tenant's rental address (perjury hazard). We don't collect a real
             # estate address, so leave it blank.
             "Address": "",
+            # Uniform IFP Affidavit (fee waiver) static overrides.
+            "Deputy Clerk of Magistrate Court": "Fulton County Magistrate",
+            "Check Box63": "Yes",  # Marital status: Single
+            "Check Box21": "Yes",  # AFDC: No
+            "Check Box33": "Yes",  # Public housing: No
+            "Check Box59": "Yes",  # Valuable personal property: No
+            "Check Box2": "Yes",   # Extraordinary medical expenses: No
+            "Check Box4": "Yes",   # Other circumstances: No
         },
         "field_rect_overrides": {
             "fee_waiver_form": {
@@ -242,7 +251,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "real_estate_value": "What is the approximate value of the property",
             "savings_balance": "What is the current balance in your account_2",
             "state": "State",
-            "total_monthly_expenses": "Total_3",
             "vehicle_make_model": "Make",
             "vehicle_value": "What is the approximate value of the vehicle",
         },
