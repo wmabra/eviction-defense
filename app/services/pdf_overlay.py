@@ -89,7 +89,6 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             ("self employment", "self_employment_income"),
             ("business", "self_employment_income"),
             ("employment", "employment_income"),
-            ("employed", "employment_income"),
             ("wages", "employment_income"),
             ("salary", "employment_income"),
         ]
@@ -848,6 +847,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # collide with unrelated widgets on the ANSWER form (e.g. "6.5" on JDF 103).
     if form_key == "fee_waiver_form":
         financial = data.get("financial_info", {})
+        # Louisiana fee waiver: derived status checkboxes (Employed / Bank / Single).
+        if "is_employed" not in _all_data:
+            _all_data["is_employed"] = "Yes" if (financial.get("employment_income") or financial.get("monthly_gross_income")) else "No"
+        if "has_bank_account" not in _all_data:
+            _all_data["has_bank_account"] = "Yes" if (financial.get("checking_balance") or financial.get("savings_balance") or financial.get("cash_on_hand")) else "No"
+        if "is_single" not in _all_data:
+            try:
+                _adults = int(financial.get("household_adults") or 1)
+            except (TypeError, ValueError):
+                _adults = 1
+            _all_data["is_single"] = "Yes" if _adults <= 1 else "No"
         # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
         # and the tenant receives categorical assistance, leave the income/expense/asset
         # fields blank (they are only required when categorical assistance is absent).
