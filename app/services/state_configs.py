@@ -178,6 +178,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_address": "Defendant.SEQ001.HomeAddress.Full",
             "reduced_rent_amount": "Property.ReducedRentAmt",
             "reduced_rent_months": "Property.ReducedRentNumberMonths",
+            "defense_narrative": "Answer.AdditionalReasons",
         },
         "static_values": {
             "IsDefendant": "Yes",
@@ -202,10 +203,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 "COURT OF": {"text_fontsize": 9},
             },
             "answer_form": {
-                # Native "additional reasons" widgets ship ~5.6pt wide in the
-                # bottom margin; widen them to the printed blank line.
-                "Answer.AdditionalReasons": {"x1": 493, "text_fontsize": 9},
-                "CounterClaim.AdditionalReasons": {"x1": 493, "text_fontsize": 9},
+                # Native "additional reasons" widgets ship displaced to the
+                # bottom footer (y≈757); move them onto the printed blank lines.
+                "Answer.AdditionalReasons": {"x0": 115, "y0": 426, "x1": 530, "y1": 438, "text_fontsize": 9},
+                "CounterClaim.AdditionalReasons": {"x0": 115, "y0": 450, "x1": 530, "y1": 462, "text_fontsize": 9},
             },
         },
         "fee_waiver_checkbox_map": {
@@ -224,7 +225,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_not_owner", "label": "No landlord-tenant relationship", "field": "NoLTRel"},
             {"key": "def_bad_notice", "label": "Improper notice / no proper demand", "field": "Reason.NoNotice"},
             {"key": "def_bad_notice", "label": "Terminated without valid reason", "field": "Reason.Invalid"},
-            {"key": "def_amount", "label": "Do not owe any rent", "field": "Reason.NoRentDue"},
             {"key": "def_attempted_pay", "label": "Offered to pay but landlord refused", "field": "Reason.OfferedToPay"},
             {"key": "def_attempted_pay", "label": "Landlord refused payment with costs", "field": "Reason.LandlordRefusePayment"},
             {"key": "def_repairs", "label": "Landlord failed to repair property", "field": "Reason.FailedToRepair"},
@@ -241,7 +241,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "city": "City",
             "court_level": "COURT OF",
             "county": "COUNTY",
-            "debt_payments": "Total_2",
+            "total_monthly_liabilities": "Total_2",
             "email": "4 Email Address",
             "employment_income": "TOTAL AMOUNT OF INCOME RECEIVED PER MONTH IF ANY",
             "full_name": "1 Name",

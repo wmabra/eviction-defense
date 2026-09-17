@@ -234,6 +234,17 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
                 return (is_yes and _ans) or (not is_yes and not _ans)
         for kws, ans in yesno_rules:
             if any(k in ctx for k in kws):
+                # KY AOC-026 "Are you employed?" prints three boxes — "Yes,
+                # full-time", "Yes, part-time", "No". Both Yes boxes sit near a
+                # Yes label so is_yes alone can't tell them apart; use the box's
+                # x-position to select full- vs part-time so both don't check.
+                if any(k in kws for k in ("employed", "employment")):
+                    _is_part = fin.get("employment_status") == "part_time"
+                    if not is_yes:
+                        return not ans
+                    if "part" in ctx and r.x0 > 200:
+                        return _is_part and ans
+                    return (not _is_part) and ans
                 return (is_yes and ans) or (not is_yes and not ans)
         return None
 
@@ -575,7 +586,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 nm = str(getattr(w, "field_name", "") or "").lower()
                 if r.x0 < 90 and any(k in nm for k in ("plaintiff", "defendant", "printed")):
                     r = fitz.Rect(130, r.y0, r.x1, r.y1)
-                elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")):
+                elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
+                        and "ky_eviction_answer" not in form_path \
+                        and "in_eviction_answer" not in form_path:
                     r = fitz.Rect(400, r.y0, r.x1, r.y1)
                 w.rect = fitz.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
@@ -942,6 +955,21 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 values["Text Field 16"] = str(_ch)
                 values["Text Field 17"] = "Children"
             values["Text Field 14"] = "Single" if _adults <= 1 else "Married"
+
+        # Georgia Fee Waiver: split vehicle year/make/model into separate native
+        # fields and compute Section F.1 total liabilities (rent + debt).
+        if state_code == "GA":
+            _v = str(financial.get("vehicle_make_model") or "").strip().split()
+            if len(_v) >= 3 and _v[0].isdigit() and len(_v[0]) == 4:
+                values["Year"] = _v[0]
+                values["Make"] = _v[1]
+                values["Model"] = " ".join(_v[2:])
+            if "total_monthly_liabilities" in fw_mapping:
+                _rent = _to_float(financial.get("rent_or_mortgage") or c.get("monthly_rent") or 0.0)
+                _debt = _to_float(financial.get("debt_payments") or 0.0)
+                _liab = _rent + _debt
+                if _liab > 0:
+                    values[fw_mapping["total_monthly_liabilities"]] = f"{_liab:,.2f}"
     
     # Date
     if "date" in mapping:
