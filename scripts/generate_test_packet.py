@@ -1000,6 +1000,8 @@ MN = {
         "case_details": {
             "case_number": "27-HC-24-1234",
             "court_name": "Hennepin County Housing Court",
+            "judicial_district": "4th",
+            "case_type": "Housing",
             "complaint_amount_claimed": 1750.00,
             "summons_service_date": "2024-04-05",
             "response_deadline": "2024-04-12",

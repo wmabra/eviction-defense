@@ -501,6 +501,8 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
                            "whether rent escrow is warranted pursuant to KRS 383.670 (URLTA).")
     elif state == "MI":
         _deposit_clause = "determine the amount of rent to be deposited into escrow pursuant to MCR 4.201(I)(2)."
+    elif state == "MN":
+        _deposit_clause = "determine the amount of rent to be deposited into court escrow pursuant to Minn. Stat. § 504B.385."
     else:
         _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(

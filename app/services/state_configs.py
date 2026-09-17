@@ -976,9 +976,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "full_name": {"page": 1, "x": 76, "y": 275, "w": 235, "h": 16, "size": 11},
             "address": {"page": 1, "x": 76, "y": 323, "w": 235, "h": 16, "size": 11},
             # Form HOU202 defense checkboxes (Q5/Q6/Q9/Q10)
-            "def_amount": {"page": 2, "x": 95, "y": 472, "w": 14, "h": 14},
+            "def_amount": {"page": 2, "x": 95, "y": 393, "w": 14, "h": 14},
             "def_bad_notice": {"page": 2, "x": 95, "y": 527, "w": 14, "h": 14},
-            "def_repairs": {"page": 3, "x": 95, "y": 76, "w": 14, "h": 14},
+            "def_repairs": {"page": 3, "x": 95, "y": 162, "w": 14, "h": 14},
             "def_other": {"page": 3, "x": 95, "y": 136, "w": 14, "h": 14},
             # Defense explanations routed to their matching items
             "explanation_def_amount": {"page": 2, "x": 108, "y": 425, "w": 440, "h": 80, "size": 8},
@@ -997,6 +997,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_overlay": {
             "county": {"page": 1, "x": 132, "y": 116, "w": 150, "h": 16, "size": 10},
             "case_number": {"page": 1, "x": 408, "y": 116, "w": 132, "h": 16, "size": 10},
+            "plaintiff_name": {"page": 1, "x": 170, "y": 195, "w": 230, "h": 14, "size": 11},
+            "judicial_district": {"page": 1, "x": 150, "y": 142, "w": 100, "h": 14, "size": 10},
+            "case_type": {"page": 1, "x": 400, "y": 142, "w": 120, "h": 14, "size": 10},
             "full_name": {"page": 1, "x": 172, "y": 248, "w": 230, "h": 16, "size": 11},
             "date": {"page": 6, "x": 110, "y": 332, "w": 80, "h": 14, "size": 10},
             "county_page6": {"page": 6, "x": 230, "y": 340, "w": 180, "h": 16, "size": 10},

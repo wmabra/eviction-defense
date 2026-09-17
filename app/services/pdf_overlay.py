@@ -161,14 +161,20 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
         (("employment", "wages", "salary", "job"), "employment_income"),
     ]
     benefit_text = [
+        # Parent "I receive public assistance" branch: check it when ANY benefit
+        # is received. Keep this FIRST so the parent row (which also lists the
+        # first program, e.g. "SSI", on the next line) isn't short-circuited by
+        # the specific-benefit rules below.
+        (("public assistance",), bool(fin.get("receives_snap") or fin.get("receives_medicaid") or
+                                      fin.get("receives_ssi") or fin.get("receives_tanf") or
+                                      fin.get("receives_public_benefits"))),
         (("snap", "food stamp", "food assistance"), bool(fin.get("receives_snap"))),
         (("medicaid", "medical assistance", "medical"), bool(fin.get("receives_medicaid"))),
         (("supp. security", "supp security", "supplemental security", "ssi"),
          bool(fin.get("receives_ssi"))),
         (("aid to the blind", "aid to blind"), bool(fin.get("receives_ssi"))),
         (("old age", "old-age"), bool(fin.get("receives_ssi"))),
-        (("tanf", "family assistance", "general assistance", "public assistance"),
-         bool(fin.get("receives_tanf"))),
+        (("tanf", "family assistance", "general assistance"), bool(fin.get("receives_tanf"))),
     ]
 
     def _bbox(t):
@@ -179,7 +185,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
 
     words = [_bbox(x) for x in page.get_text("words")]
     cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
-          and x[0] >= 70 and x[2] <= r.x1 + 90]
+          and x[0] >= 70 and x[2] <= 590]
     # Match keywords only against words on the checkbox's own row (the ±8pt
     # band) so labels from adjacent rows (e.g. "value of the vehicle" just above
     # the "own real estate?" row) can't leak into this checkbox's question text.
@@ -195,7 +201,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     # (e.g. "If yes, please list all other income sources...") contains the word
     # "yes," and would otherwise overwrite the real label x-position.
     for x in words:
-        if not (x[1] < r.y1 + 2 and x[3] > r.y0 - 8 and x[0] >= 70 and x[2] <= r.x1 + 90):
+        if not (x[1] < r.y1 + 2 and x[3] > r.y0 - 8 and x[0] >= 70 and x[2] <= 590):
             continue
         _w = str(x[4]).lower().strip("[](),.")
         if _w == "yes":
@@ -1563,6 +1569,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         ) if x),
         "county": p.get("county"),
         "court_type": "Magistrate Court",  # default, overridden for Bernalillo County
+        "judicial_district": c.get("judicial_district", ""),
+        "case_type": c.get("case_type", ""),
         "landlord_name": l.get("landlord_name"),
         "plaintiff_name": l.get("landlord_name"),
         "landlord_address": l.get("landlord_address"),
