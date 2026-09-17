@@ -148,6 +148,7 @@ class FillableText(Flowable):
             fontName="Helvetica",
             fontSize=self.font_size,
             fieldFlags="multiline",
+            maxlen=0,  # 0 removes ReportLab's default 100-character cap
         )
 
 

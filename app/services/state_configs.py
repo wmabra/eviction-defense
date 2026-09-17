@@ -1334,6 +1334,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "strip_dollar_signs": True,
         "fee_waiver_overlay": {
             "case_number": {"page": 1, "x": 355, "y": 62, "w": 140, "h": 16, "size": 11},
+            "date": {"page": 2, "x": 72, "y": 553, "w": 150, "h": 16, "size": 10},
             "case_number_page3": {"page": 3, "x": 335, "y": 100, "w": 160, "h": 16, "size": 10},
         },
         "has_fillable_fields": True,

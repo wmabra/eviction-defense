@@ -228,6 +228,7 @@ EVICTION_LAW_CHAPTERS = {
     "TX": "Texas Property Code Chapter 24",
     "GA": "O.C.G.A. Title 44, Chapter 7",
     "IL": "735 ILCS 5, Article IX (Forcible Entry and Detainer)",
+    "IN": "Indiana Code § 32-31-1 et seq. (Landlord-Tenant Relations) and Small Claims Rule 8",
     "MI": "MCL 600.5701 et seq. (Summary Proceedings)",
     "OR": "ORS Chapter 105 (Forcible Entry and Detainer)",
     "MN": "Minnesota Statutes Chapter 504B",
@@ -470,7 +471,7 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
 # ======================== MOTION TO DETERMINE RENT ========================
 
 def _generate_motion_to_determine_rent(data: dict, output_path: str):
-    """Generate Motion to Determine Rent under §83.60(2)."""
+    """Generate a Motion to Determine Rent (state-specific deposit language)."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
                             topMargin=0.75*inch, bottomMargin=0.75*inch)
     styles = _get_styles()
@@ -481,15 +482,21 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     r = data.get("rent_payment", {})
+    state = data.get("state", "").upper()
 
     elements.extend(_editable_caption(data, S))
     elements.append(Paragraph("DEFENDANT'S MOTION TO DETERMINE RENT", S["FormTitle"]))
     elements.append(Spacer(1, 12))
 
+    # Florida (F.S. § 83.60) uses a court-registry deposit; most other states
+    # simply ask the court to determine the correct amount owed.
+    if state == "FL":
+        _deposit_clause = "determine the amount of rent to be deposited into the Court Registry."
+    else:
+        _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(
         f"Defendant, {p.get('full_name', '[FULL NAME]')}, by and through this self-help filing, "
-        f"respectfully requests this Court to determine the amount of rent to be deposited "
-        f"into the Court Registry.", S["Body"]
+        f"respectfully requests this Court to {_deposit_clause}", S["Body"]
     ))
     elements.append(Spacer(1, 8))
 
