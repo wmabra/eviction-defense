@@ -210,6 +210,12 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             is_yes = False
         else:
             is_yes = abs(r.x0 - yes_x) < abs(r.x0 - no_x)
+        # Guard: a "spouse employed?" question must not use the applicant's own
+        # employment income (KY AOC-026 Item 4 otherwise falsely swears the
+        # spouse works). A single tenant has no spouse_income -> "No".
+        if "spouse" in ctx and any(k in ctx for k in ("employed", "salary", "work")):
+            _spouse_employed = bool(fin.get("spouse_income"))
+            return (is_yes and _spouse_employed) or (not is_yes and not _spouse_employed)
         # Explicit per-form Yes/No map (e.g. AR's "Check BoxN" financial
         # indicators whose question text sits on the line above the box).
         if checkbox_map and field_name in checkbox_map:
@@ -752,7 +758,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     _all_data["landlord_service_address"] = "\n".join(x for x in (
         _all_data.get(_cert_name_key, ""), _all_data.get(_cert_addr_key, "")) if x).strip()
     cert_synthesis = {
-        "cert_name": "full_name",
+        "cert_name": "landlord_name" if state_code in ("KY", "IN") else "full_name",
         "cert_address": "landlord_service_address",
         "cert_date_signed": None,
         "cert_date": None,
@@ -830,6 +836,22 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         for fname in config.get("fee_waiver_name_fields", []):
             if fname not in values:
                 values[fname] = p.get("full_name", "")
+
+        # KY AOC-026: populate dependents count/relationship and marital status
+        # from intake household data (otherwise left blank).
+        if state_code == "KY":
+            try:
+                _ch = int(financial.get("household_children") or 0)
+            except (TypeError, ValueError):
+                _ch = 0
+            try:
+                _adults = int(financial.get("household_adults") or 1)
+            except (TypeError, ValueError):
+                _adults = 1
+            if _ch:
+                values["Text Field 16"] = str(_ch)
+                values["Text Field 17"] = "Children"
+            values["Text Field 14"] = "Single" if _adults <= 1 else "Married"
     
     # Date
     if "date" in mapping:

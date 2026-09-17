@@ -488,10 +488,14 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     elements.append(Paragraph("DEFENDANT'S MOTION TO DETERMINE RENT", S["FormTitle"]))
     elements.append(Spacer(1, 12))
 
-    # Florida (F.S. § 83.60) uses a court-registry deposit; most other states
-    # simply ask the court to determine the correct amount owed.
+    # Florida (F.S. § 83.60) uses a court-registry deposit; Kentucky (KRS
+    # 383.670) uses URLTA rent escrow; most other states simply ask the court to
+    # determine the correct amount owed.
     if state == "FL":
         _deposit_clause = "determine the amount of rent to be deposited into the Court Registry."
+    elif state == "KY":
+        _deposit_clause = ("determine the correct amount of rent owed, if any, and determine "
+                           "whether rent escrow is warranted pursuant to KRS 383.670 (URLTA).")
     else:
         _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(
