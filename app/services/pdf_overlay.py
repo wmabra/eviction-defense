@@ -992,7 +992,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                                 r'birth|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
                                 r'date.*(start|fixed|repair|lease|rent|notice|problem)|'
-                                r'telephone|utility|expense|bill|monthly|section', re.IGNORECASE)
+                                r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
     
     # Apply to each page
     for page_num in range(len(doc)):

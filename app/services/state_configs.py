@@ -811,6 +811,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 3, "x": 390, "y": 87, "w": 180, "h": 16, "size": 10},
             "full_name": {"page": 3, "x": 150, "y": 189, "w": 230, "h": 16, "size": 10},
             "court_name": {"page": 3, "x": 460, "y": 191, "w": 180, "h": 16, "size": 9},
+            # Page 11: Section 5 notary verification block (La. C.C.P. art. 4735).
+            "full_name_p11": {"page": 11, "x": 75, "y": 226, "w": 210, "h": 16, "size": 11},
+            "date_p11": {"page": 11, "x": 75, "y": 366, "w": 210, "h": 16, "size": 11},
         },
         "defense_options": [
             {"key": "def_continuance", "label": "Request continuance to reschedule hearing", "field": "I would like to request that the court grant a continuance and reschedule my hearing"},

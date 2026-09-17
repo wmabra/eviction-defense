@@ -264,6 +264,11 @@ def _writ_term(state: str) -> str:
     return WRIT_TERMS.get(state.upper(), "Writ of Possession")
 
 
+def _jurisdiction_label(state: str) -> str:
+    """Return 'Parish' for Louisiana and 'County' for all other states."""
+    return "Parish" if state.upper() == "LA" else "County"
+
+
 def _submitted_today() -> str:
     """Today's date formatted for motion signature blocks (e.g. "15th day of September, 2026")."""
     d = date.today()
@@ -1142,7 +1147,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
     elements.append(Spacer(1, 6))
     elements.append(Paragraph(
         f"<b>Prepared for:</b> {full_name}<br/>"
-        f"<b>County:</b> {county}, {state}",
+        f"<b>{_jurisdiction_label(state)}:</b> {county}, {state}",
         S["BodySmall"]
     ))
     elements.append(Spacer(1, 10))
@@ -1154,7 +1159,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
     elements.append(Spacer(1, 12))
 
     if db_resources or region_phones:
-        elements.append(Paragraph(f"<b>Local Resources — {county} County</b>", S["BodyBold"]))
+        elements.append(Paragraph(f"<b>Local Resources — {county} {_jurisdiction_label(state)}</b>", S["BodyBold"]))
         elements.append(Spacer(1, 8))
 
         if db_resources:
@@ -2558,7 +2563,7 @@ def _generate_cover_page(data: dict, paths: dict, output_path: str):
     elements.append(Paragraph(
         f"<b>Case:</b> {l.get('landlord_name', 'Landlord')} v. {p.get('full_name', 'Tenant')}<br/>"
         f"<b>Case No:</b> {c.get('case_number', 'N/A')}<br/>"
-        f"<b>County:</b> {p.get('county', 'N/A')}, {state}",
+        f"<b>{_jurisdiction_label(state)}:</b> {p.get('county', 'N/A')}, {state}",
         S["BodySmall"]
     ))
     elements.append(Spacer(1, 0.5*inch))
