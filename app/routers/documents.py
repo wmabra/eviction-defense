@@ -437,7 +437,7 @@ def _merge_intake_and_extraction(intake_data: dict, extraction_result: dict) -> 
 async def generate_packet_get(
     full_name: str = "",
     county: str = "",
-    state: str = "FL",
+    state: str = "TX",
     property_address: str = "",
     landlord_name: str = "",
     case_number: str = "",
@@ -463,7 +463,7 @@ async def generate_packet_post(request: Request):
     
     full_name = body.get("full_name") or p.get("full_name", "Tenant")
     county = body.get("county") or p.get("county", "")
-    state = body.get("state", "FL")
+    state = body.get("state", "TX")
     
     data = {
         "state": state.upper(),
@@ -485,7 +485,7 @@ async def generate_packet_post(request: Request):
 def _build_and_return_packet(
     full_name: str,
     county: str,
-    state: str = "FL",
+    state: str = "TX",
     property_address: str = "",
     landlord_name: str = "",
     case_number: str = "",

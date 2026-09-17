@@ -12,7 +12,7 @@ All tiers: 2 images
 
 Usage:
     python3 enrich_seo_pages.py                    # all pages
-    python3 enrich_seo_pages.py --state florida    # one state
+    python3 enrich_seo_pages.py --state texas     # one state
     python3 enrich_seo_pages.py --dry-run          # preview only
     python3 enrich_seo_pages.py --resume           # continue from last saved checkpoint
 """
@@ -40,28 +40,44 @@ REQUEST_DELAY = 1.2  # seconds between API calls
 
 def load_progress():
     if os.path.exists(PROGRESS_FILE):
-        with open(PROGRESS_FILE) as f:
-            return json.load(f)
+        try:
+            with open(PROGRESS_FILE) as f:
+                return json.load(f)
+        except (OSError, json.JSONDecodeError):
+            print(f"WARNING: Could not read progress file {PROGRESS_FILE}; starting fresh.")
     return {"completed": [], "images_downloaded": {}}
 
 def save_progress(progress):
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(progress, f)
+    try:
+        with open(PROGRESS_FILE, "w") as f:
+            json.dump(progress, f)
+    except OSError:
+        print(f"WARNING: Could not save progress file {PROGRESS_FILE}.")
 
 def backup_file(fpath):
-    rel = os.path.relpath(fpath, SEO_DIR)
-    dest = os.path.join(BACKUP_DIR, rel)
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
-    if not os.path.exists(dest):
-        shutil.copy2(fpath, dest)
+    try:
+        rel = os.path.relpath(fpath, SEO_DIR)
+        dest = os.path.join(BACKUP_DIR, rel)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        if not os.path.exists(dest):
+            shutil.copy2(fpath, dest)
+    except OSError as e:
+        print(f"WARNING: Could not back up {fpath}: {e}")
 
 def read_file(fpath):
-    with open(fpath, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        with open(fpath, "r", encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        print(f"WARNING: Could not read {fpath}.")
+        return ""
 
 def write_file(fpath, content):
-    with open(fpath, "w", encoding="utf-8") as f:
-        f.write(content)
+    try:
+        with open(fpath, "w", encoding="utf-8") as f:
+            f.write(content)
+    except OSError:
+        print(f"WARNING: Could not write {fpath}.")
 
 # ── LLM Content Generation ─────────────────────────────────
 
@@ -178,8 +194,11 @@ def _wikimedia_request(url: str) -> dict:
         url,
         headers={"User-Agent": "evictions.help/1.0 (https://evictions.help; support@evictions.help)"}
     )
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        return json.loads(resp.read())
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read())
+    except (OSError, json.JSONDecodeError):
+        return {}
 
 
 def search_wikimedia(query: str, limit: int = 8) -> list[dict]:
@@ -287,7 +306,11 @@ def find_location_images(location_name: str, state_name: str = "", progress: dic
     target_dir = cache_key.replace(" ", "_").lower()
     target_dir = re.sub(r"[^a-z0-9_/-]", "", target_dir)
     dest_dir = os.path.join(ASSETS_DIR, target_dir)
-    os.makedirs(dest_dir, exist_ok=True)
+    try:
+        os.makedirs(dest_dir, exist_ok=True)
+    except OSError:
+        print(f"WARNING: Could not create {dest_dir}.")
+        return []
 
     for info in usable[:2]:
         ext = os.path.splitext(info["url"].split("?")[0])[-1]
@@ -518,7 +541,7 @@ def process_page(fpath: str, progress: dict, dry_run: bool = False) -> bool:
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--state", help="Process only one state (e.g. florida)")
+    parser.add_argument("--state", help="Process only one state (e.g. texas)")
     parser.add_argument("--dry-run", action="store_true", help="Preview only, no changes")
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")
     parser.add_argument("--limit", type=int, default=0, help="Max pages to process")
@@ -530,18 +553,24 @@ def main():
         # Try loading from .env (check both common paths)
         for env_path in ["/opt/eviction-defense/.env", "/home/williamkm/eviction-defense/.env"]:
             if os.path.exists(env_path):
-                with open(env_path) as f:
-                    for line in f:
-                        if line.startswith("LLM_API_KEY="):
-                            LLM_API_KEY = line.split("=", 1)[1].strip()
-                            break
+                try:
+                    with open(env_path) as f:
+                        for line in f:
+                            if line.startswith("LLM_API_KEY="):
+                                LLM_API_KEY = line.split("=", 1)[1].strip()
+                                break
+                except OSError:
+                    pass
                 if LLM_API_KEY:
                     break
         if not LLM_API_KEY:
             print("ERROR: LLM_API_KEY not set. Export it or ensure .env has LLM_API_KEY.")
             sys.exit(1)
 
-    os.makedirs(ASSETS_DIR, exist_ok=True)
+    try:
+        os.makedirs(ASSETS_DIR, exist_ok=True)
+    except OSError:
+        print("WARNING: Could not create assets directory.")
 
     progress = load_progress() if args.resume else {"completed": [], "images_downloaded": {}}
     if not args.resume:

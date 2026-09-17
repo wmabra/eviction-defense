@@ -68,7 +68,7 @@ content = """<!doctype html><html lang="en"><head>
 <p>We reserve the right to modify these terms at any time. Changes will be effective when posted on this page. Your continued use of our service after changes are posted constitutes acceptance of the modified terms.</p>
 
 <h2>12. Governing Law</h2>
-<p>These terms are governed by the laws of the State of Florida, without regard to conflict of law principles. Any disputes arising from these terms or your use of evictions.help shall be resolved in the courts of Palm Beach County, Florida.</p>
+<p>These terms are governed by the laws of the State of Texas, without regard to conflict of law principles. Any disputes arising from these terms or your use of evictions.help shall be resolved in the courts of Travis County, Texas.</p>
 
 <h2>13. Contact</h2>
 <p>For questions about these terms, contact us at support@evictions.help.</p>

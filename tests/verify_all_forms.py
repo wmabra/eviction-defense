@@ -4,9 +4,10 @@ Run: python3 tests/verify_all_forms.py
 """
 import urllib.request, json, io, zipfile, fitz, os, sys, traceback
 from datetime import datetime
+from typing import Any, cast
 
 BASE = "http://localhost:8000"
-STATES = ['AR','AZ','CA','CO','CT','FL','GA','IL','LA','MA','MI','MN','NM','NV','OR','RI','SC','TN','TX','VA']
+STATES = ['AR','CO','CT','GA','IL','IN','KY','LA','MI','MN','MO','NM','OH','OK','OR','RI','SC','TN','TX','VA']
 
 # ═══════════════════════════════════════════════════════════
 # TEST SCENARIOS — 4 realistic user profiles
@@ -151,12 +152,13 @@ def audit_form(zip_file, form_pattern, required_checks, scenario):
     widgets = {}
     for i in range(doc.page_count):
         for w in list(doc[i].widgets()):
+            w = cast(Any, w)
             widgets[w.field_name] = str(w.field_value) if w.field_value else ""
     
     # Collect all page text
-    all_text = ""
+    all_text: str = ""
     for i in range(doc.page_count):
-        all_text += doc[i].get_text()
+        all_text += str(doc[i].get_text())
     
     doc.close()
     os.unlink(f"/tmp/{matches[0]}")

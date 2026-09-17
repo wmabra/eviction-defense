@@ -10,7 +10,7 @@ Never reuses the same image across different pages.
 
 Usage:
     python3 backfill_images.py                    # all pages
-    python3 backfill_images.py --state florida    # one state
+    python3 backfill_images.py --state texas      # one state
     python3 backfill_images.py --dry-run          # preview only
     python3 backfill_images.py --resume           # continue from last checkpoint
 """
@@ -40,22 +40,35 @@ USED_IMAGE_TITLES = set()
 
 def load_progress():
     if os.path.exists(PROGRESS_FILE):
-        with open(PROGRESS_FILE) as f:
-            return json.load(f)
+        try:
+            with open(PROGRESS_FILE) as f:
+                return json.load(f)
+        except (OSError, json.JSONDecodeError):
+            print(f"WARNING: Could not read progress file {PROGRESS_FILE}; starting fresh.")
     return {"completed": [], "failed": [], "used_titles": []}
 
 def save_progress(progress):
     progress["used_titles"] = list(USED_IMAGE_TITLES)
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(progress, f)
+    try:
+        with open(PROGRESS_FILE, "w") as f:
+            json.dump(progress, f)
+    except OSError:
+        print(f"WARNING: Could not save progress file {PROGRESS_FILE}.")
 
 def read_file(fpath):
-    with open(fpath, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        with open(fpath, "r", encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        print(f"WARNING: Could not read {fpath}.")
+        return ""
 
 def write_file(fpath, content):
-    with open(fpath, "w", encoding="utf-8") as f:
-        f.write(content)
+    try:
+        with open(fpath, "w", encoding="utf-8") as f:
+            f.write(content)
+    except OSError:
+        print(f"WARNING: Could not write {fpath}.")
 
 def wiki_request(url: str) -> dict:
     """Make a Wikimedia API request with User-Agent and retries."""

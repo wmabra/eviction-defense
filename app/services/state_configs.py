@@ -695,30 +695,30 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Group_CoS": {"value": "regular mail"},
             "Group7.1": {"skip_when_categorical": True, "data": "owns_real_estate", "yes": "own", "no": "rent"},
             "Group7.3": {"skip_when_categorical": True, "data": "employment_income", "yes": "yes", "no": "no"},
-            "Group7A.0": {"any_defense": ["def_paid", "def_attempted_pay", "def_amount", "def_other"], "yes": "yes", "no": "no"},
-            "Group7B.0": {"any_defense": ["def_did_repairs", "def_landlord_breach"], "yes": "yes", "no": "no"},
-            "Group7C.0": {"any_defense": ["def_bad_notice", "def_wrong_reason"], "yes": "yes", "no": "no"},
-            "Group7D.0": {"any_defense": ["def_retaliation", "def_discrimination"], "yes": "no", "no": "yes"},
+            "Group7A.0": {"any_defense": ["def_paid", "def_attempted_pay", "def_partial_pay", "def_repairs"], "yes": "yes", "no": "no"},
+            "Group7B.0": {"any_defense": ["def_not_violate", "def_not_repeat", "def_domestic_violence"], "yes": "yes", "no": "no"},
+            "Group7C.0": {"any_defense": ["def_no_substantial_violation"], "yes": "yes", "no": "no"},
+            "Group7D.0": {"any_defense": ["def_retaliation", "def_no_fault_just_cause"], "yes": "no", "no": "yes"},
         },
         "defense_options": [
             # Section 7A — Non-Payment Defenses
             {"key": "def_paid", "label": "I paid all rent owed", "field": "7A.1"},
-            {"key": "def_amount", "label": "I disagree with the amount claimed", "field": "7A.1"},
             {"key": "def_attempted_pay", "label": "I tried to pay but landlord refused", "field": "7A.2"},
-            {"key": "def_other", "label": "Other reasons rent not paid", "field": "7A.3"},
-            {"key": "def_repairs", "label": "Warranty of Habitability — premises uninhabitable", "field": "7A.4"},
-            # Section 7B — Habitability / Condition Defenses
-            {"key": "def_did_repairs", "label": "I paid for repairs landlord should have made", "field": "7B.2"},
-            {"key": "def_landlord_breach", "label": "Landlord breached the rental agreement", "field": "7B.3"},
-            # Section 7C — Notice Defenses
-            {"key": "def_bad_notice", "label": "Improper or no notice", "field": "7C.1"},
-            {"key": "def_wrong_reason", "label": "Wrong termination reason in notice", "field": "7C.2"},
-            # Section 7D — Retaliation / Discrimination
+            {"key": "def_partial_pay", "label": "I paid partial rent after demand", "field": "7A.3"},
+            {"key": "def_repairs", "label": "Warranty of Habitability (Unfixed Repairs)", "field": "7A.4"},
+            # Section 7B — Lease Violation Defenses
+            {"key": "def_not_violate", "label": "Did not violate material lease condition", "field": "7B.1"},
+            {"key": "def_not_repeat", "label": "Did not repeat alleged violation", "field": "7B.2"},
+            {"key": "def_domestic_violence", "label": "Violation resulted from domestic violence", "field": "7B.3"},
+            # Section 7C — Substantial Violation
+            {"key": "def_no_substantial_violation", "label": "Did not commit substantial violation", "field": "7C.1"},
+            # Section 7D — Retaliation / Just Cause
             {"key": "def_retaliation", "label": "Retaliatory eviction", "field": "7D.1"},
-            {"key": "def_discrimination", "label": "Discriminatory eviction", "field": "7D.2"},
+            {"key": "def_no_fault_just_cause", "label": "Landlord lacked just cause for non-renewal", "field": "7D.2"},
             # Section 7E — Other Defenses
-            {"key": "def_corrected", "label": "I corrected the lease violation", "field": "7E.1"},
-            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "7E.2"},
+            {"key": "def_unlawful_fees", "label": "Landlord demands unallowed fees under lease", "field": "7E.1"},
+            {"key": "def_amount", "label": "Illegal or unenforceable late fees (C.R.S. 38-12-105)", "field": "7E.2"},
+            {"key": "def_bad_notice", "label": "Improper notice / cure period (5-10 days)", "field": "7E.3"},
         ],
         "notes": "CO JDF 103 — 6 pages, 57 fillable fields. Statewide except Denver County Court which requires its own form.",
         "county_form_overrides": {

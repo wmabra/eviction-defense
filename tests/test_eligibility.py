@@ -3,13 +3,13 @@
 Data-driven off app.services.eligibility's own SUPPORTED_STATES /
 SUPPORTED_COUNTIES, so these tests cannot silently rot when states are added
 or removed again — which is exactly what happened to the previous version of
-this file: every case was hardcoded to Florida, which has since been removed
-from the product, so all nine cases were exercising "Florida is unsupported"
-rather than the rule they claimed to test.
+this file: every case was hardcoded to a since-removed state, so all nine
+cases were exercising "state is unsupported" rather than the rule they
+claimed to test.
 
 Each declining test asserts the SPECIFIC reason, never just
 `eligible == False`. Asserting the boolean alone previously produced five
-false passes — the cases declined because Florida was gone, not because of
+false passes — the cases declined because that state was gone, not because of
 the rule under test, so the decline rules had no real coverage at all.
 """
 import pytest
@@ -21,8 +21,8 @@ from app.services.eligibility import (
     check_eligibility,
 )
 
-# A state deliberately not in the product (removed with CA / AZ / NV / MA).
-UNSUPPORTED_STATE = "FL"
+# A state deliberately not in the product (removed with FL / AZ / NV / MA).
+UNSUPPORTED_STATE = "CA"
 
 # Reference supported state + one real county in it, taken from the engine.
 SUPPORTED_STATE = "VA"

@@ -323,7 +323,7 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     #    The official form is filled via fill_answer_form() (fillable or overlay)
     #    using the state's actual court PDF. This ensures court acceptance.
     #    The generated answer form (below) is deprecated — it was the original
-    #    FL-only approach before we had working overlay for the scanned form.
+    #    approach before we had working overlay for the scanned form.
     #
     # OLD: _generate_answer_form(base, answer_path)
     # NEW: Use fill_answer_form(data, state, output_path) separately
@@ -493,12 +493,10 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
     elements.append(Paragraph("DEFENDANT'S MOTION TO DETERMINE RENT", S["FormTitle"]))
     elements.append(Spacer(1, 12))
 
-    # Florida (F.S. § 83.60) uses a court-registry deposit; Kentucky (KRS
-    # 383.670) uses URLTA rent escrow; most other states simply ask the court to
-    # determine the correct amount owed.
-    if state == "FL":
-        _deposit_clause = "determine the amount of rent to be deposited into the Court Registry."
-    elif state == "KY":
+    # Kentucky (KRS 383.670) uses URLTA rent escrow; Michigan (MCR 4.201(I)(2))
+    # uses escrow; most other states simply ask the court to determine the
+    # correct amount owed.
+    if state == "KY":
         _deposit_clause = ("determine the correct amount of rent owed, if any, and determine "
                            "whether rent escrow is warranted pursuant to KRS 383.670 (URLTA).")
     elif state == "MI":
@@ -1368,8 +1366,8 @@ def _generate_eviction_timeline(data: dict, output_path: str):
             ("2. Summons in Forcible Entry", "After demand", "Landlord files complaint. You receive summons with court date."),
             ("3. File Answer", "By court date", "YOU ARE HERE. File answer before or at the return date on the summons."),
             ("4. Trial", "On return date", "Quick hearing. Judge hears both sides. Colorado courts move fast."),
-            ("5. Judgment", "Day of trial", "If you lose, judgment for possession. You may have 48 hours to vacate."),
-            ("6. Eviction", "48 hours after judgment", "Sheriff can enforce eviction very quickly in Colorado."),
+            ("5. Judgment for Possession", "Day of trial", "Court enters judgment for possession if landlord prevails."),
+            ("6. Writ of Restitution", "Minimum 10 days", "Under C.R.S. § 13-40-122 (HB 21-1121), the writ cannot issue until at least 10 calendar days after judgment in residential cases."),
         ],
         "TN": [
             ("1. Notice", "14-30 days", "Landlord serves written notice (14 days for nonpayment, 30 days for no-fault)."),

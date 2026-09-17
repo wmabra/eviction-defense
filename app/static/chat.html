@@ -512,7 +512,7 @@
         const defs = data.defenses || {};
         const pref = data.preferences || {};
         const fin = data.financial_info || {};
-        const state = data.state || "FL";
+        const state = data.state || "TX";
 
         const checkedDefenses = Object.entries(defs)
           .filter(([k, v]) => v && v.checked)
@@ -630,7 +630,7 @@
             const p = (appData && appData.personal_info) || {};
             const c = (appData && appData.case_details) || {};
             const l = (appData && appData.landlord_info) || {};
-            const state = (appData && appData.state) || "FL";
+            const state = (appData && appData.state) || "TX";
             const params = new URLSearchParams({
               full_name: p.full_name || "Tenant",
               county: p.county || "",
@@ -648,7 +648,7 @@
           const p = (appData && appData.personal_info) || {};
           const l = (appData && appData.landlord_info) || {};
           const c = (appData && appData.case_details) || {};
-          const state = (appData && appData.state) || "FL";
+          const state = (appData && appData.state) || "TX";
           const params = new URLSearchParams({
             full_name: p.full_name || "Tenant",
             county: p.county || "",

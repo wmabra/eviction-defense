@@ -7,9 +7,10 @@ Usage: python3 tests/qa_verify_forms.py
 """
 import urllib.request, json, io, zipfile, fitz, os, sys
 from datetime import datetime
+from typing import Any, cast
 
 BASE = "http://localhost:8000"
-STATES = ['AR','AZ','CA','CO','CT','FL','GA','IL','LA','MA','MI','MN','NM','NV','OR','RI','SC','TN','TX','VA']
+STATES = ['AR','CO','CT','GA','IL','IN','KY','LA','MI','MN','MO','NM','OH','OK','OR','RI','SC','TN','TX','VA']
 
 # ═══════════════ SCENARIOS ═══════════════
 def make_scenario(name, full_name, phone, email, addr, landlord, case_suffix, 
@@ -68,11 +69,12 @@ SCENARIOS = [
 def extract_all_content(pdf_bytes):
     """Extract ALL content from a PDF — page text AND widget values separately."""
     doc = fitz.open("pdf", pdf_bytes)
-    page_text = ""
-    widget_values = {}
+    page_text: str = ""
+    widget_values: dict = {}
     for i in range(doc.page_count):
-        page_text += doc[i].get_text() + "\n"
+        page_text += str(doc[i].get_text()) + "\n"
         for w in list(doc[i].widgets()):
+            w = cast(Any, w)
             if w.field_value:
                 widget_values[w.field_name] = str(w.field_value)
                 page_text += f"[{w.field_name}: {w.field_value}] "
