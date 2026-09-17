@@ -1998,9 +1998,9 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
     elements.append(Spacer(1, 14))
 
     elements.append(Paragraph("Respectfully submitted,", S["Body"]))
-    elements.append(Spacer(1, 18))
+    elements.append(Spacer(1, 8))
     elements.extend(_editable_signature(data, S))
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 6))
 
     # Certificate of Service
     svc_name, svc_addr = _service_recipient(data)
@@ -2519,9 +2519,9 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.append(Spacer(1, 14))
 
     elements.append(Paragraph(f"Dated: {today}", S["Body"]))
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 6))
     elements.extend(_editable_signature(data, S))
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 6))
 
     svc_name, svc_addr = _service_recipient(data)
     _s1 = Table([[FillableCheckbox("bk_svc1_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc1_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
