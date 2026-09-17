@@ -395,7 +395,10 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
         _generate_demand_letter(base, demand_path)
         paths["demand_letter"] = demand_path
 
-    if defenses.get("def_amount", {}).get("checked"):
+    # Motion to Determine Rent — inapplicable in Illinois (no statutory rent
+    # deposit/registry procedure; rent set-offs are resolved as defenses at
+    # trial under 735 ILCS 5/9-209).
+    if defenses.get("def_amount", {}).get("checked") and base.get("state", "").upper() != "IL":
         cond_seq += 1
         mtr_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_to_determine_rent.pdf")
         _generate_motion_to_determine_rent(base, mtr_path)

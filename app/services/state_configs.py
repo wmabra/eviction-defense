@@ -379,6 +379,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "Circuit Court",
+        "skip_financial_when_categorical": True,
+        "populate_signature_fields": True,
         "field_mapping": {
             "county": "1 - County",
             "full_name": "5 - Defendants (First, middle, last name)",
@@ -394,6 +396,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             # Page 5 proof of delivery (recipient = landlord)
             "plaintiff": "1A - Full Name of Party - Page 4",
             "landlord_address": "1A - Full Address of Party - Page 4",
+            # Page 6 proof of delivery signature block (filer)
+            "proof_signature": "E - Signature",
+            "proof_name": "G - Name",
+            "proof_phone": "I - Telephone",
+            "proof_city_state_zip": "H - City, State, ZIP",
+            "proof_email": "J - Email",
         },
         "static_values": {
             "11 - Checkboxes": "I deny the claims made by the Plaintiff (landlord) in their Eviction Complaint ",

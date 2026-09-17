@@ -688,6 +688,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         city = _all_data.get("property_city", "")
         zipcode = _all_data.get("property_zip", "")
         _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
+    # Proof of delivery signature block (IL Page 6): the filer's own details.
+    if "proof_signature" not in _all_data:
+        _all_data["proof_signature"] = "/s/ " + p.get("full_name", "")
+    if "proof_name" not in _all_data:
+        _all_data["proof_name"] = p.get("full_name", "")
+    if "proof_phone" not in _all_data:
+        _all_data["proof_phone"] = p.get("phone", "")
+    if "proof_city_state_zip" not in _all_data:
+        _all_data["proof_city_state_zip"] = _all_data.get("city_state_zip", "")
+    if "proof_email" not in _all_data:
+        _all_data["proof_email"] = p.get("email", "")
     # Landlord street + city/state/zip (for forms with separate fields, e.g. GA):
     # split the landlord's full address string. Keep "landlord_address" intact for
     # cover pages / certificates of service that want the whole string.
@@ -1295,6 +1306,9 @@ def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] =
     Printed-name and date fields are left editable on purpose.
     """
     readonly = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
+    # States that pre-fill digital "/s/" signature markers (e.g. IL) keep the
+    # marker text but still lock the field read-only (so it can't be typed over).
+    keep_marker = bool(config and config.get("populate_signature_fields"))
     locked = 0
     for page in doc:
         text_widgets = [cast(Any, w) for w in page.widgets()
@@ -1320,7 +1334,8 @@ def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] =
                         is_sig = True
             if not is_sig:
                 continue
-            w.field_value = ""
+            if not keep_marker:
+                w.field_value = ""
             w.field_flags = (getattr(w, "field_flags", 0) or 0) | readonly  # type: ignore[attr-defined]
             # Some PDFs ship a '/s/' default (DV) that PyMuPDF's empty field_value
             # assignment won't override — force-clear the live /V key directly.
