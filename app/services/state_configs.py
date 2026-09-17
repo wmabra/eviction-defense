@@ -176,6 +176,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "plaintiff_2": "Plaintiff.SEQ002.Name.Full",
             "defendant_2": "Defendant.SEQ002.Name.Full",
             "full_address": "Defendant.SEQ001.HomeAddress.Full",
+            "reduced_rent_amount": "Property.ReducedRentAmt",
+            "reduced_rent_months": "Property.ReducedRentNumberMonths",
         },
         "static_values": {
             "IsDefendant": "Yes",
@@ -575,10 +577,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "PARA5[1]": "Yes", "PARA6[1]": "Yes", "PARA7[1]": "Yes", "PARA8[1]": "Yes",
             # Part 2e — notification recipient (the landlord).
             "NOTE[0]": "Yes",
-            # Fee waiver (JD-CV-120) — session, case type, filing fee.
-            "topmostSubform[0].Page1[0].COURT[0]": "Yes",
-            "topmostSubform[0].Page1[0].TYPE[1]": "Yes",
-            "topmostSubform[0].Page1[0].FILING[0]": "Yes",
+            # Fee waiver (JD-CV-120) — Housing Session + Housing case type
+            # (Summary Process actions are Housing Session, not Small Claims).
+            "topmostSubform[0].Page1[0].COURT[0]": "Off",  # uncheck Judicial District
+            "topmostSubform[0].Page1[0].COURT[1]": "2",    # check Housing Session
+            "topmostSubform[0].Page1[0].TYPE[0]": "Off",   # uncheck Civil
+            "topmostSubform[0].Page1[0].TYPE[1]": "Off",   # uncheck Small claims
+            "topmostSubform[0].Page1[0].TYPE[2]": "4",     # check Housing (Landlord-Tenant)
+            "topmostSubform[0].Page1[0].FILING[0]": "Yes", # filing fee
         },
         "defense_details": [
             {"key": "def_repairs", "field": "CODEVIOLA[0]"},
@@ -663,9 +669,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "vehicle_loan_owed": "10B.1C",
             "real_estate_value": "10B.2A",
             "real_estate_loan_owed": "10B.2C",
+            "receives_blind_aid": "6.1",
+            "receives_oap": "6.2",
             "receives_ssi": "6.3",
             "receives_tanf": "6.4",
             "receives_snap": "6.5",
+            "receives_and": "6.6",
             "date": "Sig1_Date",
             "printed_name": "Name",
         },
@@ -1354,6 +1363,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 1, "x": 355, "y": 62, "w": 140, "h": 16, "size": 11},
             "date": {"page": 2, "x": 72, "y": 553, "w": 150, "h": 16, "size": 10},
             "case_number_page3": {"page": 3, "x": 335, "y": 100, "w": 160, "h": 16, "size": 10},
+        },
+        "field_rect_overrides": {
+            "fee_waiver_form": {
+                "Address": {"y0": 655.0},
+            },
         },
         "has_fillable_fields": True,
         "court_type": "Small Claims Court",

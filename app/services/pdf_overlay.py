@@ -89,6 +89,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             ("self employment", "self_employment_income"),
             ("business", "self_employment_income"),
             ("employment", "employment_income"),
+            ("employed", "employment_income"),
             ("wages", "employment_income"),
             ("salary", "employment_income"),
         ]
@@ -203,7 +204,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     for x in words:
         if not (x[1] < r.y1 + 2 and x[3] > r.y0 - 8 and x[0] >= 70 and x[2] <= 590):
             continue
-        _w = str(x[4]).lower().strip("[](),.")
+        _w = str(x[4]).lower().strip("[](),.:;?")
         if _w == "yes":
             yes_x = x[0]
         elif _w == "no":
@@ -597,13 +598,17 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     
     # === UNIFIED MAPPING FOR REBUILT FORMS (standardized field names) ===
     # These work for ALL states with rebuilt forms — predictable, clean field names
+    # Full address for signature/contact lines that expect "street, city, state ZIP".
+    _full_addr = p.get("property_address", "")
+    if p.get("property_city") and p.get("property_city") not in _full_addr:
+        _full_addr = f"{_full_addr}, {p.get('property_city')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", ")
     UNIFIED_MAP = {
         "defendant_name": p.get("full_name", ""),
         "plaintiff_name": l.get("landlord_name", ""),
         "case_number": c.get("case_number", ""),
         "court_name": c.get("court_name", ""),
         "county": p.get("county", ""),
-        "property_address": p.get("property_address", ""),
+        "property_address": _full_addr or p.get("property_address", ""),
         "phone": p.get("phone", ""),
         "email": p.get("email", ""),
         "date": today.strftime("%m/%d/%Y"),
@@ -738,6 +743,20 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # Case name for "Name of case" captions (e.g. CT): "Landlord v. Tenant"
     if "case_name" not in _all_data:
         _all_data["case_name"] = f"{_all_data.get('landlord_name', '')} v. {_all_data.get('full_name', '')}".strip(" v.")
+
+    # Georgia counterclaim diminished value + duration (repair-and-deduct).
+    _rent_info = data.get("rent_payment", {})
+    try:
+        _claimed = float(c.get("complaint_amount_claimed") or 0)
+        _owed = float(_rent_info.get("amount_tenant_believes_owed") or 0)
+        _monthly = float(_rent_info.get("monthly_rent") or c.get("monthly_rent") or 0)
+    except (TypeError, ValueError):
+        _claimed = _owed = _monthly = 0.0
+    if _claimed > _owed and _monthly > 0:
+        _total_reduction = _claimed - _owed
+        _months = max(1, int(round(_claimed / _monthly)))
+        _all_data.setdefault("reduced_rent_amount", f"{_total_reduction / _months:.2f}")
+        _all_data.setdefault("reduced_rent_months", str(_months))
     
     # Also add state-level data
     state_code = data.get("state", "")
@@ -998,7 +1017,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # Also handles camelCase like "ResidenceAddress" → "address"
     import re
     word_boundary_rules = [
-        (re.compile(r'(?<![a-zA-Z])address|(?<=[a-z])Address', re.IGNORECASE), p.get("property_address", "")),
+        (re.compile(r'(?<![a-zA-Z])address|(?<=[a-z])Address', re.IGNORECASE), _full_addr or p.get("property_address", "")),
         (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])|(?<=[a-z])Date$', re.IGNORECASE), today.strftime("%m/%d/%Y")),
         (re.compile(r'(?<![a-zA-Z])court(?![a-zA-Z])', re.IGNORECASE), c.get("court_name", "")),
         (re.compile(r'city\s*(?:and|&)\s*state', re.IGNORECASE), f"{p.get('property_city', '')}, {state_code}".strip(", ")),

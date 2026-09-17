@@ -506,6 +506,8 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
         _deposit_clause = "determine the amount of rent to be deposited into escrow pursuant to MCR 4.201(I)(2)."
     elif state == "MN":
         _deposit_clause = "determine the amount of rent to be deposited into court escrow pursuant to Minn. Stat. § 504B.385."
+    elif state == "GA":
+        _deposit_clause = "determine the amount of rent to be deposited into the court registry pursuant to O.C.G.A. § 44-7-54."
     else:
         _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(
@@ -1777,7 +1779,9 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         total_income = fin.get("monthly_gross_income")
 
     # Expenses
-    rent = fin.get("rent_or_mortgage")
+    rent = (fin.get("rent_or_mortgage") or
+            (data.get("case_details") or {}).get("monthly_rent") or
+            (data.get("rent_payment") or {}).get("monthly_rent"))
     utils = fin.get("utilities_expense")
     food = fin.get("food_expense")
     transport = fin.get("transportation_expense")
@@ -1940,7 +1944,7 @@ def _generate_demand_letter(data: dict, output_path: str):
 def _generate_motion_for_hearing(data: dict, output_path: str):
     """Generate a state-specific Motion for Hearing — ensures tenant gets their day in court."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
-                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            topMargin=0.5*inch, bottomMargin=0.5*inch,
                             leftMargin=0.75*inch, rightMargin=0.75*inch)
     S = _get_styles()
     elements = []
@@ -2391,7 +2395,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
 def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     """Generate Notice of Automatic Stay Due to Bankruptcy Filing (Federal — 11 U.S.C. § 362)."""
     doc = SimpleDocTemplate(output_path, pagesize=letter,
-                            topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            topMargin=0.5*inch, bottomMargin=0.5*inch,
                             leftMargin=0.75*inch, rightMargin=0.75*inch)
     S = _get_styles()
     elements = []
