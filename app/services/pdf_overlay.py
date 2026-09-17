@@ -1539,6 +1539,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     mapper = {
         "full_name": p.get("full_name"),
         "defendant_name": p.get("full_name"),
+        "defendant_appearance": p.get("full_name"),
         "printed_name": p.get("full_name"),
         "phone": p.get("phone"),
         "phone_bottom": p.get("phone"),
