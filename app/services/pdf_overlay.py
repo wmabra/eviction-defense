@@ -237,6 +237,11 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
                 return (is_yes and ans) or (not is_yes and not ans)
         return None
 
+    # "do not receive public assistance" is the NEGATIVE branch — check it only
+    # when the tenant has no benefits (not when they receive SNAP/Medicaid/etc.).
+    if "do not receive public assistance" in ctx:
+        return not any(bool(fin.get(k)) for k in ("receives_snap", "receives_medicaid", "receives_ssi", "receives_tanf", "receives_public_benefits"))
+
     for kws, flag in benefit_text:
         if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
             return flag
@@ -257,6 +262,7 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
     x-proximity (which is ambiguous on tight layouts like AR's).
     """
     checkbox_map = config.get("fee_waiver_checkbox_map") or {}
+    overrides = config.get("fee_waiver_checkbox_overrides") or {}
     # Benefit boxes explicitly mapped via fee_waiver_mapping receives_* are already
     # filled by _fill_via_widgets; don't re-evaluate (and uncheck) them here.
     _fw_mapping = config.get("fee_waiver_mapping") or {}
@@ -285,6 +291,22 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
             r = fitz.Rect(w.rect)
             nm = str(getattr(w, "field_name", "") or "cb")
             if nm in explicit_benefit_fields:
+                continue
+            # Explicit per-form overrides win over auto-detection (e.g. MN FEE102
+            # "do not receive public assistance" vs "receive" branches).
+            if nm in overrides:
+                _ov = overrides[nm]
+                if isinstance(_ov, str):
+                    _exp = bool((data.get("financial_info") or {}).get(_ov))
+                else:
+                    _exp = bool(_ov)
+                try:
+                    w.field_value = True if _exp else False
+                    w.update()
+                except Exception:
+                    pass
+                if _exp:
+                    checked += 1
                 continue
             try:
                 _os = str(w.on_state())
@@ -753,7 +775,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _claimed = _owed = _monthly = 0.0
     if _claimed > _owed and _monthly > 0:
         _total_reduction = _claimed - _owed
-        _months = max(1, int(round(_claimed / _monthly)))
+        _months = max(1, round(_claimed / _monthly))
         _all_data.setdefault("reduced_rent_amount", f"{_total_reduction / _months:.2f}")
         _all_data.setdefault("reduced_rent_months", str(_months))
     

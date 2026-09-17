@@ -232,6 +232,7 @@ def verify_fee_waiver_checkboxes(path, data):
     from app.services.state_configs import get_state_config
     config = get_state_config(data.get("state", "").upper()) or {}
     checkbox_map = config.get("fee_waiver_checkbox_map") or {}
+    overrides = config.get("fee_waiver_checkbox_overrides") or {}
     _fw_mapping = config.get("fee_waiver_mapping") or {}
     # Benefit boxes explicitly mapped via fee_waiver_mapping receives_* are filled
     # by _fill_via_widgets, not by _expected_fee_waiver_checkbox — skip them here.
@@ -266,7 +267,11 @@ def verify_fee_waiver_checkboxes(path, data):
                 _os = ""
             actual = _is_checked(getattr(w, "field_value", None))
             trust = "yes" in on_state_sets.get(nm, set()) and "no" in on_state_sets.get(nm, set())
-            expected = _expected_fee_waiver_checkbox(pg, r, data, nm, _os, trust, checkbox_map)
+            if nm in overrides:
+                _ov = overrides[nm]
+                expected = bool((data.get("financial_info") or {}).get(_ov)) if isinstance(_ov, str) else bool(_ov)
+            else:
+                expected = _expected_fee_waiver_checkbox(pg, r, data, nm, _os, trust, checkbox_map)
             if expected is not None and actual != expected:
                 mismatches.append(f"fee_waiver checkbox '{nm}' ({r.x0:.0f},{r.y0:.0f}) actual={actual} expected={expected}")
     doc.close()

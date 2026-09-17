@@ -1013,6 +1013,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "email": {"page": 4, "x": 370, "y": 377, "w": 170, "h": 14, "size": 10},
         },
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay; defense explanations routed to items 5/6/9; verification/contact block on page 4. OCR-verified at 600 DPI.",
+        "fee_waiver_checkbox_overrides": {
+            "cb_1_0": False,   # "do not receive public assistance" — off
+            "cb_1_1": True,    # "I receive public assistance" — on
+            "cb_1_2": True,    # "a. under one or more..." — on
+            "cb_1_6": "receives_snap",      # SNAP / Food Stamps
+            "cb_1_8": "receives_medicaid",  # Medical Assistance
+            "cb_1_12": False,  # SSI — off
+        },
     
         "fee_waiver_overlay": {
             "county": {"page": 1, "x": 132, "y": 116, "w": 150, "h": 16, "size": 10},
