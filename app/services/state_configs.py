@@ -383,6 +383,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Circuit Court",
         "skip_financial_when_categorical": True,
         "populate_signature_fields": True,
+        "radio_selections": {
+            # ATJ 601.9 Section 3 instruction box: if any public benefit is
+            # checked, select "I checked one of the public benefit boxes...".
+            "15 - Checkboxes": {"any_financial": ["receives_snap", "receives_ssi", "receives_tanf", "receives_medicaid", "receives_public_benefits"], "yes": "checked one of the public benefit boxes", "no": "did not check any of the public benefit boxes"},
+        },
         "field_mapping": {
             "county": "1 - County",
             "full_name": "5 - Defendants (First, middle, last name)",

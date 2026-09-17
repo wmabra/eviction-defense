@@ -344,6 +344,9 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
       * {"any_defense": [<keys>], "yes": <substr>, "no": <substr>} — pick "yes"
         if any listed defense is checked, else "no".
     Groups without a rule are cleared to 'Off' so no conflicting choice ships.
+    Also resolves mutually-exclusive CHECKBOX pairs (same field name, distinct
+    on_states, e.g. IL's "15 - Checkboxes") when they carry an explicit rule;
+    unruled checkbox pairs are left for _map_fee_waiver_checkboxes.
     """
     selections = config.get("radio_selections", {}) or {}
     fin = data.get("financial_info", {}) or {}
@@ -354,11 +357,21 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
         groups: dict[str, list] = {}
         for w in page.widgets():
             w = cast(Any, w)
-            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_RADIOBUTTON:
+            _ft = getattr(w, "field_type", None)
+            if _ft != fitz.PDF_WIDGET_TYPE_RADIOBUTTON and _ft != fitz.PDF_WIDGET_TYPE_CHECKBOX:
                 continue
             groups.setdefault(str(getattr(w, "field_name", "") or ""), []).append(w)
         for gname, ws in groups.items():
+            # Standalone checkboxes (one widget per field) are handled by the
+            # fee-waiver checkbox mapping, not here. Only resolve true groups.
+            if len(ws) < 2:
+                continue
             rule = selections.get(gname)
+            # Unruled checkbox pairs are resolved later by
+            # _map_fee_waiver_checkboxes via on-state/label auto-detection;
+            # clearing them here would ship both halves blank.
+            if not rule and all(getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX for w in ws):
+                continue
             needle = None
             if rule:
                 if rule.get("skip_when_categorical") and any(
@@ -393,7 +406,12 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
                     break
             for w in ws:
                 try:
-                    w.field_value = w.on_state() if w is choice else False
+                    if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                        # Checkboxes toggle on True/False; radio buttons select
+                        # via on_state.
+                        w.field_value = True if w is choice else False
+                    else:
+                        w.field_value = w.on_state() if w is choice else False
                     w.update()
                 except Exception:
                     pass
