@@ -558,7 +558,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # Final safety net: every text field must wrap long input instead of clipping,
     # and any signature line must stay blank + non-editable (ink).
     _force_multiline_text_widgets(doc)
-    _make_signature_fields_readonly(doc)
+    _make_signature_fields_readonly(doc, config)
     _resolve_radio_groups(doc, data, config)
 
     if form_key == "fee_waiver_form":
@@ -710,7 +710,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # Composite caption fields (MI DC 111a): name + address + phone in one field.
     if "defendant_composite" not in _all_data:
         _all_data["defendant_composite"] = "\n".join(x for x in (
-            p.get("full_name", ""), p.get("property_address", ""), p.get("phone", "")
+            p.get("full_name", ""), p.get("property_address", ""),
+            _all_data.get("city_state_zip", ""), p.get("phone", "")
         ) if x)
     if "plaintiff_composite" not in _all_data:
         _all_data["plaintiff_composite"] = "\n".join(x for x in (
@@ -1275,7 +1276,7 @@ def _over_printed_text(words, rect, tol: float = 1.5) -> bool:
     return False
 
 
-def _make_signature_fields_readonly(doc: fitz.Document) -> int:
+def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] = None) -> int:
     """Blank + read-only any text field that is actually a signature/notary line.
 
     Signature, notary, affiant, witness, sworn/subscribed, commission, and bank
@@ -1303,7 +1304,11 @@ def _make_signature_fields_readonly(doc: fitz.Document) -> int:
             if not is_sig and _DATE_NAME_RE.search(name):
                 cy = _row_center(w)
                 if any(abs(cy - sy) < 12 for sy in sig_rows):
-                    is_sig = True
+                    # States that pre-fill execution/mailing dates keep them
+                    # populated; otherwise leave blank so the packet doesn't
+                    # assert a sworn date the tenant never signed.
+                    if not (config and config.get("populate_signature_dates")):
+                        is_sig = True
             if not is_sig:
                 continue
             w.field_value = ""

@@ -1067,13 +1067,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "District Court",
+        "populate_signature_dates": True,
         "field_mapping": {
-            "county": "Judicial district",
+            "judicial_district": "Judicial district",
             "case_number": "Case number",
             "court_name": "Court address",
             "defendant_composite": "Defendant name, address, and telephone number",
             "plaintiff_composite": "Plaintiff name, address, and telephone number",
             "date": "Date",
+            "cert_date": "Enter date",
             "printed_name": "Enter defendant or attorney signature",
         },
         "defense_options": [
