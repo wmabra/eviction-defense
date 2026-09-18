@@ -139,6 +139,12 @@ d. Monthly expenses: rent/mortgage, utilities, food, transportation, medical, ch
 e. Do you receive any public benefits? (SNAP/food stamps, SSI, Medicaid, TANF, Section 8, public housing, energy assistance, childcare assistance)
 f. Assets: cash on hand, checking/savings balances, vehicle (make/model/value), own real estate?
 
+=== PHASE PROGRESS ===
+At the end of EACH phase (1 through 7), after you finish collecting that phase's information, output a single short JSON marker so the customer's progress bar updates — then continue to the next phase:
+{"phase_completed": N}
+
+(N is the phase number you just completed, 1-7. Do not show this marker in your conversational text — the user should not see it.)
+
 === DATA EXTRACTION ===
 After ALL phases are complete (all fields collected), append this JSON block to your response:
 ```json
@@ -210,6 +216,17 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None) -> di
         except (ValueError, json.JSONDecodeError):
             pass
 
+    # Parse a mid-course phase marker ("phase_completed": N) so the progress
+    # bar reflects how far through the 7 intake phases the customer is.
+    phase = None
+    phase_match = re.search(r'\{"phase_completed"\s*:\s*(\d+)\}', content)
+    if phase_match:
+        try:
+            phase = int(phase_match.group(1))
+        except ValueError:
+            phase = None
+        content = (content[:phase_match.start()] + content[phase_match.end():]).strip()
+
     # Persist session data if case_id provided
     if case_id and extracted_data:
         _sessions[case_id] = {
@@ -221,6 +238,7 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None) -> di
         "message": content,
         "ready_for_intake": ready,
         "extracted_data": extracted_data,
+        "phase": phase,
     }
 
 

@@ -80,9 +80,9 @@ d = resp.json()
 check("charge 200 + success", resp.status_code == 200 and d.get("success") is True)
 check("needs_verification = True", d.get("needs_verification") is True)
 
-db = SessionLocal()  # nosemgrep: python-sql-injection
-case = db.query(Case).filter(Case.email == EMAIL).first()  # nosemgrep: python-sql-injection
-user = db.query(User).filter(User.email == EMAIL).first()  # nosemgrep: python-sql-injection
+db = SessionLocal()  # pi-lens-ignore: python-sql-injection
+case = db.query(Case).filter(Case.email == EMAIL).first()  # pi-lens-ignore: python-sql-injection
+user = db.query(User).filter(User.email == EMAIL).first()  # pi-lens-ignore: python-sql-injection
 check("Case created", case is not None)
 check("Case status = pending_email_verification", case is not None and case.status == "pending_email_verification")
 check("Case user_id is NULL", case is not None and case.user_id is None)
@@ -92,16 +92,16 @@ db.close()
 
 # ── 2. Verify email ──────────────────────────────────────────────────────────
 print("\n=== 2. Verify email (/verify-email) ===")
-db = SessionLocal()  # nosemgrep: python-sql-injection
-case = db.query(Case).filter(Case.email == EMAIL).first()  # nosemgrep: python-sql-injection
+db = SessionLocal()  # pi-lens-ignore: python-sql-injection
+case = db.query(Case).filter(Case.email == EMAIL).first()  # pi-lens-ignore: python-sql-injection
 token = sign_verification_token(EMAIL, str(case.id))
 db.close()
 resp = client.get(f"/api/v1/auth/verify-email?token={token}")
 check("verify returns 200", resp.status_code == 200)
 
-db = SessionLocal()  # nosemgrep: python-sql-injection
-user = db.query(User).filter(User.email == EMAIL).first()  # nosemgrep: python-sql-injection
-case = db.query(Case).filter(Case.email == EMAIL).first()  # nosemgrep: python-sql-injection
+db = SessionLocal()  # pi-lens-ignore: python-sql-injection
+user = db.query(User).filter(User.email == EMAIL).first()  # pi-lens-ignore: python-sql-injection
+case = db.query(Case).filter(Case.email == EMAIL).first()  # pi-lens-ignore: python-sql-injection
 check("User created after verify", user is not None)
 check("Case linked to user", user is not None and case is not None and case.user_id == user.id)
 check("Case status = intake_in_progress", case is not None and case.status == "intake_in_progress")

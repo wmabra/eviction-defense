@@ -26,6 +26,7 @@ class ChatResponse(BaseModel):
     message: str
     ready_for_intake: bool = False
     extracted_data: dict | None = None
+    phase: int | None = None
 
 
 @router.post("/send", response_model=ChatResponse)
@@ -67,6 +68,18 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
                 }
                 db.commit()
         except Exception:
+            pass
+
+    # Update the customer's progress bar from the completed intake phase
+    # (25% at the start of intake → 55% once all 7 phases are done).
+    if req.case_id and result.get("phase"):
+        try:
+            case = db.query(Case).filter(Case.id == req.case_id).first()
+            if case:
+                case = cast(Any, case)
+                case.progress = 25 + round(min(7, int(result["phase"])) / 7 * 30)
+                db.commit()
+        except (TypeError, ValueError):
             pass
 
     return ChatResponse(**result)
