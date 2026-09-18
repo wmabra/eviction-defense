@@ -88,6 +88,7 @@ class Case(Base):
     # AI extraction
     extraction_status = Column(String, default="pending")
     extracted_data = Column(JSON, nullable=True)
+    chat_session = Column(JSON, nullable=True)  # {phase, collected_data} — persisted so a returning customer resumes after restart
     extraction_confirmed = Column(Boolean, default=False)
     confirmation_token = Column(String, nullable=True)
 

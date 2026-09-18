@@ -1,11 +1,12 @@
 """Chat-based intake API endpoints."""
 from fastapi import APIRouter, Depends
+from typing import Any, cast
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.database.models import ChatLog
+from app.database.models import Case, ChatLog
 from app.services.chat import get_chat_response, get_session, reset_session
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
@@ -52,17 +53,34 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
             db.commit()
         except Exception:
             pass
-    
+
+    # Persist the extracted session state so a returning customer resumes
+    # cleanly even after a server restart.
+    if req.case_id and result.get("extracted_data"):
+        try:
+            case = db.query(Case).filter(Case.id == req.case_id).first()
+            if case:
+                case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
+                case.chat_session = {
+                    "phase": "complete" if result.get("ready_for_intake") else "in_progress",
+                    "collected_data": result["extracted_data"],
+                }
+                db.commit()
+        except Exception:
+            pass
+
     return ChatResponse(**result)
 
 
 @router.get("/session/{case_id}")
-def get_chat_session(case_id: str):
-    """Get the current chat session data."""
-    session = get_session(case_id)
+def get_chat_session(case_id: str, db: Session = Depends(get_db)):
+    """Get the current chat session data (persisted, falls back to in-memory)."""
+    case = db.query(Case).filter(Case.id == case_id).first()
+    persisted = cast(Any, case).chat_session if case is not None else None
+    session = persisted if persisted else get_session(case_id)
     if not session:
         return {"case_id": case_id, "status": "no_session"}
-    return {"case_id": case_id, **session}
+    return {"case_id": case_id, **cast(dict, session)}
 
 
 @router.post("/reset")

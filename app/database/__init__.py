@@ -70,12 +70,14 @@ def _migrate():
         "user_id": "ALTER TABLE cases ADD COLUMN user_id VARCHAR",
         "progress": "ALTER TABLE cases ADD COLUMN progress INTEGER DEFAULT 0",
         "intake_data": "ALTER TABLE cases ADD COLUMN intake_data JSON",
+        "chat_session": "ALTER TABLE cases ADD COLUMN chat_session JSON",
     }
     add_column_postgres = {
         "state": "ALTER TABLE cases ADD COLUMN IF NOT EXISTS state VARCHAR",
         "user_id": "ALTER TABLE cases ADD COLUMN IF NOT EXISTS user_id VARCHAR",
         "progress": "ALTER TABLE cases ADD COLUMN IF NOT EXISTS progress INTEGER DEFAULT 0",
         "intake_data": "ALTER TABLE cases ADD COLUMN IF NOT EXISTS intake_data JSON",
+        "chat_session": "ALTER TABLE cases ADD COLUMN IF NOT EXISTS chat_session JSON",
     }
     statements = add_column_sqlite if is_sqlite else add_column_postgres
 
