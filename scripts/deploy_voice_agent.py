@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 """Deploy the evictions.help phone agent (system prompt + tools) to Retell AI.
 
-Reads ``app/services/voice_prompt.md`` as the agent's system prompt, defines the
+Reads ``app/services/voice_prompt.md`` as the LLM's system prompt, defines the
 custom function tools that map 1:1 to the endpoints in ``app/routers/voice.py``,
-and creates or updates the Retell voice agent through the Retell API.
+and updates the Retell LLM (Response Engine) + the voice agent through the
+Retell API.
 
-This script is intentionally dependency-free (stdlib only) so it can be run on
-any host that has the repo checked out — no pip install needed.
+Retell's object model: the **LLM** (Response Engine) holds ``general_prompt``,
+``general_tools`` and ``begin_message``; the **agent** holds the voice, webhook,
+and behavior knobs and points at the LLM by ``llm_id``. This script updates both.
+
+This script is dependency-free (stdlib only).
 
 ------------------------------------------------------------------------
 Usage
 ------------------------------------------------------------------------
-    python scripts/deploy_voice_agent.py                    # update (or create) the agent
-    python scripts/deploy_voice_agent.py --create           # force-create a NEW agent
-    python scripts/deploy_voice_agent.py --dry-run          # print the payload, no network
-    python scripts/deploy_voice_agent.py --list             # list existing agents
+    python scripts/deploy_voice_agent.py                    # update LLM + agent
+    python scripts/deploy_voice_agent.py --dry-run          # print payloads, no network
+    python scripts/deploy_voice_agent.py --list             # list agents
     python scripts/deploy_voice_agent.py --get [AGENT_ID]   # dump current agent config
-    python scripts/deploy_voice_agent.py --agent-id <id>    # update a specific agent
+    python scripts/deploy_voice_agent.py --get-llm          # dump current LLM config
+    python scripts/deploy_voice_agent.py --create           # create a NEW agent (update LLM too)
 
 Configuration (checked in order: CLI flag > environment > .env file):
     RETELL_API_KEY     (required)  Retell API key
-    RETELL_AGENT_ID    (optional)  existing agent id to update
-    RETELL_LLM_ID      (optional)  default llm_87dab7937936a2b60db4da926390
+    RETELL_LLM_ID      (optional)  LLM to update (default llm_87dab7937936a2b60db4da926390)
+    RETELL_AGENT_ID    (optional)  existing agent id to update (else create)
     RETELL_VOICE_ID    (optional)  voice to use (default below)
-    APP_URL            (optional)  default https://evictions.help
+    VOICE_APP_URL      (optional)  public URL Retell calls (default https://evictions.help)
 """
 
 from __future__ import annotations
@@ -31,7 +35,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import sys
 import time
 import urllib.error
@@ -43,17 +46,15 @@ from urllib.error import HTTPError
 RETELL_API_BASE = "https://api.retellai.com"
 
 DEFAULT_LLM_ID = "llm_87dab7937936a2b60db4da926390"
-# NOTE: pick a warm female voice for "Eva". Retell/cartesia/minimax/elevenlabs
-# voice IDs are supported. Override with RETELL_VOICE_ID or --voice-id.
-DEFAULT_VOICE_ID = "retell-Cimo"
+# A warm, natural female platform voice for "Eva". Override with RETELL_VOICE_ID.
+DEFAULT_VOICE_ID = "retell-Willa"
 DEFAULT_APP_URL = "https://evictions.help"
 
-# Resolve the prompt relative to the repo root (this script lives in scripts/).
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PROMPT_PATH = REPO_ROOT / "app" / "services" / "voice_prompt.md"
 
-# The opening line must match the "## Opening" section of voice_prompt.md so the
-# greeting and the mandatory compliance disclosure are identical on every call.
+# Must match the "## Opening" section of voice_prompt.md (mandatory compliance
+# disclosure on every call).
 BEGIN_MESSAGE = (
     "Hi, and thanks for calling evictions.help. This is Eva. Just so you know, "
     "I'm an AI assistant, and evictions.help is a self-help document preparation "
@@ -69,11 +70,7 @@ AGENT_NAME = "Eva — evictions.help support"
 # ─────────────────────────────────────────────────────────────────────────────
 
 def load_dotenv(path: str | Path = ".env") -> dict:
-    """Parse a simple KEY=VALUE .env file (no substitutions, no quotes magic).
-
-    os.environ always wins over the file so a shell export can override a file
-    value without editing the file.
-    """
+    """Parse a simple KEY=VALUE .env file. os.environ always wins."""
     env: dict = {}
     p = Path(path)
     if not p.exists():
@@ -92,12 +89,7 @@ def load_dotenv(path: str | Path = ".env") -> dict:
 
 def get_setting(name: str, cli_value: str | None, env: dict, default: str = "") -> str:
     """Resolve a setting: CLI flag > process env > .env file > default."""
-    return (
-        cli_value
-        or os.environ.get(name)
-        or env.get(name)
-        or default
-    )
+    return cli_value or os.environ.get(name) or env.get(name) or default
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -125,9 +117,10 @@ def _request(method: str, path: str, token: str, body: dict | None = None,
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 raw = resp.read().decode("utf-8")
-                return json.loads(raw) if raw else {}
-        except OSError as exc:
-            # HTTPError, URLError, TimeoutError are all OSError subclasses.
+            if raw:
+                return json.loads(raw)
+            return {}
+        except Exception as exc:  # pyright: ignore — valid except clause; env typeshed false positive
             if isinstance(exc, HTTPError):
                 try:
                     detail = json.loads(exc.read().decode("utf-8"))
@@ -139,8 +132,11 @@ def _request(method: str, path: str, token: str, body: dict | None = None,
                 if 400 <= exc.code < 500:
                     raise err
                 last_err = err
-            else:
+            elif isinstance(exc, OSError):
+                # URLError, TimeoutError, ConnectionError, etc.
                 last_err = exc
+            else:
+                raise
 
         if attempt < retries:
             wait = 2 ** attempt  # 2s, 4s, 8s...
@@ -154,48 +150,43 @@ def _request(method: str, path: str, token: str, body: dict | None = None,
 # Tool (custom function) definitions — must mirror app/routers/voice.py
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _tool(name, description, parameters, path, speak_during=True,
-          speak_after=True, execution_message="One moment..."):
+def _tool(name, description, parameters, path, base_url,
+          speak_during=True, speak_after=True, execution_message="One moment...",
+          timeout_ms=10000):
     """Build one Retell custom-tool definition."""
     return {
         "type": "custom",
         "name": name,
         "description": description,
         "parameters": parameters,
-        "url": f"{DEFAULT_APP_URL}/api/v1/voice/{path}",
+        "url": f"{base_url}/api/v1/voice/{path}",
         "speak_during_execution": speak_during,
         "speak_after_execution": speak_after,
         "execution_message_description": execution_message,
+        "timeout_ms": timeout_ms,
     }
 
 
 def build_tools(app_url: str) -> list:
-    """Return the full list of voice-agent tools.
-
-    Every tool POSTs JSON to a /api/v1/voice/* endpoint. The endpoints return
-    {"compliance": "...", ...} and the agent is instructed to read the payload
-    and re-phrase it in a warm, plain-English voice response.
-    """
+    """Return the LLM's general_tools: the 7 voice endpoints + built-in end_call."""
     base = app_url.rstrip("/")
-    return [
+    tools = [
         _tool(
             "verify_caller",
             "Verify a caller who says they already purchased a packet, using "
             "their email address OR case ID (optionally their last 4 phone "
-            "digits for extra security). Returns their case context: name, case "
-            "id, status, whether the packet is ready, fee-waiver status, filing "
-            "deadline, and court date. Call this BEFORE answering any "
-            "post-sale question about their order.",
+            "digits). Returns their case context: name, case id, status, whether "
+            "the packet is ready, fee-waiver status, filing deadline, and court "
+            "date. Call this BEFORE answering any post-sale question.",
             {
                 "type": "object",
                 "properties": {
                     "email": {"type": "string", "description": "Email used at checkout."},
                     "case_id": {"type": "string", "description": "Case ID from the confirmation email."},
-                    "last_four_phone": {"type": "string", "description": "Last 4 digits of the phone number on the order (optional)."},
+                    "last_four_phone": {"type": "string", "description": "Last 4 digits of the phone on the order (optional)."},
                 },
             },
-            "verify",
-            execution_message="Looking up your order…",
+            "verify", base, execution_message="Looking up your order…",
         ),
         _tool(
             "get_package",
@@ -209,8 +200,7 @@ def build_tools(app_url: str) -> list:
                 },
                 "required": ["case_id"],
             },
-            "package",
-            execution_message="Pulling up your packet…",
+            "package", base, execution_message="Pulling up your packet…",
         ),
         _tool(
             "explain_document",
@@ -220,12 +210,11 @@ def build_tools(app_url: str) -> list:
                 "type": "object",
                 "properties": {
                     "case_id": {"type": "string", "description": "The verified case ID."},
-                    "doc_name": {"type": "string", "description": "The document name the caller is asking about (e.g. 'answer form' or 'fee waiver')."},
+                    "doc_name": {"type": "string", "description": "The document name the caller asks about (e.g. 'answer form' or 'fee waiver')."},
                 },
                 "required": ["case_id", "doc_name"],
             },
-            "document-help",
-            execution_message="Looking that document up…",
+            "document-help", base, execution_message="Looking that document up…",
         ),
         _tool(
             "request_correction",
@@ -243,8 +232,7 @@ def build_tools(app_url: str) -> list:
                 },
                 "required": ["case_id", "field_or_document", "description", "caller_email"],
             },
-            "correction",
-            execution_message="Recording that for our team…",
+            "correction", base, execution_message="Recording that for our team…",
         ),
         _tool(
             "create_ticket",
@@ -262,8 +250,7 @@ def build_tools(app_url: str) -> list:
                 },
                 "required": ["issue_type", "description"],
             },
-            "ticket",
-            execution_message="Creating a support ticket…",
+            "ticket", base, execution_message="Creating a support ticket…",
         ),
         _tool(
             "resend_packet",
@@ -275,8 +262,7 @@ def build_tools(app_url: str) -> list:
                     "email": {"type": "string", "description": "Email to resend to (optional if case_id is known)."},
                 },
             },
-            "resend",
-            execution_message="Resending your packet…",
+            "resend", base, execution_message="Resending your packet…",
         ),
         _tool(
             "request_callback",
@@ -296,19 +282,34 @@ def build_tools(app_url: str) -> list:
                 },
                 "required": ["first_name", "last_name", "phone", "best_time_eastern", "issue_summary"],
             },
-            "callback",
-            execution_message="Setting up your callback…",
+            "callback", base, execution_message="Setting up your callback…",
         ),
+        # Built-in end-call tool (always available).
+        {
+            "type": "end_call",
+            "name": "end_call",
+            "description": "Politely end the call after wrapping up.",
+            "speak_after_execution": True,
+        },
     ]
+    return tools
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Agent payload
+# Payloads — LLM (prompt+tools) and Agent (voice+webhook+behavior)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_payload(prompt: str, llm_id: str, voice_id: str, app_url: str,
-                  begin_message: str, agent_name: str) -> dict:
-    """Build the Retell agent body (create-agent / update-agent)."""
+def build_llm_payload(prompt: str, begin_message: str, app_url: str) -> dict:
+    """Payload for update-retell-llm (the Response Engine)."""
+    return {
+        "general_prompt": prompt,
+        "begin_message": begin_message,
+        "general_tools": build_tools(app_url),
+    }
+
+
+def build_agent_payload(agent_name: str, llm_id: str, voice_id: str, app_url: str) -> dict:
+    """Payload for create/update-agent (the voice agent)."""
     return {
         "agent_name": agent_name,
         "response_engine": {
@@ -318,19 +319,14 @@ def build_payload(prompt: str, llm_id: str, voice_id: str, app_url: str,
         },
         "voice_id": voice_id,
         "language": "en-US",
-        "general_prompt": prompt,
-        "begin_message": begin_message,
-        "general_tools": build_tools(app_url),
-        # Post-call logging back into this app (voice.py /webhook).
         "webhook_url": f"{app_url.rstrip('/')}/api/v1/voice/webhook",
         "webhook_events": ["call_ended", "call_analyzed"],
-        # Keep the model on-topic (see voice_prompt.md "Out-of-Scope Topics").
         "boosted_keywords": [
             "eviction", "evictions.help", "answer form", "fee waiver",
             "filing deadline", "court date", "landlord", "packet", "file",
         ],
-        "end_call_after_silence_ms": 600000,   # 10 min of silence → hang up
-        "max_call_duration_ms": 1800000,       # 30 min hard cap
+        "end_call_after_silence_ms": 600000,
+        "max_call_duration_ms": 1800000,
         "reminder_trigger_ms": 10000,
         "reminder_message": "Are you still there?",
         "responsiveness": 0.6,
@@ -348,6 +344,14 @@ def build_payload(prompt: str, llm_id: str, voice_id: str, app_url: str,
 # Retell operations
 # ─────────────────────────────────────────────────────────────────────────────
 
+def update_llm(token: str, llm_id: str, payload: dict) -> dict:
+    return _request("PATCH", f"/update-retell-llm/{llm_id}", token, payload)
+
+
+def get_llm(token: str, llm_id: str) -> dict:
+    return _request("GET", f"/get-retell-llm/{llm_id}", token)
+
+
 def create_agent(token: str, payload: dict) -> dict:
     return _request("POST", "/create-agent", token, payload)
 
@@ -360,7 +364,7 @@ def get_agent(token: str, agent_id: str) -> dict:
     return _request("GET", f"/get-agent/{agent_id}", token)
 
 
-def list_agents(token: str) -> list:
+def list_agents(token: str) -> Any:
     return _request("GET", "/list-agents", token)
 
 
@@ -377,16 +381,17 @@ def _redact(text: str, secrets: list[str]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Deploy the evictions.help phone agent to Retell AI.",
+        description="Deploy the evictions.help phone agent (LLM + agent) to Retell AI.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--create", action="store_true",
                         help="Force-create a new agent (ignore RETELL_AGENT_ID).")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Print the payload and exit without any network call.")
+                        help="Print the payloads and exit without any network call.")
     parser.add_argument("--list", action="store_true", help="List existing agents.")
     parser.add_argument("--get", nargs="?", const="", metavar="AGENT_ID",
                         help="Print the current config for AGENT_ID (or RETELL_AGENT_ID).")
+    parser.add_argument("--get-llm", action="store_true", help="Print the current LLM config.")
     parser.add_argument("--agent-id", dest="agent_id", default="",
                         help="Agent ID to update (overrides RETELL_AGENT_ID).")
     parser.add_argument("--voice-id", dest="voice_id", default="",
@@ -394,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--llm-id", dest="llm_id", default="",
                         help="Retell LLM id (overrides RETELL_LLM_ID).")
     parser.add_argument("--app-url", dest="app_url", default="",
-                        help="Public app base URL (overrides APP_URL).")
+                        help="Public base URL Retell calls for tools/webhook (overrides VOICE_APP_URL).")
     parser.add_argument("--prompt-file", dest="prompt_file", default=str(DEFAULT_PROMPT_PATH),
                         help="Path to the system prompt markdown.")
     args = parser.parse_args(argv)
@@ -403,19 +408,23 @@ def main(argv: list[str] | None = None) -> int:
     token = get_setting("RETELL_API_KEY", None, env)
     llm_id = get_setting("RETELL_LLM_ID", args.llm_id, env, DEFAULT_LLM_ID)
     voice_id = get_setting("RETELL_VOICE_ID", args.voice_id, env, DEFAULT_VOICE_ID)
-    app_url = get_setting("APP_URL", args.app_url, env, DEFAULT_APP_URL).rstrip("/")
-    env_agent_id = get_setting("RETELL_AGENT_ID", None, env)
-    agent_id = args.agent_id or env_agent_id
+    app_url = get_setting("VOICE_APP_URL", args.app_url, env, DEFAULT_APP_URL).rstrip("/")
+    agent_id = args.agent_id or get_setting("RETELL_AGENT_ID", None, env)
 
-    # --list / --get don't need the prompt or a payload.
+    if not token:
+        print("ERROR: RETELL_API_KEY is not set (put it in .env or export it).")
+        print("       Get it from the Retell dashboard → API Keys.")
+        return 1
+
+    # Read-only modes.
     if args.list:
-        if not token:
-            print("ERROR: RETELL_API_KEY is not set (put it in .env or export it).")
-            return 1
         print("Listing agents…")
-        agents = list_agents(token)
-        for a in agents:
+        for a in list_agents(token):
             print(f"  {a.get('agent_id')}  {a.get('agent_name')}")
+        return 0
+
+    if args.get_llm:
+        print(json.dumps(get_llm(token, llm_id), indent=2))
         return 0
 
     if args.get is not None:
@@ -423,53 +432,49 @@ def main(argv: list[str] | None = None) -> int:
         if not target:
             print("ERROR: no agent id — pass --get <id> or set RETELL_AGENT_ID.")
             return 1
-        if not token:
-            print("ERROR: RETELL_API_KEY is not set.")
-            return 1
-        cfg = get_agent(token, target)
-        print(json.dumps(cfg, indent=2))
+        print(json.dumps(get_agent(token, target), indent=2))
         return 0
 
-    # Everything below needs the prompt + a payload.
-    if not token:
-        print("ERROR: RETELL_API_KEY is not set (put it in .env or export it).")
-        print("       Get it from the Retell dashboard → API Keys.")
-        return 1
-
+    # Deploy modes need the prompt.
     prompt_path = Path(args.prompt_file)
     if not prompt_path.exists():
         print(f"ERROR: prompt file not found: {prompt_path}")
-        print("       Point --prompt-file at the system prompt markdown.")
         return 1
     prompt = prompt_path.read_text(encoding="utf-8").strip()
     if not prompt:
         print(f"ERROR: prompt file is empty: {prompt_path}")
         return 1
 
-    payload = build_payload(prompt, llm_id, voice_id, app_url, BEGIN_MESSAGE, AGENT_NAME)
+    llm_payload = build_llm_payload(prompt, BEGIN_MESSAGE, app_url)
+    agent_payload = build_agent_payload(AGENT_NAME, llm_id, voice_id, app_url)
 
     if args.dry_run:
         secrets = [token]
-        safe = json.dumps(payload, indent=2)
-        print("DRY RUN — no network call. Payload:")
-        print(_redact(safe, secrets))
-        print(f"\nWould {'CREATE' if args.create or not agent_id else 'UPDATE'} agent "
-              f"{'(new)' if args.create or not agent_id else agent_id}.")
+        print("DRY RUN — no network call.")
+        print("\n=== LLM payload (PATCH /update-retell-llm/{}) ===".format(llm_id))
+        print(_redact(json.dumps(llm_payload, indent=2), secrets))
+        print(f"\n=== Agent payload ({'PATCH' if (agent_id and not args.create) else 'POST'}) ===")
+        print(_redact(json.dumps(agent_payload, indent=2), secrets))
         return 0
 
+    # 1) Update the LLM (prompt + tools).
+    print(f"Updating LLM {llm_id} (prompt + {len(llm_payload['general_tools'])} tools)…")
+    update_llm(token, llm_id, llm_payload)
+    print("✅ LLM updated")
+
+    # 2) Update or create the agent.
     if args.create or not agent_id:
         print(f"Creating new agent (voice={voice_id}, llm={llm_id})…")
-        result = create_agent(token, payload)
+        result = create_agent(token, agent_payload)
         new_id = result.get("agent_id", "")
         print(f"✅ Created agent {new_id}")
         if new_id:
-            print(f"   Save it: RETELL_AGENT_ID={new_id}  (add to .env to make "
-                  f"future runs update instead of create)")
+            print(f"   Save it: RETELL_AGENT_ID={new_id}")
         return 0
 
-    print(f"Updating agent {agent_id} (voice={voice_id}, llm={llm_id})…")
-    result = update_agent(token, agent_id, payload)
-    print(f"✅ Updated agent {result.get('agent_id', agent_id)}")
+    print(f"Updating agent {agent_id} (voice={voice_id})…")
+    update_agent(token, agent_id, agent_payload)
+    print(f"✅ Updated agent {agent_id}")
     return 0
 
 
