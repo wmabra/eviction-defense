@@ -112,6 +112,18 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             if re.search(rf'\b{re.escape(k)}\b', nm):
                 return bool(fin.get(key))
 
+        # LA IFP Question 7(a): pay frequency — check exactly one box. Spouse
+        # rows stay off for a single-tenant intake.
+        if "paid" in nm and ("weekly" in nm or "monthly" in nm):
+            if "spouse" in nm:
+                return False
+            _pay_freq = (fin.get("pay_frequency") or "monthly").lower()
+            if "bi" in nm:
+                return _pay_freq in ("bi-weekly", "biweekly")
+            if "weekly" in nm:
+                return _pay_freq == "weekly"
+            return _pay_freq == "monthly"
+
         # KY AOC-026 page-1 expense-type checkboxes (rent vs mortgage).
         if nm in ("check box 3", "check box3") and 480 < r.y0 < 500:
             return bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")
@@ -210,7 +222,11 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             no_x = x[0]
     if yes_x is not None and no_x is not None:
         _os = (on_state or "").strip().lower()
-        if trust_on_state and _os == "yes":
+        if nm.endswith("- yes") or nm.endswith(" yes"):
+            is_yes = True
+        elif nm.endswith("- no") or nm.endswith(" no"):
+            is_yes = False
+        elif trust_on_state and _os == "yes":
             is_yes = True
         elif trust_on_state and _os == "no":
             is_yes = False
@@ -1028,6 +1044,11 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # Master "Affirmative Defenses" checkbox — auto-select when any defense applies.
     if any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
         values["√ Affirmative Defenses"] = "Yes"
+    # Louisiana LSBA answer Section 1: auto-check the "I have exceptions and/or
+    # defenses..." master box whenever any defense is asserted (intake carries
+    # no separate def_exceptions flag).
+    if state_code == "LA" and any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
+        values["I have exceptions andor defenses to the claims made in the eviction paperwork"] = "Yes"
 
     # Populate per-item explanation text areas (e.g. DC 111a "details N" fields)
     # with the tenant's defense explanations.
