@@ -11,9 +11,8 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.database.models import Case, User
-from app.routers.auth import create_user
-from app.services.auth import generate_temp_password
-from app.services.email_service import send_welcome_email
+from app.services.auth import sign_verification_token
+from app.services.email_service import send_verification_email
 
 # authorizenet is a declared dependency but may not be installed in every
 # environment (e.g. local dev). Degrade to a 503 at request time instead of
@@ -69,18 +68,15 @@ def process_payment(req: PaymentRequest, db: Session = Depends(get_db)):
     if not result.success:
         raise HTTPException(status_code=402, detail=result.message)
 
-    # --- Payment succeeded: create/find account + case, email credentials ---
+    # --- Payment succeeded: create the case; verify email before account ---
     email = req.customer_email.lower().strip()
 
-    user = db.query(User).filter(User.email == email).first()
-    temp_password: str | None = None
-    if user is None:
-        temp_password = generate_temp_password()
-        user = create_user(db, email, temp_password)
-    # Existing account: reuse it and do NOT reset their password.
+    # Returning customer (already has an account): link the new case and skip
+    # verification. New customer: defer account creation until they verify.
+    existing_user = db.query(User).filter(User.email == email).first()
 
     case = Case(
-        user_id=user.id,
+        user_id=existing_user.id if existing_user else None,
         state=(req.state or "").upper(),
         county=req.county or "",
         property_address=req.property_address or "",
@@ -90,20 +86,23 @@ def process_payment(req: PaymentRequest, db: Session = Depends(get_db)):
         full_name=req.customer_name or None,
         eligible=True,
         payment_status="paid",
-        status="intake_in_progress",
+        status="intake_in_progress" if existing_user else "pending_email_verification",
     )
     db.add(case)
     db.commit()
     db.refresh(case)
 
-    if temp_password:
-        send_welcome_email(email, temp_password)
+    if existing_user is None:
+        # New customer: send a verification link. The account (and its password)
+        # is created only after they click it.
+        token = sign_verification_token(email, str(case.id))
+        verification_url = f"{settings.app_url.rstrip('/')}/api/v1/auth/verify-email?token={token}"
+        send_verification_email(email, verification_url)
 
     return PaymentResponse(
         success=True,
         transaction_id=result.transaction_id,
-        message="Payment complete. Your account is ready — check your email for your password.",
+        message="Payment complete. Check your email to verify your account.",
         auth_code=result.auth_code,
         email=email,
-        temp_password=temp_password,
     )

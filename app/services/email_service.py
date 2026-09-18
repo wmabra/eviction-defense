@@ -62,6 +62,22 @@ Need help? Reply to this email or contact support@evictions.help.
     return send_email(to=to, subject=subject, body=body)
 
 
+def send_verification_email(to: str, verification_url: str) -> bool:
+    """Send the post-payment email-verification link."""
+    subject = "Verify your email — evictions.help"
+    body = f"""Thanks for your payment!
+
+Before we set up your account, please verify your email address by clicking the link below:
+
+{verification_url}
+
+This link expires in 48 hours. If you didn't order an evictions.help packet, you can ignore this email.
+
+— The evictions.help team
+"""
+    return send_email(to=to, subject=subject, body=body)
+
+
 def send_password_reset_email(to: str, temp_password: str) -> bool:
     """Send a password-reset email with a new temporary password."""
     subject = "Your evictions.help password has been reset"

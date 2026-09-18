@@ -85,5 +85,38 @@ def verify_token(token: str) -> Optional[str]:
         return None
 
 
+VERIFICATION_TTL_SECONDS = 48 * 60 * 60  # 48 hours
+
+
+def sign_verification_token(email: str, case_id: str, ttl_seconds: int = VERIFICATION_TTL_SECONDS) -> str:
+    """Create a signed, expiring email-verification token carrying email + case id."""
+    payload = {
+        "purpose": "verify_email",
+        "email": email,
+        "case_id": case_id,
+        "exp": time.time() + ttl_seconds,
+    }
+    body = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
+    signature = _b64url_encode(_sign(body))
+    return f"{body}.{signature}"
+
+
+def verify_verification_token(token: str) -> Optional[dict]:
+    """Validate an email-verification token; return {email, case_id} or None."""
+    try:
+        body, signature = token.split(".", 1)
+        expected = _b64url_encode(_sign(body))
+        if not hmac.compare_digest(signature, expected):
+            return None
+        payload = json.loads(_b64url_decode(body))
+        if payload.get("purpose") != "verify_email":
+            return None
+        if payload.get("exp", 0) < time.time():
+            return None
+        return {"email": str(payload.get("email")), "case_id": str(payload.get("case_id"))}
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return None
+
+
 def _sign(body: str) -> bytes:
     return hmac.new(settings.secret_key.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).digest()

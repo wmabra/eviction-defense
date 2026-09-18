@@ -8,12 +8,23 @@ from datetime import datetime
 from typing import Any, Optional, cast
 
 from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.database.models import Case, User
-from app.services.auth import generate_temp_password, hash_password, sign_token, verify_password, verify_token
+from app.services.auth import (
+    generate_temp_password,
+    hash_password,
+    sign_token,
+    sign_verification_token,
+    verify_password,
+    verify_token,
+    verify_verification_token,
+)
+from app.services.email_service import send_verification_email, send_welcome_email
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -32,6 +43,10 @@ class ChangePasswordRequest(BaseModel):
 
 
 class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResendVerificationRequest(BaseModel):
     email: str
 
 
@@ -110,7 +125,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     user = cast(Any, user)
-    if not verify_password(req.password, user.password_hash):
+    if not verify_password(req.password, cast(str, user.password_hash)):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     user.last_login_at = datetime.utcnow()
@@ -155,7 +170,7 @@ def change_password(
     db: Session = Depends(get_db),
 ):
     user = cast(Any, user)
-    if not verify_password(req.current_password, user.password_hash):
+    if not verify_password(req.current_password, cast(str, user.password_hash)):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     if len(req.new_password) < 8:
         raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
@@ -184,3 +199,65 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
         from app.services.email_service import send_password_reset_email
         send_password_reset_email(email, temp_password)
     return {"status": "ok", "message": "If that email has an account, a new password has been sent."}
+
+
+@router.get("/verify-email")
+def verify_email(token: str, db: Session = Depends(get_db)):
+    """Verify a customer's email and create their account (username = email)."""
+    payload = verify_verification_token(token)
+    if not payload:
+        return HTMLResponse(
+            "<h1>Link expired or invalid</h1>"
+            "<p>This verification link is invalid or has expired. You can request a new one "
+            "from your account page.</p>",
+            status_code=400,
+        )
+
+    email = payload["email"]
+    case_id = payload["case_id"]
+
+    user = db.query(User).filter(User.email == email).first()
+    temp_password: str | None = None
+    if user is None:
+        temp_password = generate_temp_password()
+        user = create_user(db, email, temp_password)
+    # else: already verified — don't reset their existing password.
+
+    case = db.query(Case).filter(Case.id == case_id).first()
+    if case is not None:
+        case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
+        if case.user_id is None:
+            case.user_id = user.id
+        if case.status == "pending_email_verification":
+            case.status = "intake_in_progress"
+        db.commit()
+
+    if temp_password:
+        send_welcome_email(email, temp_password)
+
+    return HTMLResponse(
+        "<h1>Email verified!</h1>"
+        "<p>Your account is ready. Check your inbox for your temporary password, then "
+        "<a href='/account'>log in here</a>.</p>"
+    )
+
+
+@router.post("/resend-verification")
+def resend_verification(req: ResendVerificationRequest, db: Session = Depends(get_db)):
+    """Re-send the email-verification link for a pending order."""
+    email = req.email.lower().strip()
+    case = (
+        db.query(Case)
+        .filter(Case.email == email, Case.status == "pending_email_verification")
+        .order_by(Case.created_at.desc())
+        .first()
+    )
+    if case is None:
+        # Always return success to avoid revealing whether an order exists.
+        return {"status": "ok", "message": "If that email has a pending order, a new verification link has been sent."}
+
+    case = cast(Any, case)
+    token = sign_verification_token(email, str(case.id))
+    verification_url = f"{settings.app_url.rstrip('/')}/api/v1/auth/verify-email?token={token}"
+    send_verification_email(email, verification_url)
+    return {"status": "ok", "message": "Verification email sent."}
