@@ -1,0 +1,30 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17  # v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/eviction-defense
+            echo "before: $(git rev-parse --short HEAD)"
+            sudo -u deploy git pull origin main
+            echo "after:  $(git rev-parse --short HEAD)"
+            systemctl restart eviction-defense
+            sleep 8
+            echo "service: $(systemctl is-active eviction-defense)"
+            curl -s -o /dev/null -w "health: HTTP %{http_code}\n" http://127.0.0.1:8000/
