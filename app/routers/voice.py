@@ -32,6 +32,11 @@ class CallerVerifyRequest(BaseModel):
     last_four_phone: Optional[str] = None
 
 
+class PackageRequest(BaseModel):
+    """Look up full package context for a verified case (POST variant for Retell tools)."""
+    case_id: str
+
+
 class CallerInfo(BaseModel):
     """Safe caller info returned to the voice agent."""
     verified: bool
@@ -169,18 +174,13 @@ def verify_caller(req: CallerVerifyRequest, db: Session = Depends(get_db)):
     return voice_response(caller_info_from_case(case))
 
 
-@router.get("/package/{case_id}")
-def package_context(case_id: str, db: Session = Depends(get_db)):
-    """Get full package context for a verified case.
-
-    Retell calls this after verification to load context into the agent.
-    """
+def _package_context_payload(case_id: str, db: Session) -> dict:
+    """Build the package-context dict for a case (shared by GET + POST)."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     case = cast(Any, case)  # SQLAlchemy Column descriptors aren't typed by pyright
 
-    # Build package manifest
     docs = []
     if case.packet_paths:
         for name, path in (case.packet_paths or {}).items():
@@ -192,7 +192,7 @@ def package_context(case_id: str, db: Session = Depends(get_db)):
     defense_count = len(case.defenses or {})
     fee_waiver_status = "included" if case.needs_filing_fee_waiver else "not included"
 
-    return voice_response({
+    return {
         "case_id": case.id,
         "customer_name": case.full_name or "there",
         "state": case.county or "",  # county field stores "State, County"
@@ -205,7 +205,19 @@ def package_context(case_id: str, db: Session = Depends(get_db)):
         "court_date": str(case.court_date) if case.court_date else "",
         "court_name": case.court_name or "",
         "landlord_name": case.landlord_name or "",
-    })
+    }
+
+
+@router.get("/package/{case_id}")
+def package_context(case_id: str, db: Session = Depends(get_db)):
+    """Get full package context for a verified case (browser/curl)."""
+    return voice_response(_package_context_payload(case_id, db))
+
+
+@router.post("/package")
+def package_context_post(req: PackageRequest, db: Session = Depends(get_db)):
+    """POST variant — Retell custom tools POST a JSON body."""
+    return voice_response(_package_context_payload(req.case_id, db))
 
 
 @router.post("/document-help")
