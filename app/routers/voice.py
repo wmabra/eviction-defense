@@ -12,6 +12,7 @@ from typing import Any, Optional, cast
 import hashlib
 import hmac
 import json
+import re
 
 from app.database import get_db
 from app.database.models import Case, ChatLog
@@ -445,61 +446,255 @@ def caller_info_from_case(case: Case) -> dict:
     }
 
 
+# ── Document knowledge base — canonical info for every packet document ─────
+# Keys match the generator's `paths` dict (see app/services/generator.py) plus
+# the court answer ("court_form") and fee waiver ("fee_waiver") added separately.
+
+_DOCS: dict[str, dict] = {
+    "cover_page": {
+        "name": "Cover Page / Document Index",
+        "aliases": ("cover page", "document index", "manifest", "table of contents", "index"),
+        "description": "Cover page that lists and indexes every document in your packet.",
+        "purpose": "A quick reference so you can see everything in your packet and the order to review it.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Use it as your table of contents; the numbering matches each document.",
+    },
+    "court_form": {
+        "name": "Court Answer Form",
+        "aliases": ("answer form", "court answer", "eviction answer", "answer", "court form"),
+        "description": "The official court answer form — your formal written response to the eviction complaint.",
+        "purpose": "Tells the court which claims you deny, which defenses you raise, and what outcome you want.",
+        "where_to_sign": "Sign and date at the bottom of the last page ('Signature of Tenant'). If you have co-tenants, each must sign separately.",
+        "where_to_file": "File at the Clerk of Court in {county}. Your Filing Checklist has the exact address and website.",
+        "important_notes": "File it by the deadline shown on your summons and at the top of your Filing Checklist.",
+    },
+    "fee_waiver": {
+        "name": "Fee Waiver Application",
+        "aliases": ("fee waiver", "waiver", "ifp", "forma pauperis", "pauper", "filing fee"),
+        "description": "Application asking the court to waive filing fees because of your financial situation.",
+        "purpose": "If approved, you won't have to pay court filing fees. If denied, you'll need to pay before the deadline.",
+        "where_to_sign": "Sign at the bottom under 'Applicant Signature.' It may need to be notarized or signed under penalty of perjury.",
+        "where_to_file": "File together with your Answer form at the Clerk of Court in {county}.",
+        "important_notes": "Your income, asset, and expense figures are pre-filled from your intake — verify they're correct.",
+    },
+    "emergency_action_plan": {
+        "name": "Emergency Action Plan",
+        "aliases": ("emergency action plan", "action plan", "emergency plan", "what to do"),
+        "description": "A step-by-step 'what to do right now' guide.",
+        "purpose": "Tells you the immediate actions to take to protect yourself.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Read this first if you're feeling overwhelmed — it walks you through the next steps in order.",
+    },
+    "eviction_timeline": {
+        "name": "Eviction Timeline",
+        "aliases": ("eviction timeline", "timeline", "deadline", "process timeline"),
+        "description": "A timeline of the eviction process and your deadlines in your state.",
+        "purpose": "Helps you understand where you are in the process and what happens next.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Your exact filing deadline is at the top of your Filing Checklist.",
+    },
+    "defenses_explained": {
+        "name": "Defenses Explained",
+        "aliases": ("defenses explained", "defenses", "defense explanations", "defence"),
+        "description": "Plain-English explanation of the defenses you selected.",
+        "purpose": "So you understand each defense and can explain it in court.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Review this before your hearing so you can describe your defenses in your own words.",
+    },
+    "evidence_guide": {
+        "name": "Evidence Guide",
+        "aliases": ("evidence guide", "evidence", "proof", "documents to gather"),
+        "description": "A checklist of documents and evidence to gather for your case.",
+        "purpose": "Helps you collect the proof you need for court.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Gather receipts, photos, notices, and communications with your landlord early.",
+    },
+    "income_expense_worksheet": {
+        "name": "Income & Expense Worksheet",
+        "aliases": ("income expense worksheet", "income", "expense worksheet", "financial worksheet", "income and expense", "worksheet"),
+        "description": "Your monthly income and expenses, itemized.",
+        "purpose": "Supports your fee waiver and shows the court your financial situation.",
+        "where_to_sign": "Review for accuracy — no signature needed on the worksheet itself.",
+        "where_to_file": "Keep it with your Fee Waiver Application — the figures support it.",
+        "important_notes": "Check that the numbers match your actual income and expenses before you file.",
+    },
+    "filing_checklist": {
+        "name": "Filing Checklist",
+        "aliases": ("filing checklist", "filing", "how to file", "where to file", "checklist"),
+        "description": "Step-by-step checklist for how and where to file your answer.",
+        "purpose": "Walks you through signing, making copies, filing, and serving the landlord.",
+        "where_to_sign": "No signature needed — it's a guide, not a form.",
+        "where_to_file": "Reference guide — it tells you where to file each document.",
+        "important_notes": "Your deadline and the court's address are at the top. Follow the steps in order.",
+    },
+    "court_checklist": {
+        "name": "Court Hearing Checklist",
+        "aliases": ("court checklist", "hearing checklist", "court hearing", "hearing prep"),
+        "description": "What to bring and what to expect at your court hearing.",
+        "purpose": "Prepares you for the day of your hearing.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Arrive 15 minutes early and bring your packet, evidence, and a pen and paper.",
+    },
+    "hearing_script": {
+        "name": "Hearing Script",
+        "aliases": ("hearing script", "script", "what to say", "hearing prep guide"),
+        "description": "A script of what to say to the judge at your hearing.",
+        "purpose": "Gives you clear, plain-English wording to use in court.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Practice it beforehand, but speak naturally in your own words.",
+    },
+    "rental_assistance": {
+        "name": "Rental Assistance Resources",
+        "aliases": ("rental assistance", "rent assistance", "assistance", "rent help", "resources", "financial help"),
+        "description": "Local rental assistance programs and agencies in your county.",
+        "purpose": "Helps you find financial help for rent or utilities.",
+        "where_to_sign": "No signature needed.",
+        "where_to_file": "Reference only — not filed with the court.",
+        "important_notes": "Contact these programs early — funding is limited and can run out.",
+    },
+    "demand_letter": {
+        "name": "Demand Letter",
+        "aliases": ("demand letter", "repair demand", "repair letter", "demand"),
+        "description": "A letter to your landlord demanding repairs.",
+        "purpose": "Documents that you asked for repairs, which supports a habitability defense.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "Send it to your landlord (keep a copy for yourself and for court).",
+        "important_notes": "Send it by certified mail and keep the receipt as proof.",
+    },
+    "motion_to_determine_rent": {
+        "name": "Motion to Determine Rent",
+        "aliases": ("motion to determine rent", "determine rent", "dispute rent", "rent amount", "motion determine"),
+        "description": "A motion asking the court to determine how much rent you actually owe.",
+        "purpose": "Used when you dispute the amount the landlord claims.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File at the Clerk of Court in {county}.",
+        "important_notes": "Attach evidence of the correct amount and file before your deadline.",
+    },
+    "payment_plan_letter": {
+        "name": "Payment Plan Letter",
+        "aliases": ("payment plan", "payment plan letter", "repayment plan", "payment letter"),
+        "description": "A letter to your landlord proposing a payment plan.",
+        "purpose": "Shows the court you're trying to pay and may help you reach an agreement.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "Send it to your landlord and keep a copy for court.",
+        "important_notes": "Send by certified mail and keep the receipt.",
+    },
+    "hardship_letter": {
+        "name": "Hardship Letter",
+        "aliases": ("hardship letter", "hardship", "extension letter", "more time"),
+        "description": "A letter explaining your financial hardship and asking for more time or consideration.",
+        "purpose": "Asks the court or landlord for leniency based on your circumstances.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File with the court or send to the landlord as directed in the letter.",
+        "important_notes": "Be honest and specific about your situation.",
+    },
+    "motion_for_hearing": {
+        "name": "Motion for Hearing",
+        "aliases": ("motion for hearing", "request hearing", "hearing motion", "motion hearing"),
+        "description": "A motion requesting a hearing in your case.",
+        "purpose": "Ensures you get your day in court.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File at the Clerk of Court in {county}.",
+        "important_notes": "File promptly so your hearing is scheduled.",
+    },
+    "motion_of_continuance": {
+        "name": "Motion of Continuance",
+        "aliases": ("motion of continuance", "continuance", "postpone", "reschedule", "continuance motion"),
+        "description": "A motion asking the court to postpone your hearing.",
+        "purpose": "Gives you more time to prepare or gather evidence.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File at the Clerk of Court in {county} as soon as possible.",
+        "important_notes": "File before your hearing date.",
+    },
+    "emergency_motion_stay_eviction": {
+        "name": "Emergency Motion to Stay Eviction",
+        "aliases": ("stay eviction", "emergency stay", "stop eviction", "motion stay eviction", "emergency motion"),
+        "description": "An emergency motion asking the court to stop the eviction before judgment.",
+        "purpose": "Asks the court to halt the eviction until your case is heard.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File immediately at the Clerk of Court in {county}.",
+        "important_notes": "This is urgent — file it right away.",
+    },
+    "emergency_motion_stay_writ": {
+        "name": "Emergency Motion to Stay Writ/Warrant",
+        "aliases": ("stay writ", "stay warrant", "stop writ", "stop warrant", "motion stay writ", "motion stay warrant", "writ of possession"),
+        "description": "An emergency motion asking the court to stop a writ/warrant of possession (post-judgment).",
+        "purpose": "Asks the court to pause a removal that has already been ordered.",
+        "where_to_sign": "Sign and date at the bottom.",
+        "where_to_file": "File immediately at the Clerk of Court in {county}.",
+        "important_notes": "This may be your last chance to stop removal — file it immediately and contact legal aid.",
+    },
+    "notice_automatic_stay_bankruptcy": {
+        "name": "Notice of Automatic Stay (Bankruptcy)",
+        "aliases": ("automatic stay", "bankruptcy notice", "bankruptcy stay", "notice automatic stay"),
+        "description": "A notice that a bankruptcy filing triggers an automatic stay of the eviction.",
+        "purpose": "Tells the court and landlord that the eviction must pause because of a bankruptcy filing.",
+        "where_to_sign": "Sign and date if required.",
+        "where_to_file": "File with the court and serve on the landlord's attorney.",
+        "important_notes": "Coordinate with your bankruptcy attorney before filing.",
+    },
+}
+
+
+def _normalize_doc_name(doc_name: str) -> str | None:
+    """Map a packet key, filename, or caller phrase to a canonical _DOCS key."""
+    raw = (doc_name or "").lower().strip()
+
+    # 1) Exact packet-key match (e.g. "court_form", "filing_checklist").
+    if raw in _DOCS:
+        return raw
+
+    # 2) Normalize: strip numbering / ".pdf" / "FILE_THIS", spaces for underscores.
+    dn = re.sub(r"\.pdf$", "", raw)
+    dn = re.sub(r"^\d+[_\s-]*", "", dn)
+    dn = dn.replace("court_form", "court form")
+    dn = re.sub(r"file[_\s]?this", "", dn)
+    dn = dn.replace("_", " ").replace("-", " ")
+    dn = re.sub(r"\s+", " ", dn).strip()
+
+    # 3) Exact human-name / normalized-key match.
+    for key, info in _DOCS.items():
+        if dn == info["name"].lower() or dn == key.replace("_", " "):
+            return key
+
+    # 4) Fuzzy alias match — the longest (most specific) matching alias wins.
+    best_key: str | None = None
+    best_len = 0
+    for key, info in _DOCS.items():
+        for alias in info["aliases"]:
+            if alias and alias in dn and len(alias) > best_len:
+                best_key = key
+                best_len = len(alias)
+    return best_key
+
+
 def get_doc_description(doc_name: str, county: str) -> str:
     """Return a one-line description of a document in the packet."""
-    descriptions = {
-        "COURT_FORM_Answer": "Official court answer form — your formal response to the eviction complaint.",
-        "Fee_Waiver": "Application to waive court filing fees based on your income.",
-        "Motion_to_Determine_Rent": "Motion asking the court to determine how much rent is actually owed.",
-        "Landlord_Payment_Plan_Letter": "Letter to your landlord proposing a payment plan.",
-        "Hardship_Extension_Letter": "Letter requesting more time from the court due to hardship.",
-        "Filing_Checklist": "Step-by-step checklist showing exactly where and how to file each document.",
-        "Court_Checklist": "What to bring and what to expect at your court hearing.",
-        "EFiling_Instructions": "Instructions for e-filing your documents through the court portal.",
-        "Rental_Assistance_Resources": "Local rental assistance programs and HUD-approved agencies in your area.",
-        "Hearing_Prep_Guide": "Guide to preparing for your hearing — what to say, bring, and expect.",
-    }
-    return descriptions.get(doc_name, f"A document in your eviction defense packet for {county}.")
+    key = _normalize_doc_name(doc_name)
+    if key and key in _DOCS:
+        return _DOCS[key]["description"]
+    return f"A document in your eviction defense packet for {county}."
 
 
 def get_doc_help(doc_name: str, county: str) -> dict | None:
     """Return detailed help for a document, or None if unknown."""
-    help_db = {
-        "COURT_FORM_Answer": {
-            "found": True,
-            "doc_name": "Court Answer Form",
-            "description": "This is the official court answer form — your formal written response to the eviction complaint filed by your landlord.",
-            "purpose": "It tells the court which allegations you deny, which defenses you're raising, and what outcome you want.",
-            "where_to_sign": "Sign and date at the bottom of the last page where it says 'Signature of Tenant.' If you have co-tenants, each must sign separately.",
-            "where_to_file": f"File at the Clerk of Court in {county}. Your Filing Checklist and E-Filing Instructions have the exact address and website.",
-            "important_notes": (
-                "You must file this by the deadline shown on your summons. "
-                "The deadline is listed at the top of your Filing Checklist."
-            ),
-        },
-        "Fee_Waiver": {
-            "found": True,
-            "doc_name": "Fee Waiver Application",
-            "description": "This asks the court to waive filing fees because of your financial situation.",
-            "purpose": "If approved, you won't have to pay court filing fees. If denied, you'll need to pay before the deadline.",
-            "where_to_sign": "Sign at the bottom under 'Applicant Signature.' The form must be notarized or signed under penalty of perjury.",
-            "where_to_file": f"File together with your Answer form at the Clerk of Court in {county}.",
-            "important_notes": (
-                "Fill out your income, assets, and expenses completely. "
-                "If anything is missing, the court may deny it. "
-                "Your packet includes the financial data you provided during intake."
-            ),
-        },
+    key = _normalize_doc_name(doc_name)
+    if not key or key not in _DOCS:
+        return None
+    info = _DOCS[key]
+    return {
+        "found": True,
+        "doc_name": info["name"],
+        "description": info["description"],
+        "purpose": info["purpose"],
+        "where_to_sign": info["where_to_sign"],
+        "where_to_file": info["where_to_file"].format(county=county),
+        "important_notes": info["important_notes"],
     }
-
-    # Fuzzy match
-    for key, info in help_db.items():
-        if key.lower() in doc_name.lower() or doc_name.lower() in key.lower():
-            return info
-
-    # Try substring match on doc_name
-    for key, info in help_db.items():
-        if any(word.lower() in doc_name.lower() for word in key.split("_")):
-            return info
-
-    return None
