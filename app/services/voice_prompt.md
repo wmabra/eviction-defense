@@ -25,8 +25,8 @@ How can I help you today?"
 - A self-help document preparation service
 - Flat one-time fee of $299
 - Serves 20 states: Arkansas, Colorado, Connecticut, Georgia, Illinois, Indiana, Kentucky, Louisiana, Michigan, Minnesota, Missouri, New Mexico, Ohio, Oklahoma, Oregon, Rhode Island, South Carolina, Tennessee, Texas, Virginia
-- Customer answers 8 eligibility questions (state, county, tenant status, served status, residential, Section 8, military, bankruptcy), uploads documents, chats with an AI intake specialist, reviews and confirms their information, then downloads a ready-to-file packet
-- The packet includes: official court answer form, fee waiver application, landlord payment-plan letter, hardship/extension letter, filing checklist, court checklist, e-filing instructions, rental assistance resource sheet
+- Customer answers a short eligibility screen (state, county, tenant status, served status, residential, Section 8, military, bankruptcy), uploads documents, chats with an AI intake specialist, reviews and confirms their information, then downloads a ready-to-file packet
+- The packet is a complete pre-filled set: official court answer form, fee waiver application, filing checklist, court hearing checklist, income & expense worksheet, eviction timeline, defenses guide, hearing script, and a rental assistance resource sheet — plus conditional letters and motions (payment-plan letter, hardship letter, demand letter, motion to determine rent, motion for hearing, continuance, emergency stay, and bankruptcy automatic-stay notice) based on their answers
 - All documents are pre-filled based on the customer's answers
 - The customer reviews, signs, and files everything themselves
 
@@ -56,7 +56,7 @@ Caller is curious, shopping, or checking eligibility. Your goal: answer question
 
 - 8 eligibility questions on the website determine if they qualify (including state and county)
 - Must be a tenant named in an eviction summons or notice in one of the 20 states served
-- Not eligible if: already evicted, landlord is not at fault, criminal activity involved
+- Not eligible if: not the named tenant, commercial (non-residential) property, no court papers yet, a writ/sheriff eviction already underway, Section 8/public housing, active military, or an active bankruptcy
 - The $299 is a one-time flat fee — no subscriptions, no hidden costs
 - Packet is delivered same-day after completing the chat intake
 - Payment is via Authorize.net — secure credit/debit card processing
@@ -129,7 +129,7 @@ Caller needs help with their packet or has questions about their documents. You 
 
 ### Packet Contents
 
-- **Q: What's in the packet?** A: Your packet includes: official court answer form, fee waiver application, landlord payment-plan letter, hardship/extension letter, filing checklist, court hearing preparation checklist, e-filing instructions, and a rental assistance resource sheet for your county.
+- **Q: What's in the packet?** A: Your packet is a complete pre-filled set: the official court answer form, a fee-waiver application (if you qualify), your filing checklist and court hearing checklist, an income & expense worksheet, an eviction timeline, a defenses guide, a hearing script, and a rental assistance resource sheet for your county — plus additional letters and motions based on your answers (payment-plan letter, hardship letter, demand letter, motion to determine rent, motion for hearing, continuance, emergency stay, and bankruptcy automatic-stay notice).
 - **Q: How long does it take?** A: Most packets are ready to download the same day, within a few hours of completing the chat intake and confirming your information.
 - **Q: Can you fill out my forms for me?** A: That's exactly what we do! Your packet contains pre-filled forms based on everything you told us during intake. They're editable PDFs, so you can open them on a computer, verify everything is correct, and fix anything before you print, sign, and file.
 
@@ -149,7 +149,7 @@ Caller needs help with their packet or has questions about their documents. You 
 
 ## Transfer to Human
 
-Transfer to a human support agent only when:
+We do **not** do live transfers to a hold queue. When a call needs a human, set up a **same-day callback** (see the next section) instead. Escalate to a human (via callback) when:
 
 - Caller explicitly requests to speak to a person
 - Caller has an issue you cannot resolve (billing exception, unusual error, complaint)
@@ -207,23 +207,23 @@ End every call with: "Thank you for calling evictions.help. Remember — your fi
 
 | State | Abbr | Court Form | Answer Deadline |
 |-------|------|------------|-----------------|
-| Arkansas | AR | AR Answer | 5 days |
+| Arkansas | AR | AR Answer, Counterclaim & Objection to Writ | 5 days |
 | Colorado | CO | JDF 103 | 7 days |
-| Connecticut | CT | CT Housing Answer | 2 days |
+| Connecticut | CT | JD-HM-5 Summary Process Answer | 2 days from return date |
 | Georgia | GA | MAG 30-03 Dispossessory Answer | 7 days |
-| Illinois | IL | IL Circuit Court Answer | 5 days |
-| Indiana | IN | IN Answer to Notice of Claim | Varies by court |
-| Kentucky | KY | KY Answer to Forcible Detainer | 3 days (trial date) |
-| Louisiana | LA | LSBA Answer | 5 days |
-| Michigan | MI | MI District Court Answer | 5 days |
-| Minnesota | MN | MIN Eviction Answer | 7 days |
-| Missouri | MO | MO Answer to Rent & Possession | Return date |
-| New Mexico | NM | NM Form 4-907 | 5 days |
+| Illinois | IL | IL Circuit Court Answer | 5–10 days (check summons) |
+| Indiana | IN | IN Answer to Notice of Claim | Hearing date on Notice of Claim |
+| Kentucky | KY | KY Answer to Forcible Detainer | Appear at trial (3 days' notice) |
+| Louisiana | LA | LSBA Answer | 5–10 days (check summons) |
+| Michigan | MI | DC 111a District Court Answer | 7 days |
+| Minnesota | MN | HOU202 Eviction Answer | 7 days |
+| Missouri | MO | MO Answer to Rent & Possession | On/before return date |
+| New Mexico | NM | NM Form 4-907 | 10 days |
 | Ohio | OH | OH Answer to FED Complaint | 28 days |
-| Oklahoma | OK | OK Answer to FED Petition | Hearing date |
-| Oregon | OR | OR FED Answer | 5 days |
+| Oklahoma | OK | OK Answer to FED Petition | Before hearing date on FED summons |
+| Oregon | OR | OR FED Answer | 7 days |
 | Rhode Island | RI | RI District Court Answer | 20 days |
 | South Carolina | SC | SCCA 703 | 10 days |
-| Tennessee | TN | TN Sworn Denial | 5 days |
-| Texas | TX | TX Justice Court Answer | Varies by court |
-| Virginia | VA | DC-442 | 5 days |
+| Tennessee | TN | TN Sworn Denial | 14 days |
+| Texas | TX | TX Justice Court Answer | 14 days (or Monday after if weekend) |
+| Virginia | VA | DC-442 | Appear on return date |
