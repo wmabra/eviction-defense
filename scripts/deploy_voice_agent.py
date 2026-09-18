@@ -277,7 +277,7 @@ def build_tools(app_url: str) -> list:
                     "phone": {"type": "string", "description": "Best callback phone number."},
                     "best_time_eastern": {"type": "string", "description": "e.g. 'between 2pm and 4pm'."},
                     "case_id": {"type": "string", "description": "Case ID if available."},
-                    "issue_summary": {"type": "string", "description": "Short description of what they need help with."},
+                    "issue_summary": {"type": "string", "description": "A 2-4 sentence summary of the WHOLE conversation: who the caller is, what they needed, key facts (name, state, county, case ID, deadline, document, or issue), and what was already tried or told to them. The support team reads this before calling back."},
                     "caller_email": {"type": "string"},
                 },
                 "required": ["first_name", "last_name", "phone", "best_time_eastern", "issue_summary"],

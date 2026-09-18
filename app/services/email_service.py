@@ -109,7 +109,7 @@ Best time to call: {best_time} Eastern
 Case ID: {case_id or 'No case — pre-sale or not identified'}
 Caller Email: {caller_email or 'Not provided'}
 
-Issue:
+Conversation Summary:
 {issue}
 
 ---
