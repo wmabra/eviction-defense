@@ -15,7 +15,7 @@ import json
 import re
 
 from app.database import get_db
-from app.database.models import Case, ChatLog
+from app.database.models import Case, ChatLog, CallLog
 from app.services.email_service import send_callback_email
 from app.config import settings
 
@@ -347,10 +347,11 @@ def resend_packet(req: CallerVerifyRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/webhook")
-async def retell_webhook(request: Request):
-    """Receive call outcome from Retell AI.
+async def retell_webhook(request: Request, db: Session = Depends(get_db)):
+    """Receive call events from Retell AI and persist them for review.
 
-    Verifies the Retell signature before processing.
+    Verifies the Retell signature, then upserts a CallLog row so the support
+    team can review transcripts, outcomes, and post-call analysis.
     """
     body = await request.body()
     signature = request.headers.get("X-Retell-Signature", "")
@@ -370,15 +371,53 @@ async def retell_webhook(request: Request):
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
-    # Log the call outcome
     call_id = event.get("call_id", "unknown")
-    outcome = event.get("outcome", "unknown")
-    duration = event.get("duration_seconds", 0)
+    analysis = event.get("call_analysis") if isinstance(event.get("call_analysis"), dict) else None
+
+    # Retell may send both call_ended and call_analyzed for the same call —
+    # upsert on call_id so they merge into one row.
+    log = db.query(CallLog).filter(CallLog.call_id == call_id).first()
+    if log is None:
+        log = CallLog(call_id=call_id)
+        db.add(log)
+    log = cast(Any, log)  # SQLAlchemy Column descriptors aren't typed by pyright
+
+    if event.get("agent_id"):
+        log.agent_id = event.get("agent_id")
+    caller = event.get("caller_number") or event.get("from_number") or ""
+    if caller:
+        log.caller_number = caller
+    if event.get("transcript"):
+        log.transcript = event.get("transcript")
+    outcome = event.get("outcome") or event.get("end_call_reason") or ""
+    if outcome:
+        log.outcome = str(outcome)
+
+    # duration — prefer seconds, fall back to milliseconds / 1000.
+    dur = 0
+    raw_dur = event.get("duration_seconds")
+    if raw_dur is None:
+        raw_dur = event.get("duration_ms")
+    if raw_dur is not None:
+        try:
+            dur = int(raw_dur)
+        except (TypeError, ValueError):
+            dur = 0
+        else:
+            if event.get("duration_seconds") is None and event.get("duration_ms") is not None:
+                dur //= 1000  # ms → seconds
+    if dur:
+        log.duration_seconds = dur
+
+    if analysis:
+        log.analysis = analysis
+
+    db.commit()
 
     return voice_response({
         "received": True,
         "call_id": call_id,
-        "message": f"Call {call_id} ({outcome}, {duration}s) recorded.",
+        "message": f"Call {call_id} recorded.",
     })
 
 

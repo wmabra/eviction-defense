@@ -337,6 +337,16 @@ def build_agent_payload(agent_name: str, llm_id: str, voice_id: str, app_url: st
         "enable_backchannel": True,
         "backchannel_words": ["yeah", "uh-huh", "got it"],
         "data_storage_setting": "everything",
+        # Extract structured outcome data after each call (stored via the
+        # /webhook endpoint's call_logs table for the support team).
+        "post_call_analysis_data": [
+            {"type": "string", "name": "call_summary", "description": "A 1-2 sentence summary of what happened on the call."},
+            {"type": "boolean", "name": "call_successful", "description": "Whether the caller's issue was fully resolved on the call."},
+            {"type": "enum", "name": "user_sentiment", "description": "The caller's overall sentiment.", "choices": ["positive", "neutral", "negative"]},
+            {"type": "string", "name": "customer_name", "description": "The caller's full name if they provided it."},
+            {"type": "string", "name": "case_id", "description": "The evictions.help case ID if the caller was verified."},
+            {"type": "string", "name": "issue_summary", "description": "A one-sentence summary of what the caller needed help with."},
+        ],
     }
 
 

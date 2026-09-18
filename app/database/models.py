@@ -125,6 +125,21 @@ class ChatLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class CallLog(Base):
+    """Stores voice-agent call outcomes + transcripts for the support team."""
+    __tablename__ = "call_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    call_id = Column(String, index=True, nullable=False)
+    agent_id = Column(String, nullable=True)
+    caller_number = Column(String, nullable=True)
+    outcome = Column(String, nullable=True)  # e.g. agent_ended_call / user_hangup / voicemail
+    duration_seconds = Column(Integer, default=0)
+    transcript = Column(Text, nullable=True)
+    analysis = Column(JSON, nullable=True)  # post-call analysis (success, sentiment, etc.)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class User(Base):
     """Customer account. Created automatically after successful payment."""
     __tablename__ = "users"
