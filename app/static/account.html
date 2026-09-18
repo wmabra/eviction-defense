@@ -323,6 +323,20 @@
                 ? d.message
                 : "If that email has an account, a new password has been sent.";
           }
+
+          async function resendVerification() {
+            const email = document.getElementById("login-email").value.trim();
+            if (!email) {
+              alert("Enter your email address first.");
+              return;
+            }
+            await fetch("/api/v1/auth/resend-verification", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+            alert("If that email has a pending order, a new verification link has been sent.");
+          }
         </script>
       </div>
 
@@ -435,33 +449,23 @@
         const email = params.get("email");
         if (email) {
           document.getElementById("login-email").value = email;
-          let tempPw = "";
-          try {
-            tempPw = sessionStorage.getItem("evictions_temp_pw") || "";
-          } catch (_e) {}
           const notice = document.getElementById("login-notice");
-          if (tempPw) {
+          if (params.get("verify") === "1") {
             notice.textContent = "";
             const l1 = document.createElement("div");
-            l1.textContent = "Your account is ready.";
+            l1.textContent =
+              "Check your email to verify your account, then log in.";
             const l2 = document.createElement("div");
-            l2.textContent = "Username: ";
-            const u = document.createElement("strong");
-            u.textContent = email;
-            l2.appendChild(u);
-            const l3 = document.createElement("div");
-            l3.textContent = "Password: ";
-            const p = document.createElement("strong");
-            p.textContent = tempPw;
-            l3.appendChild(p);
-            const hint = document.createElement("div");
-            hint.style.fontSize = "12px";
-            hint.textContent =
-              "Also emailed to you — please change it in Settings after logging in.";
-            notice.append(l1, l2, l3, hint);
-            try {
-              sessionStorage.removeItem("evictions_temp_pw");
-            } catch (_e) {}
+            l2.style.marginTop = "6px";
+            const a = document.createElement("a");
+            a.href = "#";
+            a.textContent = "Resend verification email";
+            a.onclick = (ev) => {
+              ev.preventDefault();
+              resendVerification();
+            };
+            l2.appendChild(a);
+            notice.append(l1, l2);
           } else {
             notice.textContent =
               "Your account was created and your password was emailed to you. Enter it below to continue.";

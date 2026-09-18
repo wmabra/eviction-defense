@@ -631,13 +631,11 @@ async function submitPayment(opaqueData, email) {
 
 function redirectToAccount(data) {
 	const email = (data && data.email) || appState.email;
-	if (data && data.temp_password) {
-		try {
-			sessionStorage.setItem("evictions_temp_pw", data.temp_password);
-		} catch {}
-	}
 	// Same-origin relative redirect only — never a user-controlled host.
 	const target = new URL("/account", window.location.origin);
 	target.searchParams.set("email", email || "");
+	if (data && data.needs_verification) {
+		target.searchParams.set("verify", "1");
+	}
 	window.location.assign(target.pathname + target.search);
 }

@@ -44,7 +44,7 @@ class PaymentResponse(BaseModel):
     message: str = ""
     auth_code: str | None = None
     email: str = ""
-    temp_password: str | None = None  # only set when a NEW account was created
+    needs_verification: bool = False  # True for a NEW customer (verify before account)
 
 
 @router.post("/charge", response_model=PaymentResponse)
@@ -102,7 +102,12 @@ def process_payment(req: PaymentRequest, db: Session = Depends(get_db)):
     return PaymentResponse(
         success=True,
         transaction_id=result.transaction_id,
-        message="Payment complete. Check your email to verify your account.",
+        message=(
+            "Payment complete. Check your email to verify your account."
+            if existing_user is None
+            else "Payment complete. Log in to continue."
+        ),
         auth_code=result.auth_code,
         email=email,
+        needs_verification=existing_user is None,
     )
