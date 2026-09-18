@@ -572,17 +572,31 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
         for page in doc:
             for w in page.widgets():
                 w = cast(Any, w)
-                o = overrides.get(str(getattr(w, "field_name", "") or ""))
+                fn = str(getattr(w, "field_name", "") or "")
+                o = overrides.get(fn)
+                all_text = overrides.get("__all_text__") if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_TEXT else None
+                if all_text:
+                    o = {**all_text, **o} if o else dict(all_text)
                 if not o:
                     continue
                 r = w.rect
                 if r is None:
                     continue
                 w.rect = fitz.Rect(
-                    o.get("x0", r.x0), o.get("y0", r.y0),
-                    o.get("x1", r.x1), o.get("y1", r.y1))
+                    o.get("x0", r.x0 + o.get("dx0", 0)),
+                    o.get("y0", r.y0 + o.get("dy0", 0)),
+                    o.get("x1", r.x1 + o.get("dx1", 0)),
+                    o.get("y1", r.y1 + o.get("dy1", 0)))
                 if "text_fontsize" in o:
                     w.text_fontsize = o["text_fontsize"]
+                if "align" in o and getattr(w, "xref", None):
+                    try:
+                        if o["align"] == "center":
+                            doc.xref_set_key(w.xref, "Q", "1")
+                        elif o["align"] == "right":
+                            doc.xref_set_key(w.xref, "Q", "2")
+                    except Exception:
+                        pass
                 try:
                     w.update()
                 except Exception:
@@ -763,7 +777,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["city_state_zip"] = f"{city}, {state_code} {zipcode}".strip(", ")
     # Proof of delivery signature block (IL Page 6): the filer's own details.
     if "proof_signature" not in _all_data:
-        _all_data["proof_signature"] = "/s/ " + p.get("full_name", "")
+        _all_data["proof_signature"] = ""
     if "proof_name" not in _all_data:
         _all_data["proof_name"] = p.get("full_name", "")
     if "proof_phone" not in _all_data:
@@ -1336,8 +1350,14 @@ def _force_multiline_text_widgets(doc: fitz.Document) -> int:
                 w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
                 dirty = True
             if str(getattr(w, "field_value", "") or "").strip():
-                w.fill_color = (1, 1, 1)  # opaque white — mask pre-printed underline
-                dirty = True
+                # Only large multi-line narrative areas (height > 30) get an opaque
+                # white background to cleanly mask pre-printed ruled lines.
+                # Single-line fields keep their transparent background so pre-printed
+                # underlines remain continuous without being chopped into dashes.
+                h = w.rect.height if w.rect else 0
+                if h > 30 and getattr(w, "fill_color", None) is None:
+                    w.fill_color = (1, 1, 1)
+                    dirty = True
             if dirty:
                 try:
                     w.update()
@@ -1588,24 +1608,39 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             covered.append(r)
 
 
-def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10) -> None:
+def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10, fill_color: Optional[tuple] = None, align: Optional[str] = None) -> None:
     """Add a pre-filled, editable text field at the given rect."""
     if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
         return
-    if rect.height < 10:
+    if rect.height < 4:
         rect = fitz.Rect(rect.x0, rect.y0 - 12, rect.x1, rect.y0 + 4)
     w = cast(Any, fitz.Widget())
     w.field_name = name
     w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
     w.rect = rect
     w.field_value = str(value)
-    w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+    if rect.height > 25 or any(k in name for k in ("narrative", "summary")):
+        w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+    else:
+        w.field_flags = 0
     w.text_fontsize = font_size
-    # Opaque white background masks the template's pre-printed underline so it
-    # doesn't strike through the overlaid text; zero border = no visible box.
-    w.fill_color = (1, 1, 1)
+    # If a specific fill_color is provided (e.g. (1, 1, 1) for large narrative blocks),
+    # apply it. Single-line fields leave fill_color as None (transparent) so
+    # pre-printed underlines remain continuous without being chopped into dashes.
+    if fill_color is not None:
+        w.fill_color = fill_color
     w.border_width = 0
-    page.add_widget(w)
+    new_w = page.add_widget(w)
+    if align and new_w and getattr(new_w, "xref", None):
+        try:
+            if align == "center":
+                page.parent.xref_set_key(new_w.xref, "Q", "1")
+                new_w.update()
+            elif align == "right":
+                page.parent.xref_set_key(new_w.xref, "Q", "2")
+                new_w.update()
+        except Exception:
+            pass
 
 
 def _add_checkbox_widget(page, rect, name: str, checked: bool = True) -> None:
@@ -1663,7 +1698,12 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     s = pos.get("h", 14)
                     _add_checkbox_widget(page, fitz.Rect(x, y, x + s, y + s), key, checked=bool(value))
                 elif value:
-                    _add_text_widget(page, _pr, key, str(value), font_size=pos.get("size", 10))
+                    is_narrative = (
+                        pos.get("h", 20) > 30
+                        or any(k in key for k in ("narrative", "summary", "explanation"))
+                    )
+                    field_fill = pos["fill_color"] if "fill_color" in pos else ((1, 1, 1) if is_narrative else None)
+                    _add_text_widget(page, _pr, key, str(value), font_size=pos.get("size", 10), fill_color=field_fill, align=pos.get("align"))
 
 
 
@@ -1724,15 +1764,25 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         return _build_defense_narrative(defenses)
 
     # Tenant's responses to the complaint allegations (Item 1 on AR answer).
-    if key == "response_narrative":
+    if key in ("response_narrative", "response_line_1", "response_line_2"):
+        if key == "response_line_1":
+            return ("Defendant denies each and every allegation contained in the "
+                    "Complaint except as expressly")
+        if key == "response_line_2":
+            return "admitted herein, and demands strict proof thereof."
         return ("Defendant denies each and every allegation contained in the "
                 "Complaint except as expressly admitted herein, and demands "
                 "strict proof thereof.")
 
     # Tenant's counterclaims against the landlord (Item 5 on AR answer).
-    if key == "counterclaim_narrative":
+    if key in ("counterclaim_narrative", "counterclaim_line1", "counterclaim_line2"):
         _dr = defenses.get("def_repairs", {})
-        if isinstance(_dr, dict) and _dr.get("checked"):
+        has_repairs = isinstance(_dr, dict) and _dr.get("checked")
+        if key == "counterclaim_line1":
+            return "Breach of warranty of habitability;" if has_repairs else "Defendant reserves all rights"
+        if key == "counterclaim_line2":
+            return "cost of necessary repairs to premises." if has_repairs else "to assert counterclaims."
+        if has_repairs:
             return ("Defendant asserts a counterclaim against Plaintiff for breach "
                     "of the warranty of habitability and for the cost of necessary "
                     "repairs to the premises.")
@@ -1766,6 +1816,17 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                 active.append(f"{label}{expl}" if expl else label)
         if idx < len(active):
             return active[idx][:100]  # fit within form line
+        return None
+
+    # Handle individual ruled defense lines (AR style)
+    if key.startswith("defense_line_"):
+        try:
+            idx = int(key.split("_")[-1]) - 1  # defense_line_1 → index 0
+        except (ValueError, IndexError):
+            idx = 0
+        dlines = _build_defense_lines(defenses, max_lines=5, max_width=460.0, font_size=8.0)
+        if idx < len(dlines):
+            return dlines[idx]
         return None
     
     # Handle financial summary for overlay fee waiver forms
@@ -1807,13 +1868,31 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             return "X"  # triggers overlay to draw checkmark lines
         return None
     
-    # Defense explanation routing (e.g. MN HOU202 items 5/6/9) — place a
+    # Defense explanation text for checkbox forms (e.g. MN HOU202) where the form has
     # specific defense's explanation at a specific overlay position.
     if key.startswith("explanation_"):
-        _dk = key[len("explanation_"):]
+        suffix_match = re.search(r'_(\d+)$', key)
+        line_idx = int(suffix_match.group(1)) - 1 if suffix_match else None
+        base_key = key[:suffix_match.start()] if suffix_match else key
+        _dk = base_key[len("explanation_"):]
         _d = defenses.get(_dk, {})
         if isinstance(_d, dict) and _d.get("checked"):
-            return _d.get("explanation", "")
+            raw_text = _d.get("explanation", "").strip()
+            if line_idx is not None:
+                words = raw_text.split()
+                wlines = []
+                curr = []
+                for wd in words:
+                    trial = " ".join(curr + [wd])
+                    if fitz.get_text_length(trial, fontname="helv", fontsize=8.5) <= 435:
+                        curr.append(wd)
+                    else:
+                        wlines.append(" ".join(curr))
+                        curr = [wd]
+                if curr:
+                    wlines.append(" ".join(curr))
+                return wlines[line_idx] if line_idx < len(wlines) else None
+            return raw_text
         return None
 
     return mapper.get(key)
@@ -2020,60 +2099,102 @@ def _build_financial_summary(financial: dict) -> str:
     return '\n'.join(lines)
 
 
+def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 460.0, font_size: float = 8.0) -> list[str]:
+    """Build individual formatted lines of defenses to sit directly on ruled lines."""
+    DEFENSE_LABELS = [
+        ("def_repairs", "Failure to repair: "),
+        ("def_amount", "Disputed rent: "),
+        ("def_bad_notice", "Defective notice: "),
+        ("def_attempted_pay", "Attempted payment: "),
+        ("def_paid", "Rent paid: "),
+        ("def_waived", "Waiver: "),
+        ("def_retaliation", "Retaliation: "),
+        ("def_fair_housing", "Discrimination: "),
+        ("def_accepted_rent", "Accepted rent: "),
+        ("def_corrected", "Corrected issue: "),
+        ("def_not_owner", "Not proper owner: "),
+        ("def_other", "Other: "),
+    ]
+    lines: list[str] = []
+    item_num = 1
+    for k, label in DEFENSE_LABELS:
+        d = defenses.get(k, {})
+        if isinstance(d, dict) and d.get("checked"):
+            expl = d.get("explanation", "").strip()
+            full_text = f"{item_num}. {label}{expl}" if expl else f"{item_num}. {label.rstrip(': ')}"
+            item_num += 1
+
+            w = fitz.get_text_length(full_text, fontname="helv", fontsize=font_size)
+            if w <= max_width or len(lines) >= max_lines - 1:
+                lines.append(full_text)
+            else:
+                words = full_text.split()
+                l1_words = []
+                for wd in words:
+                    trial = " ".join(l1_words + [wd])
+                    if fitz.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
+                        l1_words.append(wd)
+                    else:
+                        break
+                lines.append(" ".join(l1_words))
+                rem = " ".join(words[len(l1_words):])
+                if rem:
+                    lines.append("   " + rem)
+            if len(lines) >= max_lines:
+                break
+    if not lines:
+        return ["Defendant denies plaintiff's claims and requests that eviction be denied."]
+    return lines[:max_lines]
+
+
 def _build_defense_narrative(defenses: dict) -> str:
     """Build a formatted paragraph of defense explanations from checked defenses.
     Used for narrative court forms (AR, NM, TN) that have blank text areas.
     """
     DEFENSE_LABELS = {
-        "def_repairs": "The landlord failed to make necessary repairs to the property despite being notified. "
-                       "This includes [describe specific repair issues].",
-        "def_did_repairs": "I made repairs to the property that the landlord should have made, "
-                          "and I am entitled to deduct these costs from rent.",
-        "def_amount": "I dispute the amount of rent the landlord claims I owe. "
-                      "I believe the correct amount is [state amount and reason].",
-        "def_paid": "I have already paid the rent that the landlord claims is owed. "
-                    "I have proof of payment including [describe receipts, bank statements, etc.].",
-        "def_attempted_pay": "I tried to pay my rent but the landlord refused to accept payment. "
-                           "I made a good faith effort to pay on [date(s)].",
-        "def_retaliation": "The landlord is evicting me in retaliation for exercising my legal rights. "
-                         "[Describe the protected activity and the landlord's retaliatory response]",
-        "def_discrimination": "The eviction is discriminatory and violates fair housing laws. "
-                             "I believe I am being treated differently because of [protected characteristic].",
-        "def_bad_notice": "The landlord did not provide proper legal notice before filing this eviction. "
-                         "The notice was [defective / not served properly / missing required information].",
-        "def_landlord_breach": "The landlord breached the rental agreement by [describe violation].",
-        "def_not_owner": "The person or company suing me is not the actual owner of the property.",
-        "def_waived": "The landlord waived the right to evict by [accepting rent after notice / telling me I could stay / etc.].",
-        "def_accepted_rent": "The landlord accepted my rent payment after sending the eviction notice, "
-                            "which cancels the eviction.",
-        "def_corrected": "I corrected the lease violation that the landlord complained about before the deadline.",
-        "def_other": "I have additional reasons why I should not be evicted. [Describe here].",
-        "def_contest": "This court does not have proper jurisdiction over this case.",
-        "def_dismiss": "The complaint should be dismissed because [state reason].",
+        "def_repairs": ("Failure to maintain premises / necessary repairs",
+                        "The landlord failed to make necessary repairs to the property despite written notice."),
+        "def_did_repairs": ("Tenant-performed repairs deducted from rent",
+                            "I made repairs to the property that the landlord should have made, and I am entitled to deduct these costs from rent."),
+        "def_amount": ("Disputed rent amount claimed",
+                       "I dispute the amount of rent claimed by the landlord."),
+        "def_paid": ("Rent already paid in full",
+                     "I have already paid the rent that the landlord claims is owed."),
+        "def_attempted_pay": ("Attempted tender of rent refused",
+                              "I made a good faith effort to pay rent, but the landlord refused to accept payment."),
+        "def_retaliation": ("Retaliation for tenant exercising legal rights",
+                            "The landlord is evicting me in retaliation for exercising my legal rights."),
+        "def_discrimination": ("Discriminatory eviction violating fair housing laws",
+                               "The eviction is discriminatory and violates fair housing laws."),
+        "def_bad_notice": ("Defective or improper legal notice",
+                           "The landlord did not provide proper legal notice before filing this eviction."),
+        "def_landlord_breach": ("Landlord breach of rental agreement",
+                                "The landlord breached the rental agreement."),
+        "def_not_owner": ("Plaintiff lacks standing / not property owner",
+                          "The person or company suing me is not the actual owner or real party in interest."),
+        "def_waived": ("Waiver of right to evict",
+                       "The landlord waived the right to evict."),
+        "def_accepted_rent": ("Acceptance of rent following notice",
+                              "The landlord accepted my rent payment after sending the eviction notice, which cancels the eviction."),
+        "def_corrected": ("Timely cure of alleged lease violation",
+                          "I corrected the alleged lease violation before the applicable deadline."),
+        "def_other": ("Additional affirmative defense",
+                      "Defendant has additional valid legal defenses to this action."),
+        "def_contest": ("Lack of jurisdiction",
+                        "This court does not have proper jurisdiction over this case."),
+        "def_dismiss": ("Defective pleadings / motion to dismiss",
+                        "The complaint fails to state a claim upon which relief can be granted."),
     }
     
     checked = []
-    for key, label in DEFENSE_LABELS.items():
+    for key, (heading, default_text) in DEFENSE_LABELS.items():
         d = defenses.get(key, {})
         if isinstance(d, dict) and d.get("checked"):
-            explanation = d.get("explanation", "")
-            text = label
+            explanation = (d.get("explanation") or "").strip().rstrip(".")
             if explanation:
-                # Normalize the tenant's explanation for insertion: strip its
-                # trailing period (the label supplies its own punctuation, which
-                # was producing "notice..") and lowercase the first letter so it
-                # reads naturally after a connector like "This includes" or "the
-                # correct amount is". Keep it capitalized when the placeholder
-                # begins a new sentence (def_other's "[Describe here]") or when
-                # the first word is the pronoun "I".
-                expl = explanation.strip().rstrip(".")
-                if expl:
-                    _m = re.search(r"\[[^\]]*\]", text)
-                    _at_sentence_start = bool(_m) and text[max(0, _m.start() - 2):_m.start()] == ". "
-                    if not _at_sentence_start and not expl.startswith("I "):
-                        expl = expl[0].lower() + expl[1:]
-                    text = re.sub(r"\[[^\]]*\]", expl, text)
-            checked.append(text)
+                checked.append(f"{heading}: {explanation}.")
+            else:
+                checked.append(f"{heading}: {default_text}")
     
     if not checked:
         return "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."

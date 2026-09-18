@@ -147,9 +147,9 @@ def _editable_caption(data, S, plaintiff_label="Plaintiff", defendant_label="Def
     county = p.get("county", "[COUNTY]")
     el = [Paragraph(_court_caption(state, county, c.get("court_name", "")), S["Caption"]), Spacer(1, 4)]
     _party = _field_table([
-        [_editable_field("plaintiff", l.get("landlord_name", ""), width=260), Paragraph(f", {plaintiff_label},", S["Caption"])],
+        [_editable_field("plaintiff", l.get("landlord_name", ""), width=260), Paragraph(f"{plaintiff_label},", S["Caption"])],
         [Paragraph("vs.", S["Caption"]), ""],
-        [_editable_field("defendant", p.get("full_name", ""), width=260), Paragraph(f", {defendant_label}.", S["Caption"])],
+        [_editable_field("defendant", p.get("full_name", ""), width=260), Paragraph(f"{defendant_label}.", S["Caption"])],
     ], col_widths=(260, 140))
     el.append(_party)
     el.append(Spacer(1, 4))
@@ -1732,22 +1732,21 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     from reportlab.platypus import Table, TableStyle
 
     doc = SimpleDocTemplate(output_path, pagesize=letter,
-                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+                            topMargin=0.4*inch, bottomMargin=0.4*inch,
+                            leftMargin=0.5*inch, rightMargin=0.5*inch)
     S = _get_styles()
     elements = []
     p = data.get("personal_info", {})
     fin = data.get("financial_info", {}) or {}
 
     elements.append(Paragraph("INCOME & EXPENSE WORKSHEET", S["FormTitle"]))
-    elements.append(Spacer(1, 6))
+    elements.append(Spacer(1, 3))
     elements.append(Paragraph(
-        f"<b>For:</b> {p.get('full_name', 'Tenant')}<br/>"
-        "Use this worksheet to list your monthly income and expenses. "
-        "You will need this information for fee waivers, rental assistance applications, "
-        "and to show the judge your financial situation.",
-        S["Body"]
+        f"<b>For:</b> {p.get('full_name', 'Tenant')} &nbsp;&nbsp;|&nbsp;&nbsp; "
+        "Use this worksheet to list monthly income and expenses for fee waivers and rental assistance.",
+        S["BodySmall"]
     ))
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 6))
 
     def money_field(name, val, width=110):
         v = ""
@@ -1756,13 +1755,13 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
                 v = f"{float(val):,.2f}"
             except (TypeError, ValueError):
                 v = ""
-        return FillableText(name, v, width=width, height=16, font_size=9)
+        return FillableText(name, v, width=width, height=15, font_size=9)
 
     def text_field(name, val, width=180):
-        return FillableText(name, str(val) if val else "", width=width, height=16, font_size=9)
+        return FillableText(name, str(val) if val else "", width=width, height=15, font_size=9)
 
     def row(label, field):
-        return [Paragraph(label, S["Body"]), field]
+        return [Paragraph(label, S["BodySmall"]), field]
 
     def header(label):
         return [Paragraph(f"<b>{label}</b>", S["BodyBold"]), ""]
@@ -1802,7 +1801,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     adults = fin.get("household_adults")
     children = fin.get("household_children")
 
-    yesno = lambda k: FillableText(k, "Yes" if fin.get(k) else "No", width=50, height=16, font_size=9)
+    yesno = lambda k: FillableText(k, "Yes" if fin.get(k) else "No", width=50, height=15, font_size=9)
 
     data_rows = [
         header("MONTHLY INCOME"),
@@ -1816,7 +1815,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         row("SSI:", yesno("receives_ssi")),
         row("Medicaid:", yesno("receives_medicaid")),
         row("Other income:  $", money_field("income_other", other)),
-        [Paragraph("<b>TOTAL MONTHLY INCOME:  $</b>", S["Body"]), money_field("income_total", total_income if total_income else None)],
+        [Paragraph("<b>TOTAL MONTHLY INCOME:  $</b>", S["BodySmall"]), money_field("income_total", total_income if total_income else None)],
         header("MONTHLY EXPENSES"),
         row("Rent / mortgage:  $", money_field("expense_rent", rent)),
         row("Utilities (electric, gas, water):  $", money_field("expense_utils", utils)),
@@ -1826,7 +1825,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         row("Child care:  $", money_field("expense_childcare", childcare)),
         row("Credit card / loan payments:  $", money_field("expense_debt", debt)),
         row("Other expenses:  $", money_field("expense_other", other_exp)),
-        [Paragraph("<b>TOTAL MONTHLY EXPENSES:  $</b>", S["Body"]), money_field("expense_total", total_expenses if total_expenses else None)],
+        [Paragraph("<b>TOTAL MONTHLY EXPENSES:  $</b>", S["BodySmall"]), money_field("expense_total", total_expenses if total_expenses else None)],
         header("ASSETS"),
         row("Cash on hand:  $", money_field("asset_cash", cash)),
         row("Bank account(s) balance:  $", money_field("asset_bank", bank)),
@@ -1838,16 +1837,16 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         row("Number of children in home:", text_field("hh_children", children, width=60)),
     ]
 
-    table = Table(data_rows, colWidths=[260, 140])
+    table = Table(data_rows, colWidths=[280, 140])
     table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 1.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
     ]))
     elements.append(table)
 
-    elements.append(Spacer(1, 16))
+    elements.append(Spacer(1, 6))
     elements.append(Paragraph(
         "<b>TIP:</b> Most fee waivers and rental assistance programs use this same "
         "information. Fill out this worksheet ONCE and use it for all applications.",

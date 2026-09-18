@@ -5,7 +5,8 @@ that every field is correctly filled.
 
 Usage: python3 tests/qa_verify_forms.py
 """
-import urllib.request, json, io, zipfile, fitz, os, sys
+import urllib.request, json, io, zipfile, os, sys
+import pymupdf as fitz
 from datetime import datetime
 from typing import Any, cast
 

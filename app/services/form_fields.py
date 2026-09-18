@@ -97,6 +97,33 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
             w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
             page.add_widget(w)
             added += 1
+
+    # Format existing flowable/native widgets for clean layout alignment:
+    for page in doc:
+        for w in page.widgets():
+            fn = str(w.field_name or "")
+            val = str(w.field_value or "").strip()
+            # Status badges in table cells (Yes/No): center
+            if val in ("Yes", "No"):
+                try:
+                    doc.xref_set_key(w.xref, "Q", "1")
+                    w.update()
+                except Exception:
+                    pass
+            # Case numbers, dates, currency amounts, numbers & household counts: center
+            elif any(k in fn.lower() for k in (
+                "case_number", "case_no", "caseno", "date", "sig_date",
+                "hh_adults", "hh_children", "household_adults", "household_children", "household_size",
+                "income_", "expense_", "asset_", "payment_plan_amount", "rent_amount", "amount_claimed",
+                "bk_chapter", "bk_case", "continuance_days", "stay_eviction_days", "stay_writ_days",
+                "division", "hearing_time", "hearing_date"
+            )):
+                try:
+                    doc.xref_set_key(w.xref, "Q", "1")
+                    w.update()
+                except Exception:
+                    pass
+
     out = dst_path or src_path
     if out == src_path:
         tmp = src_path + ".tmp"

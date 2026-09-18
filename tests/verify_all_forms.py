@@ -2,7 +2,8 @@
 Automated Form Verification Suite — tests all 20 states across 4 scenarios.
 Run: python3 tests/verify_all_forms.py
 """
-import urllib.request, json, io, zipfile, fitz, os, sys, traceback
+import urllib.request, json, io, zipfile, os, sys, traceback
+import pymupdf as fitz
 from datetime import datetime
 from typing import Any, cast
 
