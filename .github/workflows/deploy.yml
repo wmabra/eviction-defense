@@ -1,8 +1,10 @@
 name: Deploy to production
 
+# Manual trigger ONLY. Deploy is run after the code is verified working
+# (pytest + local testing). We never auto-deploy on push, so an unverified
+# commit can't break the live site.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read

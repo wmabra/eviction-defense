@@ -149,9 +149,11 @@ Just say: *"let's work on the eviction-defense project"* and point me at this fi
 - **Server:** Digital Ocean droplet `167.172.139.63` (hostname `eviction-defense`). SSH: `ssh root@167.172.139.63`.
 - **App dir:** `/opt/eviction-defense` (owned by `deploy` user). Git remote = `https://github.com/wmabra/eviction-defense.git`.
 - **Run by:** systemd `eviction-defense.service` → `uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2` (user `deploy`, env from `/opt/eviction-defense/.env`), fronted by nginx.
-- **Deploy steps:**
-  1. `cd /opt/eviction-defense && sudo -u deploy git pull origin main`  (or run git as root + `chown -R deploy:deploy`)
-  2. `sudo systemctl restart eviction-defense`
-  3. Verify: `curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/`
+- **Deploy (manual — verify FIRST, then trigger; never auto-deploy):**
+  1. Verify locally: `venv/bin/python -m pytest -q` (expect 34 passed), `venv/bin/python tests/check_all_overlap.py` (0 overlaps), `venv/bin/python tests/verify_editable_fields.py` (0 failures). Deploy only if all green.
+  2. Commit + push to `main`. Pushing does NOT auto-deploy.
+  3. Trigger: `gh workflow run deploy.yml` (or GitHub → Actions → "Deploy to production" → Run workflow). The workflow SSHs in, `git pull`s as `deploy`, restarts the service, and health-checks.
+- **Manual fallback:** `ssh root@167.172.139.63 'cd /opt/eviction-defense && sudo -u deploy git pull origin main && systemctl restart eviction-defense'`
+- **GitHub Actions secrets:** `DEPLOY_SSH_KEY`, `DEPLOY_HOST`, `DEPLOY_USER`.
 - **Backups:** `/opt/backups/` (weekly SQL + pre-deploy tarballs).
 - **Note:** startup occasionally races `create_all()` across the 2 workers ("table users already exists") and self-heals on the next restart — consider a migration/`checkfirst` fix later.
