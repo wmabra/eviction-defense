@@ -5,7 +5,7 @@
 ## What this is
 
 evictions.help is a self-help eviction-defense document preparation service (flat fee $299).
-Flow: **eligibility (8 questions) → payment → chat intake agent → pre-filled editable PDF packet → user verifies/edits → prints/signs/files at court.**
+Flow: **eligibility → payment ($299) → email verification → account (username = verified email + temp password) → chat intake agent (resumable) → pre-filled editable PDF packet → user verifies/edits → downloads ZIP from their account → prints/signs/files at court.**
 
 ## The 20 states we cover
 
@@ -21,8 +21,13 @@ Flow: **eligibility (8 questions) → payment → chat intake agent → pre-fill
   - `app/services/form_fields.py` — editable AcroForm flowables (`FillableText`/`FillableCheckbox`) + `make_document_editable()`
   - `app/services/state_configs.py` — per-state form configs + overlay positions
   - `app/services/chat.py` — chat intake agent (`SYSTEM_PROMPT`)
-  - `app/services/voice_prompt.md` — phone/voice agent prompt
+  - `app/services/voice_prompt.md` — phone/voice agent prompt (Retell "Eva")
   - `app/services/eligibility.py` — 20-state + county eligibility
+  - `app/routers/auth.py` — login / me / change-password / forgot-password / verify-email / resend-verification
+  - `app/routers/voice.py` — voice-agent tool endpoints (`/api/v1/voice/*`)
+  - `scripts/deploy_voice_agent.py` — pushes the prompt + tools to Retell
+  - `scripts/import_telnyx_number.py` — imports the Telnyx number into Retell
+  - `docs/voice-agent.md` — full voice-agent setup + ops reference
 
 ## State-by-state review progress (developer QA)
 
@@ -32,7 +37,7 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 **Round 1 — fixed + committed (11 states, alphabetical):**
 `AR · CO · CO_Denver · CT · GA · IL · IN · KY · LA · MI · MN`
 
-**Round 2 — recheck with developer (in progress):**
+**Round 2 — recheck with developer (complete):**
 
 - ✅ **AR** — regenerated fresh (commit `585618d`): 0 overlaps, Yes/No pairs
   single-selected.
@@ -67,7 +72,10 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
   cover page, dynamic dates + "Writ of Recovery", and added the HOU202 defense
   checkboxes (Q5/Q6/Q9/Q10).
 
-**Round 2 complete for the 11 states (AR–MN).**
+**Round 2 complete for the 11 states (AR–MN).** Additional developer rechecks followed
+(docs NEW18–NEW24) covering CT, GA, IN, KY, LA, MI, CO, MN, IL, and AR — all fixed and
+committed. The developer's latest layout pass (field centering, single-page income
+worksheet, refined court captions) is also merged.
 
 **Not yet started (remaining 10 states):**
 `MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
@@ -109,9 +117,11 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 
 1. **Every form is editable.** Every blank and every checkbox across all 20 states is an
    editable PDF field — verified **0 gaps**. Only signature/notary lines stay as ink.
-   **Text-over-text overlap: 0 across all 20 states (answer + fee waiver)** — guarded by
+   **Text-over-text overlap: 0 across the 12 reviewed states (AR–MN + CO-Denver)** — guarded by
    `tests/check_all_overlap.py` (OCR-based) and `tests/verify_editable_fields.py`
-   (420 forms, 0 failures).
+   (419 forms, 0 failures). The 8 not-yet-reviewed states past MN (MO, NM, OH, OK, OR, RI,
+   TN, TX) have caption overlaps from the latest layout pass and will be cleaned up when
+   we reach them.
 2. **Removed-state cleanup done.** CA / AZ / FL / NV / MA (plus never-covered MS / NC)
    references and documents were removed from the project.
 3. **Intake agents instruct the user** (chat + voice) to download, verify on a computer,
@@ -121,6 +131,19 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 5. **Admin test-packet endpoint:** `POST /api/v1/admin/generate-test-packet` lets
    Mark/William generate any packet on demand (password-gated, unlimited, no customer
    account) — returns the zip from arbitrary data with sensible defaults.
+6. **Phone voice agent ("Eva")** — live on `+1-561-960-0485` via Retell AI + Telnyx SIP.
+   Full prompt (compliance, legal-boundary, off-topic redirect, same-day-callback flow),
+   8 tools wired to `/api/v1/voice/*`, post-call analysis, call persistence (`call_logs`),
+   and callback email to support@evictions.help. See `docs/voice-agent.md`.
+7. **Customer accounts** — email-verified signup: payment creates the case in
+   `pending_email_verification`, a signed 48h link verifies the email, then the account
+   (username = email + temp password) is created and the welcome email sent. Login →
+   dashboard (progress bar) → resumable intake → ZIP download. Password change +
+   forgot/reset are wired.
+8. **Intake resume + granular progress** — the chat session (phase + collected data)
+   persists to `case.chat_session`, and the agent emits a `{"phase_completed": N}` marker
+   after each phase so the dashboard progress bar advances 25% → 55% through intake, then
+   100% at packet-ready.
 
 ## How the editable-field system works
 
@@ -132,12 +155,14 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 
 ## Next steps / future work
 
-1. **Customer account + download system** (next phase) — see `NOTES.md` for anti-sharing requirement.
-2. **Secure the admin panel** — `app/routers/admin.py` endpoints `/stats`, `/cases`, `/cases/{id}`,
-   `/cases/{id}/resend`, and `/chat-sessions` are NOT yet password-gated (only the new
-   `generate-test-packet` endpoint is). Add the admin-password/token check to all of them.
-3. Deploy/publish the SEO city/county pages (scripts in `scripts/`).
-4. (Optional) refine pre-fill field-name matching on the scanned fee-waiver forms.
+1. **Remaining 10 states** (MO, NM, OH, OK, OR, RI, SC, TN, TX, VA) — QA each state
+   against the developer's notes (same flow as AR–MN), including the caption-overlap
+   cleanups from the latest layout pass.
+2. **Anti-sharing/reuse protection** for the account download (see `NOTES.md`).
+3. **Secure the admin panel** — `app/routers/admin.py` endpoints `/stats`, `/cases`,
+   `/cases/{id}`, `/cases/{id}/resend`, and `/chat-sessions` are NOT yet password-gated
+   (only the `generate-test-packet` endpoint is). Add the admin-password/token check.
+4. Deploy/publish the SEO city/county pages (scripts in `scripts/`).
 
 ## How to resume quickly
 
