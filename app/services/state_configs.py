@@ -81,7 +81,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "DC-442 Grounds of Defense — 26 fillable fields. Used in General District Court for unlawful detainer cases.",
         "field_rect_overrides": {
             "fee_waiver_form": {
-                "User.SNAP": {"y0": 206.0},
+                "User.SNAP": {"y0": 205.0, "y1": 220.0, "text_fontsize": 9.0},
             },
         },
     },
@@ -118,6 +118,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "Magistrates Court",
+        "field_rect_overrides": {
+            "answer_form": {
+                "Magistrate Court Filed With": {"text_fontsize": 8.0},
+            },
+        },
         "field_mapping": {
             "full_name": "Defendant(s) Name",
             "phone": "Defendant(s) Telephone Number",
@@ -282,16 +287,21 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "overlay_positions": {},
         "has_fillable_fields": True,
         "court_type": "Justice of the Peace Court",
+        "field_rect_overrides": {
+            "answer_form": {
+                "Other Court": {"x1": 545.0, "text_fontsize": 7.5},
+            },
+        },
         "field_mapping": {
             "case_number": "Text1",
-            "full_name": "Text5",
+            "full_name": "Text3",
             "landlord_name": "Text2",
             "court_name": "Other Court",
             "phone": "Text8",
             "date": "Text9",
             "email": "Text277",
             "address": "Text18",
-            "county": "Text3",
+            "county": "Text5",
             "printed_name": "Text16",
             "signature_date": "D signature date",
         },
@@ -312,7 +322,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
     
         "fee_waiver_overlay": {
             "case_number": {"page": 1, "x": 226, "y": 58, "w": 140, "h": 13, "size": 9.5},
-            "full_name": {"page": 1, "x": 165, "y": 233, "w": 180, "h": 10, "size": 10}
+            "full_name": {"page": 1, "x": 165, "y": 233, "w": 180, "h": 14, "size": 9.0}
         }},
 
     # ══════════════════════════════════════════
@@ -623,6 +633,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "reason from the PlaintiffLandlord you may fill out the statement below": "",
         },
         "court_type": "District Court",
+        "field_rect_overrides": {
+            "answer_form": {
+                "PlaintiffLandlord": {"y0": 196.5},
+                "DefendantTenant": {"y0": 252.0},
+                "Telephone Number": {"text_fontsize": 8.5},
+                "at the following address": {"text_fontsize": 8.5},
+            },
+            "fee_waiver_form": {
+                "Telephone Number": {"text_fontsize": 8.5},
+                "The PlaintiffPetitioner states that there are": {"text_fontsize": 8.5},
+                "County of": {"text_fontsize": 8.5},
+                "Entered as an Order of the court on": {"text_fontsize": 8.5},
+            },
+        },
         "field_mapping": {
             "full_name": "DefendantTenant",
             "landlord_name": "PlaintiffLandlord",
@@ -933,7 +957,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "General Sessions Court",
         "field_rect_overrides": {
             "answer_form": {
-                "court": {"x0": 185.0, "y0": 64.5, "y1": 78.5, "text_fontsize": 9.0},
+                "court": {"x0": 185.0, "y0": 64.5, "y1": 78.5, "text_fontsize": 7.5},
+                "at the hearing 1": {"text_fontsize": 9.0},
+                "at the hearing 2": {"text_fontsize": 9.0},
+                "at the hearing 3": {"text_fontsize": 9.0},
+                "at the hearing 4": {"text_fontsize": 9.0},
             },
         },
         "field_mapping": {
@@ -941,28 +969,27 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": "county",
             "court_name": "court",
             "court_division": "division",
-            "date": "date_1",
+            "date": "date_2",
             "day": "day_2",
             "full_name": "name_1",
             "landlord_name": "plaintiff_1",
             "defendant_name": "defendant_1",
             "month": "mm_1",
-            "year": "year_2",
+            "year_2digit": "year_2",
             "hearing_at_1": "at the hearing 1",
             "hearing_at_2": "at the hearing 2",
             "hearing_at_3": "at the hearing 3",
             "hearing_at_4": "at the hearing 4",
             "certification_1": "cert_1",
-            "defense_narrative": "at the hearing 1",
         },
-        "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and pre-filled into 'at the hearing 1' text area. Tenant can edit before filing.",
+        "notes": "TN Sworn Denial form — 20 text fields, NO defense checkboxes. Defense narrative text is auto-generated from intake answers and wrapped across the 4 hearing lines. Tenant can edit before filing.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 488, "y": 68, "w": 75, "h": 12, "size": 10},
-            "county": {"page": 1, "x": 36, "y": 52, "w": 80, "h": 16, "size": 10},
-            "full_name": {"page": 1, "x": 95, "y": 194, "w": 130, "h": 12, "size": 10},
-            "address": {"page": 1, "x": 395, "y": 194, "w": 140, "h": 12, "size": 10},
-            "phone": {"page": 1, "x": 130, "y": 205, "w": 120, "h": 12, "size": 10}
+            "case_number": {"page": 1, "x": 488, "y": 68, "w": 75, "h": 12, "size": 8.5},
+            "county": {"page": 1, "x": 36, "y": 52, "w": 80, "h": 16, "size": 8.5},
+            "full_name": {"page": 1, "x": 95, "y": 193, "w": 130, "h": 11, "size": 8.5},
+            "address": {"page": 1, "x": 395, "y": 193, "w": 140, "h": 11, "size": 8.5},
+            "phone": {"page": 1, "x": 130, "y": 204.5, "w": 120, "h": 11, "size": 8.5}
         }},
 
     # ══════════════════════════════════════════
@@ -1128,7 +1155,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name_page4": {"page": 4, "x": 72, "y": 110, "w": 240, "h": 14, "size": 10},
             "full_name_page4": {"page": 4, "x": 72, "y": 165, "w": 240, "h": 14, "size": 10},
             "case_number_page4": {"page": 4, "x": 395, "y": 110, "w": 145, "h": 14, "size": 10, "align": "center"},
-            "printed_name_page4": {"page": 4, "x": 185, "y": 218, "w": 300, "h": 13, "size": 9.5},
+            "printed_name_page4": {"page": 4, "x": 185, "y": 218, "w": 300, "h": 14, "size": 9.0},
         },
         "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption and page 2 signature area; OJD Fee Deferral/Waiver application on pages 1 and 4.",
     },
@@ -1232,21 +1259,21 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "court_type": {"page": 1, "x": 90, "y": 114, "w": 96, "h": 16, "size": 10},
             "county": {"page": 1, "x": 90, "y": 128, "w": 96, "h": 16, "size": 10},
             "case_number": {"page": 1, "x": 462, "y": 156, "w": 120, "h": 16, "size": 10},
-            # Party names
-            "defendant_name": {"page": 1, "x": 90, "y": 240, "w": 432, "h": 18, "size": 11},
-            "plaintiff_name": {"page": 1, "x": 90, "y": 184, "w": 432, "h": 18, "size": 11},
-            # Defense narratives — filled into the blank lines after each "because:"
-            "defense_narrative_1": {"page": 1, "x": 370, "y": 340, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_2": {"page": 1, "x": 370, "y": 394, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_3": {"page": 1, "x": 370, "y": 436, "w": 152, "h": 14, "size": 8},
-            "defense_narrative_4": {"page": 1, "x": 370, "y": 492, "w": 152, "h": 14, "size": 8},
-            # Signature block
-            "signature": {"page": 1, "x": 162, "y": 547, "w": 260, "h": 25, "size": 11},
-            "printed_name": {"page": 1, "x": 300, "y": 606, "w": 200, "h": 15, "size": 10, "align": "center"},
-            "property_address": {"page": 1, "x": 310, "y": 647, "w": 200, "h": 15, "size": 10},
-            "city_state_zip": {"page": 1, "x": 385, "y": 689, "w": 150, "h": 15, "size": 10},
-            # Page 2 — Telephone
-            "phone": {"page": 2, "x": 325, "y": 60, "w": 180, "h": 15, "size": 10},
+            # Party names: line is x=90..297
+            "plaintiff_name": {"page": 1, "x": 90, "y": 180, "w": 200, "h": 14, "size": 10},
+            "defendant_name": {"page": 1, "x": 90, "y": 236, "w": 200, "h": 14, "size": 10},
+            # Defense narratives: lines span x=126..522
+            "defense_narrative_1": {"page": 1, "x": 126, "y": 336, "w": 396, "h": 26, "size": 8.0, "fill_color": None},
+            "defense_narrative_2": {"page": 1, "x": 126, "y": 392, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
+            "defense_narrative_3": {"page": 1, "x": 126, "y": 448, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
+            "defense_narrative_4": {"page": 1, "x": 126, "y": 490, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
+            # Signature block: underlines are x=234..426
+            "signature": {"page": 1, "x": 234, "y": 542, "w": 192, "h": 14, "size": 10},
+            "printed_name": {"page": 1, "x": 234, "y": 584, "w": 192, "h": 14, "size": 10},
+            "property_address": {"page": 1, "x": 234, "y": 626, "w": 192, "h": 14, "size": 10},
+            "city_state_zip": {"page": 1, "x": 234, "y": 668, "w": 192, "h": 14, "size": 10},
+            # Page 2 — Telephone: underline is x=234..426
+            "phone": {"page": 2, "x": 234, "y": 39, "w": 192, "h": 14, "size": 10},
         },
         "notes": "NM Form 4-907 — statewide for all 33 counties. Works in Magistrate, Metropolitan, and District courts. Narrative-style defenses (write-in).",
         "fee_waiver_overlay": {
@@ -1302,6 +1329,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_rect_overrides": {
             "answer_form": {
                 "date": {"y0": 528.0, "y1": 542.0, "align": "center"},
+                "property_address": {"y0": 630.0, "y1": 658.0, "text_fontsize": 9.0},
             },
             "fee_waiver_form": {
                 "COUNTY NAME": {"y0": 38.0, "y1": 53.0, "text_fontsize": 10.0},
@@ -1466,6 +1494,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_rect_overrides": {
             "answer_form": {
                 "date": {"y0": 538.0, "y1": 552.0, "align": "center"},
+                "property_address": {"y0": 640.0, "y1": 668.0, "text_fontsize": 9.0},
             },
             "fee_waiver_form": {
                 "defendant_name": {"y0": 180.0, "y1": 194.0, "text_fontsize": 9.0},
@@ -1605,12 +1634,13 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             # the "COUNTY, OHIO" line (raw pre-flip coords), narrowed so the name
             # fits before the (shifted-right) "COUNTY, OHIO" label.
             "answer_form": {
-                "county": {"x0": 72, "x1": 108, "y0": 66, "y1": 81},
+                "county": {"x0": 68.0, "x1": 109.0, "y0": 66, "y1": 81, "text_fontsize": 8.0},
                 "date": {"y0": 538.0, "y1": 552.0, "align": "center"},
+                "property_address": {"y0": 640.0, "y1": 668.0, "text_fontsize": 9.0},
             },
             # fee-waiver: county field overlaps "OHIO"; printed_name sits on its label.
             "fee_waiver_form": {
-                "county": {"x0": 72, "x1": 108},
+                "county": {"x0": 68.0, "x1": 109.0, "text_fontsize": 8.0},
                 "printed_name": {"x0": 420},
                 "case_number": {"x0": 448.0, "align": "center"},
             },

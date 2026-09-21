@@ -614,7 +614,8 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 if r is None or (r.y0 <= 0 and r.y1 >= PH):
                     continue
                 nm = str(getattr(w, "field_name", "") or "").lower()
-                if r.x0 < 90 and any(k in nm for k in ("plaintiff", "defendant", "printed")):
+                if r.x0 < 90 and r.height < 25 and any(k in nm for k in ("plaintiff", "defendant", "printed")) \
+                        and any(f in form_path for f in ("oh_eviction_answer", "in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer", "ok_eviction_answer")):
                     r = fitz.Rect(130, r.y0, r.x1, r.y1)
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
                         and "ky_eviction_answer" not in form_path \
@@ -915,11 +916,45 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     for k in ["cert_date", "cert_date_signed"]:
         if k not in _all_data or not _all_data.get(k):
             _all_data[k] = today_str
+    _all_data["year_2digit"] = date.today().strftime("%y")
     
     # Map each field_mapping key to a value from our data
     # Also make defense_narrative available for field_mapping
     if "defense_narrative" in values:
         _all_data["defense_narrative"] = values["defense_narrative"]
+    if "hearing_at_1" in mapping or "hearing_at_2" in mapping:
+        narr = _all_data.get("defense_narrative", "")
+        if narr:
+            widths = [370, 450, 450, 450]
+            cleaned = " ".join(narr.replace("\n\n", "; ").replace("\n", " ").split())
+            words = cleaned.split(" ")
+            lines = []
+            line_idx = 0
+            curr_line = ""
+            for w_word in words:
+                if line_idx >= len(widths):
+                    break
+                target_w = widths[line_idx] - 4.0
+                test_line = (curr_line + " " + w_word).strip()
+                if fitz.get_text_length(test_line, fontname="helv", fontsize=9.0) <= target_w:
+                    curr_line = test_line
+                else:
+                    if curr_line:
+                        lines.append(curr_line)
+                        line_idx += 1
+                        if line_idx < len(widths):
+                            curr_line = w_word
+                        else:
+                            curr_line = ""
+                            break
+                    else:
+                        lines.append(test_line)
+                        line_idx += 1
+                        curr_line = ""
+            if curr_line and line_idx < len(widths):
+                lines.append(curr_line)
+            for i in range(1, 5):
+                _all_data[f"hearing_at_{i}"] = lines[i - 1] if i <= len(lines) else ""
     for map_key, pdf_field in mapping.items():
         if map_key in _all_data:
             values[pdf_field] = str(_all_data[map_key])
