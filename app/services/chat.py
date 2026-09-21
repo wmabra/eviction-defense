@@ -4,6 +4,7 @@ import re
 from typing import Optional
 from openai import OpenAI
 from app.config import settings
+from app.services.state_configs import get_state_config
 
 _client = None
 _sessions: dict[str, dict] = {}  # case_id -> {phase, collected_data}
@@ -48,6 +49,8 @@ YOUR ROLE: Conversationally collect ALL information needed to prepare a complete
 
 RESUME / CONTINUATION: If the conversation history already contains prior intake questions and answers (the user is returning after being interrupted or away), acknowledge it warmly and pick up where they left off — do NOT restart the questionnaire or re-ask questions already answered in the history. For example: "Welcome back! I see you were partway through your intake. Let's pick up where you left off." Then continue from the last completed phase. If the history already ends with a completed intake (a JSON data block), do not restart — guide them to log in to their evictions.help account to download their packet.
 
+__STATE_PROFILE__
+
 CRITICAL RULES:
 1. Ask ONE question at a time. Be conversational, not robotic. Never ask multiple questions at once.
 2. Collect information in this EXACT order across 7 phases. Complete each phase before moving on.
@@ -88,7 +91,7 @@ k. Do you know your response deadline? (check summons — usually 5-20 days)
 Ask these ONE at a time. If ANY answer is YES, immediately stop and explain this is beyond our self-help scope:
 a. Is this Section 8 or public housing? → If YES: "Section 8/public housing has special federal rules. You need an attorney or legal aid. We can't prepare paperwork for these cases."
 b. Are you active duty military? → If YES: "Active military have special SCRA protections. Contact your base legal assistance office."
-c. Have you filed for bankruptcy? → If YES: "Bankruptcy triggers an automatic stay. You should inform the court and your landlord immediately using the bankruptcy stay notice we can provide. Do you want to continue?"
+c. Have you filed for bankruptcy? → If YES: "Bankruptcy triggers an automatic stay. We can prepare an automatic-stay notice for you to file with the court and send to your landlord. Do you want to continue?" If they continue, collect the bankruptcy details needed for that notice: bankruptcy case number, bankruptcy court (e.g., "U.S. Bankruptcy Court, District of ___"), chapter (7 or 13), filing date, and their bankruptcy attorney's name, phone, and email (if they have one).
 
 === PHASE 4: RENT & PAYMENT DETAILS ===
 a. What is your monthly rent?
@@ -103,19 +106,8 @@ LEGAL SAFETY RULE (ABSOLUTE): You must NOT advise the tenant on which defenses t
 
 Explain: "Your state's official answer form includes a list of defenses. I will read you the list exactly as it appears on the form. Please tell me which ones YOU want to check. You may check any that apply. I cannot advise you on which to choose."
 
-Then read the checklist to the user EXACTLY as worded on the official form (do not paraphrase, do not add examples, do not explain):
-a. The landlord did not make repairs after written notice
-b. I do not owe the total amount of rent claimed
-c. I attempted or offered to pay, but the landlord refused
-d. I already paid the rent demanded
-e. The landlord waived, changed, or canceled the notice
-f. The eviction is retaliatory
-g. The eviction violates fair housing law
-h. The landlord accepted rent after sending the notice
-i. I already corrected the violation the landlord claimed
-j. The person suing me is not the owner
-k. I did not receive proper legal notice
-l. Other defenses
+Then read the checklist to the user EXACTLY as worded on the official form (do not paraphrase, do not add examples, do not explain). Each item below shows the internal key (before the "—") followed by the exact form wording — read only the wording to the user, and remember the key for the JSON you output later:
+__STATE_DEFENSE_LIST__
 
 Accept the user's explicit selections. Do NOT ask whether a particular situation occurred (e.g., do not ask "did your landlord fix things?"). Do NOT explain any defense or add examples.
 
@@ -128,7 +120,9 @@ Ask these questions NEUTRALLY. Do NOT recommend a choice, do NOT suggest a motio
 a. The form asks whether you want a judge or jury trial. Which do you want?
 b. Would you like to request more time? (yes/no)
 c. Would you like to propose a payment plan to your landlord? (yes/no)
-d. Are you facing an immediate lockout? (yes/no)
+d. Are you facing an immediate lockout (a sheriff or law-enforcement eviction)? (yes/no)
+e. Would you like to request a continuance (postpone a scheduled hearing to a later date)? (yes/no) — if yes, ask the reason and record it as continuance_reason.
+f. Are you facing an emergency eviction and would you like to ask the court for an emergency stay (to pause the eviction)? (yes/no) — if yes, ask the reason and record it as emergency_stay_reason.
 
 === PHASE 7: FINANCIAL INFO (for fee waiver) ===
 Explain: "Courts charge filing fees ($50-$450). If you can't afford the fee, I can help you fill out a fee-waiver request. A JUDGE decides whether you qualify — and if it's denied, you may still have to pay the court fee. I need some financial information, all confidential."
@@ -156,7 +150,7 @@ The collected_data JSON must include these top-level keys matching the CompleteI
 - landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name}
 - case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, response_deadline}
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
-- defenses: {def_repairs: {checked, explanation}, def_amount: {checked, explanation}, ... for all 12 defenses}
+- defenses: {<defense_key>: {checked, explanation}, ...} — one entry per defense the user selected, using the EXACT defense keys shown in Phase 5 (the text before each "—", e.g. def_repairs, def_paid, def_partial_pay, def_continuance). Each entry: checked=true and explanation = the user's facts, word for word.
 - preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, needs_emergency_stay, facing_writ_possession, filing_bankruptcy}
 - financial_info: {monthly_gross_income, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance}
 
@@ -177,10 +171,87 @@ After you output the JSON data block, close with a short, warm verification mess
 """
 
 
-def get_chat_response(messages: list[dict], case_id: Optional[str] = None) -> dict:
+GENERIC_DEFENSE_LIST = """1. def_repairs — The landlord did not make repairs after written notice
+2. def_amount — I do not owe the total amount of rent claimed
+3. def_attempted_pay — I attempted or offered to pay, but the landlord refused
+4. def_paid — I already paid the rent demanded
+5. def_waived — The landlord waived, changed, or canceled the notice
+6. def_retaliation — The eviction is retaliatory
+7. def_fair_housing — The eviction violates fair housing law
+8. def_accepted_rent — The landlord accepted rent after sending the notice
+9. def_corrected — I already corrected the violation the landlord claimed
+10. def_not_owner — The person suing me is not the owner
+11. def_bad_notice — I did not receive proper legal notice
+12. def_other — Other defenses"""
+
+NARRATIVE_DEFENSE_INSTRUCTION = """(NARRATIVE ANSWER FORM — no fixed checkbox list.) Your answer form asks the tenant to state their defenses in their own words. Ask: "What is your side of the story? What reasons do you want to give the court for why you should not be evicted?" Type their answer word for word. Do NOT suggest defenses or explain any legal concept. If they mention specific defenses (for example, repairs not made, rent already paid, improper notice), ask for brief facts to support each one."""
+
+
+def _defense_list_for_state(state: Optional[str], county: Optional[str]) -> str:
+    """Return the answer-form defense list for a state (or a narrative
+    instruction when the state's form has no discrete checkboxes)."""
+    state = (state or "").upper()
+    county = (county or "").strip()
+
+    # Denver County Court uses its own narrative answer form, not the
+    # statewide JDF 103 checkbox form.
+    if state == "CO" and county.lower() == "denver":
+        return NARRATIVE_DEFENSE_INSTRUCTION
+
+    cfg = get_state_config(state)
+    if cfg:
+        options = cfg.get("defense_options") or []
+        if options:
+            lines: list[str] = []
+            seen: set[str] = set()
+            for opt in options:
+                key = opt.get("key", "")
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                label = opt.get("label") or key
+                lines.append(f"{len(lines) + 1}. {key} — {label}")
+            return "\n".join(lines)
+
+    # AR, MN, and any other narrative/scanned form fall back to the generic list.
+    return GENERIC_DEFENSE_LIST
+
+
+def _state_profile(state: Optional[str], county: Optional[str]) -> str:
+    """A short, human-relevant profile so the specialist asks the right court
+    and form questions for this state."""
+    state = (state or "").upper()
+    county = (county or "").strip()
+    cfg = get_state_config(state)
+    court_type = (cfg or {}).get("court_type", "")
+    lines: list[str] = []
+    if court_type:
+        lines.append(f"- Court type: {court_type}")
+    if state == "CO" and county.lower() == "denver":
+        lines.append("- Denver County Court uses its own answer form (DCC CP No. 3), not the statewide JDF 103 form.")
+    if state == "IL":
+        lines.append("- Cook County has preferred local forms, but Illinois law does not mandate a county-specific answer form.")
+    if state == "GA":
+        lines.append("- The statewide answer form is accepted in all 159 Georgia counties; filing procedures vary by county (e-file vs mail vs in-person).")
+    return "\n".join(lines)
+
+
+def build_system_prompt(state: Optional[str] = None, county: Optional[str] = None) -> str:
+    """Build the intake system prompt, injecting the state's actual defense
+    list and a short court profile so the specialist collects state-correct data."""
+    prompt = SYSTEM_PROMPT.replace(
+        "__STATE_DEFENSE_LIST__", _defense_list_for_state(state, county)
+    )
+    profile = _state_profile(state, county)
+    prompt = prompt.replace("__STATE_PROFILE__", profile)
+    return prompt
+
+
+def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
+                      state: Optional[str] = None, county: Optional[str] = None) -> dict:
     """Get a response from the AI for chat intake. Supports session persistence."""
     full_messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": build_system_prompt(state, county)},
         *messages,
     ]
 

@@ -453,7 +453,7 @@
           const resp = await fetch(API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages, case_id: caseId }),
+            body: JSON.stringify({ messages, case_id: caseId, state: preState || undefined, county: preCounty || undefined }),
           });
           const data = await resp.json();
           hideTyping();

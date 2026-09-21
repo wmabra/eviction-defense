@@ -1,7 +1,7 @@
 """Pydantic models for the intake questionnaire."""
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class PreScreen(BaseModel):
@@ -91,6 +91,8 @@ class DefenseItem(BaseModel):
 
 
 class Defenses(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     def_repairs: DefenseItem = DefenseItem()
     def_amount: DefenseItem = DefenseItem()
     def_attempted_pay: DefenseItem = DefenseItem()

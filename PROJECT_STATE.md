@@ -134,7 +134,7 @@ worksheet, refined court captions) is also merged.
 6. **Phone voice agent ("Eva")** — live on `+1-561-960-0485` via Retell AI + Telnyx SIP.
    Full prompt (compliance, legal-boundary, off-topic redirect, same-day-callback flow),
    8 tools wired to `/api/v1/voice/*`, post-call analysis, call persistence (`call_logs`),
-   and callback email to support@evictions.help. See `docs/voice-agent.md`.
+   and callback email to <support@evictions.help>. See `docs/voice-agent.md`.
 7. **Customer accounts** — email-verified signup: payment creates the case in
    `pending_email_verification`, a signed 48h link verifies the email, then the account
    (username = email + temp password) is created and the welcome email sent. Login →

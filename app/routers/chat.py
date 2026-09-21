@@ -20,6 +20,8 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
     case_id: str | None = None
+    state: str | None = None
+    county: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -44,7 +46,22 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
         except Exception:
             pass
     
-    result = get_chat_response(messages, case_id=req.case_id)
+    # Look up the case's state/county so the intake specialist asks only that
+    # state's questions (actual answer-form defenses, court type, etc.). The
+    # request may also carry state/county from the landing page (fallback).
+    state = req.state
+    county = req.county
+    if req.case_id:
+        try:
+            case_row = db.query(Case).filter(Case.id == req.case_id).first()
+            if case_row is not None:
+                case_row = cast(Any, case_row)
+                state = state or case_row.state or None
+                county = county or case_row.county or None
+        except Exception:
+            pass
+
+    result = get_chat_response(messages, case_id=req.case_id, state=state, county=county)
     
     # Log the AI response too
     if req.case_id and result.get("message"):
