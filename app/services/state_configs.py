@@ -58,6 +58,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "General District Court",
+        "strip_dollar_signs": True,
         "field_mapping": {
             "full_name": "User.Defendant",
             "phone": "User.PhoneName2",
@@ -633,6 +634,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "reason from the PlaintiffLandlord you may fill out the statement below": "",
         },
         "court_type": "District Court",
+        "strip_dollar_signs": True,
         "field_rect_overrides": {
             "answer_form": {
                 "PlaintiffLandlord": {"y0": 196.5},
@@ -1193,6 +1195,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "District Court",
+        "strip_dollar_signs": True,
         "populate_signature_dates": True,
         "field_rect_overrides": {
             "answer_form": {
@@ -1326,6 +1329,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "Associate Circuit Court",
+        "strip_dollar_signs": True,
         "field_rect_overrides": {
             "answer_form": {
                 "date": {"y0": 528.0, "y1": 542.0, "align": "center"},
