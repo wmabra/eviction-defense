@@ -120,7 +120,7 @@ def _request(method: str, path: str, token: str, body: dict | None = None,
             if raw:
                 return json.loads(raw)
             return {}
-        except Exception as exc:  # pyright: ignore — valid except clause; env typeshed false positive
+        except Exception as exc:  # pi-lens-ignore: no-boolean-in-except (valid except clause — linter false positive)
             if isinstance(exc, HTTPError):
                 try:
                     detail = json.loads(exc.read().decode("utf-8"))

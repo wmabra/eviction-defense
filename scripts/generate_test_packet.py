@@ -1064,7 +1064,131 @@ MN = {
 }
 
 
-PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA, "MI": MI, "MN": MN}
+def _john_doe(state, county, city, address, zipcode, court, case_number,
+              landlord, landlord_address, phone, email, rent, claimed, believed):
+    """Build a standardized John Doe test entry for one of the 20 states."""
+    return {
+        "full_name": FULL_NAME,
+        "county": county,
+        "label": state,
+        "data": {
+            "state": state,
+            "personal_info": {
+                "full_name": FULL_NAME,
+                "phone": phone,
+                "email": email,
+                "property_address": address,
+                "property_city": city,
+                "property_zip": zipcode,
+                "county": county,
+            },
+            "landlord_info": {
+                "landlord_name": landlord,
+                "landlord_address": landlord_address,
+                "landlord_phone": "(555) 555-0100",
+                "landlord_email": "leasing@example.com",
+            },
+            "case_details": {
+                "case_number": case_number,
+                "court_name": court,
+                "complaint_amount_claimed": claimed,
+                "summons_service_date": "2024-05-02",
+                "response_deadline": "2024-05-12",
+                "court_date": "2024-05-15",
+            },
+            "rent_payment": {
+                "monthly_rent": rent,
+                "agree_with_amount": False,
+                "amount_tenant_believes_owed": believed,
+            },
+            "defenses": {
+                "def_repairs": {"checked": True, "explanation": "The heat and hot water have been intermittent and the landlord has not repaired them despite written requests."},
+                "def_amount": {"checked": True, "explanation": "The ledger includes unauthorized late fees and charges a month I already paid."},
+                "def_bad_notice": {"checked": True, "explanation": "I did not receive proper written notice before the eviction was filed."},
+            },
+            "preferences": {
+                "trial_by": "judge",
+                "needs_more_time": True,
+                "wants_payment_plan": True,
+                "hardship_reason": "I was laid off and have been covering rent from savings while looking for work.",
+                "needs_continuance": True,
+                "continuance_reason": "I need additional time to obtain repair receipts and gather evidence for the hearing.",
+                "needs_emergency_stay": True,
+                "emergency_stay_reason": "I need time to secure rental assistance and avoid displacement while my application is pending.",
+                "facing_writ_possession": True,
+                "filing_bankruptcy": True,
+                "bankruptcy_case_number": "24-09876",
+                "bankruptcy_court": "U.S. Bankruptcy Court",
+                "bankruptcy_chapter": "7",
+                "bankruptcy_filing_date": "2024-04-28",
+                "bankruptcy_attorney_name": "Laura Advocate, Esq.",
+                "bankruptcy_attorney_phone": "(555) 555-0121",
+                "bankruptcy_attorney_email": "ladvocate@example.com",
+            },
+            "financial_info": {
+                "monthly_gross_income": 2200.00,
+                "employment_income": 2200.00,
+                "rent_or_mortgage": rent,
+                "utilities_expense": 160.00,
+                "food_expense": 340.00,
+                "transportation_expense": 130.00,
+                "medical_expense": 90.00,
+                "household_adults": 1,
+                "household_children": 1,
+                "receives_snap": True,
+                "receives_medicaid": True,
+                "receives_ssi": False,
+                "receives_tanf": False,
+            },
+        },
+    }
+
+
+# ── Fake John Doe — the next 10 states (Missouri → Virginia) ─────────────
+MO = _john_doe("MO", "St. Louis", "St. Louis", "4915 Delmar Blvd", "63108",
+               "St. Louis County Circuit Court", "24SL-CC01234",
+               "Gateway Property Management, LLC", "100 S Central Ave, St. Louis, MO 63105",
+               "(314) 555-0198", "john.doe.mo@example.com", 1050.00, 2100.00, 840.00)
+NM = _john_doe("NM", "Bernalillo", "Albuquerque", "1234 Central Ave SW", "87102",
+               "Bernalillo County Metropolitan Court", "D-202-CV-2024-01234",
+               "Sandia Rental Group, LLC", "500 Marquette Ave NW, Albuquerque, NM 87102",
+               "(505) 555-0198", "john.doe.nm@example.com", 950.00, 1900.00, 760.00)
+OH = _john_doe("OH", "Franklin", "Columbus", "850 E Livingston Ave", "43205",
+               "Franklin County Municipal Court", "2024 CVE 012345",
+               "Buckeye Property Holdings, LLC", "150 S Front St, Columbus, OH 43215",
+               "(614) 555-0198", "john.doe.oh@example.com", 1000.00, 2000.00, 800.00)
+OK = _john_doe("OK", "Oklahoma", "Oklahoma City", "2900 N Classen Blvd", "73106",
+               "Oklahoma County District Court", "CJ-2024-1234",
+               "Sooner State Rentals, LLC", "101 Park Ave, Oklahoma City, OK 73102",
+               "(405) 555-0198", "john.doe.ok@example.com", 900.00, 1800.00, 720.00)
+OR = _john_doe("OR", "Multnomah", "Portland", "4500 SE Hawthorne Blvd", "97215",
+               "Multnomah County Circuit Court", "24LT01234",
+               "Cascade Property Management, LLC", "200 SW Market St, Portland, OR 97201",
+               "(503) 555-0198", "john.doe.or@example.com", 1150.00, 2300.00, 920.00)
+RI = _john_doe("RI", "Providence", "Providence", "123 Smith St", "02903",
+               "Providence County District Court", "P4-2024-01234",
+               "Ocean State Rentals, LLC", "100 Dorrance St, Providence, RI 02903",
+               "(401) 555-0198", "john.doe.ri@example.com", 1000.00, 2000.00, 800.00)
+SC = _john_doe("SC", "Richland", "Columbia", "2000 Hampton St", "29201",
+               "Richland County Magistrate Court", "2024-CV-40-01234",
+               "Palmetto Property Group, LLC", "1200 Main St, Columbia, SC 29201",
+               "(803) 555-0198", "john.doe.sc@example.com", 950.00, 1900.00, 760.00)
+TN = _john_doe("TN", "Davidson", "Nashville", "1200 Shelby Ave", "37206",
+               "Davidson County General Sessions Court", "GS24-01234",
+               "Volunteer State Rentals, LLC", "150 2nd Ave N, Nashville, TN 37201",
+               "(615) 555-0198", "john.doe.tn@example.com", 1050.00, 2100.00, 840.00)
+TX = _john_doe("TX", "Harris", "Houston", "4500 Almeda Rd", "77004",
+               "Harris County Justice of the Peace, Precinct 7", "JP07-24-01234",
+               "Lone Star Property Management, LLC", "800 Commerce St, Houston, TX 77002",
+               "(713) 555-0198", "john.doe.tx@example.com", 1200.00, 2400.00, 960.00)
+VA = _john_doe("VA", "Fairfax", "Fairfax", "8900 Little River Tpke", "22031",
+               "Fairfax County General District Court", "GV24-01234",
+               "Old Dominion Rentals, LLC", "12000 Government Center Pkwy, Fairfax, VA 22035",
+               "(703) 555-0198", "john.doe.va@example.com", 1300.00, 2600.00, 1040.00)
+
+
+PACKETS = {"AR": AR, "CO": CO, "CO_DENVER": CO_DENVER, "CT": CT, "GA": GA, "IL": IL, "IN": IN, "KY": KY, "LA": LA, "MI": MI, "MN": MN,
+           "MO": MO, "NM": NM, "OH": OH, "OK": OK, "OR": OR, "RI": RI, "SC": SC, "TN": TN, "TX": TX, "VA": VA}
 
 
 def main() -> int:
