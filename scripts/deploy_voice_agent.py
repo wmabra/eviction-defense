@@ -374,8 +374,12 @@ def get_agent(token: str, agent_id: str) -> dict:
     return _request("GET", f"/get-agent/{agent_id}", token)
 
 
-def list_agents(token: str) -> Any:
-    return _request("GET", "/list-agents", token)
+def list_agents(token: str) -> list:
+    # v2 list-agents (POST) — the legacy GET /list-agents is deprecated/removed.
+    result = _request("POST", "/v2/list-agents", token, {})
+    if isinstance(result, dict):
+        return result.get("items", [])
+    return result or []
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -467,10 +471,17 @@ def main(argv: list[str] | None = None) -> int:
         print(_redact(json.dumps(agent_payload, indent=2), secrets))
         return 0
 
-    # 1) Update the LLM (prompt + tools).
-    print(f"Updating LLM {llm_id} (prompt + {len(llm_payload['general_tools'])} tools)…")
-    update_llm(token, llm_id, llm_payload)
-    print("✅ LLM updated")
+    # 1) Update the LLM (prompt + tools). A published LLM can't be PATCHed;
+    #    skip with a note (its content is unchanged in this run).
+    try:
+        print(f"Updating LLM {llm_id} (prompt + {len(llm_payload['general_tools'])} tools)…")
+        update_llm(token, llm_id, llm_payload)
+        print("✅ LLM updated")
+    except RetellError as e:
+        if "Cannot update published" in str(e):
+            print(f"⏭️  LLM {llm_id} is published — skipping LLM update (create a new version to change it).")
+        else:
+            raise
 
     # 2) Update or create the agent.
     if args.create or not agent_id:
@@ -483,8 +494,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(f"Updating agent {agent_id} (voice={voice_id})…")
-    update_agent(token, agent_id, agent_payload)
-    print(f"✅ Updated agent {agent_id}")
+    try:
+        update_agent(token, agent_id, agent_payload)
+        print(f"✅ Updated agent {agent_id}")
+    except RetellError as e:
+        if "Cannot update published" in str(e):
+            print(f"⏭️  Agent {agent_id} is published — skipping update (only version title editable).")
+        else:
+            raise
     return 0
 
 
