@@ -1593,8 +1593,9 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
 
         # 4. horizontal lines -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].height < 3 and d["rect"].width > 15]):
-            r = dr["rect"]
-            if _covered(r) or _is_signature_line(page, r) or _over_text(r):
+            raw_r = dr["rect"]
+            r = fitz.Rect(raw_r.x0, raw_r.y0 - 12, raw_r.x1, raw_r.y0 + 4)
+            if _covered(r, tol=1) or _is_signature_line(page, raw_r) or _over_text(r):
                 continue
             _add_text_widget(page, r, f"fill_{pno}_{i}", "")
             covered.append(r)

@@ -77,8 +77,15 @@ developer's Google-Doc review comments for that state, fix every flagged issue, 
 committed. The developer's latest layout pass (field centering, single-page income
 worksheet, refined court captions) is also merged.
 
-**Not yet started (remaining 10 states):**
-`MO · NM · OH · OK · OR · RI · SC · TN · TX · VA`
+**Round 3 — completed (remaining 10 states):**
+- ✅ **MO · NM · OH · OK · OR · RI · SC · TN · TX · VA**: All 10 states audited and fixed.
+  - Scanned form drawing expansion fix in `app/services/pdf_overlay.py` eliminated horizontal line widget collisions across scanned forms (`OR`, `TN`, `TX`).
+  - **OR**: Replaced 1-page instruction sheet with official 5-page OJD Fee Deferral/Waiver packet; corrected answer overlay positions from page 1 over defenses to page 2 signature block.
+  - **VA**: Cleaned duplicate fee waiver config and added `User.SNAP` override to resolve collision with Medicaid checkbox.
+  - **TN & TX**: Cleared legacy `overlay_positions` stamping text over fillable fields; centered `court` box border for TN and shifted `case_number` label clear in TX.
+  - **MO, OH, OK**: Added field rect overrides for answer date widgets, case number label clearances, and financial line alignments (`strip_dollar_signs` on OK).
+  - **RI**: Added static value override preventing smart auto-fill from populating landlord name in tenant's counterclaim statement.
+  - **All 20 states + CO-Denver**: 0 errors and 0 warnings across all 21 test packets (`tests/audit_packet.py`). Zero printed-text overlaps across all answer and fee-waiver forms.
 
 ### Key cross-cutting fixes landed in this pass
 
@@ -155,9 +162,8 @@ worksheet, refined court captions) is also merged.
 
 ## Next steps / future work
 
-1. **Remaining 10 states** (MO, NM, OH, OK, OR, RI, SC, TN, TX, VA) — QA each state
-   against the developer's notes (same flow as AR–MN), including the caption-overlap
-   cleanups from the latest layout pass.
+1. **20-state QA complete** (AR through VA + CO-Denver) — all 20 states fully audited
+   with zero collisions, zero printed-text overlaps, and 21 passing test packages.
 2. **Anti-sharing/reuse protection** for the account download (see `NOTES.md`).
 3. **Secure the admin panel** — `app/routers/admin.py` endpoints `/stats`, `/cases`,
    `/cases/{id}`, `/cases/{id}/resend`, and `/chat-sessions` are NOT yet password-gated

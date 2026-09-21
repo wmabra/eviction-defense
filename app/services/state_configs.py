@@ -79,16 +79,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_bad_notice", "label": "I did not receive proper notice", "field": "User.CB1"},
         ],
         "notes": "DC-442 Grounds of Defense — 26 fillable fields. Used in General District Court for unlawful detainer cases.",
-        "fee_waiver_mapping": {
-            "case_number": "User.CaseNo",
-            "court_name": "User.CourtName",
-            "full_name": "User.Name1",
-            "county": "User.CityOrCounty",
-            "date": "User.DateSigned",
-            "printed_name": "User.PrintNamePetitioner",
-            "address": "User.PetitionerResidenceAddress",
-            "phone": "User.PetitionerTelephone",
-            "email": "User.PetitionerEmail",
+        "field_rect_overrides": {
+            "fee_waiver_form": {
+                "User.SNAP": {"y0": 206.0},
+            },
         },
     },
 
@@ -285,40 +279,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Texas",
         "answer_form": "tx_eviction_answer.pdf",
         "fee_waiver_form": "tx_fee_waiver.pdf",
-        "overlay_positions": {
-            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
-        
-            "date": {"page": 1, "x": 129, "y": 54, "w": 120, "h": 16, "size": 10},
-            "defense_amount": {"page": 1, "x": 31, "y": 321, "w": 14, "h": 14, "size": 10},
-            "defense_attempted_pay": {"page": 1, "x": 31, "y": 339, "w": 14, "h": 14, "size": 10},
-            "defense_other": {"page": 1, "x": 31, "y": 422, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 1, "x": 67, "y": 516, "w": 14, "h": 14, "size": 10},
-            "defense_repairs": {"page": 1, "x": 67, "y": 376, "w": 14, "h": 14, "size": 10},
-            "printed_name": {"page": 1, "x": 443, "y": 623, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 443, "y": 623, "w": 200, "h": 20, "size": 10},
-            "date": {"page": 2, "x": 151, "y": 176, "w": 120, "h": 16, "size": 10},
-            "defense_amount": {"page": 2, "x": 71, "y": 514, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 2, "x": 197, "y": 126, "w": 200, "h": 16, "size": 10},
-            "phone": {"page": 1, "x": 197, "y": 551, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 3, "x": 415, "y": 353, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 3, "x": 177, "y": 353, "w": 200, "h": 20, "size": 10},
-            "court_name": {"page": 1, "x": 478, "y": 114, "w": 200, "h": 16, "size": 10},
-            "date": {"page": 3, "x": 584, "y": 346, "w": 120, "h": 16, "size": 10},
-            "defense_attempted_pay": {"page": 1, "x": 72, "y": 459, "w": 14, "h": 14, "size": 10},
-            "defense_bad_notice": {"page": 2, "x": 72, "y": 73, "w": 14, "h": 14, "size": 10},
-            "defense_discrimination": {"page": 1, "x": 108, "y": 597, "w": 14, "h": 14, "size": 10},
-            "defense_other": {"page": 2, "x": 54, "y": 244, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 1, "x": 90, "y": 419, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 3, "x": 192, "y": 75, "w": 200, "h": 16, "size": 10},
-            "phone": {"page": 3, "x": 372, "y": 419, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 3, "x": 352, "y": 365, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 3, "x": 352, "y": 346, "w": 200, "h": 20, "size": 10},
-            "court_name": {"page": 1, "x": 159, "y": 74, "w": 200, "h": 16, "size": 10},
-            "date": {"page": 1, "x": 461, "y": 170, "w": 120, "h": 16, "size": 10},
-            "defense_amount": {"page": 1, "x": 39, "y": 215, "w": 14, "h": 14, "size": 10},
-            "phone": {"page": 1, "x": 350, "y": 678, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 1, "x": 386, "y": 656, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 330, "y": 678, "w": 200, "h": 20, "size": 10}},
+        "overlay_positions": {},
         "has_fillable_fields": True,
         "court_type": "Justice of the Peace Court",
         "field_mapping": {
@@ -350,7 +311,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "notes": "TX JP Court eviction answer. 57 fillable fields across 3 pages. Defense checkboxes mapped: Box6=paid, Box7=repairs, Box9=retaliation, Box10=notice, Box54=amount dispute, DoesNotLive=moved out, Mitigate=failure to mitigate, FHAM=discrimination, CD=counterclaim. Box2 and Box4 are catch-all other defenses.",
     
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 210, "y": 60, "w": 110, "h": 12, "size": 9},
+            "case_number": {"page": 1, "x": 226, "y": 58, "w": 140, "h": 13, "size": 9.5},
             "full_name": {"page": 1, "x": 165, "y": 233, "w": 180, "h": 10, "size": 10}
         }},
 
@@ -658,6 +619,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": "Telephone Number",
         },
         "has_fillable_fields": True,
+        "static_values": {
+            "reason from the PlaintiffLandlord you may fill out the statement below": "",
+        },
         "court_type": "District Court",
         "field_mapping": {
             "full_name": "DefendantTenant",
@@ -964,18 +928,14 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "name": "Tennessee",
         "answer_form": "tn_eviction_answer.pdf",
         "fee_waiver_form": "tn_fee_waiver.pdf",
-        "overlay_positions": {
-            "financial_summary": {"page": 1, "x": 50, "y": 50, "w": 500, "h": 200, "size": 9},
-        
-            "date": {"page": 1, "x": 179, "y": 238, "w": 120, "h": 16, "size": 10},
-            "defense_amount": {"page": 1, "x": 87, "y": 222, "w": 14, "h": 14, "size": 10},
-            "defense_other": {"page": 1, "x": 70, "y": 435, "w": 14, "h": 14, "size": 10},
-            "phone": {"page": 1, "x": 163, "y": 316, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 143, "y": 550, "w": 200, "h": 20, "size": 10},
-            "defense_narrative": {"page": 1, "x": 72, "y": 370, "w": 450, "h": 500, "size": 7}},
-
+        "overlay_positions": {},
         "has_fillable_fields": True,
         "court_type": "General Sessions Court",
+        "field_rect_overrides": {
+            "answer_form": {
+                "court": {"x0": 185.0, "y0": 64.5, "y1": 78.5, "text_fontsize": 9.0},
+            },
+        },
         "field_mapping": {
             "case_number": "file_number",
             "county": "county",
@@ -1147,21 +1107,31 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": False,
         "court_type": "Circuit Court",
         "overlay_positions": {
-            "county": {"page": 1, "x": 280, "y": 88, "w": 130, "h": 16, "size": 11, "align": "center"},
-            "case_number": {"page": 1, "x": 400, "y": 143, "w": 160, "h": 16, "size": 11, "align": "center"},
-            "landlord_name": {"page": 1, "x": 350, "y": 157, "w": 200, "h": 16, "size": 11},
-            "full_name": {"page": 1, "x": 350, "y": 226, "w": 200, "h": 16, "size": 11},
-            "signature": {"page": 1, "x": 150, "y": 629, "w": 100, "h": 16, "size": 10},
-            "printed_name": {"page": 1, "x": 320, "y": 630, "w": 170, "h": 16, "size": 10, "align": "center"},
-            "date": {"page": 1, "x": 530, "y": 630, "w": 70, "h": 16, "size": 10, "align": "center"},
-            "address": {"page": 1, "x": 150, "y": 667, "w": 200, "h": 16, "size": 10},
-            "phone": {"page": 1, "x": 530, "y": 667, "w": 70, "h": 16, "size": 10},
-            "email": {"page": 1, "x": 150, "y": 704, "w": 200, "h": 16, "size": 10},
+            "county": {"page": 1, "x": 285, "y": 84, "w": 145, "h": 14, "size": 10, "align": "center"},
+            "case_number": {"page": 1, "x": 400, "y": 138, "w": 145, "h": 14, "size": 10, "align": "center"},
+            "landlord_name": {"page": 1, "x": 72, "y": 112, "w": 240, "h": 14, "size": 10},
+            "full_name": {"page": 1, "x": 72, "y": 181, "w": 240, "h": 14, "size": 10},
+            "printed_name": {"page": 2, "x": 252, "y": 94, "w": 180, "h": 14, "size": 10, "align": "center"},
+            "date": {"page": 2, "x": 468, "y": 94, "w": 72, "h": 14, "size": 10, "align": "center"},
+            "address": {"page": 2, "x": 72, "y": 131, "w": 170, "h": 14, "size": 10},
+            "city_state_zip": {"page": 2, "x": 252, "y": 131, "w": 200, "h": 14, "size": 10},
+            "phone": {"page": 2, "x": 468, "y": 131, "w": 72, "h": 14, "size": 10},
+            "email": {"page": 2, "x": 72, "y": 168, "w": 400, "h": 14, "size": 10},
         },
-        "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption area.",
-    
         "fee_waiver_overlay": {
-        }},
+            "county": {"page": 1, "x": 305, "y": 82, "w": 125, "h": 14, "size": 10, "align": "center"},
+            "landlord_name": {"page": 1, "x": 72, "y": 110, "w": 240, "h": 14, "size": 10},
+            "full_name": {"page": 1, "x": 72, "y": 165, "w": 240, "h": 14, "size": 10},
+            "case_number": {"page": 1, "x": 395, "y": 110, "w": 145, "h": 14, "size": 10, "align": "center"},
+            "printed_name": {"page": 1, "x": 200, "y": 216, "w": 300, "h": 14, "size": 10},
+            "county_page4": {"page": 4, "x": 305, 'y': 82, 'w': 125, 'h': 14, 'size': 10, 'align': 'center'},
+            "landlord_name_page4": {"page": 4, "x": 72, "y": 110, "w": 240, "h": 14, "size": 10},
+            "full_name_page4": {"page": 4, "x": 72, "y": 165, "w": 240, "h": 14, "size": 10},
+            "case_number_page4": {"page": 4, "x": 395, "y": 110, "w": 145, "h": 14, "size": 10, "align": "center"},
+            "printed_name_page4": {"page": 4, "x": 185, "y": 218, "w": 300, "h": 13, "size": 9.5},
+        },
+        "notes": "OR FED Answer — scanned PDF with 10 checkbox defenses (OCR-verified at 600 DPI). Overlay positions for essential fields on page 1 caption and page 2 signature area; OJD Fee Deferral/Waiver application on pages 1 and 4.",
+    },
 
     # ══════════════════════════════════════════
     # MICHIGAN — DC 111a Answer, Nonpayment of Rent
@@ -1329,6 +1299,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "Associate Circuit Court",
+        "field_rect_overrides": {
+            "answer_form": {
+                "date": {"y0": 528.0, "y1": 542.0, "align": "center"},
+            },
+        },
         "field_mapping": {
             "division": "division",
         },
@@ -1447,6 +1422,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "has_fillable_fields": True,
         "court_type": "District Court",
+        "strip_dollar_signs": True,
+        "field_rect_overrides": {
+            "answer_form": {
+                "date": {"y0": 538.0, "y1": 552.0, "align": "center"},
+            },
+            "fee_waiver_form": {
+                "defendant_name": {"y0": 180.0, "y1": 194.0, "text_fontsize": 9.0},
+                "checking_balance": {"x0": 190.0, "y0": 468.0, "y1": 482.0, "text_fontsize": 9.0},
+                "cash_on_hand": {"x0": 190.0, "y0": 492.0, "y1": 506.0, "text_fontsize": 9.0},
+            },
+        },
         "field_mapping": {
             "division": "division",
         },
@@ -1578,11 +1564,15 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             # county widget was authored on the "CASE NO." line — move it up to
             # the "COUNTY, OHIO" line (raw pre-flip coords), narrowed so the name
             # fits before the (shifted-right) "COUNTY, OHIO" label.
-            "answer_form": {"county": {"x0": 72, "x1": 108, "y0": 66, "y1": 81}},
+            "answer_form": {
+                "county": {"x0": 72, "x1": 108, "y0": 66, "y1": 81},
+                "date": {"y0": 538.0, "y1": 552.0, "align": "center"},
+            },
             # fee-waiver: county field overlaps "OHIO"; printed_name sits on its label.
             "fee_waiver_form": {
                 "county": {"x0": 72, "x1": 108},
                 "printed_name": {"x0": 420},
+                "case_number": {"x0": 448.0, "align": "center"},
             },
         },
         "defense_options": [
