@@ -885,6 +885,18 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
 
     # Certificate of Service mailing address — the landlord's (or counsel's)
     # name + address, so the recipient is fully identified on the CoS.
+    if "cos_recipient" not in _all_data:
+        _atty_name = (l.get("landlord_attorney_name") or "").strip()
+        _l_name = l.get("landlord_name", "") or ""
+        _all_data["cos_recipient"] = f"{_atty_name} (attorney for {_l_name})" if _atty_name else _l_name
+    if "cos_address" not in _all_data:
+        _atty_name = (l.get("landlord_attorney_name") or "").strip()
+        _atty_addr = (l.get("landlord_attorney_address") or "").strip()
+        _all_data["cos_address"] = _atty_addr if (_atty_name and _atty_addr) else (l.get("landlord_address") or "")
+    if "plaintiff_attorney_composite" not in _all_data:
+        _atty_name = (l.get("landlord_attorney_name") or "").strip()
+        _atty_addr = (l.get("landlord_attorney_address") or "").strip()
+        _all_data["plaintiff_attorney_composite"] = "\n".join(x for x in (_atty_name, _atty_addr) if x)
     if "cos_mail" not in _all_data:
         _n = _all_data.get(_cert_name_key, "")
         _a = _all_data.get(_cert_addr_key, "")

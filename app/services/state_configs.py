@@ -403,9 +403,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "city_state_zip": "121",
             "phone": "118",
             "email": "122",
-            # Page 5 proof of delivery (recipient = landlord)
-            "plaintiff": "1A - Full Name of Party - Page 4",
-            "landlord_address": "1A - Full Address of Party - Page 4",
+            # Page 5 proof of delivery (recipient = landlord or counsel if represented)
+            "cos_recipient": "1A - Full Name of Party - Page 4",
+            "cos_address": "1A - Full Address of Party - Page 4",
             # Page 6 proof of delivery signature block (filer)
             "proof_signature": "E - Signature",
             "proof_name": "G - Name",
@@ -652,11 +652,12 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_mapping": {
             "full_name": "DefendantTenant",
             "landlord_name": "PlaintiffLandlord",
+            "cos_recipient": "Attorney for the PlaintiffLandlord or the PlaintiffLandlord",
             "case_number": "Civil Action File Number",
             "phone": "Telephone Number",
             "date": "Date",
             "defendant_address": "Address of the DefendantTenants Attorney or the DefendantTenant",
-            "plaintiff_address": "Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord",
+            "cos_address": "Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord",
             "bar_number": "Rhode Island Bar Number",
         },
         "defense_options": [
@@ -1222,6 +1223,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "court_name": "Court address",
             "defendant_composite": "Defendant name, address, and telephone number",
             "plaintiff_composite": "Plaintiff name, address, and telephone number",
+            "plaintiff_attorney_composite": "Plaintiff attorney, bar number, address, and telephone number",
             "date": "Date",
             "cert_date": "Enter date",
             "printed_name": "Enter defendant or attorney signature",
