@@ -1750,7 +1750,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
 
     def money_field(name, val, width=110):
         v = ""
-        if val is not None and val != 0:
+        if val is not None:
             try:
                 v = f"{float(val):,.2f}"
             except (TypeError, ValueError):
@@ -1758,7 +1758,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         return FillableText(name, v, width=width, height=15, font_size=9)
 
     def text_field(name, val, width=180):
-        return FillableText(name, str(val) if val else "", width=width, height=15, font_size=9)
+        return FillableText(name, str(val) if val is not None else "", width=width, height=15, font_size=9)
 
     def row(label, field):
         return [Paragraph(label, S["BodySmall"]), field]
@@ -1767,19 +1767,24 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         return [Paragraph(f"<b>{label}</b>", S["BodyBold"]), ""]
 
     # Income
-    wages = fin.get("employment_income") or fin.get("monthly_gross_income")
+    wages = fin.get("employment_income") if fin.get("employment_income") is not None else fin.get("monthly_gross_income")
     self_emp = fin.get("self_employment_income")
-    ss = fin.get("social_security_income") or fin.get("ssi_income")
+    ss = fin.get("social_security_income") if fin.get("social_security_income") is not None else fin.get("ssi_income")
     unemp = fin.get("unemployment_income")
-    child_support = fin.get("child_support_income") or fin.get("alimony_income")
+    child_support = fin.get("child_support_income") if fin.get("child_support_income") is not None else fin.get("alimony_income")
     other = fin.get("other_income")
-    total_income = (wages or 0) + (self_emp or 0) + (ss or 0) + (unemp or 0) + (child_support or 0) + (other or 0)
-    if not total_income and fin.get("monthly_gross_income"):
-        total_income = fin.get("monthly_gross_income")
+    income_items = [wages, self_emp, ss, unemp, child_support, other]
+    has_income_data = any(x is not None for x in income_items) or fin.get("monthly_gross_income") is not None
+    if has_income_data:
+        total_income = sum(float(x or 0) for x in income_items if x is not None)
+        if total_income == 0 and fin.get("monthly_gross_income") is not None:
+            total_income = float(fin.get("monthly_gross_income"))
+    else:
+        total_income = None
 
     # Expenses
-    rent = (fin.get("rent_or_mortgage") or
-            (data.get("case_details") or {}).get("monthly_rent") or
+    rent = (fin.get("rent_or_mortgage") if fin.get("rent_or_mortgage") is not None else
+            (data.get("case_details") or {}).get("monthly_rent") if (data.get("case_details") or {}).get("monthly_rent") is not None else
             (data.get("rent_payment") or {}).get("monthly_rent"))
     utils = fin.get("utilities_expense")
     food = fin.get("food_expense")
@@ -1788,13 +1793,20 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     childcare = fin.get("child_care_expense")
     debt = fin.get("debt_payments")
     other_exp = fin.get("other_expenses")
-    total_expenses = (rent or 0) + (utils or 0) + (food or 0) + (transport or 0) + (medical or 0) + (childcare or 0) + (debt or 0) + (other_exp or 0)
+    expense_items = [rent, utils, food, transport, medical, childcare, debt, other_exp]
+    has_expense_data = any(x is not None for x in expense_items) or fin.get("total_monthly_expenses") is not None
+    if has_expense_data:
+        total_expenses = sum(float(x or 0) for x in expense_items if x is not None)
+        if total_expenses == 0 and fin.get("total_monthly_expenses") is not None:
+            total_expenses = float(fin.get("total_monthly_expenses"))
+    else:
+        total_expenses = None
 
     # Assets / household
     cash = fin.get("cash_on_hand")
     checking = fin.get("checking_balance")
     savings = fin.get("savings_balance")
-    bank = (checking or 0) + (savings or 0) if (checking or savings) else None
+    bank = (checking or 0) + (savings or 0) if (checking is not None or savings is not None) else None
     vehicle = fin.get("vehicle_make_model")
     vehicle_val = fin.get("vehicle_value")
     other_assets = fin.get("other_assets_description")
@@ -1815,7 +1827,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         row("SSI:", yesno("receives_ssi")),
         row("Medicaid:", yesno("receives_medicaid")),
         row("Other income:  $", money_field("income_other", other)),
-        [Paragraph("<b>TOTAL MONTHLY INCOME:  $</b>", S["BodySmall"]), money_field("income_total", total_income if total_income else None)],
+        [Paragraph("<b>TOTAL MONTHLY INCOME:  $</b>", S["BodySmall"]), money_field("income_total", total_income if total_income is not None else None)],
         header("MONTHLY EXPENSES"),
         row("Rent / mortgage:  $", money_field("expense_rent", rent)),
         row("Utilities (electric, gas, water):  $", money_field("expense_utils", utils)),
@@ -1825,7 +1837,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
         row("Child care:  $", money_field("expense_childcare", childcare)),
         row("Credit card / loan payments:  $", money_field("expense_debt", debt)),
         row("Other expenses:  $", money_field("expense_other", other_exp)),
-        [Paragraph("<b>TOTAL MONTHLY EXPENSES:  $</b>", S["BodySmall"]), money_field("expense_total", total_expenses if total_expenses else None)],
+        [Paragraph("<b>TOTAL MONTHLY EXPENSES:  $</b>", S["BodySmall"]), money_field("expense_total", total_expenses if total_expenses is not None else None)],
         header("ASSETS"),
         row("Cash on hand:  $", money_field("asset_cash", cash)),
         row("Bank account(s) balance:  $", money_field("asset_bank", bank)),

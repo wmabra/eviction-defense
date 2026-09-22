@@ -84,6 +84,18 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
                     "collected_data": result["extracted_data"],
                 }
                 db.commit()
+            else:
+                new_case = Case(
+                    id=req.case_id,
+                    state=state,
+                    county=county,
+                    chat_session={
+                        "phase": "complete" if result.get("ready_for_intake") else "in_progress",
+                        "collected_data": result["extracted_data"],
+                    }
+                )
+                db.add(new_case)
+                db.commit()
         except Exception:
             pass
 

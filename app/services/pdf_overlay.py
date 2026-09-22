@@ -1357,13 +1357,17 @@ def _resolve_field_value(section: str, key: str, data: dict) -> str:
     if key == "property_city_zip":
         return f"{d.get('property_city', '')}, {d.get('property_zip', '')}".strip(", ")
     if key == "bank_total":
-        c = d.get("checking_balance") or 0
-        s = d.get("savings_balance") or 0
-        return f"{c + s:,.2f}" if (c or s) else ""
+        c = d.get("checking_balance")
+        s = d.get("savings_balance")
+        if c is not None or s is not None:
+            return f"{(c or 0) + (s or 0):,.2f}"
+        return ""
     if key == "household_size":
-        a = d.get("household_adults") or 0
-        ch = d.get("household_children") or 0
-        return str(a + ch) if (a or ch) else ""
+        a = d.get("household_adults")
+        ch = d.get("household_children")
+        if a is not None or ch is not None:
+            return str((a or 0) + (ch or 0))
+        return ""
     v = d.get(key)
     if v is None:
         return ""
@@ -1997,6 +2001,108 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             return raw_text
         return None
 
+    # Arkansas & fee waiver question detail overlays
+    if key == "fw_employment_details":
+        fin = data.get("financial_info", {}) or {}
+        is_emp = fin.get("is_employed")
+        emp_name = fin.get("employer_name")
+        emp_addr = fin.get("employer_address")
+        wages = fin.get("employment_income")
+        if is_emp is True or emp_name or (wages and float(wages) > 0):
+            parts = []
+            if emp_name:
+                parts.append(emp_name)
+            if emp_addr:
+                parts.append(emp_addr)
+            if wages is not None and float(wages) > 0:
+                parts.append(f"({_money(wages, 2)}/mo)")
+            return " - ".join(parts) if parts else "Employed"
+        return None
+
+    if key == "fw_last_employment_details":
+        fin = data.get("financial_info", {}) or {}
+        is_emp = fin.get("is_employed")
+        last_date = fin.get("last_employment_date")
+        last_wage = fin.get("last_employment_wage")
+        wages = fin.get("employment_income")
+        if is_emp is False or (wages is not None and float(wages) == 0) or last_date:
+            parts = []
+            if last_date:
+                parts.append(f"Last employed: {last_date}")
+            if last_wage:
+                parts.append(f"Prior wage: {last_wage}")
+            return ", ".join(parts) if parts else "Currently unemployed - $0.00 employment income"
+        return None
+
+    if key == "fw_income_sources_details":
+        fin = data.get("financial_info", {}) or {}
+        sources = []
+        if fin.get("unemployment_income") is not None and float(fin.get("unemployment_income")) > 0:
+            sources.append(f"Unemployment: {_money(fin['unemployment_income'], 2)}/mo")
+        if fin.get("social_security_income") is not None and float(fin.get("social_security_income")) > 0:
+            sources.append(f"Social Security: {_money(fin['social_security_income'], 2)}/mo")
+        if fin.get("ssi_income") is not None and float(fin.get("ssi_income")) > 0:
+            sources.append(f"SSI: {_money(fin['ssi_income'], 2)}/mo")
+        if fin.get("child_support_income") is not None and float(fin.get("child_support_income")) > 0:
+            sources.append(f"Child support: {_money(fin['child_support_income'], 2)}/mo")
+        if fin.get("receives_snap"):
+            sources.append("SNAP benefits")
+        if fin.get("receives_medicaid"):
+            sources.append("Medicaid")
+        if fin.get("receives_tanf"):
+            sources.append("TANF")
+        if fin.get("other_income") is not None and float(fin.get("other_income")) > 0:
+            desc = fin.get("other_income_description") or "Other"
+            sources.append(f"{desc}: {_money(fin['other_income'], 2)}/mo")
+        return "; ".join(sources) if sources else "None ($0.00)"
+
+    if key == "fw_accounts_details":
+        fin = data.get("financial_info", {}) or {}
+        accts = []
+        chk = fin.get("checking_balance")
+        sav = fin.get("savings_balance")
+        cash = fin.get("cash_on_hand")
+        if chk is not None:
+            accts.append(f"Checking: {_money(chk, 2)}")
+        if sav is not None:
+            accts.append(f"Savings: {_money(sav, 2)}")
+        if cash is not None:
+            accts.append(f"Cash on hand: {_money(cash, 2)}")
+        return "; ".join(accts) if accts else "None ($0.00)"
+
+    if key == "fw_property_details":
+        fin = data.get("financial_info", {}) or {}
+        props = []
+        veh = fin.get("vehicle_make_model")
+        vval = fin.get("vehicle_value")
+        if veh:
+            props.append(f"Vehicle: {veh}" + (f" ({_money(vval, 0)})" if vval is not None else ""))
+        if fin.get("owns_real_estate"):
+            reval = fin.get("real_estate_value")
+            props.append("Real estate" + (f" ({_money(reval, 0)})" if reval is not None else ""))
+        oth = fin.get("other_assets_description")
+        if oth:
+            oval = fin.get("other_assets_value")
+            props.append(f"{oth}" + (f" ({_money(oval, 0)})" if oval is not None else ""))
+        return "; ".join(props) if props else "None"
+
+    if key == "fw_dependents_details":
+        fin = data.get("financial_info", {}) or {}
+        dep_detail = fin.get("dependents_detail")
+        if dep_detail:
+            return dep_detail
+        ch = fin.get("household_children") or 0
+        ad = (fin.get("household_adults") or 1) - 1
+        tot = fin.get("total_dependents") or (ch + max(0, ad))
+        if tot > 0:
+            return f"{tot} dependent(s) ({ch} child(ren), {max(0, ad)} adult(s))"
+        return "None"
+
+    # Check financial fields directly if present
+    fin_val = _get_financial_value(key, data)
+    if fin_val is not None:
+        return fin_val
+
     return mapper.get(key)
 
 
@@ -2040,7 +2146,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         # Fallback: total_expenses_table is an alias for total_monthly_expenses
         if val is None and key == "total_expenses_table":
             val = financial.get("total_monthly_expenses")
-        if val is not None and val != 0:
+        if val is not None:
             return f"{_money(val, 2)}"
         return None
     
@@ -2154,10 +2260,10 @@ def _build_financial_summary(financial: dict) -> str:
     
     # Income
     income = financial.get('monthly_gross_income')
-    if income:
+    if income is not None:
         lines.append(f"Monthly Gross Income: {_money(income, 2)}")
     emp = financial.get('employment_income')
-    if emp:
+    if emp is not None:
         lines.append(f"Employment: {_money(emp, 2)}")
     
     # Household
@@ -2177,26 +2283,26 @@ def _build_financial_summary(financial: dict) -> str:
     
     # Expenses
     rent = financial.get('rent_or_mortgage')
-    if rent:
+    if rent is not None:
         lines.append(f"Rent/Mortgage: {_money(rent, 2)}")
     total_exp = financial.get('total_monthly_expenses')
-    if total_exp:
+    if total_exp is not None:
         lines.append(f"Total Monthly Expenses: {_money(total_exp, 2)}")
     
     # Assets
     cash_val = financial.get('cash_on_hand')
-    if cash_val:
+    if cash_val is not None:
         lines.append(f"Cash on Hand: {_money(cash_val, 2)}")
     checking = financial.get('checking_balance')
-    if checking:
+    if checking is not None:
         lines.append(f"Checking: {_money(checking, 2)}")
     savings = financial.get('savings_balance')
-    if savings:
+    if savings is not None:
         lines.append(f"Savings: {_money(savings, 2)}")
     vehicle = financial.get('vehicle_make_model')
     if vehicle:
         vehicle_val = financial.get('vehicle_value')
-        lines.append(f"Vehicle: {vehicle} ({_money(vehicle_val, 2)})" if vehicle_val else f"Vehicle: {vehicle}")
+        lines.append(f"Vehicle: {vehicle} ({_money(vehicle_val, 2)})" if vehicle_val is not None else f"Vehicle: {vehicle}")
     
     return '\n'.join(lines)
 

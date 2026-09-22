@@ -1010,9 +1010,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "court_caption_county": "COURT",
             "date": "day of",
             "full_name": "IN RE PETITION OF",
-            "cash_on_hand": "has the sum of",
         },
         "fee_waiver_name_fields": ["I", "Petitioner"],
+        "fee_waiver_overlay": {
+            "fw_employment_details": {"page": 1, "x": 72, "y": 518, "w": 460, "h": 28, "size": 9.0},
+            "fw_last_employment_details": {"page": 1, "x": 72, "y": 592, "w": 460, "h": 28, "size": 9.0},
+            "fw_income_sources_details": {"page": 2, "x": 72, "y": 355, "w": 460, "h": 34, "size": 9.0},
+            "fw_accounts_details": {"page": 2, "x": 72, "y": 472, "w": 460, "h": 34, "size": 9.0},
+            "fw_property_details": {"page": 2, "x": 72, "y": 605, "w": 460, "h": 34, "size": 9.0},
+            "fw_dependents_details": {"page": 2, "x": 72, "y": 680, "w": 460, "h": 34, "size": 9.0},
+        },
         "fee_waiver_checkbox_map": {
             "Check Box1": ["employment_income"],
             "Check Box3": ["self_employment_income"],

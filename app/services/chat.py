@@ -122,12 +122,20 @@ f. Are you facing an emergency eviction and would you like to ask the court for 
 
 === PHASE 6: FINANCIAL INFO (for fee waiver) ===
 Explain: "Courts charge filing fees ($50-$450). If you can't afford the fee, I can help you fill out a fee-waiver request. A JUDGE decides whether you qualify — and if it's denied, you may still have to pay the court fee. I need some financial information, all confidential."
-a. What is your total monthly gross income?
-b. What is your employment income? (if employed)
-c. How many adults live in your household? Children?
-d. Monthly expenses: rent/mortgage, utilities, food, transportation, medical, childcare
-e. Do you receive any public benefits? (SNAP/food stamps, SSI, Medicaid, TANF, Section 8, public housing, energy assistance, childcare assistance)
-f. Assets: cash on hand, checking/savings balances, vehicle (make/model/value), own real estate?
+a. Total monthly gross income & employment status:
+   - What is your total monthly gross income before taxes?
+   - Are you currently employed, self-employed, or unemployed?
+   - If employed: What is your monthly employment wages, employer's name, and employer's city/state?
+   - If unemployed: When was your last job (month/year) and approximately what was your monthly pay?
+b. Other income streams: Do you receive any other income, such as unemployment benefits, Social Security/SSDI, SSI, child support, alimony, pension, or self-employment? (Record amounts, or $0 if none).
+c. Household & dependents: How many adults live in your home (including yourself)? How many children? Are there other dependents relying on you for support?
+d. Monthly expenses: Ask for monthly expenses for rent/mortgage, utilities (electric/gas/water), food/groceries, transportation, medical/prescriptions, childcare, and debt/credit payments. (If an expense is $0, record 0 so it displays as $0.00 on the court forms).
+e. Public assistance benefits: Do you receive any public benefits? (SNAP/food stamps, SSI, Medicaid, TANF/welfare, Section 8, public housing, county assistance, energy assistance, childcare assistance, veterans benefits).
+f. Assets:
+   - Cash on hand (cash in wallet/home, or $0).
+   - Bank accounts: checking account balance and savings account balance (or $0).
+   - Vehicles: Do you own a car/truck/motorcycle? (make/model/year and approximate value).
+   - Real estate & other property: Do you own any home/land or other valuable assets?
 
 === PHASE PROGRESS ===
 At the end of EACH phase (1 through 6), after you finish collecting that phase's information, output a single short JSON marker so the customer's progress bar updates — then continue to the next phase:
@@ -148,9 +156,9 @@ The collected_data JSON must include these top-level keys matching the CompleteI
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
 - defenses: {<defense_key>: {checked, explanation}, ...} — one entry per defense the user selected, using the EXACT defense keys shown in Phase 4 (the text before each "—", e.g. def_repairs, def_paid, def_partial_pay, def_continuance). Each entry: checked=true and explanation = the user's facts, word for word.
 - preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, needs_emergency_stay, facing_writ_possession, filing_bankruptcy}
-- financial_info: {monthly_gross_income, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance}
+- financial_info: {monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, dependents_detail, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}
 
-Note on financial_info: ask each amount only where it could apply, and skip the ones that do not (a tenant with no self-employment is never asked for self-employment income). These are listed explicitly because the Income & Expense Worksheet in the packet has a money row for each of them, and a row the tenant was never asked about ships blank on a form they file with the court. `owns_real_estate` / `real_estate_value` in particular are asked in phase 6(f) above — without a field here that answer has nowhere to go and is dropped.
+Note on financial_info: When the tenant reports zero for an expense, income, or asset (e.g., $0 child care, $0 cash, $0 savings, $0 unemployment income), record 0 as a numeric value rather than null or leaving it out, so the court forms display $0.00 rather than remaining blank.
 - state: (2-letter state code)
 
 Only include fields that were actually collected. Use null for unknown values. Booleans as true/false. Dates as YYYY-MM-DD. Amounts as numbers without $.
@@ -243,6 +251,74 @@ def build_system_prompt(state: Optional[str] = None, county: Optional[str] = Non
     return prompt
 
 
+def _extract_intake_json(text: str) -> tuple[Optional[dict], str]:
+    """Extract ready_for_intake JSON block from LLM response text.
+    Handles code fences (```json ... ```) or bare JSON with balanced braces.
+    Returns (extracted_dict, cleaned_text).
+    """
+    if "ready_for_intake" not in text:
+        return None, text
+
+    # First attempt: code block containing ready_for_intake
+    fence_pattern = re.compile(r'```(?:json)?\s*([\s\S]*?"ready_for_intake"[\s\S]*?)\s*```', re.DOTALL)
+    m = fence_pattern.search(text)
+    if m:
+        candidate = m.group(1).strip()
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, dict) and "ready_for_intake" in parsed:
+                cleaned = (text[:m.start()] + "\n" + text[m.end():]).strip()
+                return parsed, cleaned
+        except Exception:
+            pass
+
+    # Second attempt: locate "ready_for_intake" and find enclosing balanced braces
+    idx = text.find("ready_for_intake")
+    start_brace = text.rfind("{", 0, idx)
+    while start_brace != -1:
+        depth = 0
+        in_string = False
+        escape = False
+        end_brace = -1
+        for i in range(start_brace, len(text)):
+            c = text[i]
+            if escape:
+                escape = False
+                continue
+            if c == '\\':
+                escape = True
+                continue
+            if c == '"':
+                in_string = not in_string
+                continue
+            if not in_string:
+                if c == '{':
+                    depth += 1
+                elif c == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end_brace = i
+                        break
+        if end_brace != -1:
+            candidate = text[start_brace:end_brace + 1]
+            try:
+                parsed = json.loads(candidate)
+                if isinstance(parsed, dict) and "ready_for_intake" in parsed:
+                    pre = text[:start_brace].rstrip()
+                    post = text[end_brace + 1:].lstrip()
+                    if pre.endswith("```json") or pre.endswith("```"):
+                        pre = pre.rsplit("```", 1)[0].rstrip()
+                    if post.startswith("```"):
+                        post = post[3:].lstrip()
+                    cleaned = f"{pre}\n{post}".strip()
+                    return parsed, cleaned
+            except Exception:
+                pass
+        start_brace = text.rfind("{", 0, start_brace)
+
+    return None, text
+
+
 def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
                       state: Optional[str] = None, county: Optional[str] = None) -> dict:
     """Get a response from the AI for chat intake. Supports session persistence."""
@@ -267,21 +343,11 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
     extracted_data = None
     ready = False
 
-    # Look for JSON code block or inline JSON
-    json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
-    if not json_match:
-        json_match = re.search(r'\{[^{]*"ready_for_intake"[^}]*\}', content)
-
-    if json_match:
-        try:
-            json_str = json_match.group(1) if json_match.lastindex else json_match.group(0)
-            data = json.loads(json_str)
-            ready = data.get("ready_for_intake", False)
-            extracted_data = data.get("collected_data")
-            # Remove the JSON block from the displayed message
-            content = content[:json_match.start()].strip()
-        except (ValueError, json.JSONDecodeError):
-            pass
+    parsed_json, clean_content = _extract_intake_json(content)
+    if parsed_json:
+        ready = parsed_json.get("ready_for_intake", False)
+        extracted_data = parsed_json.get("collected_data")
+        content = clean_content
 
     # Parse a mid-course phase marker ("phase_completed": N) so the progress
     # bar reflects how far through the 7 intake phases the customer is.

@@ -134,6 +134,17 @@ class Preferences(BaseModel):
 
 class FinancialInfo(BaseModel):
     """Financial information for fee waiver applications (all 20 states)."""
+    # Employment details
+    is_employed: Optional[bool] = None
+    employer_name: Optional[str] = None
+    employer_address: Optional[str] = None
+    employer_phone: Optional[str] = None
+    job_title: Optional[str] = None
+    pay_period: Optional[str] = None  # hourly, weekly, biweekly, monthly
+    hourly_rate_or_salary: Optional[float] = None
+    last_employment_date: Optional[str] = None
+    last_employment_wage: Optional[str] = None
+
     # Income
     monthly_gross_income: Optional[float] = None
     monthly_net_income: Optional[float] = None
@@ -178,6 +189,7 @@ class FinancialInfo(BaseModel):
     household_adults: int = 1
     household_children: int = 0
     total_dependents: int = 0
+    dependents_detail: Optional[str] = None
     
     # Public benefits (checkbox-style)
     receives_public_benefits: bool = False
