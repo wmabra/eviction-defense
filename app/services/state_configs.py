@@ -1043,6 +1043,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 6, "x": 311, "y": 246, "w": 115, "h": 14, "size": 10, "align": "center"},
             "defendant_name": {"page": 6, "x": 72, "y": 290, "w": 174, "h": 14, "size": 10.5, "align": "center"},
             "defendant_appearance": {"page": 6, "x": 300, "y": 371, "w": 230, "h": 14, "size": 10, "align": "center"},
+            "your_name": {"page": 6, "x": 72, "y": 700, "w": 250, "h": 18, "size": 10.5, "fill_color": (1, 1, 1)},
             "response_line_1": {"page": 7, "x": 72, "y": 107.5, "w": 462, "h": 13.5, "size": 8.5},
             "response_line_2": {"page": 7, "x": 72, "y": 135.0, "w": 462, "h": 13.5, "size": 8.5},
             "defense_line_1": {"page": 8, "x": 66, "y": 362.5, "w": 468, "h": 13.5, "size": 8.0},

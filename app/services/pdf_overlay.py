@@ -568,9 +568,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     _sanitize_zapfdingbats(doc)
 
     # Arkansas Answer template: wipe out the undefined empty line on Page 6
-    # immediately below the "ANSWER" heading (y ~ 518.4) above the court explanatory text.
+    # immediately below the "ANSWER" heading (y ~ 518.4) above the court explanatory text,
+    # and clean up the "Your name goes here." placeholder text so the editable field sits cleanly.
     if state_code == "AR" and form_key == "answer_form" and len(doc) > 5:
         doc[5].add_redact_annot(fitz.Rect(65.0, 517.0, 212.0, 520.0), fill=(1, 1, 1))
+        doc[5].add_redact_annot(fitz.Rect(65.0, 698.0, 220.0, 722.0), fill=(1, 1, 1))
         doc[5].apply_redactions()
 
     # Check if form has fillable fields — across ALL pages. Multi-page filings
@@ -1674,6 +1676,9 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         # 5. rectangle boxes -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].width > 40 and 3 <= d["rect"].height <= 30]):
             r = dr["rect"]
+            # Skip whiteout/mask rectangles (pure white fill and white/no stroke)
+            if dr.get("fill") in ((1.0, 1.0, 1.0), (1, 1, 1)) and dr.get("color") in (None, (1.0, 1.0, 1.0), (1, 1, 1)):
+                continue
             if _covered(r) or _over_text(r):
                 continue
             _add_text_widget(page, r, f"bfill_{pno}_{i}", "")
@@ -1800,6 +1805,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "defendant_name": p.get("full_name"),
         "defendant_appearance": p.get("full_name"),
         "printed_name": p.get("full_name"),
+        "your_name": p.get("full_name"),
+        "your_name_goes_here": p.get("full_name"),
         "phone": p.get("phone"),
         "phone_bottom": p.get("phone"),
         "email": p.get("email"),
