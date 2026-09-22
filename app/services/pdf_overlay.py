@@ -490,6 +490,26 @@ def _unhide_filled_widgets(doc: fitz.Document) -> None:
                     pass
 
 
+def _compose_full_address(p: dict, state: str) -> str:
+    """Compose "street, city, ST ZIP" from separate intake fields.
+
+    The city is skipped if already embedded in the street string; state+ZIP are
+    joined as "ST ZIP". Never leaves a trailing comma.
+    """
+    street = (p.get("property_address") or "").strip()
+    city = (p.get("property_city") or "").strip()
+    state = (state or "").strip()
+    zipcode = (p.get("property_zip") or "").strip().split("-")[0][:5]
+    tail_parts = []
+    if city and city not in street:
+        tail_parts.append(city)
+    state_zip = " ".join(x for x in (state, zipcode) if x)
+    if state_zip:
+        tail_parts.append(state_zip)
+    tail = ", ".join(x for x in tail_parts if x)
+    return ", ".join(x for x in (street, tail) if x)
+
+
 def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     """Fill a state's form (answer or fee waiver) — handles fillable AND scanned PDFs."""
     state_code = state.upper()
@@ -682,9 +702,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # === UNIFIED MAPPING FOR REBUILT FORMS (standardized field names) ===
     # These work for ALL states with rebuilt forms — predictable, clean field names
     # Full address for signature/contact lines that expect "street, city, state ZIP".
-    _full_addr = p.get("property_address", "")
-    if p.get("property_city") and p.get("property_city") not in _full_addr:
-        _full_addr = f"{_full_addr}, {p.get('property_city')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", ")
+    _full_addr = _compose_full_address(p, data.get("state", ""))
     UNIFIED_MAP = {
         "defendant_name": p.get("full_name", ""),
         "plaintiff_name": l.get("landlord_name", ""),
@@ -1156,7 +1174,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         ("telephone", p.get("phone", "")),
         ("email", p.get("email", "")),
         ("county", p.get("county", "")),
-        ("property", p.get("property_address", "")),
+        ("property", _full_addr or p.get("property_address", "")),
         ("street", p.get("property_address", "")),
         ("city or town", p.get("property_city", "")),
         ("signed", today.strftime("%m/%d/%Y")),
@@ -1769,6 +1787,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "email": p.get("email"),
         "address": p.get("property_address"),
         "property_address": p.get("property_address"),
+        "full_address": _compose_full_address(p, data.get("state", "")),
         "city": p.get("property_city"),
         "zip": p.get("property_zip"),
         "city_state_zip": f"{p.get('property_city', '')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", "),
@@ -1908,7 +1927,12 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     # specific defense's explanation at a specific overlay position.
     if key.startswith("explanation_"):
         suffix_match = re.search(r'_(\d+)$', key)
-        line_idx = int(suffix_match.group(1)) - 1 if suffix_match else None
+        line_idx = None
+        if suffix_match:
+            try:
+                line_idx = int(suffix_match.group(1)) - 1
+            except ValueError:
+                line_idx = None
         base_key = key[:suffix_match.start()] if suffix_match else key
         _dk = base_key[len("explanation_"):]
         _d = defenses.get(_dk, {})

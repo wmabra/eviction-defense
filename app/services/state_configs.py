@@ -35,7 +35,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "answer_form": "va_eviction_answer.pdf",
         "fee_waiver_form": "va_fee_waiver.pdf",
         "fee_waiver_mapping": {
-            "address": "User.PetitionerResidenceAddress",
+            "full_address": "User.PetitionerResidenceAddress",
             "bank_accounts": "User.BankAccounts",
             "case_number": "User.CaseNo",
             "cash_on_hand": "User.CashOnHand",
@@ -62,7 +62,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_mapping": {
             "full_name": "User.Defendant",
             "phone": "User.PhoneName2",
-            "address": "User.AddressName2",
+            "full_address": "User.AddressName2",
             "landlord_name": "User.Plaintiff",
             "case_number": "User.CaseNo",
             "court_name": "User.Court",
@@ -301,7 +301,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "phone": "Text8",
             "date": "Text9",
             "email": "Text277",
-            "address": "Text18",
+            "full_address": "Text18",
             "county": "Text5",
             "printed_name": "Text16",
             "signature_date": "D signature date",
@@ -335,7 +335,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "answer_form": "il_eviction_answer.pdf",
         "fee_waiver_form": "il_fee_waiver.pdf",
         "fee_waiver_mapping": {
-            "address": "Last - Street Address",
+            "full_address": "Last - Street Address",
             "case_number": "4 - Case Number",
             "cash_on_hand": "87 - Value",
             "child_care_expense": "74 - Childcare Total",
@@ -990,7 +990,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": {"page": 1, "x": 488, "y": 68, "w": 75, "h": 12, "size": 8.5},
             "county": {"page": 1, "x": 36, "y": 52, "w": 80, "h": 16, "size": 8.5},
             "full_name": {"page": 1, "x": 95, "y": 193, "w": 130, "h": 11, "size": 8.5},
-            "address": {"page": 1, "x": 395, "y": 193, "w": 140, "h": 11, "size": 8.5},
+            "full_address": {"page": 1, "x": 395, "y": 193, "w": 140, "h": 11, "size": 8.5},
             "phone": {"page": 1, "x": 130, "y": 204.5, "w": 120, "h": 11, "size": 8.5}
         }},
 
@@ -1301,7 +1301,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_name": "Petitioner Name",
             "landlord_address": "Petitioners AddressTelephone",
             "full_name": "Respondent Name",
-            "property_address": "Respondents AddressTelephone",
+            "full_address": "Respondents AddressTelephone",
             "total_dependents": "Number of dependents",
             "employment_income": "Gross Salary",
             "ssi_income": "Public Assistance",
@@ -1556,7 +1556,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "unemployment_income": "MonthlyUnemployment",
             "ssi_income": "MonthlySSI/SSD",
             "child_support_income": "MonthlyChildSupportReceived",
-            "property_address": "Address",
+            "full_address": "Address",
         },
         "fee_waiver_name_fields": ["Name"],
         "strip_dollar_signs": True,
