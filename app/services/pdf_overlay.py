@@ -567,6 +567,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # /Encoding /WinAnsiEncoding on the /ZaDb font).
     _sanitize_zapfdingbats(doc)
 
+    # Arkansas Answer template: wipe out the undefined empty line on Page 6
+    # immediately below the "ANSWER" heading (y ~ 518.4) above the court explanatory text.
+    if state_code == "AR" and form_key == "answer_form" and len(doc) > 5:
+        doc[5].add_redact_annot(fitz.Rect(65.0, 517.0, 212.0, 520.0), fill=(1, 1, 1))
+        doc[5].apply_redactions()
+
     # Check if form has fillable fields — across ALL pages. Multi-page filings
     # with cover sheets/introductory instructions on page 0 (e.g. LA's 14-page
     # answer) must not be falsely flagged as non-fillable.
