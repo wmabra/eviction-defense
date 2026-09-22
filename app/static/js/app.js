@@ -553,12 +553,25 @@ function checkEligibility() {
 
 	// ALL CHECKS PASSED
 	appState.state = state;
-	document.getElementById("eligibility-form").classList.add("hidden");
-	document.getElementById("payment-section").classList.remove("hidden");
-	document.getElementById("pay-email").focus();
 
 	// Store whether served (used when redirecting to chat)
 	appState.wasServed = wasServed;
+
+	// TEST MODE (?skip_payment=1): go straight to the intake chat, skipping
+	// payment + account setup — used by QA to exercise the document packages
+	// state by state without a real charge.
+	const _testParams = new URLSearchParams(window.location.search);
+	if (_testParams.get("skip_payment") === "1" || _testParams.get("test") === "1") {
+		const _chatUrl = new URL("/chat", window.location.origin);
+		_chatUrl.searchParams.set("state", state);
+		_chatUrl.searchParams.set("county", county);
+		window.location.assign(_chatUrl.pathname + _chatUrl.search);
+		return;
+	}
+
+	document.getElementById("eligibility-form").classList.add("hidden");
+	document.getElementById("payment-section").classList.remove("hidden");
+	document.getElementById("pay-email").focus();
 }
 
 function showResult(type, msg) {
