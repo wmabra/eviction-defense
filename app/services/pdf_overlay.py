@@ -1810,8 +1810,16 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "monthly_rent": str(c.get("monthly_rent", "")),
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
         "cos_date": date.today().strftime("%m/%d/%Y"),
-        "cos_recipient": l.get("landlord_name"),
-        "cos_address": l.get("landlord_address"),
+        "cos_recipient": (
+            f"{(l.get('landlord_attorney_name') or '').strip()} (attorney for {l.get('landlord_name', '')})"
+            if (l.get('landlord_attorney_name') or '').strip()
+            else l.get("landlord_name")
+        ),
+        "cos_address": (
+            (l.get('landlord_attorney_address') or '').strip()
+            if (l.get('landlord_attorney_name') or '').strip() and (l.get('landlord_attorney_address') or '').strip()
+            else l.get("landlord_address")
+        ),
     }
     
     # Handle defense narrative text generation

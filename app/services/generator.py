@@ -628,9 +628,9 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     elements.append(Spacer(1, 18))
     elements.append(Paragraph("Sincerely,", S["Body"]))
     elements.append(Spacer(1, 18))
-    elements.append(Paragraph(p.get("full_name", ""), S["Body"]))
-    elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
-    elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
+    elements.append(Paragraph(p.get("full_name") or "", S["Body"]))
+    elements.append(Paragraph(p.get("phone") or "", S["BodySmall"]))
+    elements.append(Paragraph(p.get("email") or "", S["BodySmall"]))
     
     doc.build(elements)
 
@@ -648,7 +648,7 @@ def _generate_hardship_letter(data: dict, output_path: str):
     pref = data.get("preferences", {})
     today = date.today().strftime("%B %d, %Y")
     
-    hardship_reason = pref.get('hardship_reason') or 'temporary financial hardship'
+    hardship_reason = (pref.get('hardship_reason') or 'temporary financial hardship').strip()
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
@@ -683,9 +683,9 @@ def _generate_hardship_letter(data: dict, output_path: str):
     elements.append(Spacer(1, 18))
     elements.append(Paragraph("Sincerely,", S["Body"]))
     elements.append(Spacer(1, 18))
-    elements.append(Paragraph(p.get("full_name", ""), S["Body"]))
-    elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
-    elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
+    elements.append(Paragraph(p.get("full_name") or "", S["Body"]))
+    elements.append(Paragraph(p.get("phone") or "", S["BodySmall"]))
+    elements.append(Paragraph(p.get("email") or "", S["BodySmall"]))
     
     doc.build(elements)
 
@@ -1924,9 +1924,9 @@ def _generate_demand_letter(data: dict, output_path: str):
     elements.append(Spacer(1, 18))
     elements.append(Paragraph("Sincerely,", S["Body"]))
     elements.append(Spacer(1, 18))
-    elements.append(Paragraph(p.get("full_name", ""), S["Body"]))
-    elements.append(Paragraph(p.get("phone", ""), S["BodySmall"]))
-    elements.append(Paragraph(p.get("email", ""), S["BodySmall"]))
+    elements.append(Paragraph(p.get("full_name") or "", S["Body"]))
+    elements.append(Paragraph(p.get("phone") or "", S["BodySmall"]))
+    elements.append(Paragraph(p.get("email") or "", S["BodySmall"]))
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(
         "<b>INSTRUCTIONS:</b> Mail this letter by CERTIFIED MAIL with RETURN RECEIPT. "
@@ -2037,7 +2037,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
-    reason = pref.get("continuance_reason") or "the need for additional time to prepare for the hearing"
+    reason = (pref.get("continuance_reason") or "the need for additional time to prepare for the hearing").strip()
 
     elements.extend(_editable_caption(data, S, division=True))
 
@@ -2172,10 +2172,10 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
-    stay_reason = pref.get("emergency_stay_reason") or (
+    stay_reason = (pref.get("emergency_stay_reason") or
         "Defendant has experienced unforeseen financial difficulties and requires additional "
         "time to address rental arrears, secure rental assistance, or make alternative housing "
-        "arrangements.")
+        "arrangements.").strip()
 
     elements.extend(_editable_caption(data, S))
 
@@ -2407,13 +2407,13 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
 
-    bk_case = pref.get("bankruptcy_case_number", "[PENDING — FILE IMMEDIATELY]")
-    bk_court = pref.get("bankruptcy_court", "United States Bankruptcy Court")
-    bk_chapter = pref.get("bankruptcy_chapter", "7")
-    bk_date = pref.get("bankruptcy_filing_date", "[FILE DATE]")
-    bk_attorney = pref.get("bankruptcy_attorney_name", "Pro Se")
-    bk_atty_phone = pref.get("bankruptcy_attorney_phone", "")
-    bk_atty_email = pref.get("bankruptcy_attorney_email", "")
+    bk_case = pref.get("bankruptcy_case_number") or "[PENDING — FILE IMMEDIATELY]"
+    bk_court = pref.get("bankruptcy_court") or "United States Bankruptcy Court"
+    bk_chapter = pref.get("bankruptcy_chapter") or "7"
+    bk_date = pref.get("bankruptcy_filing_date") or "[FILE DATE]"
+    bk_attorney = pref.get("bankruptcy_attorney_name") or "Pro Se"
+    bk_atty_phone = pref.get("bankruptcy_attorney_phone") or ""
+    bk_atty_email = pref.get("bankruptcy_attorney_email") or ""
 
     elements.extend(_editable_caption(data, S, "Plaintiff/Landlord", "Defendant/Tenant"))
 

@@ -114,8 +114,8 @@ If the user asks for help choosing, asks what a defense means, or asks whether o
 === PHASE 5: PREFERENCES & MOTIONS ===
 Ask these questions NEUTRALLY. Do NOT recommend a choice, do NOT suggest a motion is appropriate, and do NOT add advice.
 a. The form asks whether you want a judge or jury trial. Which do you want?
-b. Would you like to request more time? (yes/no)
-c. Would you like to propose a payment plan to your landlord? (yes/no)
+b. Would you like to request more time? (yes/no) — if yes, ask the reason and record it as hardship_reason.
+c. Would you like to propose a payment plan to your landlord? (yes/no) — if yes, ask if they have a proposed monthly payment amount in mind and record it as payment_plan_amount.
 d. Are you facing an immediate lockout (a sheriff or law-enforcement eviction)? (yes/no)
 e. Would you like to request a continuance (postpone a scheduled hearing to a later date)? (yes/no) — if yes, ask the reason and record it as continuance_reason.
 f. Are you facing an emergency eviction and would you like to ask the court for an emergency stay (to pause the eviction)? (yes/no) — if yes, ask the reason and record it as emergency_stay_reason.
