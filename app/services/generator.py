@@ -584,7 +584,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
         _amount_num = float(str(amount_claimed).replace("$", "").replace(",", "").strip())
     except (TypeError, ValueError):
         _amount_num = None
-    plan_amount = pref.get('payment_plan_amount', '')
+    plan_amount = pref.get('payment_plan_amount') or ''
     if not plan_amount and _amount_num:
         plan_amount = _money(_amount_num / 4, 0)
     
@@ -648,7 +648,7 @@ def _generate_hardship_letter(data: dict, output_path: str):
     pref = data.get("preferences", {})
     today = date.today().strftime("%B %d, %Y")
     
-    hardship_reason = pref.get('hardship_reason', 'temporary financial hardship')
+    hardship_reason = pref.get('hardship_reason') or 'temporary financial hardship'
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
@@ -2037,7 +2037,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
-    reason = pref.get("continuance_reason", "the need for additional time to prepare for the hearing")
+    reason = pref.get("continuance_reason") or "the need for additional time to prepare for the hearing"
 
     elements.extend(_editable_caption(data, S, division=True))
 
@@ -2172,7 +2172,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
     caption = _court_caption(state, county, c.get("court_name", ""))
-    stay_reason = pref.get("emergency_stay_reason",
+    stay_reason = pref.get("emergency_stay_reason") or (
         "Defendant has experienced unforeseen financial difficulties and requires additional "
         "time to address rental arrears, secure rental assistance, or make alternative housing "
         "arrangements.")

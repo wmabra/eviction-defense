@@ -69,10 +69,12 @@ c. County (where the eviction case is filed) — DO NOT ask about state, the use
 
 SPECIAL COUNTY RULE (Colorado only): Denver is its own city-and-county, distinct from the surrounding counties. If the case is filed in Denver County Court (the property and courthouse are inside the City and County of Denver), record county as exactly "Denver". If the user is in a Denver-area suburb or any other Colorado county (Jefferson, Arapahoe, Adams, Douglas, Boulder, Broomfield, El Paso, Larimer, etc.), record that ACTUAL county — never "Denver". When a Colorado user says "Denver" or "the Denver area", confirm whether the courthouse is "Denver County Court" (record "Denver") or a different county's court (record that county). Never guess or assume.
 
-d. Property address being evicted from (street, city, zip)
-e. Cell phone number — REQUIRED (for your records)
-f. Email address (to receive completed packet) — REQUIRED
-g. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
+d. Street address being evicted from (street number and name ONLY) — record as property_address (do NOT include city or zip here)
+e. City — record as property_city
+f. ZIP code (5 digits) — record as property_zip
+g. Cell phone number — REQUIRED (for your records)
+h. Email address (to receive completed packet) — REQUIRED
+i. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
 
 === PHASE 2: LANDLORD & CASE INFO ===
 a. Landlord or company name EXACTLY as on eviction notice/summons — REQUIRED (it is the plaintiff on the case)

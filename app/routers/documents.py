@@ -439,13 +439,15 @@ async def generate_packet_get(
     county: str = "",
     state: str = "TX",
     property_address: str = "",
+    property_city: str = "",
+    property_zip: str = "",
     landlord_name: str = "",
     case_number: str = "",
     phone: str = "",
     email: str = "",
 ):
     """Generate packet from URL params (legacy)."""
-    return _build_and_return_packet(full_name, county, state, property_address, landlord_name, case_number, phone, email)
+    return _build_and_return_packet(full_name, county, state, property_address, property_city, property_zip, landlord_name, case_number, phone, email)
 
 
 @router.post("/generate-packet")
@@ -487,6 +489,8 @@ def _build_and_return_packet(
     county: str,
     state: str = "TX",
     property_address: str = "",
+    property_city: str = "",
+    property_zip: str = "",
     landlord_name: str = "",
     case_number: str = "",
     phone: str = "",
@@ -499,7 +503,7 @@ def _build_and_return_packet(
     if extra_data:
         data = extra_data
     else:
-        data = _build_data_from_params(full_name, county, state, property_address, landlord_name, case_number, phone, email)
+        data = _build_data_from_params(full_name, county, state, property_address, property_city, property_zip, landlord_name, case_number, phone, email)
     
     # Generate all documents to a temp dir
     tmpdir = tempfile.mkdtemp()
@@ -540,14 +544,15 @@ def _build_and_return_packet(
     )
 
 
-def _build_data_from_params(full_name, county, state, property_address, landlord_name, case_number, phone, email):
+def _build_data_from_params(full_name, county, state, property_address, property_city, property_zip, landlord_name, case_number, phone, email):
     """Build the data dict from URL parameters (fallback when no case_id)."""
     return {
         "state": state.upper(),
         "personal_info": {
             "full_name": full_name,
             "property_address": property_address,
-            "property_city": "",
+            "property_city": property_city,
+            "property_zip": property_zip,
             "county": county,
             "phone": phone,
             "email": email,
