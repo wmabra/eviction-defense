@@ -561,7 +561,10 @@ function checkEligibility() {
 	// payment + account setup — used by QA to exercise the document packages
 	// state by state without a real charge.
 	const _testParams = new URLSearchParams(window.location.search);
-	if (_testParams.get("skip_payment") === "1" || _testParams.get("test") === "1") {
+	if (
+		_testParams.get("skip_payment") === "1" ||
+		_testParams.get("test") === "1"
+	) {
 		const _chatUrl = new URL("/chat", window.location.origin);
 		_chatUrl.searchParams.set("state", state);
 		_chatUrl.searchParams.set("county", county);

@@ -25,21 +25,21 @@ class PreScreenResult(BaseModel):
 
 
 class PersonalInfo(BaseModel):
-    full_name: str = Field(..., description="Full legal name")
+    full_name: str = Field(default="", description="Full legal name")
     also_known_as: Optional[str] = None
     co_tenants: Optional[list[str]] = None
-    property_address: str
-    property_city: str
-    property_zip: str
-    county: str
-    phone: str
-    email: EmailStr
+    property_address: str = ""
+    property_city: str = ""
+    property_zip: str = ""
+    county: str = ""
+    phone: str = ""
+    email: str = ""
     mailing_address: Optional[str] = None
 
 
 class LandlordInfo(BaseModel):
-    landlord_name: str
-    landlord_address: str
+    landlord_name: str = ""
+    landlord_address: str = ""
     landlord_phone: Optional[str] = None
     landlord_email: Optional[str] = None
     landlord_attorney_name: Optional[str] = None
@@ -50,8 +50,8 @@ class LandlordInfo(BaseModel):
 
 
 class CaseDetails(BaseModel):
-    case_number: str
-    court_name: str
+    case_number: str = ""
+    court_name: str = ""
     court_location: Optional[str] = None
     division: Optional[str] = None  # e.g., MO Associate Circuit Division number
     received_3day_notice: bool = False
@@ -67,8 +67,8 @@ class CaseDetails(BaseModel):
 
 
 class RentPayment(BaseModel):
-    monthly_rent: float
-    rent_due_day: int = Field(ge=1, le=31)
+    monthly_rent: Optional[float] = None
+    rent_due_day: int = Field(default=1, ge=1, le=31)
     agree_with_amount: bool = True
     amount_tenant_believes_owed: Optional[float] = None
     why_disagree: Optional[str] = None
