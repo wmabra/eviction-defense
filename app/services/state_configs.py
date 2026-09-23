@@ -1006,6 +1006,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_mapping": {
             "case_number": "NO",
             "county": "COUNTY OF",
+            "state_name": "STATE OF",
             "court_level": "IN THE",
             "court_caption_county": "COURT",
             "date": "day of",
@@ -1029,7 +1030,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Check Box11": ["other_income", "unemployment_income", "social_security_income", "child_support_income", "alimony_income", "disability_income"],
             "Check Box13": ["checking_balance", "savings_balance", "cash_on_hand"],
             "Check Box15": ["vehicle_make_model", "real_estate_value", "other_assets_value"],
-            "Check Box17": ["household_children"],
         },
         "has_fillable_fields": False,
         "court_type": "Circuit Court",
@@ -1040,6 +1040,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 "COURT": {"y0": 141.0, "y1": 155.5, "align": "center"},
                 "IN RE PETITION OF": {"y0": 185.5, "y1": 200.0, "align": "center"},
                 "I": {"y0": 317.0, "y1": 332.0, "align": "center"},
+                "STATE OF": {"y0": 389.0, "y1": 407.0, "align": "center"},
                 "COUNTY OF": {"y0": 418.0, "y1": 435.5, "align": "center"},
                 "Petitioner": {"y0": 446.0, "y1": 464.5, "align": "center"},
             }

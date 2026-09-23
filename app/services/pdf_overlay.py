@@ -470,6 +470,57 @@ def _sanitize_zapfdingbats(doc: fitz.Document) -> int:
     return fixed
 
 
+_DEAD_LINK_URL_RE = re.compile(
+    r"https?://[^\s\)\]\>]+|www\.[^\s\)\]\>]+|[a-zA-Z0-9.-]+\.(?:org|gov|com|edu|net|us)(?:/[^\s\)\]\>]*)?",
+    re.IGNORECASE,
+)
+
+
+def _fix_or_clean_dead_links(doc: fitz.Document) -> int:
+    """Inspect all link annotations in the document.
+
+    If a link has an empty or 'about:blank' URI, attempt to recover the URL
+    from the text under the link rect. If a valid URL is found, update the link URI;
+    otherwise delete the dead link annotation so it doesn't intercept clicks/drags.
+    """
+    fixed_or_cleaned = 0
+    for page in doc:
+        for link in list(page.get_links()):
+            uri = (link.get("uri") or "").strip()
+            if not uri or uri.lower() == "about:blank":
+                rect = link.get("from")
+                if not rect:
+                    try:
+                        page.delete_link(link)
+                        fixed_or_cleaned += 1
+                    except Exception:
+                        pass
+                    continue
+                txt = page.get_text("text", clip=fitz.Rect(rect.x0, rect.y0 - 2, rect.x1, rect.y1 + 2))
+                m = _DEAD_LINK_URL_RE.search(txt)
+                if m:
+                    target_url = m.group(0).rstrip(".,;")
+                    if not target_url.startswith(("http://", "https://")):
+                        target_url = "https://" + target_url
+                    link["uri"] = target_url
+                    try:
+                        page.update_link(link)
+                        fixed_or_cleaned += 1
+                    except Exception:
+                        try:
+                            page.delete_link(link)
+                            fixed_or_cleaned += 1
+                        except Exception:
+                            pass
+                else:
+                    try:
+                        page.delete_link(link)
+                        fixed_or_cleaned += 1
+                    except Exception:
+                        pass
+    return fixed_or_cleaned
+
+
 def _unhide_filled_widgets(doc: fitz.Document) -> None:
     """Clear the /F (Hidden) annotation flag on every populated widget.
 
@@ -699,6 +750,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     # again right before save so checkmarks print correctly.
     _sanitize_zapfdingbats(doc)
 
+    # Clean and repair any dead/about:blank links across all forms
+    _fix_or_clean_dead_links(doc)
+
     doc.save(output_path, deflate=True)
     doc.close()
     logger.info(f"✅ {state_code} form saved: {output_path}")
@@ -881,6 +935,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     if state_code:
         _all_data["state"] = state_code
         _all_data["state_code"] = state_code
+        _all_data["state_name"] = config.get("name", state_code)
 
     # Court caption slots for "IN THE ___ COURT ___" fee-waiver captions:
     # the court level (e.g. "District") precedes COURT, the county follows it.
@@ -2037,21 +2092,37 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "fw_income_sources_details":
         fin = data.get("financial_info", {}) or {}
         sources = []
-        if fin.get("unemployment_income") is not None and float(fin.get("unemployment_income")) > 0:
+        def _pos(v):
+            try:
+                return float(v) if v is not None else 0.0
+            except (ValueError, TypeError):
+                return 0.0
+
+        if _pos(fin.get("unemployment_income")) > 0:
             sources.append(f"Unemployment: {_money(fin['unemployment_income'], 2)}/mo")
-        if fin.get("social_security_income") is not None and float(fin.get("social_security_income")) > 0:
+        if _pos(fin.get("social_security_income")) > 0:
             sources.append(f"Social Security: {_money(fin['social_security_income'], 2)}/mo")
-        if fin.get("ssi_income") is not None and float(fin.get("ssi_income")) > 0:
+        if _pos(fin.get("ssi_income")) > 0:
             sources.append(f"SSI: {_money(fin['ssi_income'], 2)}/mo")
-        if fin.get("child_support_income") is not None and float(fin.get("child_support_income")) > 0:
+        if _pos(fin.get("pension_income")) > 0:
+            sources.append(f"Pension: {_money(fin['pension_income'], 2)}/mo")
+        if _pos(fin.get("alimony_income")) > 0:
+            sources.append(f"Alimony: {_money(fin['alimony_income'], 2)}/mo")
+        if _pos(fin.get("child_support_income")) > 0:
             sources.append(f"Child support: {_money(fin['child_support_income'], 2)}/mo")
+        if _pos(fin.get("disability_income")) > 0:
+            sources.append(f"Disability: {_money(fin['disability_income'], 2)}/mo")
+        if _pos(fin.get("veterans_benefits")) > 0:
+            sources.append(f"VA Benefits: {_money(fin['veterans_benefits'], 2)}/mo")
+        if _pos(fin.get("self_employment_income")) > 0:
+            sources.append(f"Self-employment: {_money(fin['self_employment_income'], 2)}/mo")
         if fin.get("receives_snap"):
             sources.append("SNAP benefits")
         if fin.get("receives_medicaid"):
             sources.append("Medicaid")
         if fin.get("receives_tanf"):
             sources.append("TANF")
-        if fin.get("other_income") is not None and float(fin.get("other_income")) > 0:
+        if _pos(fin.get("other_income")) > 0:
             desc = fin.get("other_income_description") or "Other"
             sources.append(f"{desc}: {_money(fin['other_income'], 2)}/mo")
         return "; ".join(sources) if sources else "None ($0.00)"

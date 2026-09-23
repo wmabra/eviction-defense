@@ -99,6 +99,18 @@ def _money(v, dec: int = 2) -> str:
         return str(v)
 
 
+def _format_link(url: str, text: Optional[str] = None) -> str:
+    """Format a clickable URL for ReportLab Paragraphs."""
+    if not url:
+        return ""
+    clean = str(url).strip()
+    if clean.lower() in ("none", "n/a", ""):
+        return ""
+    href = clean if clean.startswith(("http://", "https://")) else f"https://{clean}"
+    display = text or clean
+    return f'<link href="{href}" color="#0055aa"><u>{display}</u></link>'
+
+
 def _editable_field(name, value="", width=140, height=16, font_size=9):
     # Auto-grow the field height for long values so the full text is visible
     # (multi-line) when printed, instead of clipping after the first line.
@@ -997,7 +1009,7 @@ def _generate_fee_waiver(data: dict, output_path: str):
     ))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph(f"<b>YOUR STATE USES:</b> {info['form']}", S["BodyBold"]))
-    elements.append(Paragraph(f"Download from: {info['site']}", S["BodySmall"]))
+    elements.append(Paragraph(f"Download from: {_format_link(info['site'])}", S["BodySmall"]))
     elements.append(Spacer(1, 10))
     elements.append(Paragraph("<b>HOW TO FILE:</b>", S["BodyBold"]))
     for step in [
@@ -1193,7 +1205,7 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
                         line += f" — {phone}"
                     elements.append(Paragraph(line, S["Body"]))
                     if web:
-                        elements.append(Paragraph(f"&nbsp;&nbsp;{web}", S["BodySmall"]))
+                        elements.append(Paragraph(f"&nbsp;&nbsp;{_format_link(web)}", S["BodySmall"]))
                     elements.append(Spacer(1, 3))
                 elements.append(Spacer(1, 4))
 
@@ -1223,8 +1235,8 @@ def _generate_rental_assistance_sheet(data: dict, output_path: str):
             elements.append(Paragraph(f"• {name}: {phone}", S["Body"]))
         else:
             elements.append(Paragraph(f"• {name}: Dial 211 for free local referrals", S["Body"]))
-    elements.append(Paragraph("• HUD Housing Counseling: 1-800-569-4287 or hud.gov/counseling", S["Body"]))
-    elements.append(Paragraph("• Legal Services Corporation: lsc.gov/find-legal-aid", S["Body"]))
+    elements.append(Paragraph(f"• HUD Housing Counseling: 1-800-569-4287 or {_format_link('https://hud.gov/counseling', 'hud.gov/counseling')}", S["Body"]))
+    elements.append(Paragraph(f"• Legal Services Corporation: {_format_link('https://lsc.gov/find-legal-aid', 'lsc.gov/find-legal-aid')}", S["Body"]))
 
     # Tips
     elements.append(Spacer(1, 14))
@@ -1773,8 +1785,21 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     self_emp = fin.get("self_employment_income")
     ss = fin.get("social_security_income") if fin.get("social_security_income") is not None else fin.get("ssi_income")
     unemp = fin.get("unemployment_income")
-    child_support = fin.get("child_support_income") if fin.get("child_support_income") is not None else fin.get("alimony_income")
-    other = fin.get("other_income")
+    # Child support / alimony
+    cs_val = fin.get("child_support_income")
+    al_val = fin.get("alimony_income")
+    if cs_val is not None or al_val is not None:
+        child_support = float(cs_val or 0) + float(al_val or 0)
+    else:
+        child_support = None
+
+    # Other income (pension, disability, VA benefits, other)
+    other_sources = [fin.get("other_income"), fin.get("pension_income"), fin.get("disability_income"), fin.get("veterans_benefits")]
+    if any(x is not None for x in other_sources):
+        other = sum(float(x or 0) for x in other_sources if x is not None)
+    else:
+        other = None
+
     income_items = [wages, self_emp, ss, unemp, child_support, other]
     has_income_data = any(x is not None for x in income_items) or fin.get("monthly_gross_income") is not None
     if has_income_data:
