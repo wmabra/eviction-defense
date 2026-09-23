@@ -56,23 +56,99 @@
         margin: 0 auto;
       }
       .message {
-        max-width: 80%;
-        margin-bottom: 12px;
-        padding: 10px 14px;
-        border-radius: 12px;
-        line-height: 1.45;
-        font-size: 14px;
+        max-width: 84%;
+        margin-bottom: 14px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        line-height: 1.55;
+        font-size: 14.5px;
+        word-break: break-word;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
       .message.user {
         background: #e94560;
         color: #fff;
         margin-left: auto;
         border-bottom-right-radius: 4px;
+        white-space: pre-wrap;
       }
       .message.ai {
-        background: #e8e8f0;
+        background: #f8f9fc;
         color: #1a1a2e;
+        border: 1px solid #e1e4ec;
         border-bottom-left-radius: 4px;
+      }
+      .message.ai strong {
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .chat-p {
+        margin: 0 0 10px 0;
+      }
+      .chat-p:last-child {
+        margin-bottom: 0;
+      }
+      .chat-options-deck {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin: 12px 0 14px 0;
+      }
+      .chat-option-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: all 0.16s ease-in-out;
+        user-select: none;
+      }
+      .chat-option-card:hover {
+        border-color: #e94560;
+        background: #fff8f9;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(233, 69, 96, 0.12);
+      }
+      .chat-option-card.selected {
+        border-color: #e94560;
+        background: #fff0f3;
+        box-shadow: 0 0 0 1px #e94560;
+      }
+      .opt-badge {
+        background: #e94560;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        min-width: 22px;
+        height: 22px;
+        border-radius: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .opt-label {
+        flex: 1;
+        color: #1e293b;
+        font-size: 13.5px;
+        line-height: 1.4;
+      }
+      .chat-option-card.selected .opt-label {
+        font-weight: 600;
+        color: #991b1b;
+      }
+      .chat-bullet-list {
+        margin: 8px 0 10px 20px;
+        padding: 0;
+        list-style-type: disc;
+      }
+      .chat-bullet-list li {
+        margin: 4px 0;
+        color: #334155;
       }
 
       .typing {
@@ -413,10 +489,143 @@
         }
       }
 
+      function formatMessageContent(rawText, role) {
+        if (!rawText) return "";
+        function esc(s) {
+          return s
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+
+        if (role === "user") {
+          return esc(rawText);
+        }
+
+        // Clean & normalize formatting for AI responses
+        let text = rawText
+          .replace(/([:\.\?!])\s*[\r\n]*\s*(\d{1,2}\.\s+[A-Z])/g, "$1\n\n$2")
+          .replace(/(?<=[^\n])\s+(\d{1,2}\.\s+[A-Z])/g, "\n$1")
+          .replace(/([a-zA-Z0-9\.\'"])\s+(Which\s+(?:ones?|number|numbers?|defense|defenses?)\b[^\n]*\?)/gi, "$1\n\n$2")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        function parseInline(str) {
+          return esc(str)
+            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.+?)\*/g, "<em>$1</em>")
+            .replace(/`(.+?)`/g, "<code>$1</code>");
+        }
+
+        const lines = text.split("\n");
+        let html = "";
+        let inNumberedList = false;
+        let inBulletList = false;
+        let currentListItems = [];
+        let currentParagraph = [];
+
+        function flushParagraph() {
+          if (currentParagraph.length > 0) {
+            html += `<p class="chat-p">${currentParagraph.join("<br>")}</p>`;
+            currentParagraph = [];
+          }
+        }
+
+        function flushNumberedList() {
+          if (inNumberedList && currentListItems.length > 0) {
+            html += `<div class="chat-options-deck">`;
+            for (const item of currentListItems) {
+              html += `<div class="chat-option-card" onclick="handleOptionClick('${item.num}', this)">
+                <span class="opt-badge">${item.num}</span>
+                <span class="opt-label">${item.text}</span>
+              </div>`;
+            }
+            html += `</div>`;
+            currentListItems = [];
+            inNumberedList = false;
+          }
+        }
+
+        function flushBulletList() {
+          if (inBulletList && currentListItems.length > 0) {
+            html += `<ul class="chat-bullet-list">`;
+            for (const item of currentListItems) {
+              html += `<li>${item.text}</li>`;
+            }
+            html += `</ul>`;
+            currentListItems = [];
+            inBulletList = false;
+          }
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) {
+            flushParagraph();
+            flushNumberedList();
+            flushBulletList();
+            continue;
+          }
+
+          const numMatch = line.match(/^(\d{1,2})[\.\)]\s+(.+)$/);
+          if (numMatch) {
+            flushParagraph();
+            flushBulletList();
+            inNumberedList = true;
+            currentListItems.push({
+              num: numMatch[1],
+              text: parseInline(numMatch[2]),
+            });
+            continue;
+          }
+
+          const bulletMatch = line.match(/^[\-\*•]\s+(.+)$/);
+          if (bulletMatch) {
+            flushParagraph();
+            flushNumberedList();
+            inBulletList = true;
+            currentListItems.push({
+              num: "",
+              text: parseInline(bulletMatch[1]),
+            });
+            continue;
+          }
+
+          flushNumberedList();
+          flushBulletList();
+          currentParagraph.push(parseInline(line));
+        }
+
+        flushParagraph();
+        flushNumberedList();
+        flushBulletList();
+
+        return html;
+      }
+
+      function handleOptionClick(num, el) {
+        el.classList.toggle("selected");
+        const deck = el.closest(".chat-options-deck");
+        const selectedCards = deck ? deck.querySelectorAll(".chat-option-card.selected") : [];
+        const selectedNums = Array.from(selectedCards)
+          .map(c => c.querySelector(".opt-badge")?.textContent?.trim())
+          .filter(Boolean);
+
+        const input = document.getElementById("userInput");
+        if (selectedNums.length > 0) {
+          input.value = selectedNums.join(", ");
+        } else {
+          input.value = "";
+        }
+        input.focus();
+      }
+
       function addMessage(role, text) {
         const div = document.createElement("div");
         div.className = "message " + role;
-        div.textContent = text;
+        div.innerHTML = formatMessageContent(text, role);
         document.getElementById("chat").appendChild(div);
         document.getElementById("chat").scrollTop =
           document.getElementById("chat").scrollHeight;

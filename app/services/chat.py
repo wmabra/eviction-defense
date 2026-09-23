@@ -59,6 +59,7 @@ CRITICAL RULES:
 5. After collecting ALL fields in ALL phases, output the structured data block at the end.
 6. MANDATORY FIELDS: email address and phone number are REQUIRED. Email is needed to deliver the completed packet. Phone number is for your records only. If the user has not provided their email and phone by Phase 6, you MUST ask for them before outputting the completion JSON. Do not complete intake without email and phone.
 7. YOU ARE A TYPING ASSISTANT, NOT AN ADVISOR. You type what the user tells you onto the official court form. You NEVER decide, select, or suggest anything for the user — especially defenses, motions, or trial choices. If the user is unsure about a legal choice, tell them to consult their local legal aid office or an attorney. Never explain what a defense means or recommend one over another.
+8. FORMATTING & READABILITY: Always use clean markdown paragraphs with double line breaks. When presenting multiple options, checklists, or defenses, ALWAYS format them as a clear numbered list where every item is on its own separate line. Never lump numbered lists or options into a single paragraph or wall of text.
 
 === PHASE 1: SERVICE CONFIRMATION + PERSONAL & LOCATION INFO ===
 Collect these fields in order. FIRST confirm service — do not collect anything else until you know they've been served:
@@ -100,10 +101,16 @@ f. Did you send a 7-day repair notice to the landlord? (yes/no)
 === PHASE 4: DEFENSES ===
 LEGAL SAFETY RULE (ABSOLUTE): You must NOT advise the tenant on which defenses to select, explain what any defense means, or suggest that a defense applies to their situation. Doing so is legal advice and is prohibited. You are only a typing assistant: the tenant chooses, and you type their choices.
 
-Explain: "Your state's official answer form includes a list of defenses. I will read you the list exactly as it appears on the form. Please tell me which ones YOU want to check. You may check any that apply. I cannot advise you on which to choose."
+Acknowledge completion of the rent section and present the defenses clearly with separate paragraphs:
+"Thank you — that completes the rent and payment section.
 
-Then read the checklist to the user EXACTLY as worded on the official form (do not paraphrase, do not add examples, do not explain). Each item below shows the internal key (before the "—") followed by the exact form wording — read only the wording to the user, and remember the key for the JSON you output later:
+Now let's look at defenses. Your state's official answer form includes a checklist of legal defenses. I cannot advise you on which ones apply to your situation, but please review the list below and reply with the number(s) you want to check (for example: 1, 1 and 4, or 12), or reply 'None' if none apply:
+
 __STATE_DEFENSE_LIST__
+
+Which number(s) would you like to check?"
+
+Read the checklist to the user EXACTLY as worded on the official form (do not paraphrase, do not add examples, do not explain). Each item below shows the internal key (before the "—") followed by the exact form wording — read only the wording to the user, and remember the key for the JSON you output later.
 
 Accept the user's explicit selections. Do NOT ask whether a particular situation occurred (e.g., do not ask "did your landlord fix things?"). Do NOT explain any defense or add examples.
 
@@ -323,6 +330,33 @@ def _extract_intake_json(text: str) -> tuple[Optional[dict], str]:
     return None, text
 
 
+def clean_chat_message_formatting(text: str) -> str:
+    """Ensure assistant messages have clean paragraph and list formatting,
+    preventing run-on numbered lists or clumped paragraphs."""
+    if not text:
+        return text
+
+    # Split run-on numbered items (e.g. "... Here's the list: 1. ... 2. ... 3. ...")
+    # 1. Break before first numbered item if preceded by punctuation
+    text = re.sub(r'([:\.\?!])\s*[\r\n]*\s*(\d{1,2}\.\s+[A-Z])', r'\1\n\n\2', text)
+    # 2. Break each subsequent numbered item onto its own line
+    text = re.sub(r'(?<=[^\n])\s+(\d{1,2}\.\s+[A-Z])', r'\n\1', text)
+    # 3. Ensure trailing question after numbered list has double line break
+    text = re.sub(
+        r'([a-zA-Z0-9\.\'"])\s+(Which\s+(?:ones?|number|numbers?|defense|defenses?)\b[^\n]*\?)',
+        r'\1\n\n\2',
+        text,
+        flags=re.IGNORECASE,
+    )
+    # 4. Clean common intro transition run-ons
+    text = re.sub(r'(That completes [^\.\n]*\.)\s*([A-Z])', r'\1\n\n\2', text)
+    text = re.sub(r'(I can(?:\x27t|not) advise you [^\.\n]*\.)\s*([A-Z])', r'\1\n\n\2', text)
+
+    # 5. Normalize whitespace
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
                       state: Optional[str] = None, county: Optional[str] = None) -> dict:
     """Get a response from the AI for chat intake. Supports session persistence."""
@@ -363,6 +397,8 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
         except ValueError:
             phase = None
         content = (content[:phase_match.start()] + content[phase_match.end():]).strip()
+
+    content = clean_chat_message_formatting(content)
 
     # Persist session data if case_id provided
     if case_id and extracted_data:
