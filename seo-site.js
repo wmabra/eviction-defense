@@ -537,6 +537,10 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 				stop.push(
 					"Active-duty military cases may involve additional federal protections and need specialized review.",
 				);
+			if (answerData.served === "no")
+				stop.push(
+					"You must have already received court eviction papers (summons and complaint) or have an active court case number before we can prepare your official court answer packet. We cannot prepare court filings until an eviction lawsuit has actually been filed in court.",
+				);
 			if (answerData.bankruptcy === "yes")
 				stop.push(
 					"Bankruptcy can change whether and how an eviction may proceed, so the current automated service does not accept these cases.",
@@ -549,14 +553,9 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 					stop.join(" ");
 				q("[data-qualified]", form).hidden = true;
 			} else {
-				result.className =
-					answerData.served === "no"
-						? "result-box result-warn"
-						: "result-box result-ok";
+				result.className = "result-box result-ok";
 				result.innerHTML =
-					answerData.served === "no"
-						? "<strong>You may continue, but timing matters.</strong><br>You indicated that formal court papers have not yet been served. The intake can still collect your information, but court forms generally depend on the papers actually filed."
-						: "<strong>You appear eligible to continue.</strong><br>Complete the contact and property details below. No payment is collected on this page.";
+					"<strong>You appear eligible to continue.</strong><br>Complete the contact and property details below. No payment is collected on this page.";
 				q("[data-qualified]", form).hidden = false;
 			}
 			show(8);

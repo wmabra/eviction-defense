@@ -512,8 +512,15 @@ function checkEligibility() {
 		return;
 	}
 
-	// 4. Served check — SOFT warning (pre-eviction docs available)
-	const wasServed = isServed.value === "yes";
+	// 4. Served check — hard block if not served
+	if (isServed.value === "no") {
+		showResult(
+			"error",
+			"You must have already received formal court papers (summons and complaint) or have an active court case number before we can prepare your answer packet. We cannot prepare court filings until an eviction lawsuit has actually been filed.",
+		);
+		return;
+	}
+	const wasServed = true;
 
 	// 5. Residential check — hard block
 	if (isResidential.value === "no") {
