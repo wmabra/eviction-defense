@@ -29,6 +29,7 @@ using each state's official court PDF for guaranteed court acceptance.
 """
 
 import os
+import re
 import logging
 from datetime import date, datetime, timedelta
 from io import BytesIO
@@ -155,9 +156,10 @@ def _editable_caption(data, S, plaintiff_label="Plaintiff", defendant_label="Def
     el.append(Spacer(1, 4))
     _case = _field_table([[Paragraph("Case No.:", S["Caption"]), _editable_field("case_number", c.get("case_number", ""), width=200)]], col_widths=(80, 200))
     el.append(_case)
-    if division:
+    div_val = str(c.get("division") or "").strip()
+    if division or div_val:
         el.append(Spacer(1, 2))
-        el.append(_field_table([[Paragraph("Division (if shown):", S["Caption"]), _editable_field("division", "", width=120)]], col_widths=(70, 140)))
+        el.append(_field_table([[Paragraph("Division (if shown):", S["Caption"]), _editable_field("division", div_val, width=120)]], col_widths=(70, 140)))
     el.append(HRFlowable(width="100%", thickness=1))
     el.append(Spacer(1, 14))
     return el
@@ -2015,10 +2017,11 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
 
     # Certificate of Service
     svc_name, svc_addr = _service_recipient(data)
+    _has_email = bool((l.get("landlord_email") or "").strip() or (l.get("landlord_attorney_email") or "").strip())
     _svc = Table([
         [FillableCheckbox("mh_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
-         FillableCheckbox("mh_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
-         FillableCheckbox("mh_svc_2"), Paragraph("Email", S["BodySmall"])],
+         FillableCheckbox("mh_svc_1", checked=True), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("mh_svc_2", checked=_has_email), Paragraph("Email", S["BodySmall"])],
     ], colWidths=[18, 110, 18, 90, 18, 70])
     _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(KeepTogether([
@@ -2068,12 +2071,13 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"{l.get('landlord_name', '[LANDLORD]')}.", S["Body"]))
     elements.append(Spacer(1, 4))
 
+    hearing_time = str(c.get("hearing_time") or c.get("court_time") or "").strip()
     elements.append(Paragraph(
         "2. A hearing in this matter is currently scheduled for the following date and time:",
         S["Body"]))
     elements.append(_field_table([
         [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _hearing_date_or_blank(c.get("court_date")), width=110)],
-        [Paragraph("Hearing time:", S["Body"]), _editable_field("continuance_hearing_time", "", width=80)],
+        [Paragraph("Hearing time:", S["Body"]), _editable_field("continuance_hearing_time", hearing_time, width=80)],
     ], col_widths=(110, 200)))
     elements.append(Spacer(1, 4))
 
@@ -2082,20 +2086,53 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"the following reasons: {reason.rstrip('.')}.", S["Body"]))
     elements.append(Spacer(1, 4))
 
+    # 4. Checkboxes for additional time reasons
+    reason_lower = reason.lower()
+    selected_reasons = pref.get("continuance_reasons") or []
+    if isinstance(selected_reasons, str):
+        selected_reasons = [selected_reasons]
+    sel_lower = [str(r).lower() for r in selected_reasons]
+
+    cb_attorney = (
+        any("attorney" in r or "lawyer" in r for r in sel_lower)
+        or any(w in reason_lower for w in ("attorney", "lawyer", "legal counsel", "counsel", "representation", "legal aid"))
+    )
+    cb_evidence = (
+        any("evidence" in r or "document" in r for r in sel_lower)
+        or any(w in reason_lower for w in ("evidence", "document", "records", "proof", "receipts", "witness", "papers"))
+    )
+    cb_funds = (
+        any("fund" in r or "payment" in r or "money" in r for r in sel_lower)
+        or bool(pref.get("wants_payment_plan"))
+        or any(w in reason_lower for w in ("fund", "pay", "money", "rent", "job", "work", "unemployed", "income", "assistance", "afford", "salary", "wage", "hire"))
+    )
+    cb_personal = (
+        any("personal" in r or "family" in r or "medical" in r for r in sel_lower)
+        or any(w in reason_lower for w in ("personal", "family", "child", "children", "medical", "hospital", "sick", "illness", "health", "doctor", "emergency", "death", "funeral", "injury"))
+    )
+    cb_other = (
+        any("other" in r for r in sel_lower)
+        or bool(pref.get("continuance_other_reason"))
+        or not (cb_attorney or cb_evidence or cb_funds or cb_personal)
+    )
+    other_val = str(pref.get("continuance_other_reason") or "").strip()
+    if not other_val and cb_other and not (cb_attorney or cb_evidence or cb_funds or cb_personal):
+        other_val = reason
+
     elements.append(Paragraph("4. The Defendant needs additional time to: (check all that apply)", S["Body"]))
     _cont_cb = 0
-    for _label in [
-        "Secure legal representation or consult with an attorney",
-        "Gather necessary documents and evidence to present to the Court",
-        "Arrange for funds to pay the amount owed or negotiate a payment arrangement",
-        "Address personal or family circumstances that prevent readiness for the hearing",
+    for _label, _checked in [
+        ("Secure legal representation or consult with an attorney", cb_attorney),
+        ("Gather necessary documents and evidence to present to the Court", cb_evidence),
+        ("Arrange for funds to pay the amount owed or negotiate a payment arrangement", cb_funds),
+        ("Address personal or family circumstances that prevent readiness for the hearing", cb_personal),
     ]:
-        elements.append(_checkbox_table([[FillableCheckbox(f"cont_cb_{_cont_cb}"), Paragraph(_label, S["Body"])]]))
+        elements.append(_checkbox_table([[FillableCheckbox(f"cont_cb_{_cont_cb}", checked=_checked), Paragraph(_label, S["Body"])]]))
         _cont_cb += 1
     _other = Table([[
-        FillableCheckbox(f"cont_cb_{_cont_cb}"),
+        FillableCheckbox(f"cont_cb_{_cont_cb}", checked=cb_other),
         Paragraph("Other:", S["Body"]),
-        _editable_field("continuance_other_reason", "", width=220),
+        _editable_field("continuance_other_reason", other_val, width=220),
     ]], colWidths=[18, 45, 220])
     _other.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(_other)
@@ -2107,31 +2144,59 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         f"defense to the eviction action and to address the circumstances giving rise to this matter.", S["Body"]))
     elements.append(Spacer(1, 4))
 
+    # 6. Number of days requested
+    days_val = str(pref.get("continuance_days") or "").strip()
+    if not days_val and reason:
+        m = re.search(r'\b(\d+)\s*days?\b', reason, re.IGNORECASE)
+        if m:
+            days_val = m.group(1)
+    if not days_val:
+        days_val = "30"
+
     elements.append(Paragraph(
         "6. The Defendant respectfully requests that this Court grant a continuance to a date "
         "a specified number of days from the current hearing date, or to such other date as the "
         "Court deems appropriate:", S["Body"]))
     elements.append(_field_table([
-        [Paragraph("Number of days requested:", S["Body"]), _editable_field("continuance_days", "", width=40)],
+        [Paragraph("Number of days requested:", S["Body"]), _editable_field("continuance_days", days_val, width=40)],
     ], col_widths=(180, 80)))
     elements.append(Spacer(1, 4))
+
+    # 7. Notification method & Plaintiff position
+    notify_method = str(pref.get("continuance_notify_method") or "").strip()
+    if not notify_method:
+        notify_method = "U.S. Mail and Email" if (l.get("landlord_email") or l.get("landlord_attorney_email")) else "U.S. Mail"
+    notify_date = str(pref.get("continuance_notify_date") or "").strip()
+    if not notify_date:
+        notify_date = date.today().strftime("%m/%d/%Y")
 
     elements.append(KeepTogether([
         Paragraph(
             "7. The Defendant has attempted to notify the Plaintiff or Plaintiff's counsel of this "
             "motion by (email, mail, or hand delivery):", S["Body"]),
         _field_table([
-            [Paragraph("Delivery method:", S["Body"]), _editable_field("continuance_notify_method", "", width=130)],
-            [Paragraph("Date:", S["Body"]), _editable_field("continuance_notify_date", "", width=90)],
+            [Paragraph("Delivery method:", S["Body"]), _editable_field("continuance_notify_method", notify_method, width=130)],
+            [Paragraph("Date:", S["Body"]), _editable_field("continuance_notify_date", notify_date, width=90)],
         ], col_widths=(120, 200)),
     ]))
     elements.append(Spacer(1, 2))
     elements.append(Paragraph("The Plaintiff's position on this motion is:", S["Body"]))
+
+    pos = str(pref.get("continuance_plaintiff_position") or "unknown").lower().strip()
+    if "consent" in pos or "agree" in pos:
+        is_consent, is_no_oppose, is_oppose, is_unknown = True, False, False, False
+    elif bool(re.search(r'\b(no|not)\s*oppose', pos)):
+        is_consent, is_no_oppose, is_oppose, is_unknown = False, True, False, False
+    elif "oppose" in pos:
+        is_consent, is_no_oppose, is_oppose, is_unknown = False, False, True, False
+    else:
+        is_consent, is_no_oppose, is_oppose, is_unknown = False, False, False, True
+
     _cc = Table([
-        [FillableCheckbox("cont_consents"), Paragraph("Consents", S["Body"]),
-         FillableCheckbox("cont_no_oppose"), Paragraph("Does not oppose", S["Body"]),
-         FillableCheckbox("cont_opposes"), Paragraph("Opposes", S["Body"]),
-         FillableCheckbox("cont_unknown"), Paragraph("Unknown", S["Body"])],
+        [FillableCheckbox("cont_consents", checked=is_consent), Paragraph("Consents", S["Body"]),
+         FillableCheckbox("cont_no_oppose", checked=is_no_oppose), Paragraph("Does not oppose", S["Body"]),
+         FillableCheckbox("cont_opposes", checked=is_oppose), Paragraph("Opposes", S["Body"]),
+         FillableCheckbox("cont_unknown", checked=is_unknown), Paragraph("Unknown", S["Body"])],
     ], colWidths=[18, 80, 18, 130, 18, 80, 18, 80])
     _cc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(_cc)
@@ -2156,10 +2221,11 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Continuance "
         f"was delivered to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
+    _has_email = bool((l.get("landlord_email") or "").strip() or (l.get("landlord_attorney_email") or "").strip())
     _svc = Table([
         [FillableCheckbox("cont_svc_0"), Paragraph("Hand Delivery", S["BodySmall"]),
-         FillableCheckbox("cont_svc_1"), Paragraph("U.S. Mail", S["BodySmall"]),
-         FillableCheckbox("cont_svc_2"), Paragraph("Email", S["BodySmall"])],
+         FillableCheckbox("cont_svc_1", checked=True), Paragraph("U.S. Mail", S["BodySmall"]),
+         FillableCheckbox("cont_svc_2", checked=_has_email), Paragraph("Email", S["BodySmall"])],
     ], colWidths=[18, 110, 18, 90, 18, 70])
     _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(_svc)
@@ -2236,7 +2302,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
                 Paragraph("A. Grant an emergency stay of all eviction proceedings for a period of days, "
                           "or such other period as the Court deems just and appropriate:", S["Body"]),
                 _field_table([[
-                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", "", width=40),
+                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", str(pref.get("emergency_stay_days") or "30"), width=40),
                 ]], col_widths=(140, 80)),
             ]),
             f"B. Schedule an expedited hearing on this Motion to allow Defendant to present evidence "
@@ -2274,10 +2340,11 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
         f"Eviction was furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
+    _has_email = bool((l.get("landlord_email") or "").strip() or (l.get("landlord_attorney_email") or "").strip())
     _svc = Table([
-        [FillableCheckbox("ese_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
+        [FillableCheckbox("ese_svc_0", checked=True), Paragraph("U.S. Mail", S["BodySmall"]),
          FillableCheckbox("ese_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
-         FillableCheckbox("ese_svc_2"), Paragraph("Email", S["BodySmall"])],
+         FillableCheckbox("ese_svc_2", checked=_has_email), Paragraph("Email", S["BodySmall"])],
     ], colWidths=[18, 90, 18, 110, 18, 70])
     _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(_svc)
@@ -2297,6 +2364,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     p = data.get("personal_info", {})
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
+    pref = data.get("preferences", {})
     state = data.get("state", "").upper()
     county = p.get("county", "[COUNTY]")
     today = date.today().strftime("%B %d, %Y")
@@ -2353,7 +2421,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
                 Paragraph("b. Grant Defendant additional time to vacate the premises voluntarily or to cure "
                           "the default:", S["Body"]),
                 _field_table([[
-                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", "", width=40),
+                    Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", str(pref.get("emergency_stay_days") or "30"), width=40),
                 ]], col_widths=(140, 80)),
             ]),
             f"c. Schedule an emergency hearing on this Motion at the earliest possible date;",
@@ -2390,10 +2458,11 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
     elements.append(Paragraph(
         f"I HEREBY CERTIFY that a true and correct copy of the foregoing Emergency Motion to Stay "
         f"the {writ_term} has been furnished to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]))
+    _has_email = bool((l.get("landlord_email") or "").strip() or (l.get("landlord_attorney_email") or "").strip())
     _svc = Table([
-        [FillableCheckbox("esw_svc_0"), Paragraph("U.S. Mail", S["BodySmall"]),
+        [FillableCheckbox("esw_svc_0", checked=True), Paragraph("U.S. Mail", S["BodySmall"]),
          FillableCheckbox("esw_svc_1"), Paragraph("Hand Delivery", S["BodySmall"]),
-         FillableCheckbox("esw_svc_2"), Paragraph("Email", S["BodySmall"])],
+         FillableCheckbox("esw_svc_2", checked=_has_email), Paragraph("Email", S["BodySmall"])],
     ], colWidths=[18, 90, 18, 110, 18, 70])
     _svc.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     elements.append(_svc)

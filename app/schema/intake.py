@@ -62,6 +62,7 @@ class CaseDetails(BaseModel):
     summons_service_method: Optional[str] = None  # in_person, posted, mail, other
     complaint_amount_claimed: Optional[float] = None
     court_date: Optional[date] = None
+    hearing_time: Optional[str] = None  # e.g., "9:00 AM", "1:30 PM"
     response_deadline: Optional[date] = None
     has_attorney: bool = False
 
@@ -119,8 +120,15 @@ class Preferences(BaseModel):
     # Motions
     needs_continuance: bool = False
     continuance_reason: Optional[str] = None
+    continuance_days: Optional[int] = None
+    continuance_reasons: Optional[list[str]] = None
+    continuance_other_reason: Optional[str] = None
+    continuance_notify_method: Optional[str] = None
+    continuance_notify_date: Optional[str] = None
+    continuance_plaintiff_position: Optional[str] = None
     needs_emergency_stay: bool = False
     emergency_stay_reason: Optional[str] = None
+    emergency_stay_days: Optional[int] = None
     facing_writ_possession: bool = False
     filing_bankruptcy: bool = False
     bankruptcy_case_number: Optional[str] = None

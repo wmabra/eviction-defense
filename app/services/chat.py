@@ -82,11 +82,11 @@ b. Landlord's full mailing address (street, city, state, ZIP) — REQUIRED. It i
 c. Landlord's phone/email — optional, skip if unknown
 d. Landlord's attorney name AND full mailing address — ONLY if an attorney is listed on the summons. If an attorney is named, collect BOTH their name and their full address (street, city, state, ZIP) — the answer will be served on the attorney, not the landlord. Accept "no" or "I don't know" immediately and move on. This is NOT required.
 e. Case number (from summons/complaint — this is on the top of court papers)
-f. Court name (which courthouse — usually on the summons) and division number if shown (e.g., Missouri Associate Circuit Division)
+f. Court name (which courthouse — usually on the summons) and division (e.g., Division 1, Civil Division, or division number/letter if shown on summons — record as court_name and division)
 g. When were you served? (date on summons)
 h. Did you receive a notice to pay or quit (3-day/5-day/etc notice) BEFORE the court papers? (yes/no)
 i. How much rent does the landlord claim you owe? (dollar amount from complaint)
-j. Do you have a court date scheduled? If yes, what date?
+j. Do you have a court date scheduled? If yes, what date and time? (e.g., 09/30/2026 at 9:00 AM — record court_date and hearing_time)
 k. Do you know your response deadline? (check summons — usually 5-20 days)
 
 === PHASE 3: RENT & PAYMENT DETAILS ===
@@ -117,8 +117,12 @@ a. The form asks whether you want a judge or jury trial. Which do you want?
 b. Would you like to request more time? (yes/no) — if yes, ask the reason and record it as hardship_reason.
 c. Would you like to propose a payment plan to your landlord? (yes/no) — if yes, ask if they have a proposed monthly payment amount in mind and record it as payment_plan_amount.
 d. Are you facing an immediate lockout (a sheriff or law-enforcement eviction)? (yes/no)
-e. Would you like to request a continuance (postpone a scheduled hearing to a later date)? (yes/no) — if yes, ask the reason and record it as continuance_reason.
-f. Are you facing an emergency eviction and would you like to ask the court for an emergency stay (to pause the eviction)? (yes/no) — if yes, ask the reason and record it as emergency_stay_reason.
+e. Would you like to request a continuance (postpone a scheduled hearing to a later date)? (yes/no) — if yes:
+   - What is the reason you need more time? (For example: to arrange funds or negotiate a payment plan, to find/consult an attorney, to gather evidence and documents, to deal with personal/family circumstances, or other reasons?)
+   - How many days would you like the court to postpone the hearing? (e.g., 14, 30 days — default is 30 days)
+f. Are you facing an emergency eviction and would you like to ask the court for an emergency stay (to pause the eviction)? (yes/no) — if yes:
+   - What is the emergency reason?
+   - How many days stay are you requesting? (default is 30 days)
 
 === PHASE 6: FINANCIAL INFO (for fee waiver) ===
 Explain: "Courts charge filing fees ($50-$450). If you can't afford the fee, I can help you fill out a fee-waiver request. A JUDGE decides whether you qualify — and if it's denied, you may still have to pay the court fee. I need some financial information, all confidential."
@@ -152,10 +156,10 @@ After ALL phases are complete (all fields collected), append this JSON block to 
 The collected_data JSON must include these top-level keys matching the CompleteIntake schema:
 - personal_info: {full_name, phone, email, property_address, property_city, property_zip, county}
 - landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name}
-- case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, response_deadline}
+- case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, hearing_time, response_deadline}
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
 - defenses: {<defense_key>: {checked, explanation}, ...} — one entry per defense the user selected, using the EXACT defense keys shown in Phase 4 (the text before each "—", e.g. def_repairs, def_paid, def_partial_pay, def_continuance). Each entry: checked=true and explanation = the user's facts, word for word.
-- preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, needs_emergency_stay, facing_writ_possession, filing_bankruptcy}
+- preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, continuance_days, continuance_reasons, continuance_other_reason, continuance_notify_method, continuance_notify_date, continuance_plaintiff_position, needs_emergency_stay, emergency_stay_reason, emergency_stay_days, facing_writ_possession, filing_bankruptcy}
 - financial_info: {monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, dependents_detail, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}
 
 Note on financial_info: When the tenant reports zero for an expense, income, or asset (e.g., $0 child care, $0 cash, $0 savings, $0 unemployment income), record 0 as a numeric value rather than null or leaving it out, so the court forms display $0.00 rather than remaining blank.
