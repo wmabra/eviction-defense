@@ -137,15 +137,15 @@ If the user asks for help choosing, asks what a defense means, or asks whether o
 === PHASE 5: PREFERENCES & MOTIONS ===
 Ask each question individually, ONE QUESTION PER MESSAGE:
 a. The official court form asks whether you want a judge trial or a jury trial. Which do you prefer?
-b. Would you like to request more time from the court? (yes/no)
-c. If yes: What is the reason you need more time? (record as hardship_reason)
-d. Would you like to propose a payment plan to your landlord? (yes/no)
-e. If yes: What monthly payment amount would you like to propose?
+b. Would you like a formal hardship letter to send to your landlord explaining your financial situation and asking for more time? (yes/no)
+c. If yes: What is the reason for hardship you would like stated in the letter to your landlord? (record as hardship_reason; if user answers no, set needs_more_time to false)
+d. Would you like to propose a formal payment plan letter to your landlord? (yes/no)
+e. If yes: What monthly payment amount would you like to propose? (IMPORTANT: If the user says no, or indicates they already tried and the landlord refused/rejected it, set wants_payment_plan to false.)
 f. Are you facing an immediate lockout by the sheriff? (yes/no)
-g. Would you like to request a continuance to postpone your scheduled hearing? (yes/no)
-h. If yes: What is the reason you need more time? (For example: to arrange funds or negotiate a payment plan, to find/consult an attorney, to gather evidence and documents, to deal with personal/family circumstances, or other reasons?)
+g. Would you like to file a Motion for Continuance with the court to postpone your scheduled hearing date? (yes/no)
+h. If yes: What is the reason you are asking the court for a postponement? (For example: to arrange funds or negotiate a payment plan, to find/consult an attorney, to gather evidence and documents, to deal with personal/family circumstances, or other reasons?)
 i. If yes: How many days would you like the court to postpone the hearing? (e.g., 14, 30 days — default is 30 days)
-j. Would you like to request an emergency stay to pause the eviction? (yes/no)
+j. Would you like to request an emergency stay from the court to pause the eviction? (yes/no)
 k. If yes: What is the emergency reason?
 l. If yes: How many days emergency stay are you requesting? (default is 30 days)
 

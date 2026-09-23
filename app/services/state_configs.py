@@ -1039,10 +1039,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 "IN THE": {"y0": 141.0, "y1": 155.5, "align": "center"},
                 "COURT": {"y0": 141.0, "y1": 155.5, "align": "center"},
                 "IN RE PETITION OF": {"y0": 185.5, "y1": 200.0, "align": "center"},
-                "I": {"y0": 317.0, "y1": 332.0, "align": "center"},
+                "I": {"x0": 118.0, "y0": 317.0, "x1": 216.0, "y1": 332.0, "text_fontsize": 8.5, "align": "center"},
                 "STATE OF": {"y0": 389.0, "y1": 407.0, "align": "center"},
                 "COUNTY OF": {"y0": 418.0, "y1": 435.5, "align": "center"},
-                "Petitioner": {"y0": 446.0, "y1": 464.5, "align": "center"},
+                "Petitioner": {"x0": 164.0, "y0": 446.0, "x1": 262.0, "y1": 464.5, "text_fontsize": 8.5, "align": "center"},
             }
         },
         "overlay_positions": {
