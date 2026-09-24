@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-24
 **Tester:** QA (simulated end-users, full website flow: eligibility → chat intake → packet generation)
-**Code under test:** `main` @ `ebf2e7b` (+ local QA commits)
+**Code under test:** `main` @ `b31b0b0` (re-verified against developer commits `4a2f4e4` +
+`b31b0b0`, which landed mid-QA).
 
 Five states driven through the **real chat intake** (live DeepSeek agent, ~45 turns each),
 exactly as a website user would.
@@ -84,10 +85,20 @@ explanation lines) and the `cb_1_1`/`cb_1_2` override made conditional on
 4. **Dollar-amount re-confirmation is frequent** — the agent often asks "is that $X?" for
    rent/amount figures (adds friction; consider stricter amount extraction).
 
-## Still open (from prior passes)
+## Still open / newly fixed (post-pass status)
 
-- **IL fee waiver** — Medicaid/LIHEAP-only tenant still gets a false "public benefit"
-  declaration + no financial data (see `docs/state-qa-findings.md`). Not addressed yet.
-- **GA "reduced rent"** — auto-fills `$775 × 2` for a `$1,550`/month tenant; verify mapping.
-- **DOB** — now supported in schema/prompt (commit `ebf2e7b`); needs an end-to-end re-run
-  to confirm it reaches the forms.
+Re-verified against the developer's mid-QA commits `4a2f4e4` and `b31b0b0`:
+
+- **IL fee waiver — FIXED ✅.** "I checked a public benefit box" is now correctly "I did not
+  check any", and the financial table fills (income `3,000.00`). One minor leftover: the
+  "My Employment" checkbox still reads "No" for an employed tenant.
+- **GA "reduced rent" — still open ⚠️.** `Property.ReducedRentAmt=775.00` /
+  `ReducedRentNumberMonths=2` unchanged (the fix was for the counterclaim condition, not
+  this field). Verify the mapping.
+- **Chat formatting artifacts — addressed ✅** (combo-question prevention, benefit
+  looping, self-employment support landed in `4a2f4e4`).
+- **DOB** — now supported in schema/prompt (`ebf2e7b`); needs an end-to-end re-run to
+  confirm it reaches the forms.
+
+**Minnesota fee waiver (above) is the highest-priority open item** — it is not touched by
+any of the recent commits.
