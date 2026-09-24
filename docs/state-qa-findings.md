@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-24
 **Tester:** QA (simulated end-users, full website flow: eligibility → chat intake → packet generation)
-**Code under test:** `main` @ `4c2c39c` (plus local QA commits)
+**Code under test:** `main` @ `ebf2e7b` (includes the developer's Denver-narrative/DOB fix
+`ebf2e7b`, landed mid-QA and re-verified).
 
 Five states were driven through the **real chat intake** (live DeepSeek agent, ~45 turns
 each), exactly as a website user would — not via the admin test-packet shortcut.
@@ -70,14 +71,14 @@ looks like the code halved the amount across two months. The GA "reduced rent" b
 about the property's *value being reduced by defects*, so this auto-fill may be
 semantically wrong. Worth confirming the intended mapping.
 
-## 🟡 Confirmed minor gap — DOB collected but dropped (all 5 states)
+## 🟡 DOB drop — addressed in code, needs end-to-end re-verification
 
-The chat agent asks for date of birth in **every** intake ("REQUIRED for fee waiver and
-court identification"), but:
-
-- `PersonalInfo` in `app/schema/intake.py` has no `date_of_birth` field;
-- the agent omits it from `extracted_data` (verified for all 5 states);
-- the fee-waiver "Date of Birth" fields (e.g. CO JDF 205) are left blank.
+This QA pass observed the chat agent asking for date of birth in **every** intake while
+`PersonalInfo` had no `date_of_birth` field, so it never reached `extracted_data` or the
+forms. The developer's follow-up commit `ebf2e7b` **adds** `date_of_birth` to
+`PersonalInfo` (`app/schema/intake.py`), to the system prompt's extraction list, and to the
+fee-waiver field mappings — so it is fixed at the code level. This pass's chat transcripts
+predate that commit, so a fresh intake re-run is still needed to confirm end-to-end.
 
 ## 🟡 Chat UX issues (cross-cutting, seen across multiple states)
 
@@ -91,8 +92,10 @@ court identification"), but:
 4. **Dollar-amount re-confirmation is frequent** — the agent often asks "is that $X?" for
    rent/amount figures. Not a bug, but adds friction; consider stricter amount extraction.
 
-## Prior finding still open
+## Prior finding — now fixed ✅
 
-The **Denver narrative-answer bug** (see `docs/denver-qa-findings.md`) remains unfixed and
-is the highest-priority item — it affects Denver only (the one free-form narrative state).
-The five states above all use `def_*` checkboxes and are unaffected.
+The **Denver narrative-answer bug** (see `docs/denver-qa-findings.md`) was fixed in
+developer commit `ebf2e7b`. Re-verified: the Denver `defense_narrative` field now contains
+the tenant's actual story ("…broken furnace…", "…rental assistance…", "$1,925, not
+$3,850") instead of the generic boilerplate. The five states in this doc use `def_*`
+checkboxes and were never affected.
