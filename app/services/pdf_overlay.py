@@ -839,6 +839,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         "phone": ["telephone", "phone_number", "cell"],
         "email": ["e_mail", "email_address"],
         "county": ["county_name", "county_mover", "county_tp"],
+        "date_of_birth": ["dob", "birth_date", "birthdate"],
     }
     for source_key, target_keys in aliases.items():
         if source_key in _all_data:
@@ -1062,6 +1063,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             values[pdf_field] = str(_all_data[map_key])
     
     fw_mapping = config.get("fee_waiver_mapping", {})
+    skip_financial = False
     # fee_waiver_mapping is ONLY for the fee-waiver form. Apply it strictly when
     # filling the fee waiver — otherwise its field names (e.g. "6.5" on JDF 205)
     # collide with unrelated widgets on the ANSWER form (e.g. "6.5" on JDF 103).
@@ -1100,6 +1102,14 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                     if config.get("strip_dollar_signs"):
                         val = str(val).lstrip("$")
                     values[pdf_field] = str(val)
+
+        # Colorado fee waiver: if tenant auto-qualifies via categorical assistance (SNAP/SSI/TANF),
+        # clear embedded template default values ('0') in Section 9 total fields so they remain blank
+        # per JDF 205 instructions ("skip to Section 11").
+        if skip_financial and state_code == "CO":
+            values["9A.8"] = ""
+            values["9B.8"] = ""
+            values["9C"] = ""
 
         # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
         # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
@@ -1262,6 +1272,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         ("street", p.get("property_address", "")),
         ("city or town", p.get("property_city", "")),
         ("signed", today.strftime("%m/%d/%Y")),
+        ("date of birth", p.get("date_of_birth", "")),
+        ("birth date", p.get("date_of_birth", "")),
+        ("dob", p.get("date_of_birth", "")),
     ]
     # Word-boundary-only rules: match "Date" or "Date3" but not "TrialDate" or "BOPDueDate"
     # Also handles camelCase like "ResidenceAddress" → "address"
@@ -1279,7 +1292,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
                                 r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
-                                r'birth|employer|immovable|(property.*tax|tax.*property)|complaint|'
+                                r'birthday|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
                                 r'date.*(start|fixed|repair|lease|rent|notice|problem)|'
                                 r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
@@ -1297,8 +1310,22 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             
             # 1. Check explicit mapping first
             if field_name in values:
-                widget.field_value = values[field_name]
-                widget.update()
+                val = values[field_name]
+                if val == "":
+                    widget.field_value = " "
+                    widget.update()
+                    try:
+                        doc.xref_set_key(widget.xref, "V", "()")
+                    except Exception:
+                        pass
+                    if skip_financial and state_code == "CO" and field_name in ("9A.8", "9B.8", "9C"):
+                        try:
+                            doc.xref_set_key(widget.xref, "AA", "null")
+                        except Exception:
+                            pass
+                else:
+                    widget.field_value = val
+                    widget.update()
                 continue
             
             # 1a. Substring matching for truncated widget names
@@ -1373,6 +1400,9 @@ _LABEL_FIELDS = [
     ("judicial district", "case_details", "court_name", False),
     ("plaintiff", "landlord_info", "landlord_name", False),
     ("defendant", "personal_info", "full_name", False),
+    ("date of birth", "personal_info", "date_of_birth", False),
+    ("birth date", "personal_info", "date_of_birth", False),
+    ("dob", "personal_info", "date_of_birth", False),
     ("address", "personal_info", "property_address", False),
     ("city, state, zip", "personal_info", "property_city_zip", False),
     ("phone", "personal_info", "phone", False),
@@ -2378,6 +2408,40 @@ def _build_financial_summary(financial: dict) -> str:
 
 def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 460.0, font_size: float = 8.0) -> list[str]:
     """Build individual formatted lines of defenses to sit directly on ruled lines."""
+    lines: list[str] = []
+
+    # Check for free-form narrative (e.g. Denver or narrative answers)
+    narrative_text = ""
+    if isinstance(defenses, dict):
+        for n_key in ("narrative", "story", "statement", "free_form", "free_text", "defense_narrative"):
+            val = defenses.get(n_key)
+            if isinstance(val, dict):
+                exp = (val.get("explanation") or val.get("text") or "").strip()
+                if exp:
+                    narrative_text = exp
+                    break
+            elif isinstance(val, str) and val.strip():
+                narrative_text = val.strip()
+                break
+        if not narrative_text and defenses.get("explanation") and isinstance(defenses["explanation"], str):
+            narrative_text = defenses["explanation"].strip()
+
+    if narrative_text:
+        words = narrative_text.split()
+        l_words = []
+        for wd in words:
+            trial = " ".join(l_words + [wd])
+            if fitz.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
+                l_words.append(wd)
+            else:
+                if l_words:
+                    lines.append(" ".join(l_words))
+                l_words = [wd]
+                if len(lines) >= max_lines:
+                    break
+        if l_words and len(lines) < max_lines:
+            lines.append(" ".join(l_words))
+
     DEFENSE_LABELS = [
         ("def_repairs", "Failure to repair: "),
         ("def_amount", "Disputed rent: "),
@@ -2392,10 +2456,11 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
         ("def_not_owner", "Not proper owner: "),
         ("def_other", "Other: "),
     ]
-    lines: list[str] = []
     item_num = 1
     for k, label in DEFENSE_LABELS:
-        d = defenses.get(k, {})
+        if len(lines) >= max_lines:
+            break
+        d = defenses.get(k, {}) if isinstance(defenses, dict) else {}
         if isinstance(d, dict) and d.get("checked"):
             expl = d.get("explanation", "").strip()
             full_text = f"{item_num}. {label}{expl}" if expl else f"{item_num}. {label.rstrip(': ')}"
@@ -2415,7 +2480,7 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
                         break
                 lines.append(" ".join(l1_words))
                 rem = " ".join(words[len(l1_words):])
-                if rem:
+                if rem and len(lines) < max_lines:
                     lines.append("   " + rem)
             if len(lines) >= max_lines:
                 break
@@ -2425,9 +2490,33 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
 
 
 def _build_defense_narrative(defenses: dict) -> str:
-    """Build a formatted paragraph of defense explanations from checked defenses.
-    Used for narrative court forms (AR, NM, TN) that have blank text areas.
+    """Build a formatted paragraph of defense explanations from checked defenses or narrative.
+    Used for narrative court forms (AR, NM, TN, Denver CO) that have blank text areas.
     """
+    if not defenses:
+        return "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."
+
+    if isinstance(defenses, str):
+        return defenses.strip() if defenses.strip() else "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."
+
+    if not isinstance(defenses, dict):
+        return "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."
+
+    # 1. Check for free-form narrative keys (e.g. Denver County Court answer form)
+    narrative_parts = []
+    for n_key in ("narrative", "story", "statement", "free_form", "free_text", "defense_narrative"):
+        val = defenses.get(n_key)
+        if isinstance(val, dict):
+            exp = (val.get("explanation") or val.get("text") or "").strip()
+            if exp:
+                narrative_parts.append(exp)
+        elif isinstance(val, str) and val.strip():
+            narrative_parts.append(val.strip())
+
+    top_exp = defenses.get("explanation")
+    if isinstance(top_exp, str) and top_exp.strip():
+        narrative_parts.append(top_exp.strip())
+
     DEFENSE_LABELS = {
         "def_repairs": ("Failure to maintain premises / necessary repairs",
                         "The landlord failed to make necessary repairs to the property despite written notice."),
@@ -2462,8 +2551,19 @@ def _build_defense_narrative(defenses: dict) -> str:
         "def_dismiss": ("Defective pleadings / motion to dismiss",
                         "The complaint fails to state a claim upon which relief can be granted."),
     }
-    
+
     checked = []
+    # Any custom defense keys not in DEFENSE_LABELS or narrative_keys
+    for k, v in defenses.items():
+        if k in DEFENSE_LABELS:
+            continue
+        if k in ("narrative", "story", "statement", "free_form", "free_text", "defense_narrative", "explanation"):
+            continue
+        if isinstance(v, dict) and (v.get("checked") or v.get("explanation")):
+            exp = (v.get("explanation") or "").strip()
+            if exp:
+                checked.append(exp)
+
     for key, (heading, default_text) in DEFENSE_LABELS.items():
         d = defenses.get(key, {})
         if isinstance(d, dict) and d.get("checked"):
@@ -2472,13 +2572,20 @@ def _build_defense_narrative(defenses: dict) -> str:
                 checked.append(f"{heading}: {explanation}.")
             else:
                 checked.append(f"{heading}: {default_text}")
-    
-    if not checked:
+
+    # Combine narrative texts and checked defenses
+    all_sections = []
+    if narrative_parts:
+        all_sections.extend(narrative_parts)
+
+    if checked:
+        if not narrative_parts:
+            for i, def_text in enumerate(checked, 1):
+                all_sections.append(f"{i}. {def_text}")
+        else:
+            all_sections.extend(checked)
+
+    if not all_sections:
         return "The defendant requests that the court deny the eviction and allow the defendant to remain in possession of the premises."
-    
-    # Number the defenses
-    lines = []
-    for i, def_text in enumerate(checked, 1):
-        lines.append(f"{i}. {def_text}")
-    
-    return "\n\n".join(lines)
+
+    return "\n\n".join(all_sections)

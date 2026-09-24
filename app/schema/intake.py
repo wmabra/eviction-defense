@@ -26,6 +26,7 @@ class PreScreenResult(BaseModel):
 
 class PersonalInfo(BaseModel):
     full_name: str = Field(default="", description="Full legal name")
+    date_of_birth: Optional[str] = Field(default=None, description="Date of birth (MM/DD/YYYY)")
     also_known_as: Optional[str] = None
     co_tenants: Optional[list[str]] = None
     property_address: str = ""

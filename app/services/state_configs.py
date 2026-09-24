@@ -683,6 +683,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_number": "Case Number",
             "county": "County",
             "full_name": "Name",
+            "date_of_birth": "DoB",
             "address": "4.6",
             "city": "4.7",
             "state": "4.8",
@@ -839,6 +840,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_mapping": {
             "address": "Box Number or Street Address",
             "case_number": "Docket Number",
+            "date_of_birth": "Date of Birth",
             "cash_on_hand": "Amount in Bank Account",
             "child_care_expense": "Daycare",
             "child_support_income": "Child Support",
