@@ -151,7 +151,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     ]
     yesno_rules = [
         (("employed", "salary", "wage", "job", "employment"),
-         has("employment_income", "self_employment_income")),
+         has("employment_income", "self_employment_income") or bool(fin.get("is_employed"))),
         (("rent or mortgage", "rent or own", "pay rent"),
          bool(fin.get("rent_or_mortgage")) and not fin.get("owns_real_estate")),
         (("mortgage", "home loan"),
@@ -1071,7 +1071,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         financial = data.get("financial_info", {})
         # Louisiana fee waiver: derived status checkboxes (Employed / Bank / Single).
         if "is_employed" not in _all_data:
-            _all_data["is_employed"] = "Yes" if (financial.get("employment_income") or financial.get("monthly_gross_income")) else "No"
+            _all_data["is_employed"] = "Yes" if (financial.get("is_employed") is True or financial.get("employment_income") or financial.get("self_employment_income") or financial.get("monthly_gross_income")) else "No"
         if "has_bank_account" not in _all_data:
             _all_data["has_bank_account"] = "Yes" if (financial.get("checking_balance") or financial.get("savings_balance") or financial.get("cash_on_hand")) else "No"
         if "is_single" not in _all_data:
@@ -2092,11 +2092,16 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         is_emp = fin.get("is_employed")
         emp_name = fin.get("employer_name")
         emp_addr = fin.get("employer_address")
-        wages = fin.get("employment_income")
-        if is_emp is True or emp_name or (wages and float(wages) > 0):
+        wages = fin.get("employment_income") or fin.get("self_employment_income") or fin.get("monthly_net_income") or fin.get("monthly_gross_income")
+        if is_emp is True or emp_name or (wages and float(wages) > 0) or fin.get("self_employment_income"):
             parts = []
             if emp_name:
-                parts.append(emp_name)
+                if fin.get("self_employment_income") and "self" not in emp_name.lower():
+                    parts.append(f"{emp_name} (Self-Employed)")
+                else:
+                    parts.append(emp_name)
+            elif fin.get("self_employment_income"):
+                parts.append("Self-Employed")
             if emp_addr:
                 parts.append(emp_addr)
             if wages is not None and float(wages) > 0:
@@ -2107,6 +2112,10 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "fw_last_employment_details":
         fin = data.get("financial_info", {}) or {}
         is_emp = fin.get("is_employed")
+        self_emp = bool(fin.get("self_employment_income"))
+        # If employed or self-employed, Question 1(a) applies and 1(b) must stay blank
+        if is_emp is True or self_emp:
+            return None
         last_date = fin.get("last_employment_date")
         last_wage = fin.get("last_employment_wage")
         wages = fin.get("employment_income")

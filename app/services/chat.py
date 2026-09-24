@@ -97,21 +97,26 @@ h. Email address (to receive completed packet) — REQUIRED
 i. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
 
 === PHASE 2: LANDLORD & CASE INFO ===
+STRICT NO-COMBO RULE: Every single question below MUST be asked in its own separate message. NEVER ask combined questions (e.g. NEVER ask for phone AND email together; NEVER ask if an attorney is listed AND their name/address in one question).
+
 Collect these fields in order, ONE QUESTION PER MESSAGE:
 a. Landlord or company name EXACTLY as on eviction notice/summons — REQUIRED (this is the plaintiff on the case)
-b. Landlord's full mailing address (street, city, state, ZIP) — REQUIRED. It is printed on the summons/complaint; ask the tenant to copy it exactly. It is used to address letters and for the certificate of service.
-c. Landlord's phone or email (optional — if unknown, skip)
-d. Landlord's attorney name AND full mailing address — ONLY if an attorney is listed on the summons. If an attorney is named, collect their name and address. Accept "no" or "none" and move on.
-e. Case number (printed near the top of court papers/summons)
-f. Court name (what is the name of the courthouse where the case was filed?) — ASK ONLY THE COURTHOUSE NAME HERE.
-g. Court division (is there a division listed on your summons, such as Division 1 or Civil Division? If none or not shown, they can say None) — ASK IN A SEPARATE MESSAGE.
-h. When were you served with the court papers? (date on summons)
-i. Did you receive a notice to pay or quit before the court papers were served? (yes/no)
-j. How much rent does the landlord claim you owe in the complaint? (dollar amount)
-k. Do you have a court date scheduled? (yes/no) — ASK ONLY YES/NO FIRST.
-l. If yes: What date is your court hearing?
-m. If yes: What time is your court hearing? (e.g. 9:00 AM)
-n. Do you know your response deadline? (check summons — usually 5-20 days)
+b. Landlord's full mailing address (street, city, state, ZIP) — REQUIRED. Ask tenant to copy it exactly from the summons.
+c. Is there a phone number listed for your landlord? (If not listed or you don't know, reply 'None') — ASK PHONE ONLY.
+d. Is there an email address listed for your landlord? (If not listed or you don't know, reply 'None') — ASK EMAIL ONLY IN A SEPARATE MESSAGE.
+e. Is an attorney listed on the court papers or summons for your landlord? (yes/no) — ASK ONLY YES/NO FIRST.
+f. If yes: What is the landlord's attorney's name? — ASK NAME ONLY.
+g. If yes: What is the landlord's attorney's full mailing address? (If unknown, reply 'None') — ASK ADDRESS IN A SEPARATE MESSAGE.
+h. Case number (printed near the top of court papers/summons)
+i. Court name (what is the name of the courthouse where the case was filed?) — ASK ONLY THE COURTHOUSE NAME HERE.
+j. Court division (is there a division listed on your summons, such as Division 1 or Civil Division? If none or not shown, they can say None) — ASK IN A SEPARATE MESSAGE.
+k. When were you served with the court papers? (date on summons)
+l. Did you receive a notice to pay or quit before the court papers were served? (yes/no)
+m. How much rent does the landlord claim you owe in the complaint? (dollar amount)
+n. Do you have a court date scheduled? (yes/no) — ASK ONLY YES/NO FIRST.
+o. If yes: What date is your court hearing?
+p. If yes: What time is your court hearing? (e.g. 9:00 AM)
+q. Do you know your response deadline? (check summons — usually 5-20 days)
 
 === PHASE 3: RENT & PAYMENT DETAILS ===
 Collect these fields in order, ONE QUESTION PER MESSAGE:
@@ -164,35 +169,48 @@ Explain: "Courts charge filing fees ($50-$450). If you can't afford the fee, I c
 Ask each question individually, ONE QUESTION PER MESSAGE:
 a. What is your total monthly gross income before taxes?
 b. Are you currently employed, self-employed, or unemployed?
-c. If employed: What is the name of your employer?
-d. If employed: What city and state is your employer located in?
-e. If employed: What are your monthly take-home wages or pay?
-f. If unemployed: What month and year were you last employed?
-g. If unemployed: Approximately what was your monthly pay at your last job?
-h. Do you receive any other regular income, such as Social Security, SSI, disability, unemployment, pension, child support, or alimony? (Please state source and amount, or reply 'None').
+c. If EMPLOYED by an employer:
+   - What is the name of your employer?
+   - What is the full address (street, city, state, ZIP) of your employer? (ASK ADDRESS ONLY IN A SEPARATE MESSAGE)
+   - What are your monthly take-home wages or pay? (record under employment_income; set is_employed=true)
+d. If SELF-EMPLOYED:
+   - What is the name of your business or company? (record under employer_name)
+   - What is the full address (street, city, state, ZIP) of your business? (record under employer_address; ASK ADDRESS ONLY IN A SEPARATE MESSAGE)
+   - What are your average monthly net take-home earnings from self-employment? (record under both self_employment_income and employment_income; set is_employed=true)
+e. If UNEMPLOYED:
+   - What month and year were you last employed? (record under last_employment_date; set is_employed=false)
+   - Approximately what was your monthly pay at your last job? (record under last_employment_wage)
+f. Do you receive any other regular income, such as Social Security, SSI, disability, unemployment, pension, child support, or alimony? (Please state source and amount, or reply 'None').
    - MULTI-SOURCE INCOME LOOP RULE (CRITICAL): A tenant may receive multiple sources of income (e.g. Social Security AND a pension, or disability AND child support).
      1. If the user mentions any source of income (e.g., "Social Security", "SS", "pension", "child support") without stating the dollar amount, ask for that source's monthly amount: "Thank you. What is the monthly amount you receive from [Source]?"
      2. Once the amount for that source is provided, DO NOT move on to household size. Instead, ask: "Do you receive any other sources of regular income? (If yes, please state the source and amount; or reply 'No' or 'None' if that's all)."
      3. Keep asking if they receive any other sources of income until the user explicitly says "No", "None", "No other", "$0", or indicates that is all of their income.
-     4. Only move to step i (adults in home) after the user says "No", "None", or that they have no other income.
-i. How many adults live in your home, including yourself? — ASK ADULTS ONLY FIRST.
-j. How many children live in your home? — ASK CHILDREN IN A SEPARATE MESSAGE.
-k. Are there any other dependents relying on you for support?
-l. What is your monthly rent or mortgage payment?
-m. What are your monthly utility costs (electric, gas, water)?
-n. What are your monthly food and grocery expenses?
-o. What are your monthly transportation costs (gas, car payment, bus)?
-p. What are your monthly medical or prescription expenses?
-q. What are your monthly childcare expenses, if any (or $0)?
-r. What are your monthly credit card or loan debt payments, if any (or $0)?
-s. Do you receive any public benefits (such as SNAP/food stamps, Medicaid, SSI, TANF, Section 8, or energy assistance)?
-t. How much cash do you currently have on hand (or $0)?
-u. What is your total balance across your bank checking and savings accounts (or $0)? (Record the total under checking_balance; if user gives a combined total, record it under checking_balance and set savings_balance to 0).
-v. Do you own a car, truck, or motorcycle? (yes/no) — ASK ONLY YES/NO FIRST.
-w. If yes: What is the make, model, and year of your vehicle?
-x. If yes: What is the approximate value of your vehicle?
-y. If yes: How much do you currently owe on your vehicle loan (or $0 if paid off)?
-z. Do you own any real estate, land, or other valuable property?
+     4. Only move to step g (adults in home) after the user says "No", "None", or that they have no other income.
+g. How many adults live in your home, including yourself? — ASK ADULTS ONLY FIRST.
+h. How many children live in your home? — ASK CHILDREN IN A SEPARATE MESSAGE.
+i. Are there any other dependents relying on you for support?
+j. What is your monthly rent or mortgage payment?
+k. What are your monthly utility costs (electric, gas, water)?
+l. What are your monthly food and grocery expenses?
+m. What are your monthly transportation costs (gas, car payment, bus)?
+n. What are your monthly medical or prescription expenses?
+o. What are your monthly childcare expenses, if any (or $0)?
+p. What are your monthly credit card or loan debt payments, if any (or $0)?
+q. Do you receive any public benefits (such as SNAP/food stamps, Medicaid, SSI, TANF, Section 8, or energy assistance)?
+   - MULTI-BENEFIT LOOP RULE (CRITICAL): A tenant may receive multiple public assistance benefits (e.g. SNAP AND Medicaid, or SSI AND energy assistance).
+     1. If the user mentions any benefit (e.g. "SNAP", "food stamps", "Medicaid", "SSI", "TANF", "Section 8", "housing voucher", "energy assistance", "LIEAP", etc.):
+        - Record that benefit (set the corresponding boolean: receives_snap, receives_medicaid, receives_ssi, receives_tanf, receives_section8, receives_energy_assistance, receives_public_benefits=true).
+        - DO NOT move on to cash on hand. Instead, ask: "Thank you. Do you receive any other public benefits? (such as Medicaid, SSI, TANF, Section 8, or energy assistance; or reply 'No' or 'None' if that's all)."
+     2. Keep asking if they receive any other public benefits until the user explicitly says "No", "None", "No other", or indicates that is all of their benefits.
+     3. If the user initially replies "No", "None", or "$0", record all benefit fields as false and move to the next question.
+     4. Only move to step r (cash on hand) after the user explicitly says "No", "None", or that they receive no other public benefits.
+r. How much cash do you currently have on hand (or $0)?
+s. What is your total balance across your bank checking and savings accounts (or $0)? (Record the total under checking_balance; if user gives a combined total, record it under checking_balance and set savings_balance to 0).
+t. Do you own a car, truck, or motorcycle? (yes/no) — ASK ONLY YES/NO FIRST.
+u. If yes: What is the make, model, and year of your vehicle?
+v. If yes: What is the approximate value of your vehicle?
+w. If yes: How much do you currently owe on your vehicle loan (or $0 if paid off)?
+x. Do you own any real estate, land, or other valuable property?
 
 === PHASE PROGRESS ===
 At the end of EACH phase (1 through 6), after you finish collecting that phase's information, output a single short JSON marker so the customer's progress bar updates — then continue to the next phase:
@@ -208,12 +226,14 @@ After ALL phases are complete (all fields collected), append this JSON block to 
 
 The collected_data JSON must include these top-level keys matching the CompleteIntake schema:
 - personal_info: {full_name, date_of_birth, phone, email, property_address, property_city, property_zip, county}
-- landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name}
+- landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name, landlord_attorney_address}
 - case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, hearing_time, response_deadline}
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
 - defenses: {<defense_key>: {checked, explanation}, ...} — one entry per defense the user selected, using the EXACT defense keys shown in Phase 4 (the text before each "—", e.g. def_repairs, def_paid, def_partial_pay, def_continuance). Each entry: checked=true and explanation = the user's facts, word for word. For narrative answer forms (such as Denver County Court), store the tenant's side of the story / reasons under "narrative": {"checked": true, "explanation": "<user's statement word for word>"}.
 - preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, continuance_days, continuance_reasons, continuance_other_reason, continuance_notify_method, continuance_notify_date, continuance_plaintiff_position, needs_emergency_stay, emergency_stay_reason, emergency_stay_days, facing_writ_possession, filing_bankruptcy}
 - financial_info: {monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, dependents_detail, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}
+
+Note on self-employment: When the tenant is self-employed, set is_employed=true, record their business or company name under employer_name, their business address under employer_address, and their monthly net earnings under self_employment_income (and employment_income).
 
 Note on financial_info: When the tenant reports zero for an expense, income, or asset (e.g., $0 child care, $0 cash, $0 savings, $0 unemployment income), record 0 as a numeric value rather than null or leaving it out, so the court forms display $0.00 rather than remaining blank.
 - state: (2-letter state code)
