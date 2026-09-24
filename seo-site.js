@@ -649,6 +649,7 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 				city: payload.city || "",
 				email: payload.email || "",
 				address: payload.street || "",
+				served: answerData.served || payload.served || "",
 			});
 			location.href =
 				window.EVICTIONS_HELP_CONFIG.checkoutPath + "?" + p.toString();
@@ -663,6 +664,13 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 			data = JSON.parse(sessionStorage.getItem("evictionsHelpIntake") || "{}");
 		} catch (e) {}
 		const params = new URLSearchParams(location.search);
+		if (
+			(data.eligibility && (data.eligibility.served === "no" || data.eligibility.served === false)) ||
+			params.get("served") === "no"
+		) {
+			location.href = "/#eligibility";
+			return;
+		}
 		["state", "county", "city", "email", "address"].forEach((k) => {
 			if (!data[k] && params.get(k)) data[k] = params.get(k);
 		});
@@ -711,6 +719,12 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 					order_id: "order-" + Date.now(),
 					customer_email: intakeData.email || "",
 					customer_name: intakeData.street || "Tenant",
+					state: intakeData.state || "",
+					county: intakeData.county || "",
+					property_address: intakeData.street || intakeData.address || "",
+					property_city: intakeData.city || "",
+					property_zip: intakeData.zip || "",
+					served: (intakeData.eligibility && intakeData.eligibility.served) || intakeData.served || "",
 				}),
 			});
 			if (!res.ok) {

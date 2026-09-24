@@ -31,11 +31,12 @@ class PaymentRequest(BaseModel):
     customer_email: str
     customer_name: str = ""
     # Eligibility + address collected before payment (used to create the case)
-    state: str
-    county: str
+    state: str = ""
+    county: str = ""
     property_address: str = ""
     property_city: str = ""
     property_zip: str = ""
+    served: str = "yes"
 
 
 class PaymentResponse(BaseModel):
@@ -50,6 +51,11 @@ class PaymentResponse(BaseModel):
 @router.post("/charge", response_model=PaymentResponse)
 def process_payment(req: PaymentRequest, db: Session = Depends(get_db)):
     """Process a payment, then provision the account + case on success."""
+    if (req.served or "").strip().lower() in ("no", "false", "0"):
+        raise HTTPException(
+            status_code=400,
+            detail="You must have received court eviction papers (summons and complaint) or have an active case number to use this service. We cannot prepare court filings until an eviction lawsuit has actually been filed in court."
+        )
     if _charge_card is None:
         raise HTTPException(status_code=503, detail="Payment processing is not available.")
     if not settings.authorize_login_id or not settings.authorize_transaction_key:
