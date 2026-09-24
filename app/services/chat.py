@@ -422,7 +422,15 @@ def clean_chat_message_formatting(text: str) -> str:
     text = re.sub(r'(That completes [^\.\n]*\.)\s*([A-Z])', r'\1\n\n\2', text)
     text = re.sub(r'(I can(?:\x27t|not) advise you [^\.\n]*\.)\s*([A-Z])', r'\1\n\n\2', text)
 
-    # 5. Normalize whitespace
+    # 5. Fix stray '. 00.' or '. 00' after dollar amounts
+    text = re.sub(r'(\$\d{1,3}(?:,\d{3})*)\.\s*00\.', r'\1.00.', text)
+    text = re.sub(r'(\$\d{1,3}(?:,\d{3})*)\.\s*00\b', r'\1.00', text)
+
+    # 6. Strip internal defense keys if leaked (e.g. "1. def_paid — I paid" -> "1. I paid")
+    text = re.sub(r'(?<=\d\.\s)def_[a-z0-9_]+\s*[—–\-]\s*', '', text)
+    text = re.sub(r'\bdef_[a-z0-9_]+\s*[—–\-]\s*', '', text)
+
+    # 7. Normalize whitespace
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
 
@@ -457,16 +465,17 @@ def get_chat_response(messages: list[dict], case_id: Optional[str] = None,
         extracted_data = parsed_json.get("collected_data")
         content = clean_content
 
-    # Parse a mid-course phase marker ("phase_completed": N) so the progress
+    # Parse mid-course phase marker ("phase_completed": N) so the progress
     # bar reflects how far through the 7 intake phases the customer is.
     phase = None
-    phase_match = re.search(r'\{"phase_completed"\s*:\s*(\d+)\}', content)
-    if phase_match:
+    all_phases = re.findall(r'\{"phase_completed"\s*:\s*(\d+)\}', content)
+    if all_phases:
         try:
-            phase = int(phase_match.group(1))
+            phase = int(all_phases[-1])
         except ValueError:
             phase = None
-        content = (content[:phase_match.start()] + content[phase_match.end():]).strip()
+    # Strip ALL phase markers from user-facing text
+    content = re.sub(r'`{0,3}\s*\{"phase_completed"\s*:\s*\d+\}\s*`{0,3}', '', content).strip()
 
     content = clean_chat_message_formatting(content)
 

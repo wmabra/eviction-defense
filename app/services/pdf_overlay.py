@@ -918,18 +918,25 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["case_name"] = f"{_all_data.get('landlord_name', '')} v. {_all_data.get('full_name', '')}".strip(" v.")
 
     # Georgia counterclaim diminished value + duration (repair-and-deduct).
-    _rent_info = data.get("rent_payment", {})
-    try:
-        _claimed = float(c.get("complaint_amount_claimed") or 0)
-        _owed = float(_rent_info.get("amount_tenant_believes_owed") or 0)
-        _monthly = float(_rent_info.get("monthly_rent") or c.get("monthly_rent") or 0)
-    except (TypeError, ValueError):
-        _claimed = _owed = _monthly = 0.0
-    if _claimed > _owed and _monthly > 0:
-        _total_reduction = _claimed - _owed
-        _months = max(1, round(_claimed / _monthly))
-        _all_data.setdefault("reduced_rent_amount", f"{_total_reduction / _months:.2f}")
-        _all_data.setdefault("reduced_rent_months", str(_months))
+    # Only populate if the tenant actually asserted a failure-to-repair defense (def_repairs).
+    _has_repairs = False
+    if isinstance(defenses, dict):
+        _d_rep = defenses.get("def_repairs")
+        if isinstance(_d_rep, dict) and _d_rep.get("checked"):
+            _has_repairs = True
+    if _has_repairs:
+        _rent_info = data.get("rent_payment", {})
+        try:
+            _claimed = float(c.get("complaint_amount_claimed") or 0)
+            _owed = float(_rent_info.get("amount_tenant_believes_owed") or 0)
+            _monthly = float(_rent_info.get("monthly_rent") or c.get("monthly_rent") or 0)
+        except (TypeError, ValueError):
+            _claimed = _owed = _monthly = 0.0
+        if _claimed > _owed and _monthly > 0:
+            _total_reduction = _claimed - _owed
+            _months = max(1, round(_claimed / _monthly))
+            _all_data.setdefault("reduced_rent_amount", f"{_total_reduction / _months:.2f}")
+            _all_data.setdefault("reduced_rent_months", str(_months))
     
     # Also add state-level data
     state_code = data.get("state", "")
@@ -1083,8 +1090,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
         # and the tenant receives categorical assistance, leave the income/expense/asset
         # fields blank (they are only required when categorical assistance is absent).
+        cat_keys = config.get("categorical_assistance_keys") or ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
         skip_financial = config.get("skip_financial_when_categorical") and any(
-            financial.get(k) for k in ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
+            bool(financial.get(k)) for k in cat_keys
         )
         for map_key, pdf_field in fw_mapping.items():
             # Handle financial boolean fields as checkboxes
