@@ -31,21 +31,19 @@ class ChatResponse(BaseModel):
     phase: int | None = None
 
 
+DEFAULT_WELCOME_MESSAGE = (
+    "Welcome! I'm your AI intake specialist for evictions.help. "
+    "Please allow 10-15 minutes to answer my questions. At the end, "
+    "you'll download your ready-to-file court packet immediately. "
+    "Let's get started — what is your full legal name, exactly as it appears on your eviction notice or lease?"
+)
+
+
 @router.post("/send", response_model=ChatResponse)
 def send_message(req: ChatRequest, db: Session = Depends(get_db)):
     """Send a message to the AI intake specialist."""
     messages = [{"role": m.role, "content": m.content} for m in req.messages]
-    
-    # Log the last user message to the database for review
-    if req.case_id and messages:
-        last_msg = messages[-1]
-        try:
-            log = ChatLog(case_id=req.case_id, role=last_msg["role"], content=last_msg["content"])
-            db.add(log)
-            db.commit()
-        except Exception:
-            pass
-    
+
     # Look up the case's state/county so the intake specialist asks only that
     # state's questions (actual answer-form defenses, court type, etc.). The
     # request may also carry state/county from the landing page (fallback).
@@ -58,6 +56,35 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
                 case_row = cast(Any, case_row)
                 state = state or case_row.state or None
                 county = county or case_row.county or None
+        except Exception:
+            pass
+
+    # Ensure the assistant's initial welcome greeting is present at the start of conversation
+    if messages and messages[0].get("role") == "user":
+        welcome_text = DEFAULT_WELCOME_MESSAGE
+        if county or state:
+            loc = f" in {county + ' County, ' if county else ''}{state or ''}".rstrip(", ")
+            welcome_text = (
+                f"Welcome! I'm your AI intake specialist for evictions.help. "
+                f"I can see you're{loc}. ⏱ Please allow 10-15 minutes to answer my questions. "
+                f"At the end, you'll download your ready-to-file court packet immediately. "
+                f"Let's get started — what is your full legal name, exactly as it appears on your eviction notice or lease?"
+            )
+        messages.insert(0, {"role": "assistant", "content": welcome_text})
+
+    # Log messages to the database for review
+    if req.case_id:
+        try:
+            existing_count = db.query(ChatLog).filter(ChatLog.case_id == req.case_id).count()
+            if existing_count == 0 and messages and messages[0].get("role") == "assistant":
+                db.add(ChatLog(case_id=req.case_id, role="assistant", content=messages[0]["content"]))
+                db.commit()
+
+            if req.messages:
+                last_msg = req.messages[-1]
+                if last_msg.role == "user":
+                    db.add(ChatLog(case_id=req.case_id, role="user", content=last_msg.content))
+                    db.commit()
         except Exception:
             pass
 

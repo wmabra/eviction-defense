@@ -465,8 +465,29 @@
       let caseId = preCaseId || "CHAT-" + Date.now().toString(36).toUpperCase();
       let _packetDownloadUrl = null;
 
+      function getWelcomeText() {
+        const firstMsgEl = document.getElementById("first-message");
+        if (firstMsgEl) {
+          return firstMsgEl.innerText.replace(/\s+/g, " ").trim();
+        }
+        return "Welcome! I'm your AI intake specialist for evictions.help. Please allow 10-15 minutes to answer my questions. At the end, you'll download your ready-to-file court packet immediately. Let's get started — what is your full legal name, exactly as it appears on your eviction notice or lease?";
+      }
+
+      function initWelcomeMessage() {
+        if (messages.length === 0) {
+          messages.push({
+            role: "assistant",
+            content: getWelcomeText(),
+          });
+        }
+      }
+
       // Resume prior conversation if continuing an existing case
-      if (preCaseId) loadHistory(preCaseId);
+      if (preCaseId) {
+        loadHistory(preCaseId);
+      } else {
+        initWelcomeMessage();
+      }
 
       // ===== CHAT =====
 
@@ -480,12 +501,18 @@
             const chat = document.getElementById("chat");
             chat.textContent = "";
             messages = data.messages;
+            if (messages[0].role === "user") {
+              messages.unshift({ role: "assistant", content: getWelcomeText() });
+            }
             for (const m of messages) {
               addMessage(m.role, m.content);
             }
+          } else {
+            initWelcomeMessage();
           }
         } catch (e) {
           console.error("Load history failed:", e);
+          initWelcomeMessage();
         }
       }
 
@@ -626,8 +653,9 @@
 
       function addMessage(role, text) {
         const div = document.createElement("div");
-        div.className = "message " + role;
-        div.innerHTML = formatMessageContent(text, role);
+        const roleClass = (role === "assistant" || role === "ai") ? "ai" : "user";
+        div.className = "message " + roleClass;
+        div.innerHTML = formatMessageContent(text, roleClass);
         document.getElementById("chat").appendChild(div);
         document.getElementById("chat").scrollTop =
           document.getElementById("chat").scrollHeight;
@@ -909,11 +937,12 @@
         _packetFilename = null;
         caseId = "CHAT-" + Date.now().toString(36).toUpperCase();
 
-        document.getElementById("chat").innerHTML = `<div class="message ai">
+        document.getElementById("chat").innerHTML = `<div class="message ai" id="first-message">
           Welcome! I'm your AI intake specialist for <strong>evictions.help</strong>.<br><br>
           <strong>⏱ Please allow 10-15 minutes</strong> to answer all my questions.
           At the end, you'll download your ready-to-file court packet immediately.<br><br>
-          Let's get started — what is your <strong>full legal name</strong>?</div>`;
+          Let's get started — what is your <strong>full legal name</strong>, exactly as it appears on your eviction notice or lease?</div>`;
+        initWelcomeMessage();
         document.getElementById("post-intake").classList.add("hidden");
         document.getElementById("summary-container").innerHTML = "";
         document.getElementById("download-screen").style.display = "none";
