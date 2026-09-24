@@ -539,7 +539,7 @@ window.EVICTIONS_HELP_CONFIG = window.EVICTIONS_HELP_CONFIG || {
 				);
 			if (answerData.served === "no")
 				stop.push(
-					"You must have already received court eviction papers (summons and complaint) or have an active court case number before we can prepare your official court answer packet. We cannot prepare court filings until an eviction lawsuit has actually been filed in court.",
+					"A lawsuit must be officially filed before court documents can be prepared. Our software prepares legal answers and motions for an active court case. If you have only received a warning notice from your landlord (such as a 3-Day Notice to Pay or Vacate), an eviction lawsuit has not been filed yet, and the court clerk will reject any filing without an official case number. Once you are formally served with a Summons and Complaint from the court, please return and we will prepare your complete defense packet.",
 				);
 			if (answerData.bankruptcy === "yes")
 				stop.push(
