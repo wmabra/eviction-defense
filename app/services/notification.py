@@ -48,10 +48,12 @@ Here's what's included:
 • Rental Assistance Resource Sheet
 
 Next steps:
-1. Review all documents
-2. Sign where indicated
-3. File with the court (instructions included)
-4. Serve a copy on your landlord
+1. Review all documents in the packet
+2. Fill in anything missing or incorrect
+3. Sign where indicated (blue or black ink)
+4. Make 3 copies of everything
+5. File with the court (instructions included)
+6. Serve a copy on your landlord
 
 Access your packet here:
 {dashboard_url}

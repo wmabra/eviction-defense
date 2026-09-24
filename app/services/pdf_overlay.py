@@ -2133,10 +2133,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         chk = fin.get("checking_balance")
         sav = fin.get("savings_balance")
         cash = fin.get("cash_on_hand")
-        if chk is not None:
-            accts.append(f"Checking: {_money(chk, 2)}")
-        if sav is not None:
-            accts.append(f"Savings: {_money(sav, 2)}")
+        bank_total = (_to_float(chk) or 0.0) + (_to_float(sav) or 0.0) if (chk is not None or sav is not None) else None
+        if bank_total is not None:
+            accts.append(f"Bank account(s): {_money(bank_total, 2)}")
         if cash is not None:
             accts.append(f"Cash on hand: {_money(cash, 2)}")
         return "; ".join(accts) if accts else "None ($0.00)"
@@ -2247,11 +2246,10 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         if vehicle:
             parts.append(f"Vehicle: {vehicle}" + (f" ({_money(vehicle_val, 0)})" if vehicle_val else ""))
         checking = financial.get("checking_balance")
-        if checking:
-            parts.append(f"Checking: {_money(checking, 2)}")
         savings = financial.get("savings_balance")
-        if savings:
-            parts.append(f"Savings: {_money(savings, 2)}")
+        bank_total = (_to_float(checking) or 0.0) + (_to_float(savings) or 0.0) if (checking is not None or savings is not None) else None
+        if bank_total:
+            parts.append(f"Bank account(s): {_money(bank_total, 2)}")
         cash = financial.get("cash_on_hand")
         if cash:
             parts.append(f"Cash: {_money(cash, 2)}")
