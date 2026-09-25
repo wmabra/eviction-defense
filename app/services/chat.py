@@ -95,6 +95,7 @@ f. ZIP code (5 digits) — record as property_zip
 g. Cell phone number — REQUIRED (for your records)
 h. Email address (to receive completed packet) — REQUIRED
 i. Are you the tenant named in the eviction? (if no, explain we can only help the named tenant)
+j. Do you need a foreign language interpreter for court hearings? (Reply 'No', or 'Yes' with the language you need) — REQUIRED for court scheduling.
 
 === PHASE 2: LANDLORD & CASE INFO ===
 STRICT NO-COMBO RULE: Every single question below MUST be asked in its own separate message. NEVER ask combined questions (e.g. NEVER ask for phone AND email together; NEVER ask if an attorney is listed AND their name/address in one question).
@@ -108,7 +109,7 @@ e. Is an attorney listed on the court papers or summons for your landlord? (yes/
 f. If yes: What is the landlord's attorney's name? — ASK NAME ONLY.
 g. If yes: What is the landlord's attorney's full mailing address? (If unknown, reply 'None') — ASK ADDRESS IN A SEPARATE MESSAGE.
 h. Case number (printed near the top of court papers/summons)
-i. Court name (what is the name of the courthouse where the case was filed?) — ASK ONLY THE COURTHOUSE NAME HERE.
+i. Court name (what is the name of the courthouse where the case was filed? You can also include the court address from your summons) — ASK ONLY THE COURTHOUSE NAME / ADDRESS HERE.
 j. Court division (is there a division listed on your summons, such as Division 1 or Civil Division? If none or not shown, they can say None) — ASK IN A SEPARATE MESSAGE.
 k. When were you served with the court papers? (date on summons)
 l. Did you receive a notice to pay or quit before the court papers were served? (yes/no)
@@ -196,11 +197,11 @@ m. What are your monthly transportation costs (gas, car payment, bus)?
 n. What are your monthly medical or prescription expenses?
 o. What are your monthly childcare expenses, if any (or $0)?
 p. What are your monthly credit card or loan debt payments, if any (or $0)?
-q. Do you receive any public benefits (such as SNAP/food stamps, Medicaid, SSI, TANF, Section 8, or energy assistance)?
+q. Do you receive any public benefits (such as SNAP/food stamps, Medicaid, SSI, TANF, Aid to the Blind, Aid to the Needy and Disabled (AND), Old Age Pension (OAP), Section 8, or energy assistance)?
    - MULTI-BENEFIT LOOP RULE (CRITICAL): A tenant may receive multiple public assistance benefits (e.g. SNAP AND Medicaid, or SSI AND energy assistance).
-     1. If the user mentions any benefit (e.g. "SNAP", "food stamps", "Medicaid", "SSI", "TANF", "Section 8", "housing voucher", "energy assistance", "LIEAP", etc.):
-        - Record that benefit (set the corresponding boolean: receives_snap, receives_medicaid, receives_ssi, receives_tanf, receives_section8, receives_energy_assistance, receives_public_benefits=true).
-        - DO NOT move on to cash on hand. Instead, ask: "Thank you. Do you receive any other public benefits? (such as Medicaid, SSI, TANF, Section 8, or energy assistance; or reply 'No' or 'None' if that's all)."
+     1. If the user mentions any benefit (e.g. "SNAP", "food stamps", "Medicaid", "SSI", "TANF", "Aid to the Blind", "AND", "Aid to the Needy and Disabled", "OAP", "Old Age Pension", "Section 8", "housing voucher", "energy assistance", "LIEAP", etc.):
+        - Record that benefit (set the corresponding boolean: receives_snap, receives_medicaid, receives_ssi, receives_tanf, receives_blind_aid, receives_and, receives_oap, receives_section8, receives_energy_assistance, receives_public_benefits=true).
+        - DO NOT move on to cash on hand. Instead, ask: "Thank you. Do you receive any other public benefits? (such as Medicaid, SSI, TANF, Aid to the Blind, AND, Old Age Pension, Section 8, or energy assistance; or reply 'No' or 'None' if that's all)."
      2. Keep asking if they receive any other public benefits until the user explicitly says "No", "None", "No other", or indicates that is all of their benefits.
      3. If the user initially replies "No", "None", or "$0", record all benefit fields as false and move to the next question.
      4. Only move to step r (cash on hand) after the user explicitly says "No", "None", or that they receive no other public benefits.
@@ -225,13 +226,13 @@ After ALL phases are complete (all fields collected), append this JSON block to 
 ```
 
 The collected_data JSON must include these top-level keys matching the CompleteIntake schema:
-- personal_info: {full_name, date_of_birth, phone, email, property_address, property_city, property_zip, county}
+- personal_info: {full_name, date_of_birth, phone, email, property_address, property_city, property_zip, county, needs_interpreter, interpreter_language}
 - landlord_info: {landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name, landlord_attorney_address}
 - case_details: {case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, hearing_time, response_deadline}
 - rent_payment: {monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}
 - defenses: {<defense_key>: {checked, explanation}, ...} — one entry per defense the user selected, using the EXACT defense keys shown in Phase 4 (the text before each "—", e.g. def_repairs, def_paid, def_partial_pay, def_continuance). Each entry: checked=true and explanation = the user's facts, word for word. For narrative answer forms (such as Denver County Court), store the tenant's side of the story / reasons under "narrative": {"checked": true, "explanation": "<user's statement word for word>"}.
-- preferences: {trial_by, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, continuance_days, continuance_reasons, continuance_other_reason, continuance_notify_method, continuance_notify_date, continuance_plaintiff_position, needs_emergency_stay, emergency_stay_reason, emergency_stay_days, facing_writ_possession, filing_bankruptcy}
-- financial_info: {monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, household_adults, household_children, total_dependents, dependents_detail, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}
+- preferences: {trial_by, hearing_format, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, continuance_days, continuance_reasons, continuance_other_reason, continuance_notify_method, continuance_notify_date, continuance_plaintiff_position, needs_emergency_stay, emergency_stay_reason, emergency_stay_days, facing_writ_possession, filing_bankruptcy}
+- financial_info: {monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, marital_status, household_adults, household_children, total_dependents, dependents_detail, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_blind_aid, receives_oap, receives_and, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}
 
 Note on self-employment: When the tenant is self-employed, set is_employed=true, record their business or company name under employer_name, their business address under employer_address, and their monthly net earnings under self_employment_income (and employment_income).
 
@@ -285,13 +286,22 @@ def _defense_list_for_state(state: Optional[str], county: Optional[str]) -> str:
         if options:
             lines: list[str] = []
             seen: set[str] = set()
+            curr_section = None
+            item_num = 1
             for opt in options:
+                sec = opt.get("section")
+                if sec and sec != curr_section:
+                    curr_section = sec
+                    if lines:
+                        lines.append("")
+                    lines.append(f"[{sec}]")
                 key = opt.get("key", "")
                 if not key or key in seen:
                     continue
                 seen.add(key)
                 label = opt.get("label") or key
-                lines.append(f"{len(lines) + 1}. {key} — {label}")
+                lines.append(f"{item_num}. {key} — {label}")
+                item_num += 1
             return "\n".join(lines)
 
     # AR, MN, and any other narrative/scanned form fall back to the generic list.
@@ -308,8 +318,12 @@ def _state_profile(state: Optional[str], county: Optional[str]) -> str:
     lines: list[str] = []
     if court_type:
         lines.append(f"- Court type: {court_type}")
-    if state == "CO" and county.lower() == "denver":
-        lines.append("- Denver County Court uses its own answer form (DCC CP No. 3), not the statewide JDF 103 form.")
+    if state == "CO":
+        if county.lower() == "denver":
+            lines.append("- Denver County Court uses its own answer form (DCC CP No. 3), not the statewide JDF 103 form.")
+        else:
+            lines.append("- Colorado statewide Answer Form (JDF 103): Defenses are grouped into Section 7a (Unpaid Rent claims), Section 7b (Lease Violation claims), Section 7c (Substantial Violation claims), Section 7d (Ending Tenancy/No-Fault non-renewal), and Section 7e (General Defenses). Present the defense checklist clearly with these section headers so the tenant can pick defenses matching their landlord's claims.")
+            lines.append("- Colorado Fee Waiver (JDF 205): Automatic Qualification applies to: SNAP, SSI, TANF, Aid to the Blind Colorado, Aid to the Needy and Disabled (AND), and Old Age Pension (OAP). Include these programs in your public assistance questions.")
     if state == "IL":
         lines.append("- Cook County has preferred local forms, but Illinois law does not mandate a county-specific answer form.")
     if state == "GA":

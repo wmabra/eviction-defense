@@ -36,6 +36,8 @@ class PersonalInfo(BaseModel):
     phone: str = ""
     email: str = ""
     mailing_address: Optional[str] = None
+    needs_interpreter: bool = False
+    interpreter_language: Optional[str] = None
 
 
 class LandlordInfo(BaseModel):
@@ -115,6 +117,7 @@ class Preferences(BaseModel):
     wants_payment_plan: bool = False
     payment_plan_amount: Optional[float] = None
     trial_by: str = "judge"  # judge or jury
+    hearing_format: Optional[str] = None  # in_person or remote
     needs_filing_fee_waiver: bool = False
     has_eviction_defense_attorney: bool = False
     additional_notes: Optional[str] = None
@@ -195,6 +198,7 @@ class FinancialInfo(BaseModel):
     other_assets_value: Optional[float] = None
     
     # Household
+    marital_status: Optional[str] = None  # single, married, divorced, separated, widowed
     household_adults: int = 1
     household_children: int = 0
     total_dependents: int = 0
@@ -206,6 +210,9 @@ class FinancialInfo(BaseModel):
     receives_ssi: bool = False
     receives_medicaid: bool = False
     receives_tanf: bool = False
+    receives_blind_aid: bool = False  # Colorado Aid to the Blind (JDF 205 line 6.1)
+    receives_oap: bool = False        # Colorado Old Age Pension (JDF 205 line 6.2)
+    receives_and: bool = False        # Colorado Aid to the Needy and Disabled (JDF 205 line 6.6)
     receives_section8: bool = False
     receives_public_housing: bool = False
     receives_county_assistance: bool = False

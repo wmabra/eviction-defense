@@ -376,8 +376,9 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
     unruled checkbox pairs are left for _map_fee_waiver_checkboxes.
     """
     selections = config.get("radio_selections", {}) or {}
-    fin = data.get("financial_info", {}) or {}
-    pi = data.get("personal_info", {}) or {}
+    fin = data.get("financial_info") or data.get("financial") or {}
+    pi = data.get("personal_info") or data.get("personal") or {}
+    pref = data.get("preferences") or {}
     defenses = data.get("defenses", {}) or {}
     resolved = 0
     for page in doc:
@@ -402,7 +403,7 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
             needle = None
             if rule:
                 if rule.get("skip_when_categorical") and any(
-                    bool(fin.get(k)) for k in ("receives_ssi", "receives_tanf", "receives_snap")
+                    bool(fin.get(k)) for k in ("receives_ssi", "receives_tanf", "receives_snap", "receives_blind_aid", "receives_oap", "receives_and")
                 ):
                     needle = None  # categorical assistance → skip Sections 7-10
                 elif "any_defense" in rule:
@@ -410,18 +411,45 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
                         isinstance(defenses.get(k), dict) and defenses[k].get("checked")
                         for k in rule["any_defense"]
                     )
+                    if not _checked and rule.get("or_has_complaint_amount"):
+                        try:
+                            _amt = float(data.get("case_details", {}).get("complaint_amount_claimed") or data.get("court", {}).get("complaint_amount_claimed") or 0)
+                            if _amt > 0:
+                                _checked = True
+                        except (TypeError, ValueError):
+                            pass
                     needle = rule.get("yes") if _checked else rule.get("no")
+                elif "match_value" in rule:
+                    _src = rule["match_value"]
+                    _val = str(fin.get(_src) or pi.get(_src) or pref.get(_src) or "").lower()
+                    if _src == "hearing_format" and pref.get("prefers_remote"):
+                        _val = "remote"
+                    for opt_key, opt_needle in rule.get("options", {}).items():
+                        if opt_key.lower() in _val:
+                            needle = opt_needle
+                            break
+                    if not needle and "default" in rule:
+                        needle = rule["default"]
                 elif "data" in rule:
-                    _val = fin.get(rule["data"])
+                    _src = rule["data"]
+                    _val = fin.get(_src)
                     if _val is None:
-                        _val = pi.get(rule["data"])
+                        _val = pi.get(_src)
+                    if _val is None:
+                        _val = pref.get(_src)
+                    if _src == "prefers_remote" and _val is None and pref.get("hearing_format"):
+                        _val = ("remote" in str(pref.get("hearing_format")).lower())
                     if _val is not None:
                         needle = rule.get("yes") if _val else rule.get("no")
+                    elif "default" in rule:
+                        needle = rule.get(rule["default"]) or rule["default"]
                 elif "any_financial" in rule:
                     _checked = any(bool(fin.get(k)) for k in rule["any_financial"])
                     needle = rule.get("yes") if _checked else rule.get("no")
                 elif "value" in rule:
                     needle = rule["value"]
+            if needle is None and rule and "default" in rule:
+                needle = rule.get(rule["default"]) or rule["default"]
             choice = None
             for w in ws:
                 try:
@@ -761,11 +789,14 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
 def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: str = ""):
     """Fill a PDF's form fields using widget/field mapping + smart auto-fill."""
+    state_code = str(data.get("state") or data.get("court", {}).get("state") or data.get("personal_info", {}).get("state") or config.get("state_code") or "").upper()
     mapping = config.get("field_mapping", {})
-    p = data.get("personal_info", {})
-    l = data.get("landlord_info", {})
-    c = data.get("case_details", {})
+    p = data.get("personal_info", {}) or data.get("personal", {})
+    l = data.get("landlord_info", {}) or data.get("landlord", {})
+    c = data.get("case_details", {}) or data.get("court", {})
+    financial = data.get("financial_info", {}) or data.get("financial", {})
     defenses = data.get("defenses", {})
+    pref = data.get("preferences", {})
     today = date.today()
     
     values = {}
@@ -847,6 +878,39 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if tk not in _all_data:
                     _all_data[tk] = _all_data[source_key]
 
+    # Colorado courthouse mailing address lookup:
+    # If in Colorado and court_address is empty or just repeats the county/court name without a street address,
+    # look up the actual courthouse mailing address from the Colorado county courthouse directory.
+    if state_code == "CO":
+        from app.services.state_configs import get_colorado_courthouse_address
+        _ca = str(_all_data.get("court_address", "") or "").strip()
+        _cty = str(_all_data.get("county", "") or p.get("county", "")).strip()
+        if not _ca or _ca.lower() in (_cty.lower(), f"{_cty.lower()} county", "county court", "district court") or not any(ch.isdigit() for ch in _ca):
+            _lookup_addr = get_colorado_courthouse_address(_cty)
+            if _lookup_addr:
+                _all_data["court_address"] = _lookup_addr
+
+    if "interpreter_language" not in _all_data and p.get("interpreter_language"):
+        _all_data["interpreter_language"] = str(p.get("interpreter_language"))
+    if "marital_status" not in _all_data and financial.get("marital_status"):
+        _all_data["marital_status"] = str(financial.get("marital_status"))
+    if "pay_rate" not in _all_data:
+        _pr = financial.get("hourly_rate_or_salary") or financial.get("employment_income") or financial.get("monthly_gross_income")
+        if _pr is not None:
+            _all_data["pay_rate"] = f"{_to_float(_pr):.2f}"
+    if "last_paycheck_date" not in _all_data and financial.get("last_employment_date"):
+        _all_data["last_paycheck_date"] = str(financial.get("last_employment_date"))
+    if "pay_frequency" not in _all_data:
+        _pf = str(financial.get("pay_period") or "").lower()
+        if "week" in _pf and ("every other" in _pf or "bi-week" in _pf or "biweek" in _pf):
+            _all_data["pay_frequency"] = "Every other week"
+        elif "week" in _pf:
+            _all_data["pay_frequency"] = "Weekly"
+        elif "bi-month" in _pf or "twice" in _pf:
+            _all_data["pay_frequency"] = "Bi-monthly"
+        else:
+            _all_data["pay_frequency"] = "Monthly"
+
     # Split the phone number for forms with separate area-code / number fields.
     if "phone_area_code" not in _all_data or "phone_number_only" not in _all_data:
         import re as _re
@@ -861,7 +925,6 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         _all_data["date"] = date.today().strftime("%m/%d/%Y")
     
     # Synthesize city_state_zip from city + state + zip
-    state_code = data.get("state", "")
     if "property_city" in _all_data and "city_state_zip" not in _all_data:
         city = _all_data.get("property_city", "")
         zipcode = _all_data.get("property_zip", "")
@@ -939,7 +1002,6 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             _all_data.setdefault("reduced_rent_months", str(_months))
     
     # Also add state-level data
-    state_code = data.get("state", "")
     if state_code:
         _all_data["state"] = state_code
         _all_data["state_code"] = state_code
@@ -1106,7 +1168,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if skip_financial:
                     continue
                 val = _get_financial_value(map_key, data)
-                if val:
+                if val is not None and val != "":
                     if config.get("strip_dollar_signs"):
                         val = str(val).lstrip("$")
                     values[pdf_field] = str(val)
@@ -1118,6 +1180,34 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             values["9A.8"] = ""
             values["9B.8"] = ""
             values["9C"] = ""
+        elif state_code == "CO" and not skip_financial:
+            # Ensure total monthly income (9A.8) and total monthly expenses (9B.8) are populated
+            if not values.get("9A.8"):
+                _inc = _to_float(financial.get("monthly_gross_income")) or 0.0
+                if _inc == 0.0:
+                    _inc = sum(_to_float(financial.get(k)) or 0.0 for k in (
+                        "employment_income", "self_employment_income", "social_security_income",
+                        "ssi_income", "unemployment_income", "pension_income", "disability_income",
+                        "alimony_income", "child_support_income", "other_income"
+                    ))
+                values["9A.8"] = f"{_inc:.2f}"
+            if not values.get("9B.8"):
+                _exp = _to_float(financial.get("total_monthly_expenses")) or 0.0
+                if _exp == 0.0:
+                    _exp = sum(_to_float(financial.get(k)) or 0.0 for k in (
+                        "rent_or_mortgage", "food_expense", "utilities_expense",
+                        "child_care_expense", "medical_expense", "transportation_expense",
+                        "debt_payments", "other_expenses"
+                    ))
+                values["9B.8"] = f"{_exp:.2f}"
+            # Section 9C: explanation if income < expenses
+            try:
+                _tot_i = float(str(values.get("9A.8", "0")).replace("$", "").replace(",", ""))
+                _tot_e = float(str(values.get("9B.8", "0")).replace("$", "").replace(",", ""))
+                if _tot_i < _tot_e and not values.get("9C"):
+                    values["9C"] = "Assistance from family and friends, community resources, and prioritizing essential expenses."
+            except Exception:
+                pass
 
         # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
         # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
@@ -1213,6 +1303,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     # Master "Affirmative Defenses" checkbox — auto-select when any defense applies.
     if any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
         values["√ Affirmative Defenses"] = "Yes"
+    if data.get("preferences", {}).get("trial_by") == "jury":
+        values["√  Jury Trial"] = "Yes"
     # Louisiana LSBA answer Section 1: auto-check the "I have exceptions and/or
     # defenses..." master box whenever any defense is asserted (intake carries
     # no separate def_exceptions flag).
@@ -2228,13 +2320,14 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
     
     Returns formatted string for text fields, or "Yes" for boolean checkboxes.
     """
-    financial = data.get("financial_info", {})
+    financial = data.get("financial_info", {}) or data.get("financial", {})
     if not financial:
         return None
     
     # Boolean checkbox fields
     bool_fields = ["receives_public_benefits", "receives_snap", "receives_ssi", "receives_medicaid",
-                   "receives_tanf", "receives_section8", "receives_public_housing",
+                   "receives_tanf", "receives_blind_aid", "receives_oap", "receives_and",
+                   "receives_section8", "receives_public_housing",
                    "receives_county_assistance", "receives_energy_assistance",
                    "receives_veterans_benefits", "receives_child_care_assistance",
                    "income_below_threshold", "unable_to_pay_fees", "owns_real_estate",
@@ -2244,7 +2337,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         return "Yes" if val else None
     
     # Numeric fields — format as dollar amounts
-    dollar_fields = ["monthly_gross_income", "monthly_net_income", "employment_income",
+    dollar_fields = ["monthly_gross_income", "monthly_net_income", "total_monthly_income", "employment_income",
                      "self_employment_income", "social_security_income", "ssi_income",
                      "unemployment_income", "pension_income", "disability_income",
                      "veterans_benefits", "child_support_income", "alimony_income",
@@ -2260,18 +2353,35 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         # Fallback: employment_income from monthly_gross_income
         if val is None and key == "employment_income":
             val = financial.get("monthly_gross_income")
+        if val is None and key == "total_monthly_income":
+            val = financial.get("monthly_gross_income")
         # Fallback: total_expenses_table is an alias for total_monthly_expenses
         if val is None and key == "total_expenses_table":
             val = financial.get("total_monthly_expenses")
+        # Fallback: combined bank_balance into checking / savings
+        if val is None and key == "checking_balance":
+            if financial.get("bank_balance") is not None:
+                val = financial.get("bank_balance")
+        if val is None and key == "savings_balance":
+            if financial.get("bank_balance") is not None:
+                val = 0.0
         if val is not None:
             return f"{_money(val, 2)}"
         return None
     
     # Text fields
     text_fields = ["vehicle_make_model", "other_income_description", "other_assets_description",
-                   "previous_fee_waiver_case"]
+                   "previous_fee_waiver_case", "last_paycheck_date", "pay_rate", "pay_frequency", "marital_status"]
     if key in text_fields:
         val = financial.get(key)
+        if val is None and key == "pay_rate":
+            val = financial.get("hourly_rate_or_salary") or financial.get("employment_income") or financial.get("monthly_gross_income")
+            if val is not None:
+                val = f"{_to_float(val):.2f}"
+        if val is None and key == "last_paycheck_date":
+            val = financial.get("last_employment_date")
+        if val is None and key == "pay_frequency":
+            val = financial.get("pay_period") or "Monthly"
         return str(val) if val else None
     
     # Household numbers
@@ -2280,7 +2390,9 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
             _total = int(financial.get("household_adults") or 0) + int(financial.get("household_children") or 0)
         except (TypeError, ValueError):
             _total = 0
-        return str(_total) if _total else None
+        if _total <= 0:
+            _total = 1
+        return str(_total)
     if key in ["household_adults", "household_children", "total_dependents"]:
         val = financial.get(key)
         return str(val) if val is not None else None
