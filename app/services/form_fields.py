@@ -93,8 +93,7 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
             # printed line above it on every generated document.
             _h = max(12.0, min(28.0, size * 1.35 + 2.0))
             w.rect = fitz.Rect(x0, y1 - _h, max(x1, x0 + 48), y1 + 2)
-            w.field_value = ""
-            w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+            w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE if _h >= 20.0 else 0  # type: ignore[attr-defined]
             page.add_widget(w)
             added += 1
 

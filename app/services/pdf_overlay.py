@@ -1488,7 +1488,12 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             if not field_name:
                 continue
             if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
-                widget.field_flags = (widget.field_flags or 0) | fitz.PDF_TX_FIELD_IS_MULTILINE
+                h = widget.rect.height if widget.rect else 0
+                val_str = str(values.get(field_name, "") or "")
+                if h >= 20.0 or "\n" in val_str:
+                    widget.field_flags = (widget.field_flags or 0) | fitz.PDF_TX_FIELD_IS_MULTILINE
+                else:
+                    widget.field_flags = (widget.field_flags or 0) & ~fitz.PDF_TX_FIELD_IS_MULTILINE
             
             # 1. Check explicit mapping first
             if field_name in values:
@@ -1699,15 +1704,21 @@ def _force_multiline_text_widgets(doc: fitz.Document) -> int:
                 continue
             dirty = False
             flags = getattr(w, "field_flags", 0) or 0
-            if not (flags & fitz.PDF_TX_FIELD_IS_MULTILINE):
-                w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
-                dirty = True
-            if str(getattr(w, "field_value", "") or "").strip():
+            h = w.rect.height if w.rect else 0
+            val_str = str(getattr(w, "field_value", "") or "")
+            if h >= 20.0 or "\n" in val_str:
+                if not (flags & fitz.PDF_TX_FIELD_IS_MULTILINE):
+                    w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                    dirty = True
+            else:
+                if flags & fitz.PDF_TX_FIELD_IS_MULTILINE:
+                    w.field_flags = flags & ~fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                    dirty = True
+            if val_str.strip():
                 # Only large multi-line narrative areas (height > 30) get an opaque
                 # white background to cleanly mask pre-printed ruled lines.
                 # Single-line fields keep their transparent background so pre-printed
                 # underlines remain continuous without being chopped into dashes.
-                h = w.rect.height if w.rect else 0
                 if h > 30 and getattr(w, "fill_color", None) is None:
                     w.fill_color = (1, 1, 1)
                     dirty = True

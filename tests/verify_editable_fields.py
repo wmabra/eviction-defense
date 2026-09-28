@@ -178,9 +178,16 @@ def check_pdf(path, label):
             if ft == FITZ_TEXT:
                 stats["text"] += 1
                 flags = getattr(w, "field_flags", 0) or 0
-                if not (flags & FITZ_MULTILINE):
-                    stats["non_multiline"] += 1
-                    issues.append(f"{label}: text field '{fname}' NOT multiline")
+                r = getattr(w, "rect", None)
+                h = r.height if r else 0
+                val = str(getattr(w, "field_value", "") or "")
+                # Only tall multi-line fields (h >= 20) require the multiline flag.
+                # Native court forms with short single-line fields (h < 20) intentionally
+                # omit multiline to prevent MuPDF from clipping the top tips of ascenders.
+                if h >= 20.0 or "\n" in val:
+                    if not (flags & FITZ_MULTILINE):
+                        stats["non_multiline"] += 1
+                        issues.append(f"{label}: tall text field '{fname}' NOT multiline (height={h:.1f})")
                 fits, needed, lines = estimate_text_fit(w)
                 if not fits:
                     stats["too_small"] += 1
