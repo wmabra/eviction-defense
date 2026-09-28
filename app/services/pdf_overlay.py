@@ -572,15 +572,16 @@ def _unhide_filled_widgets(doc: fitz.Document) -> None:
 def _compose_full_address(p: dict, state: str) -> str:
     """Compose "street, city, ST ZIP" from separate intake fields.
 
-    The city is skipped if already embedded in the street string; state+ZIP are
-    joined as "ST ZIP". Never leaves a trailing comma.
+    The city is skipped if already embedded after a comma in the street string;
+    state+ZIP are joined as "ST ZIP". Never leaves a trailing comma.
     """
     street = (p.get("property_address") or "").strip()
     city = (p.get("property_city") or "").strip()
     state = (state or "").strip()
     zipcode = (p.get("property_zip") or "").strip().split("-")[0][:5]
     tail_parts = []
-    if city and city not in street:
+    already_has_city = bool(city and re.search(rf',\s*{re.escape(city)}\b', street, re.IGNORECASE))
+    if city and not already_has_city:
         tail_parts.append(city)
     state_zip = " ".join(x for x in (state, zipcode) if x)
     if state_zip:
@@ -1219,7 +1220,44 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
 
             # Household table for Colorado (JDF 205 Section 8)
             # Populates 8A.1-8A.3, 8B.1-8B.3, 8C.1-8C.3, 8D.1-8D.3 and Group8A-Group8D
-            members = financial.get("household_members") or []
+            raw_members = financial.get("household_members") or []
+            members = []
+            if isinstance(raw_members, str):
+                if ';' in raw_members:
+                    raw_items = [x.strip() for x in raw_members.split(';') if x.strip()]
+                else:
+                    raw_items = [x.strip() for x in re.split(r',\s*(?=[A-Za-z0-9_]+(?:\s*\([^)]*\))?)', raw_members) if x.strip()]
+            elif isinstance(raw_members, list):
+                raw_items = raw_members
+            else:
+                raw_items = []
+
+            for item in raw_items:
+                if isinstance(item, dict):
+                    members.append(item)
+                elif isinstance(item, str):
+                    item = item.strip()
+                    if not item:
+                        continue
+                    if '(' in item and ')' in item:
+                        m = re.match(r'^([^(]+)\(([^)]+)\)$', item)
+                        if m:
+                            name = m.group(1).strip()
+                            extra = m.group(2).strip()
+                            parts = [p.strip() for p in extra.split(',')]
+                            age = parts[0]
+                            rel = parts[1] if len(parts) > 1 else ('Child' if any(c.isdigit() for c in age) and int(re.search(r'\d+', age).group(0)) < 18 else 'Family')
+                            members.append({'name': name, 'age': age, 'relationship': rel, 'dependent': True})
+                            continue
+                    if ',' in item:
+                        parts = [p.strip() for p in item.split(',')]
+                        name = parts[0]
+                        age = parts[1] if len(parts) > 1 else ''
+                        rel = parts[2] if len(parts) > 2 else ('Child' if any(c.isdigit() for c in age) and int(re.search(r'\d+', age).group(0)) < 18 else 'Family')
+                        members.append({'name': name, 'age': age, 'relationship': rel, 'dependent': True})
+                    else:
+                        members.append({'name': item, 'age': '', 'relationship': 'Family', 'dependent': True})
+
             if not members:
                 ch_count = int(financial.get("household_children") or 0)
                 ad_count = max(0, int(financial.get("household_adults") or 1) - 1)
@@ -1241,6 +1279,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
 
             row_letters = ["A", "B", "C", "D"]
             for idx, member in enumerate(members[:4]):
+                if not isinstance(member, dict):
+                    continue
                 row_letter = row_letters[idx]
                 values[f"8{row_letter}.1"] = str(member.get("name", ""))
                 values[f"8{row_letter}.2"] = str(member.get("age", ""))
@@ -1248,6 +1288,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 dep = bool(member.get("dependent", True))
                 financial[f"dep_{idx+1}_dependent"] = dep
                 _all_data[f"dep_{idx+1}_dependent"] = dep
+                if "financial_info" in data and isinstance(data["financial_info"], dict):
+                    data["financial_info"][f"dep_{idx+1}_dependent"] = dep
 
         # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
         # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
@@ -1460,7 +1502,6 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     ]
     # Word-boundary-only rules: match "Date" or "Date3" but not "TrialDate" or "BOPDueDate"
     # Also handles camelCase like "ResidenceAddress" → "address"
-    import re
     word_boundary_rules = [
         (re.compile(r'(?<![a-zA-Z])address|(?<=[a-z])Address', re.IGNORECASE), _full_addr or p.get("property_address", "")),
         (re.compile(r'(?<![a-zA-Z])date(?![a-zA-Z])|(?<=[a-z])Date$', re.IGNORECASE), today.strftime("%m/%d/%Y")),
@@ -2215,12 +2256,29 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     # Handle procedural checkbox overlay keys (hearing mode, trial mode, etc.)
     if key.startswith("checkbox_"):
         pref = data.get("preferences", {}) or {}
+        h_mode = str(pref.get("hearing_mode") or pref.get("hearing_format") or "in person").lower()
+        is_remote = "remote" in h_mode
+        is_in_person = not is_remote
+
+        cos_method = str(
+            pref.get("certificate_of_service_method")
+            or c.get("certificate_of_service_method")
+            or "regular_mail"
+        ).lower()
+        is_cos_efile = "efile" in cos_method or "online" in cos_method or "electronic" in cos_method
+        is_cos_hand = "hand" in cos_method or "delivery" in cos_method or (
+            "other" in cos_method and "hand" in str(pref.get("certificate_of_service_other", "")).lower()
+        )
+        is_cos_mail = not is_cos_efile and not is_cos_hand
+
         _cb_map = {
             "checkbox_trial_to_court": "X" if pref.get("trial_by") == "judge" else None,
             "checkbox_trial_jury": "X" if pref.get("trial_by") == "jury" else None,
-            "checkbox_hearing_in_person": "X" if pref.get("hearing_mode", "in person") == "in person" else None,
-            "checkbox_hearing_remote": "X" if pref.get("hearing_mode") == "remote" else None,
-            "checkbox_cos_mail": "X",
+            "checkbox_hearing_in_person": "X" if is_in_person else None,
+            "checkbox_hearing_remote": "X" if is_remote else None,
+            "checkbox_cos_hand": "X" if is_cos_hand else None,
+            "checkbox_cos_efile": "X" if is_cos_efile else None,
+            "checkbox_cos_mail": "X" if is_cos_mail else None,
         }
         return _cb_map.get(key)
 
