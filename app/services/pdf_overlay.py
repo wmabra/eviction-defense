@@ -33,6 +33,25 @@ import pymupdf as fitz  # PyMuPDF
 
 from app.services.state_configs import get_state_config
 
+SC_COUNTY_TO_CIRCUIT = {
+    "calhoun": "First", "dorchester": "First", "orangeburg": "First",
+    "aiken": "Second", "bamberg": "Second", "barnwell": "Second",
+    "clarendon": "Third", "claredon": "Third", "lee": "Third", "sumter": "Third", "williamsburg": "Third",
+    "chesterfield": "Fourth", "darlington": "Fourth", "dillon": "Fourth", "marlboro": "Fourth",
+    "kershaw": "Fifth", "richland": "Fifth",
+    "chester": "Sixth", "fairfield": "Sixth", "lancaster": "Sixth",
+    "cherokee": "Seventh", "spartanburg": "Seventh",
+    "abbeville": "Eighth", "greenwood": "Eighth", "laurens": "Eighth", "newberry": "Eighth",
+    "berkeley": "Ninth", "charleston": "Ninth",
+    "anderson": "Tenth", "oconee": "Tenth",
+    "edgefield": "Eleventh", "lexington": "Eleventh", "mccormick": "Eleventh", "saluda": "Eleventh",
+    "florence": "Twelfth", "marion": "Twelfth", "mariojn": "Twelfth",
+    "greenville": "Thirteenth", "pickens": "Thirteenth",
+    "allendale": "Fourteenth", "beaufort": "Fourteenth", "colleton": "Fourteenth", "hampton": "Fourteenth", "jasper": "Fourteenth",
+    "georgetown": "Fifteenth", "horry": "Fifteenth",
+    "union": "Sixteenth", "york": "Sixteenth",
+}
+
 logger = logging.getLogger(__name__)
 
 FORMS_DIR = os.path.join(os.path.dirname(__file__), "..", "templates", "counties")
@@ -177,7 +196,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
         # is received. Keep this FIRST so the parent row (which also lists the
         # first program, e.g. "SSI", on the next line) isn't short-circuited by
         # the specific-benefit rules below.
-        (("public assistance",), bool(fin.get("receives_snap") or fin.get("receives_medicaid") or
+        (("public assistance", "public benefits", "government entitlements", "receive these public"), bool(fin.get("receives_snap") or fin.get("receives_medicaid") or
                                       fin.get("receives_ssi") or fin.get("receives_tanf") or
                                       fin.get("receives_public_benefits"))),
         (("snap", "food stamp", "food assistance"), bool(fin.get("receives_snap"))),
@@ -187,6 +206,11 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
         (("aid to the blind", "aid to blind"), bool(fin.get("receives_ssi"))),
         (("old age", "old-age"), bool(fin.get("receives_ssi"))),
         (("tanf", "family assistance", "general assistance"), bool(fin.get("receives_tanf"))),
+        (("chip",), bool(fin.get("receives_chip"))),
+        (("wic",), bool(fin.get("receives_wic"))),
+        (("aabd",), bool(fin.get("receives_aabd"))),
+        (("public housing", "section 8"), bool(fin.get("receives_public_housing") or fin.get("receives_section8"))),
+        (("energy assistance", "low-income energy"), bool(fin.get("receives_energy_assistance"))),
     ]
 
     def _bbox(t):
@@ -202,6 +226,14 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     # band) so labels from adjacent rows (e.g. "value of the vehicle" just above
     # the "own real estate?" row) can't leak into this checkbox's question text.
     ctx = " ".join(str(x[4]) for x in cw).lower()
+
+    # Find other checkboxes on the same row to bound local text strictly
+    other_cbs = [w.rect for w in page.widgets() if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX and w.rect]
+    same_row_after = [o for o in other_cbs if abs((o.y0 + o.y1) / 2 - (r.y0 + r.y1) / 2) < 7 and o.x0 > r.x1]
+    next_x = min([o.x0 for o in same_row_after]) if same_row_after else r.x1 + 80
+    max_x = min(r.x1 + 80, next_x)
+    cw_local = [x for x in words if abs((x[1] + x[3]) / 2 - (r.y0 + r.y1) / 2) < 7 and r.x1 - 2 <= x[0] < max_x]
+    ctx_local = " ".join(str(x[4]) for x in cw_local).lower()
 
     # Yes/No pair — decide which side this box is by proximity to the printed
     # labels. on_state is unreliable here: some templates give every box in a
@@ -264,18 +296,35 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
                 return (is_yes and ans) or (not is_yes and not ans)
         return None
 
-    # "do not receive public assistance" is the NEGATIVE branch — check it only
-    # when the tenant has no benefits (not when they receive SNAP/Medicaid/etc.).
-    if "do not receive public assistance" in ctx:
+    # Representation checks (e.g. TX Section 1 "I am not represented by legal aid")
+    if "not represented" in ctx_local or "am not represented" in ctx_local:
+        return not bool(fin.get("represented_by_legal_aid") or fin.get("has_legal_aid"))
+    if "represented by legal aid" in ctx_local or "am represented" in ctx_local:
+        return bool(fin.get("represented_by_legal_aid") or fin.get("has_legal_aid"))
+
+    # "do not receive public assistance" / "do not receive needs-based" is the NEGATIVE branch
+    if "do not receive" in ctx_local or "do not receive public assistance" in ctx or "do not receive needs-based" in ctx:
         return not any(bool(fin.get(k)) for k in ("receives_snap", "receives_medicaid", "receives_ssi", "receives_tanf", "receives_public_benefits"))
 
+    # Benefit matching: check ctx_local first to avoid row-wide leakage when multiple checkboxes share a row
     for kws, flag in benefit_text:
-        if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
+        if any(re.search(rf'\b{re.escape(k)}\b', ctx_local) for k in kws):
             return flag
 
     for kws, key in income_source_text:
-        if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
+        if any(re.search(rf'\b{re.escape(k)}\b', ctx_local) for k in kws):
             return bool(fin.get(key))
+
+    # Only fall back to row-wide ctx if this is the only checkbox on the row
+    has_other_boxes_on_row = bool(same_row_after) or any(abs((o.y0 + o.y1) / 2 - (r.y0 + r.y1) / 2) < 7 and o.x1 < r.x0 for o in other_cbs)
+    if not has_other_boxes_on_row:
+        for kws, flag in benefit_text:
+            if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
+                return flag
+
+        for kws, key in income_source_text:
+            if any(re.search(rf'\b{re.escape(k)}\b', ctx) for k in kws):
+                return bool(fin.get(key))
 
     return None
 
@@ -324,7 +373,14 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
             if nm in overrides:
                 _ov = overrides[nm]
                 if isinstance(_ov, str):
-                    _exp = bool((data.get("financial_info") or {}).get(_ov))
+                    if _ov == "receives_public_benefits":
+                        _fin = data.get("financial_info") or {}
+                        _exp = bool(_fin.get("receives_public_benefits") or _fin.get("receives_snap") or _fin.get("receives_medicaid") or _fin.get("receives_ssi") or _fin.get("receives_tanf"))
+                    elif _ov in ("do_not_receive_public_benefits", "no_public_benefits"):
+                        _fin = data.get("financial_info") or {}
+                        _exp = not bool(_fin.get("receives_public_benefits") or _fin.get("receives_snap") or _fin.get("receives_medicaid") or _fin.get("receives_ssi") or _fin.get("receives_tanf"))
+                    else:
+                        _exp = bool((data.get("financial_info") or {}).get(_ov))
                 else:
                     _exp = bool(_ov)
                 try:
@@ -879,6 +935,20 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if tk not in _all_data:
                     _all_data[tk] = _all_data[source_key]
 
+    def _format_date_mdy(val):
+        if not val:
+            return ""
+        val_str = str(val).strip()
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', val_str):
+            parts = val_str.split('-')
+            return f"{parts[1]}/{parts[2]}/{parts[0]}"
+        return val_str
+
+    if "summons_service_date" in _all_data:
+        _fmt_sd = _format_date_mdy(_all_data["summons_service_date"])
+        _all_data["date_served"] = _fmt_sd
+        _all_data["service_date"] = _fmt_sd
+
     # Colorado courthouse mailing address lookup:
     # If in Colorado and court_address is empty or just repeats the county/court name without a street address,
     # look up the actual courthouse mailing address from the Colorado county courthouse directory.
@@ -1393,6 +1463,79 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     if state_code == "LA" and any(isinstance(d, dict) and d.get("checked") for d in defenses.values()):
         values["I have exceptions andor defenses to the claims made in the eviction paperwork"] = "Yes"
 
+    # South Carolina SCCA703: resolve mutually exclusive defenses and populate explanation fields
+    if state_code == "SC" and form_key == "answer_form":
+        _rent_info = data.get("rent_payment", {})
+        _claimed = _to_float(c.get("complaint_amount_claimed") or 0.0)
+        _believed = _to_float(_rent_info.get("amount_tenant_believes_owed") or 0.0)
+        _agree = _rent_info.get("agree_with_amount", True)
+
+        if not _agree and _believed > 0:
+            values["I admit that I am responsible, but not for the total amount claimed by the Plaintiff(s)"] = "Yes"
+            values["I deny that I am responsible at all"] = "Off"
+            _reason = f"Plaintiff claims ${_claimed:,.2f}, but Defendant believes the proper amount is ${_believed:,.2f}."
+            _amt_def = defenses.get("def_amount", {})
+            if isinstance(_amt_def, dict) and _amt_def.get("explanation"):
+                _reason += f" {_amt_def['explanation']}"
+            elif _rent_info.get("why_disagree"):
+                _reason += f" {_rent_info['why_disagree']}"
+            values["Reason Not Responsible for Total Amount Claimed, Use Additional Pages if Necessary"] = _reason
+            values["Reason Not Responsible at All For Amount Claimed, Use Additional Pages if Necessary"] = ""
+        else:
+            values["I deny that I am responsible at all"] = "Yes"
+            values["I admit that I am responsible, but not for the total amount claimed by the Plaintiff(s)"] = "Off"
+            _active_reasons = []
+            for _k in ("def_amount", "def_repairs", "def_bad_notice", "def_paid", "def_retaliation", "def_fair_housing"):
+                _d = defenses.get(_k, {})
+                if isinstance(_d, dict) and _d.get("checked") and _d.get("explanation"):
+                    _active_reasons.append(_d["explanation"])
+            _reason = "; ".join(_active_reasons) if _active_reasons else "Defendant denies all allegations of the Complaint and denies owing the amount claimed."
+            values["Reason Not Responsible at All For Amount Claimed, Use Additional Pages if Necessary"] = _reason
+            values["Reason Not Responsible for Total Amount Claimed, Use Additional Pages if Necessary"] = ""
+
+        if values.get("I contest the jurisdiction of the court") == "Yes":
+            _contest_exp = defenses.get("def_contest", {}).get("explanation") if isinstance(defenses.get("def_contest"), dict) else ""
+            values["Reason of Contestation, Use Additional Pages if Necessary"] = _contest_exp or "Defendant contests the jurisdiction of this Court."
+
+    # South Carolina SCCA405 Fee Waiver: set circuit and clean fields
+    if state_code == "SC" and form_key == "fee_waiver_form":
+        _cty_key = str(p.get("county") or "").strip().lower().replace(" county", "").strip()
+        _circuit = SC_COUNTY_TO_CIRCUIT.get(_cty_key)
+        if _circuit:
+            values["Select Judicial Circuit Number"] = _circuit
+        if _cty_key:
+            values["Select the County"] = _cty_key.title()
+        values["Plaintiff’s Address"] = _compose_full_address(p, state_code)
+        values["Plaintiff’s Age"] = ""
+        values["Plaintiff’s Occupation"] = ""
+        values["Plaintiff’s Employer"] = ""
+        values["Employer Address"] = ""
+
+    # Virginia DC-442 Grounds of Defense: populate numbered defense paragraphs User.1 - User.5
+    if state_code == "VA" and form_key == "answer_form":
+        active_defenses = []
+        for _k, _label in [
+            ("def_amount", "Dispute of amount claimed: "),
+            ("def_repairs", "Failure to maintain premises / repairs: "),
+            ("def_bad_notice", "Defective or lack of notice: "),
+            ("def_paid", "Rent paid: "),
+            ("def_attempted_pay", "Tender of rent refused: "),
+            ("def_retaliation", "Retaliation: "),
+            ("def_fair_housing", "Discrimination: "),
+            ("def_other", "Additional defense: "),
+        ]:
+            _d = defenses.get(_k, {})
+            if isinstance(_d, dict) and _d.get("checked"):
+                _expl = _d.get("explanation", "").strip()
+                active_defenses.append(f"{_label}{_expl}" if _expl else _label.rstrip(": "))
+        for idx in range(5):
+            fld = f"User.{idx + 1}"
+            if idx < len(active_defenses):
+                values[fld] = active_defenses[idx]
+            else:
+                values[fld] = ""
+        values["User.CB1"] = "Yes" if len(active_defenses) > 5 else "Off"
+
     # Populate per-item explanation text areas (e.g. DC 111a "details N" fields)
     # with the tenant's defense explanations.
     for detail in config.get("defense_details", []):
@@ -1515,6 +1658,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
                                 r'(real.*estate|home|property.*owned|mortgage|other.*assets)|'
+                                r'other.*property|property.*text|property.*value|liquid.*asset|'
+                                r'plaintiff.*(address|age|occupation|employer)|defendant.*(address|phone|email)|'
                                 r'birthday|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
                                 r'date.*(start|fixed|repair|lease|rent|notice|problem)|'
@@ -1552,7 +1697,10 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                         except Exception:
                             pass
                 else:
-                    widget.field_value = val
+                    if widget.field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                        widget.field_value = (val not in ("", "Off", "off", False, "False", "0"))
+                    else:
+                        widget.field_value = val
                     widget.update()
                 continue
             
@@ -1604,7 +1752,13 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 continue
             fn_lower = field_name.lower()
             matched = False
+            name_keywords = {"plaintiff", "defendant", "tenant", "landlord", "party1", "party2", "applicant"}
+            name_disqualifiers = re.compile(r'(address|street|city|state|zip|phone|tel|email|age|occupation|employer|job|work|attorney|counsel|lawyer|sign|date|dob|birth)', re.IGNORECASE)
             for keyword, value in auto_fill_rules:
+                if keyword in name_keywords and name_disqualifiers.search(fn_lower):
+                    continue
+                if keyword == "property" and re.search(r'(other.*property|property.*text|property.*value|property.*owned|liquid.*asset)', fn_lower):
+                    continue
                 if value and keyword in fn_lower:
                     widget.field_value = str(value)
                     widget.update()
@@ -2107,6 +2261,8 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                     s = pos.get("h", 14)
                     _add_checkbox_widget(page, fitz.Rect(x, y, x + s, y + s), key, checked=bool(value))
                 elif value:
+                    if (config.get("strip_dollar_signs") or pos.get("strip_dollar")) and isinstance(value, str) and value.startswith("$"):
+                        value = value[1:]
                     is_narrative = (
                         pos.get("h", 20) > 30
                         or any(k in key for k in ("narrative", "summary", "explanation"))
@@ -2134,6 +2290,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     
     mapper = {
         "full_name": p.get("full_name"),
+        "full_name_caption": p.get("full_name"),
+        "full_name_sworn": p.get("full_name"),
+        "date_of_birth": p.get("date_of_birth"),
         "defendant_name": p.get("full_name"),
         "defendant_appearance": p.get("full_name"),
         "printed_name": p.get("full_name"),
@@ -2485,6 +2644,8 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                    "has_requested_fee_waiver_before"]
     if key in bool_fields:
         val = financial.get(key, False)
+        if key == "receives_public_benefits" and not val:
+            val = bool(financial.get("receives_snap") or financial.get("receives_medicaid") or financial.get("receives_ssi") or financial.get("receives_tanf"))
         return "Yes" if val else None
     
     # Numeric fields — format as dollar amounts
