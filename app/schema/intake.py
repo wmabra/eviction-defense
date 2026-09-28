@@ -68,6 +68,8 @@ class CaseDetails(BaseModel):
     hearing_time: Optional[str] = None  # e.g., "9:00 AM", "1:30 PM"
     response_deadline: Optional[date] = None
     has_attorney: bool = False
+    certificate_of_service_method: Optional[str] = None
+    certificate_of_service_other: Optional[str] = None
 
 
 class RentPayment(BaseModel):
@@ -119,6 +121,9 @@ class Preferences(BaseModel):
     trial_by: str = "judge"  # judge or jury
     hearing_format: Optional[str] = None  # in_person or remote
     needs_filing_fee_waiver: bool = False
+    certificate_of_service_method: Optional[str] = "regular_mail"  # regular_mail, efile, other
+    certificate_of_service_other: Optional[str] = None
+    certificate_of_service_date: Optional[date] = None
     has_eviction_defense_attorney: bool = False
     additional_notes: Optional[str] = None
     # Motions
@@ -188,6 +193,9 @@ class FinancialInfo(BaseModel):
     cash_on_hand: Optional[float] = None
     checking_balance: Optional[float] = None
     savings_balance: Optional[float] = None
+    bank_name: Optional[str] = None
+    checking_bank_name: Optional[str] = None
+    savings_bank_name: Optional[str] = None
     vehicle_make_model: Optional[str] = None
     vehicle_value: Optional[float] = None
     vehicle_loan_owed: Optional[float] = None
@@ -203,6 +211,7 @@ class FinancialInfo(BaseModel):
     household_children: int = 0
     total_dependents: int = 0
     dependents_detail: Optional[str] = None
+    household_members: list[dict] = Field(default_factory=list)
     
     # Public benefits (checkbox-style)
     receives_public_benefits: bool = False

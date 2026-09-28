@@ -22,7 +22,10 @@ StateConfig = dict
 
 def get_state_config(state_code: str) -> Optional[StateConfig]:
     """Get the configuration for a given state (returns None if not configured)."""
-    return STATE_CONFIGS.get(state_code.upper())
+    cfg = STATE_CONFIGS.get(state_code.upper())
+    if cfg and "state_code" not in cfg:
+        cfg["state_code"] = state_code.upper()
+    return cfg
 
 
 COLORADO_COURTHOUSE_ADDRESSES: Dict[str, str] = {
@@ -788,7 +791,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "total_monthly_expenses": "9B.8",
             "cash_on_hand": "10A.1",
             "savings_balance": "10A.2A",
+            "savings_bank_name": "10A.2B",
             "checking_balance": "10A.3A",
+            "checking_bank_name": "10A.3B",
+            "bank_name": "10A.3B",
             "vehicle_value": "10B.1A",
             "vehicle_make_model": "10B.1B",
             "vehicle_loan_owed": "10B.1C",
@@ -839,7 +845,20 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Group4.5": {"match_value": "marital_status", "options": {"single": "Single", "married": "married", "civil union": "married", "divorced": "Divorced", "separated": "Separated", "widowed": "Widowed"}, "default": "Single"},
             "Language": {"data": "needs_interpreter", "yes": "Yes", "no": "No.", "default": "no"},
             "Group6.0": {"any_financial": ["receives_ssi", "receives_tanf", "receives_snap", "receives_blind_aid", "receives_oap", "receives_and"], "yes": "yes", "no": "no", "default": "no"},
-            "Group_CoS": {"value": "regular mail"},
+            "Group_CoS": {
+                "match_value": "certificate_of_service_method",
+                "options": {
+                    "efile": "Efiling",
+                    "e-file": "Efiling",
+                    "online": "Efiling",
+                    "mail": "regular mail",
+                    "regular_mail": "regular mail",
+                    "regular mail": "regular mail",
+                    "other": "other means",
+                    "hand": "other means"
+                },
+                "default": "regular mail"
+            },
             "Group7.1": {"data": "owns_real_estate", "yes": "own", "no": "rent", "default": "rent"},
             "Group7.3": {"data": "is_employed", "yes": "Yes", "no": "No", "default": "no"},
             "Group7.6": {"data": "is_hourly", "yes": "hour", "no": "month", "default": "month"},
@@ -847,6 +866,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Group7B.0": {"any_defense": ["def_not_violate", "def_not_repeat", "def_domestic_violence"], "yes": "yes", "no": "no"},
             "Group7C.0": {"any_defense": ["def_no_substantial_violation"], "yes": "yes", "no": "no"},
             "Group7D.0": {"any_defense": ["def_retaliation", "def_no_fault_just_cause"], "yes": "no", "no": "yes"},
+            "Group7E.3": {"data": "notice_cure_federally_backed", "yes": "30 days", "no": "5 to 10 days", "default": "5 to 10 days"},
+            "Group8A": {"data": "dep_1_dependent", "yes": "Yes.", "no": "No.", "default": None},
+            "Group8B": {"data": "dep_2_dependent", "yes": "Yes.", "no": "No.", "default": None},
+            "Group8C": {"data": "dep_3_dependent", "yes": "Yes.", "no": "No.", "default": None},
+            "Group8D": {"data": "dep_4_dependent", "yes": "Yes.", "no": "No.", "default": None},
         },
         "defense_options": [
             # Section 7A — Non-Payment Defenses
@@ -867,6 +891,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_unlawful_fees", "section": "Section 7e — General Defenses", "label": "Landlord demands unallowed fees under lease", "field": "7E.1"},
             {"key": "def_amount", "section": "Section 7e — General Defenses", "label": "Illegal or unenforceable late fees (C.R.S. 38-12-105)", "field": "7E.2"},
             {"key": "def_bad_notice", "section": "Section 7e — General Defenses", "label": "Improper notice / cure period (5-10 days)", "field": "7E.3"},
+            {"key": "def_fair_housing", "section": "Section 7e — General Defenses", "label": "Unfair Housing Act violation (discrimination based on race, sex, disability, etc.)", "field": "7E.4"},
+            {"key": "def_mediation_failure", "section": "Section 7e — General Defenses", "label": "Landlord failed to attend mandatory mediation (for tenants on SSI/SSDI/CO Works)", "field": "7E.5"},
         ],
         "field_rect_overrides": {
             "answer_form": {

@@ -745,7 +745,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
 
     if has_fields:
         # Native fillable form: fill its own widgets.
-        _fill_via_widgets(doc, data, config, form_key)
+        _fill_via_widgets(doc, data, config, form_key, state_code=state_code)
         # Hybrid forms (fillable checkboxes + static caption/header text with no
         # native widget) still need the coordinate overlay for the unmapped
         # caption lines. The overlay skips positions that already have a widget.
@@ -787,9 +787,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     return True
 
 
-def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: str = ""):
+def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: str = "", state_code: str = ""):
     """Fill a PDF's form fields using widget/field mapping + smart auto-fill."""
-    state_code = str(data.get("state") or data.get("court", {}).get("state") or data.get("personal_info", {}).get("state") or config.get("state_code") or "").upper()
+    state_code = str(state_code or data.get("state") or data.get("court", {}).get("state") or data.get("case_details", {}).get("state") or data.get("personal_info", {}).get("state") or data.get("personal_info", {}).get("property_state") or config.get("state_code") or "").upper()
     mapping = config.get("field_mapping", {})
     p = data.get("personal_info", {}) or data.get("personal", {})
     l = data.get("landlord_info", {}) or data.get("landlord", {})
@@ -1209,6 +1209,46 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             except Exception:
                 pass
 
+        if state_code == "CO":
+            # Bank Name mapping for Colorado (JDF 205 lines 10A.2B and 10A.3B)
+            _bname = financial.get("bank_name") or financial.get("checking_bank_name") or financial.get("savings_bank_name")
+            if _bname:
+                values["10A.3B"] = str(financial.get("checking_bank_name") or _bname)
+                if float(financial.get("savings_balance") or 0) > 0 or financial.get("savings_bank_name"):
+                    values["10A.2B"] = str(financial.get("savings_bank_name") or _bname)
+
+            # Household table for Colorado (JDF 205 Section 8)
+            # Populates 8A.1-8A.3, 8B.1-8B.3, 8C.1-8C.3, 8D.1-8D.3 and Group8A-Group8D
+            members = financial.get("household_members") or []
+            if not members:
+                ch_count = int(financial.get("household_children") or 0)
+                ad_count = max(0, int(financial.get("household_adults") or 1) - 1)
+                members = []
+                for idx in range(1, ch_count + 1):
+                    members.append({
+                        "name": f"Dependent Child {idx}" if ch_count > 1 else "Dependent Child",
+                        "age": "Minor",
+                        "relationship": "Child",
+                        "dependent": True,
+                    })
+                for idx in range(1, ad_count + 1):
+                    members.append({
+                        "name": f"Adult Member {idx}" if ad_count > 1 else "Adult Member",
+                        "age": "Adult",
+                        "relationship": "Roommate/Family",
+                        "dependent": False,
+                    })
+
+            row_letters = ["A", "B", "C", "D"]
+            for idx, member in enumerate(members[:4]):
+                row_letter = row_letters[idx]
+                values[f"8{row_letter}.1"] = str(member.get("name", ""))
+                values[f"8{row_letter}.2"] = str(member.get("age", ""))
+                values[f"8{row_letter}.3"] = str(member.get("relationship", ""))
+                dep = bool(member.get("dependent", True))
+                financial[f"dep_{idx+1}_dependent"] = dep
+                _all_data[f"dep_{idx+1}_dependent"] = dep
+
         # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
         # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
         for fname in config.get("fee_waiver_name_fields", []):
@@ -1341,12 +1381,54 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
     for pdf_field, static_text in static_values.items():
         values[pdf_field] = static_text
 
-    # CO JDF 103: bind the statutory late-fee defense (7E.2) when the defense
-    # narrative alleges unauthorized late fees.
-    if config.get("bind_late_fee_defense"):
+    # CO JDF 103: bind statutory defenses and options when alleged
+    if state_code == "CO" and form_key == "answer_form":
         _narr = str(values.get("defense_narrative", "")).lower()
-        if "late fee" in _narr or "unauthorized fee" in _narr:
+        _why_disagree = str(data.get("rent_payment", {}).get("why_disagree", "")).lower()
+        _all_text = f"{_narr} {_why_disagree}"
+
+        # 7E.2: Illegal or unenforceable late fees (C.R.S. 38-12-105)
+        # Check if tenant mentions late fees, unallowed interest/charges, or extra fees
+        has_late_fee = any(k in _all_text for k in (
+            "late fee", "late charge", "interest", "extra", "unauthorized fee",
+            "illegal fee", "unallowed fee", "penalty"
+        )) or any(
+            isinstance(defenses.get(k), dict) and defenses[k].get("checked")
+            for k in ("def_amount", "def_unlawful_fees")
+        )
+        if has_late_fee and (any(k in _all_text for k in ("fee", "extra", "interest", "charge", "late", "dollar", "$")) or (isinstance(defenses.get("def_amount"), dict) and defenses["def_amount"].get("checked"))):
             values["7E.2"] = "Yes"
+
+        # 7E.1: Unallowed fees under lease
+        if (isinstance(defenses.get("def_unlawful_fees"), dict) and defenses["def_unlawful_fees"].get("checked")) or "attorney fee" in _all_text or "unallowed fee" in _all_text:
+            values["7E.1"] = "Yes"
+
+        # 7E.3: Improper notice / cure period
+        if isinstance(defenses.get("def_bad_notice"), dict) and defenses["def_bad_notice"].get("checked"):
+            values["7E.3"] = "Yes"
+
+        # 7E.4: Unfair Housing Act violation
+        if (isinstance(defenses.get("def_fair_housing"), dict) and defenses["def_fair_housing"].get("checked")) or (isinstance(defenses.get("def_housing_discrimination"), dict) and defenses["def_housing_discrimination"].get("checked")):
+            values["7E.4"] = "Yes"
+
+        # 7E.5: Mandatory mediation failure
+        if isinstance(defenses.get("def_mediation_failure"), dict) and defenses["def_mediation_failure"].get("checked"):
+            values["7E.5"] = "Yes"
+            fin = data.get("financial_info", {})
+            if fin.get("receives_ssi"):
+                values["7E.5A"] = "Yes"
+            if fin.get("disability_income") or fin.get("ssdi_income"):
+                values["7E.5B"] = "Yes"
+            if fin.get("receives_tanf") or fin.get("receives_and"):
+                values["7E.5C"] = "Yes"
+
+        # Certificate of Service method handling
+        cos_meth = str(pref.get("certificate_of_service_method") or c.get("certificate_of_service_method") or "").lower()
+        if "other" in cos_meth or "hand" in cos_meth:
+            values["CoS_Other"] = pref.get("certificate_of_service_other") or c.get("certificate_of_service_other") or "Hand delivery"
+        elif "efile" in cos_meth or "online" in cos_meth:
+            # If e-filing, clear CoS_Mail
+            values["CoS_Mail"] = ""
 
     # Smart auto-fill for common field names not in explicit mapping
     # Uses word-boundary matching to avoid false positives:
