@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.database.models import Case, ChatLog
-from app.services.chat import get_chat_response, get_session, reset_session
+from app.services.chat import (
+    get_chat_response,
+    get_session,
+    reset_session,
+    STATE_NAMES,
+    STATE_NAME_TO_CODE,
+)
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
 
@@ -59,11 +65,16 @@ def send_message(req: ChatRequest, db: Session = Depends(get_db)):
         except Exception:
             pass
 
+    if state:
+        st_clean = state.strip().upper()
+        state = STATE_NAME_TO_CODE.get(st_clean, st_clean)
+
     # Ensure the assistant's initial welcome greeting is present at the start of conversation
     if messages and messages[0].get("role") == "user":
         welcome_text = DEFAULT_WELCOME_MESSAGE
         if county or state:
-            loc = f" in {county + ' County, ' if county else ''}{state or ''}".rstrip(", ")
+            st_name = STATE_NAMES.get(state, state) if state else ""
+            loc = f" in {county + ' County, ' if county else ''}{st_name}".rstrip(", ")
             welcome_text = (
                 f"Welcome! I'm your AI intake specialist for evictions.help. "
                 f"I can see you're{loc}. ⏱ Please allow 10-15 minutes to answer my questions. "
