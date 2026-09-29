@@ -1236,6 +1236,9 @@ def main() -> int:
     out_dir = os.path.join(base_dir, "test_packages", pkg_name)
     try:
         os.makedirs(out_dir, exist_ok=True)
+        for f in os.listdir(out_dir):
+            if f.endswith(".pdf"):
+                os.remove(os.path.join(out_dir, f))
     except OSError as e:
         print(f"Could not create output dir {out_dir}: {e}", file=sys.stderr)
         return 1

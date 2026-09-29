@@ -185,6 +185,10 @@ def generate_and_verify_packet(data: dict):
     print("=" * 70)
 
     out_dir = "test_packages/CT_Sarah_Jenkins"
+    if os.path.exists(out_dir):
+        for f in os.listdir(out_dir):
+            if f.endswith(".pdf"):
+                os.remove(os.path.join(out_dir, f))
     os.makedirs(out_dir, exist_ok=True)
     zip_path = "test_packages/CT_Sarah_Jenkins_packet.zip"
 
@@ -263,12 +267,11 @@ def generate_and_verify_packet(data: dict):
     print(f"  Page 2 Signer:   {p2_fw.get('topmostSubform[0].Page2[0].NAMESIGN[0]')}")
     print(f"  Page 2 Date:     {p2_fw.get('topmostSubform[0].Page2[0].DATESIGN[0]')}")
 
-    # 3. Scan all 21 files for placeholders & leaks
-    print("\n[Scanning All 21 Documents for Placeholders / Cross-State Leaks]")
+    # 3. Scan all generated files for placeholders & leaks
+    pdf_files = [f for f in sorted(os.listdir(out_dir)) if f.endswith(".pdf")]
+    print(f"\n[Scanning All {len(pdf_files)} Documents for Placeholders / Cross-State Leaks]")
     all_clean = True
-    for f in sorted(os.listdir(out_dir)):
-        if not f.endswith(".pdf"):
-            continue
+    for f in pdf_files:
         fp = os.path.join(out_dir, f)
         doc = fitz.open(fp)
         txt = "".join(p.get_text() for p in doc)
@@ -277,7 +280,7 @@ def generate_and_verify_packet(data: dict):
                 print(f"  [LEAK] {f}: found '{leak}'")
                 all_clean = False
     if all_clean:
-        print("  ALL 21 DOCUMENTS ARE 100% CLEAN! Zero leaks, zero unreplaced placeholders.")
+        print(f"  ALL {len(pdf_files)} DOCUMENTS ARE 100% CLEAN! Zero leaks, zero unreplaced placeholders.")
 
 
 if __name__ == "__main__":
