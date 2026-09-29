@@ -1454,7 +1454,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                     values["DEBTOWED1"] = f"${_debt_owed:,.2f}"
                     values["DEBTOWEDTOTAL"] = f"${_debt_owed:,.2f}"
                 else:
-                    values["DEBTOWEDTOTAL"] = "$0.00"
+                    values["DEBTOWEDTOTAL"] = ""
                 if _debt_pmt > 0:
                     values["DEBTPAY1"] = f"${_debt_pmt:,.2f}"
                     values["DEBTPAYTOTAL"] = f"${_debt_pmt:,.2f}"

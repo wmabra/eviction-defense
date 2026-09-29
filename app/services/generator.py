@@ -779,8 +779,7 @@ def _generate_filing_checklist(data: dict, output_path: str):
          "Arrive 15 minutes early. If you miss a court date, the judge may enter "
          "a default judgment against you."),
         ("☐ Step 10: File Proof of Service",
-         "After serving the landlord, file a Certificate of Service or Proof of Service "
-         "with the court. The e-filing instructions in this packet explain how."),
+         "After serving the landlord, complete the Certificate of Service included with your court papers and file it with the court clerk."),
     ]
 
     for i, (title, desc) in enumerate(steps):
@@ -814,7 +813,7 @@ def _generate_court_checklist(data: dict, output_path: str):
         "☐ Any rent receipts or proof of payment (bank statements, canceled checks)",
         "☐ Photos or videos of any repair issues (if applicable)",
         "☐ Any written communication with your landlord (emails, texts, letters)",
-        "☐ Your 7-day repair notice (if you sent one)",
+        "☐ Your written repair notice sent to the landlord (if applicable)",
         "☐ Proof of rental assistance application (if applicable)",
         "☐ Photo ID",
         "☐ A pen and paper for taking notes",
@@ -915,12 +914,16 @@ def _generate_hearing_script(data: dict, output_path: str):
     for key, label in DEFENSE_LABELS.items():
         d = defenses.get(key, {})
         if isinstance(d, dict) and d.get("checked"):
-            checked.append(f"&#10003; {label}")
+            exp = (d.get("explanation") or "").strip()
+            item = f"<b>&#10003; {label}</b>"
+            if exp:
+                item += f"<br/>&nbsp;&nbsp;&nbsp;&nbsp;<i>What to state:</i> \"{exp}\""
+            checked.append(item)
     
     if checked:
         for c in checked:
             elements.append(Paragraph(c, S["Body"]))
-            elements.append(Spacer(1, 2))
+            elements.append(Spacer(1, 4))
     else:
         elements.append(Paragraph(
             "(You did not select specific defenses. Think about why you should not be evicted.)",
@@ -1292,7 +1295,7 @@ def _generate_emergency_action_plan(data: dict, output_path: str):
             "Make 3 copies of EVERYTHING. The court clerk keeps the original.",
         ]),
         ("FILE — Before Your Deadline", [
-            "Go to the courthouse in person OR e-file online (see E-Filing Instructions).",
+            "Go to the courthouse in person OR e-file online if available in your court (see Filing Checklist in this packet).",
             "Bring: signed Answer form, fee waiver form, copies of everything, photo ID.",
             "Ask the clerk to stamp your copies as FILED. Keep one for yourself.",
             "If filing by mail, use certified mail with return receipt.",
