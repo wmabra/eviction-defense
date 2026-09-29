@@ -1453,6 +1453,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 if _debt_owed > 0:
                     values["DEBTOWED1"] = f"${_debt_owed:,.2f}"
                     values["DEBTOWEDTOTAL"] = f"${_debt_owed:,.2f}"
+                else:
+                    values["DEBTOWEDTOTAL"] = "$0.00"
                 if _debt_pmt > 0:
                     values["DEBTPAY1"] = f"${_debt_pmt:,.2f}"
                     values["DEBTPAYTOTAL"] = f"${_debt_pmt:,.2f}"
@@ -2942,25 +2944,25 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         return f"${net_inc + other_inc:,.2f}"
     if key == "equity_real_estate":
         val = _to_float(financial.get("real_estate_value")) - _to_float(financial.get("real_estate_loan_owed"))
-        return f"${max(0.0, val):,.2f}" if val else None
+        return f"${max(0.0, val):,.2f}"
     if key == "equity_vehicle":
         val = _to_float(financial.get("vehicle_value")) - _to_float(financial.get("vehicle_loan_owed"))
-        return f"${max(0.0, val):,.2f}" if val else None
+        return f"${max(0.0, val):,.2f}"
     if key == "equity_other_property":
         val = _to_float(financial.get("other_assets_value"))
-        return f"${max(0.0, val):,.2f}" if val else None
+        return f"${max(0.0, val):,.2f}"
     if key == "total_assets_equity":
         re_eq = max(0.0, _to_float(financial.get("real_estate_value")) - _to_float(financial.get("real_estate_loan_owed")))
         mv_eq = max(0.0, _to_float(financial.get("vehicle_value")) - _to_float(financial.get("vehicle_loan_owed")))
         opp_eq = max(0.0, _to_float(financial.get("other_assets_value")))
         total = (_to_float(financial.get("cash_on_hand")) + _to_float(financial.get("checking_balance"))
                  + _to_float(financial.get("savings_balance")) + re_eq + mv_eq + opp_eq)
-        return f"${total:,.2f}" if total else None
+        return f"${total:,.2f}"
     if key == "total_debt_owed":
         if financial.get("debt_owed") is not None:
             return f"${_to_float(financial.get('debt_owed')):,.2f}"
         total = _to_float(financial.get("real_estate_loan_owed")) + _to_float(financial.get("vehicle_loan_owed"))
-        return f"${total:,.2f}" if total else None
+        return f"${total:,.2f}"
 
     return None
 
