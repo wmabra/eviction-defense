@@ -299,7 +299,7 @@ def _service_recipient(data: dict) -> tuple:
     landlord_name = l.get("landlord_name") or "the Plaintiff"
     landlord_addr = l.get("landlord_address") or ""
     if atty_name:
-        return (f"{atty_name} (attorney for {landlord_name})", atty_addr or "")
+        return (f"{atty_name} (attorney for {landlord_name})", atty_addr or landlord_addr or "")
     return (landlord_name, landlord_addr)
 
 
@@ -400,7 +400,8 @@ def generate_packet(case_data: dict, output_dir: str) -> dict:
     # Motion to Determine Rent — inapplicable in Illinois (no statutory rent
     # deposit/registry procedure; rent set-offs are resolved as defenses at
     # trial under 735 ILCS 5/9-209).
-    if defenses.get("def_amount", {}).get("checked") and base.get("state", "").upper() != "IL":
+    _disputes_amount = bool(defenses.get("def_amount", {}).get("checked")) or (base.get("rent_payment", {}).get("agree_with_amount") is False)
+    if _disputes_amount and base.get("state", "").upper() != "IL":
         cond_seq += 1
         mtr_path = os.path.join(output_dir, f"{cond_seq:02d}_motion_to_determine_rent.pdf")
         _generate_motion_to_determine_rent(base, mtr_path)
@@ -510,6 +511,8 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
         _deposit_clause = "determine the amount of rent to be deposited into court escrow pursuant to Minn. Stat. § 504B.385."
     elif state == "GA":
         _deposit_clause = "determine the amount of rent to be deposited into the court registry pursuant to O.C.G.A. § 44-7-54."
+    elif state == "CT":
+        _deposit_clause = "determine the correct amount of rent or use and occupancy payments pursuant to Conn. Gen. Stat. § 47a-26b."
     else:
         _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(
@@ -589,6 +592,8 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
     plan_amount = pref.get('payment_plan_amount') or ''
     if not plan_amount and _amount_num:
         plan_amount = _money(_amount_num / 4, 0)
+    elif plan_amount:
+        plan_amount = _money(plan_amount)
     
     elements.append(Paragraph(today, S["Body"]))
     elements.append(Spacer(1, 12))
@@ -1828,7 +1833,7 @@ def _generate_income_expense_worksheet(data: dict, output_path: str):
     vehicle = fin.get("vehicle_make_model")
     vehicle_val = fin.get("vehicle_value")
     other_assets = fin.get("other_assets_description")
-    adults = fin.get("household_adults")
+    adults = fin.get("household_adults") or "1"
     children = fin.get("household_children")
 
     yesno = lambda k: FillableText(k, "Yes" if fin.get(k) else "No", width=50, height=15, font_size=9)
@@ -1939,8 +1944,9 @@ def _generate_demand_letter(data: dict, output_path: str):
         S["Body"]
     ))
     elements.append(Spacer(1, 10))
+    repair_days = "21" if (data.get("state") or "").upper() == "CT" else "7"
     elements.append(Paragraph(
-        f"I request that you complete all repairs within 7 days of receiving this letter. "
+        f"I request that you complete all repairs promptly and within {repair_days} days of receiving this letter. "
         f"If the repairs are not completed, I will pursue all legal remedies available, "
         f"including filing a complaint with code enforcement and using this letter as "
         f"evidence in eviction court.",
@@ -2170,9 +2176,9 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         days_val = "30"
 
     elements.append(Paragraph(
-        "6. The Defendant respectfully requests that this Court grant a continuance to a date "
-        "a specified number of days from the current hearing date, or to such other date as the "
-        "Court deems appropriate:", S["Body"]))
+        f"6. The Defendant respectfully requests that this Court grant a continuance of "
+        f"{days_val} days from the current hearing date, or to such other date as the "
+        f"Court deems appropriate:", S["Body"]))
     elements.append(_field_table([
         [Paragraph("Number of days requested:", S["Body"]), _editable_field("continuance_days", days_val, width=40)],
     ], col_widths=(180, 80)))
@@ -2315,7 +2321,7 @@ def _generate_emergency_motion_stay_eviction(data: dict, output_path: str):
             f"WHEREFORE, Defendant {p.get('full_name', '[DEFENDANT]')} respectfully requests that "
             f"this Honorable Court:",
             KeepTogether([
-                Paragraph("A. Grant an emergency stay of all eviction proceedings for a period of days, "
+                Paragraph(f"A. Grant an emergency stay of all eviction proceedings for a period of {str(pref.get('emergency_stay_days') or '30')} days, "
                           "or such other period as the Court deems just and appropriate:", S["Body"]),
                 _field_table([[
                     Paragraph("Number of days:", S["Body"]), _editable_field("stay_eviction_days", str(pref.get("emergency_stay_days") or "30"), width=40),
@@ -2434,7 +2440,7 @@ def _generate_emergency_motion_stay_writ(data: dict, output_path: str):
             f"this Honorable Court grant this Emergency Motion to Stay the {writ_term} and:",
             f"a. Issue an immediate stay of the {writ_term} to prevent the scheduled eviction and lockout;",
             KeepTogether([
-                Paragraph("b. Grant Defendant additional time to vacate the premises voluntarily or to cure "
+                Paragraph(f"b. Grant Defendant an additional {str(pref.get('emergency_stay_days') or '30')} days to vacate the premises voluntarily or to cure "
                           "the default:", S["Body"]),
                 _field_table([[
                     Paragraph("Number of days:", S["Body"]), _editable_field("stay_writ_days", str(pref.get("emergency_stay_days") or "30"), width=40),
