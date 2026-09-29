@@ -134,6 +134,7 @@ CO = {
             "property_city": "Lakewood",
             "property_zip": "80226",
             "county": "Jefferson",
+            "needs_interpreter": False,
         },
         "landlord_info": {
             "landlord_name": "Summit Ridge Property Management, LLC",
@@ -160,10 +161,17 @@ CO = {
                 "explanation": "The furnace and refrigerator have been broken since February "
                                "and the landlord has not made repairs despite written requests.",
             },
+            "def_unlawful_fees": {
+                "checked": True,
+                "explanation": "The landlord is demanding administrative and utility fees not authorized under the written lease agreement.",
+            },
             "def_amount": {
                 "checked": True,
-                "explanation": "The ledger includes unauthorized late fees and a charge for a "
-                               "month I already paid in full.",
+                "explanation": "The ledger includes unauthorized late fees exceeding the statutory cap under C.R.S. 38-12-105.",
+            },
+            "def_bad_notice": {
+                "checked": True,
+                "explanation": "The 10-day notice to quit was defective and failed to provide the statutory cure period required by Colorado law.",
             },
             "def_retaliation": {
                 "checked": True,
@@ -172,7 +180,9 @@ CO = {
             },
         },
         "preferences": {
-            "trial_by": "judge",
+            "trial_by": "jury",
+            "certificate_of_service_method": "regular_mail",
+            "needs_filing_fee_waiver": True,
             "needs_more_time": True,
             "wants_payment_plan": True,
             "hardship_reason": "I had to take unpaid medical leave in April and fell behind "
@@ -207,6 +217,9 @@ CO = {
             "cash_on_hand": 150.00,
             "checking_balance": 75.00,
             "savings_balance": 0.00,
+            "bank_name": "FirstBank",
+            "checking_bank_name": "FirstBank",
+            "household_members": "Jane Doe (34, Spouse), Tommy Doe (8, Child)",
             "vehicle_make_model": "2012 Honda Civic",
             "vehicle_value": 4500.00,
             "vehicle_loan_owed": 0.00,
@@ -216,8 +229,12 @@ CO = {
             "receives_public_benefits": True,
             "receives_snap": True,
             "receives_medicaid": False,
-            "receives_ssi": False,
+            "receives_ssi": True,
             "receives_tanf": False,
+            "receives_blind_aid": False,
+            "receives_oap": False,
+            "receives_and": False,
+            "unable_to_pay_fees": True,
         },
     },
 }
@@ -236,12 +253,15 @@ CO_DENVER = {
             "property_city": "Denver",
             "property_zip": "80210",
             "county": "Denver",
+            "needs_interpreter": False,
         },
         "landlord_info": {
             "landlord_name": "Mile High Property Group, LLC",
             "landlord_address": "1745 Larimer Street, Denver, CO 80202",
             "landlord_phone": "(720) 555-0114",
             "landlord_email": "leasing@milehighpg.example",
+            "landlord_attorney_name": "Susan Advocate, Esq.",
+            "landlord_attorney_address": "1745 Larimer Street, Suite 400, Denver, CO 80202",
         },
         "case_details": {
             "case_number": "2024CV12345",
@@ -274,7 +294,9 @@ CO_DENVER = {
             },
         },
         "preferences": {
-            "trial_by": "judge",
+            "trial_by": "jury",
+            "certificate_of_service_method": "efile",
+            "needs_filing_fee_waiver": True,
             "needs_more_time": True,
             "wants_payment_plan": True,
             "hardship_reason": "I was laid off in March and have been covering rent from "
@@ -309,17 +331,24 @@ CO_DENVER = {
             "cash_on_hand": 200.00,
             "checking_balance": 100.00,
             "savings_balance": 50.00,
+            "bank_name": "Chase",
+            "checking_bank_name": "Chase",
+            "household_members": "Mark (5), Jenn (10), Andy (13)",
             "vehicle_make_model": "2016 Toyota Corolla",
             "vehicle_value": 7500.00,
             "vehicle_loan_owed": 3000.00,
             "owns_real_estate": False,
-            "household_adults": 2,
-            "household_children": 2,
+            "household_adults": 1,
+            "household_children": 3,
             "receives_public_benefits": True,
             "receives_snap": True,
             "receives_medicaid": True,
-            "receives_ssi": False,
-            "receives_tanf": False,
+            "receives_ssi": True,
+            "receives_tanf": True,
+            "receives_oap": True,
+            "receives_blind_aid": False,
+            "receives_and": False,
+            "unable_to_pay_fees": True,
         },
     },
 }

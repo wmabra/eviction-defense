@@ -1290,13 +1290,35 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
 
             # Household table for Colorado (JDF 205 Section 8)
             # Populates 8A.1-8A.3, 8B.1-8B.3, 8C.1-8C.3, 8D.1-8D.3 and Group8A-Group8D
-            raw_members = financial.get("household_members") or []
+            raw_members = financial.get("household_members") or financial.get("dependents_detail") or []
             members = []
             if isinstance(raw_members, str):
                 if ';' in raw_members:
                     raw_items = [x.strip() for x in raw_members.split(';') if x.strip()]
+                elif '\n' in raw_members:
+                    raw_items = [x.strip() for x in raw_members.split('\n') if x.strip()]
                 else:
-                    raw_items = [x.strip() for x in re.split(r',\s*(?=[A-Za-z0-9_]+(?:\s*\([^)]*\))?)', raw_members) if x.strip()]
+                    parts = []
+                    current = []
+                    depth = 0
+                    for char in raw_members:
+                        if char == '(':
+                            depth += 1
+                            current.append(char)
+                        elif char == ')':
+                            depth = max(0, depth - 1)
+                            current.append(char)
+                        elif char == ',' and depth == 0:
+                            item = ''.join(current).strip()
+                            if item:
+                                parts.append(item)
+                            current = []
+                        else:
+                            current.append(char)
+                    last = ''.join(current).strip()
+                    if last:
+                        parts.append(last)
+                    raw_items = parts
             elif isinstance(raw_members, list):
                 raw_items = raw_members
             else:

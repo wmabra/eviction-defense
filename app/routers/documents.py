@@ -478,10 +478,19 @@ async def generate_packet_post(request: Request):
         "financial_info": body.get("financial_info"),
     }
     
-    return _build_and_return_packet(full_name, county, state, 
-        p.get("property_address", ""), l.get("landlord_name", ""),
-        c.get("case_number", ""), p.get("phone", ""), p.get("email", ""),
-        extra_data=data)
+    return _build_and_return_packet(
+        full_name=full_name,
+        county=county,
+        state=state,
+        property_address=p.get("property_address", ""),
+        property_city=p.get("property_city", ""),
+        property_zip=p.get("property_zip", ""),
+        landlord_name=l.get("landlord_name", ""),
+        case_number=c.get("case_number", ""),
+        phone=p.get("phone", ""),
+        email=p.get("email", ""),
+        extra_data=data,
+    )
 
 
 def _build_and_return_packet(
@@ -510,24 +519,28 @@ def _build_and_return_packet(
     from app.services.generator import generate_packet as gen
     paths = gen(data, tmpdir)
     
-    # Also fill the official court form if available
+    state_code = data.get("state", state.upper())
+
+    # 1. Fill official court answer form if available
     try:
         from app.services.form_filler import fill_answer_form
-        from app.services.pdf_overlay import fill_fee_waiver
-        
-        state_code = data.get("state", state.upper())
         court_pdf = os.path.join(tmpdir, "01_COURT_FORM_Answer_FILE_THIS.pdf")
-        fill_answer_form(data, state_code, court_pdf)
-        paths["court_form"] = court_pdf
-        
-        # Also fill fee waiver if tenant has financial info
-        if data.get("financial_info"):
-            fee_waiver_pdf = os.path.join(tmpdir, "02_COURT_FORM_Fee_Waiver_FILE_THIS.pdf")
-            fill_fee_waiver(data, state_code, fee_waiver_pdf)
-            paths["fee_waiver"] = fee_waiver_pdf
+        if fill_answer_form(data, state_code, court_pdf):
+            paths["court_form"] = court_pdf
     except Exception as e:
         import logging
-        logging.warning(f"Court form fill skipped: {e}")
+        logging.warning(f"Answer court form fill skipped: {e}", exc_info=True)
+
+    # 2. Fill official fee waiver form if tenant provided financial info or requested waiver
+    if data.get("financial_info") or (data.get("preferences", {}) or {}).get("needs_filing_fee_waiver"):
+        try:
+            from app.services.pdf_overlay import fill_fee_waiver
+            fee_waiver_pdf = os.path.join(tmpdir, "02_COURT_FORM_Fee_Waiver_FILE_THIS.pdf")
+            if fill_fee_waiver(data, state_code, fee_waiver_pdf):
+                paths["fee_waiver"] = fee_waiver_pdf
+        except Exception as e:
+            import logging
+            logging.warning(f"Fee waiver court form fill skipped: {e}", exc_info=True)
     
     # Create zip file
     zip_path = tempfile.mktemp(suffix=".zip")
