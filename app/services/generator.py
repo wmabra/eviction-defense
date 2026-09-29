@@ -72,20 +72,8 @@ def _fmt_date(v) -> str:
 
 
 def _hearing_date_or_blank(v) -> str:
-    """Formatted hearing date, or blank when it is already in the past.
-
-    Stale test dates (e.g. 05/08/2024) must not be printed into a motion as if
-    they were upcoming — leave the line blank for a manual write-in instead.
-    """
-    fmt = _fmt_date(v)
-    if not fmt:
-        return ""
-    try:
-        if datetime.strptime(fmt, "%m/%d/%Y").date() < date.today():
-            return ""
-    except ValueError:
-        pass
-    return fmt
+    """Formatted hearing date (MM/DD/YYYY), or blank if not provided."""
+    return _fmt_date(v)
 
 
 def _money(v, dec: int = 2) -> str:
@@ -2104,7 +2092,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
         "2. A hearing in this matter is currently scheduled for the following date and time:",
         S["Body"]))
     elements.append(_field_table([
-        [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _hearing_date_or_blank(c.get("court_date")), width=110)],
+        [Paragraph("Hearing date:", S["Body"]), _editable_field("continuance_hearing_date", _hearing_date_or_blank(c.get("hearing_date") or c.get("court_date")), width=110)],
         [Paragraph("Hearing time:", S["Body"]), _editable_field("continuance_hearing_time", hearing_time, width=80)],
     ], col_widths=(110, 200)))
     elements.append(Spacer(1, 4))
