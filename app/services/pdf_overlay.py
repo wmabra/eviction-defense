@@ -961,6 +961,16 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             if _lookup_addr:
                 _all_data["court_address"] = _lookup_addr
 
+    # Connecticut courthouse mailing address lookup:
+    if state_code == "CT":
+        from app.services.state_configs import get_connecticut_courthouse_address
+        _ca = str(_all_data.get("court_address", "") or "").strip()
+        _cty = str(_all_data.get("county", "") or p.get("county", "")).strip()
+        if not _ca or _ca.lower() in (_cty.lower(), f"{_cty.lower()} county", "housing court", "housing session", "superior court") or not any(ch.isdigit() for ch in _ca):
+            _lookup_addr = get_connecticut_courthouse_address(_cty)
+            if _lookup_addr:
+                _all_data["court_address"] = _lookup_addr
+
     if "interpreter_language" not in _all_data and p.get("interpreter_language"):
         _all_data["interpreter_language"] = str(p.get("interpreter_language"))
     if "marital_status" not in _all_data and financial.get("marital_status"):
@@ -1419,6 +1429,57 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                 _liab = _rent + _debt
                 if _liab > 0:
                     values[fw_mapping["total_monthly_liabilities"]] = f"{_liab:,.2f}"
+
+        # Connecticut Fee Waiver (JD-CV-120):
+        # 1. Total Monthly Income (B+C) = Net employment income (B) + other income (C).
+        # 2. Debt schedule row 1 breakdown (DEBTTYPE1, DEBTOWED1, DEBTPAY1).
+        # 3. How supported explanation on Page 2 (HOWSUPPORT) if zero income.
+        # 4. Other income source description (SOURCE).
+        if state_code == "CT":
+            _net = _to_float(financial.get("monthly_net_income"))
+            if _net is None:
+                _net = _to_float(financial.get("employment_income") or financial.get("monthly_gross_income") or 0.0)
+            _oth = _to_float(financial.get("other_income") or 0.0)
+            _tot_inc = _net + _oth
+            values["TOTALMONTHLYINCOME"] = f"${_tot_inc:,.2f}"
+
+            _debt_pmt = _to_float(financial.get("debt_payments") or 0.0)
+            _debt_owed = _to_float(financial.get("debt_owed") or financial.get("debt_balance") or 0.0)
+            if _debt_pmt > 0 or _debt_owed > 0:
+                if not values.get("topmostSubform[0].Page1[0].DEBTTYPE1[0]"):
+                    values["topmostSubform[0].Page1[0].DEBTTYPE1[0]"] = "Credit cards / personal loans"
+                if _debt_owed > 0:
+                    values["DEBTOWED1"] = f"${_debt_owed:,.2f}"
+                    values["DEBTOWEDTOTAL"] = f"${_debt_owed:,.2f}"
+                if _debt_pmt > 0:
+                    values["DEBTPAY1"] = f"${_debt_pmt:,.2f}"
+                    values["DEBTPAYTOTAL"] = f"${_debt_pmt:,.2f}"
+            else:
+                values["DEBTOWEDTOTAL"] = "$0.00"
+                values["DEBTPAYTOTAL"] = "$0.00"
+
+            _gross = _to_float(financial.get("monthly_gross_income") or 0.0)
+            if _gross == 0.0 and _tot_inc == 0.0:
+                values["topmostSubform[0].Page2[0].HOWSUPPORT[0]"] = "Assistance from family, friends, and community assistance programs."
+
+            if not values.get("topmostSubform[0].Page1[0].COLUMN1[0].SOURCE[0]"):
+                _sources = []
+                if financial.get("receives_snap"):
+                    _sources.append("SNAP")
+                if financial.get("receives_medicaid"):
+                    _sources.append("Medicaid")
+                if financial.get("receives_ssi"):
+                    _sources.append("SSI")
+                if financial.get("receives_tanf"):
+                    _sources.append("TFA / TANF")
+                if financial.get("unemployment_income"):
+                    _sources.append("Unemployment")
+                if financial.get("disability_income"):
+                    _sources.append("Disability")
+                if financial.get("pension_income"):
+                    _sources.append("Pension")
+                if _sources:
+                    values["topmostSubform[0].Page1[0].COLUMN1[0].SOURCE[0]"] = ", ".join(_sources)
     
     # Date
     if "date" in mapping:
@@ -1636,6 +1697,62 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         elif "efile" in cos_meth or "online" in cos_meth:
             # If e-filing, clear CoS_Mail
             values["CoS_Mail"] = ""
+
+    # CT JD-HM-5: Summary Process Answer defenses and service handling
+    if state_code == "CT" and form_key == "answer_form":
+        # Habitability / Code violations (Boxes d and e):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_repairs", "def_conditions", "def_habitability")):
+            values["form1[0].FRONT[0].NORENTDUE[0]"] = "Yes"
+            values["form1[0].FRONT[0].NOTIFIED[0]"] = "Yes"
+            values["form1[0].FRONT[0].NOTE[0]"] = "Yes"
+            _rep_exp = (defenses.get("def_repairs", {}) or {}).get("explanation") or ""
+            if _rep_exp:
+                values["form1[0].FRONT[0].CODEVIOLA[0]"] = _rep_exp
+
+        # Retaliation (Box f):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_retaliation", "def_retaliate")):
+            values["form1[0].FRONT[0].EVICTION[0]"] = "Yes"
+            values["form1[0].FRONT[0].LANDLORD[0]"] = "Yes"
+
+        # Pre-termination cure (Box j):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_corrected", "def_cured", "def_pre_termination")):
+            values["form1[0].FRONT[0].PRETERMINATION[0]"] = "Yes"
+
+        # Tender of rent refused (Box b):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_attempted_pay", "def_offered_pay")):
+            values["form1[0].FRONT[0].RENTOFFERED[0]"] = "Yes"
+
+        # Rent accepted / waived (Box c):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_accepted_rent", "def_waived")):
+            values["form1[0].FRONT[0].RENTACCEPTED[0]"] = "Yes"
+
+        # Fair Rent Commission complaint (Box g):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_rent_increase", "def_fair_rent")):
+            values["form1[0].FRONT[0].RENTINCREA[0]"] = "Yes"
+
+        # Protected tenant status (Box h):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_elderly_disabled", "def_disability", "def_senior")):
+            values["form1[0].FRONT[0].STATUS[0]"] = "Yes"
+
+        # Foreclosure (Box i):
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_foreclosure",)):
+            values["form1[0].FRONT[0].FORECLOSE[0]"] = "Yes"
+
+        # Additional reasons / Other defenses (Box k):
+        # Includes def_other, def_bad_notice, def_amount (unauthorized fees/charges)
+        other_explanations = []
+        for _ok in ("def_other", "def_bad_notice", "def_amount", "def_fair_housing", "def_not_owner"):
+            _od = defenses.get(_ok)
+            if isinstance(_od, dict) and _od.get("checked"):
+                _exp = _od.get("explanation", "").strip()
+                if _exp:
+                    other_explanations.append(_exp)
+                elif _ok == "def_bad_notice":
+                    other_explanations.append("Improper or defective notice to quit served.")
+        if other_explanations or (isinstance(defenses.get("def_other"), dict) and defenses["def_other"].get("checked")):
+            values["form1[0].FRONT[0].ADDITIONALREASONS[0]"] = "Yes"
+            if not values.get("form1[0].FRONT[0].ADDINFO[0]"):
+                values["form1[0].FRONT[0].ADDINFO[0]"] = "; ".join(other_explanations)
 
     # Smart auto-fill for common field names not in explicit mapping
     # Uses word-boundary matching to avoid false positives:
@@ -2807,6 +2924,8 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                  + _to_float(financial.get("savings_balance")) + re_eq + mv_eq + opp_eq)
         return f"${total:,.2f}" if total else None
     if key == "total_debt_owed":
+        if financial.get("debt_owed") is not None:
+            return f"${_to_float(financial.get('debt_owed')):,.2f}"
         total = _to_float(financial.get("real_estate_loan_owed")) + _to_float(financial.get("vehicle_loan_owed"))
         return f"${total:,.2f}" if total else None
 

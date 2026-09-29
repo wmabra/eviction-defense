@@ -428,6 +428,7 @@ CT = {
             "medical_expense": 100.00,
             "child_care_expense": 0.00,
             "debt_payments": 250.00,
+            "debt_owed": 2500.00,
             "total_monthly_expenses": 2330.00,
             "cash_on_hand": 100.00,
             "checking_balance": 200.00,

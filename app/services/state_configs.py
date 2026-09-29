@@ -104,6 +104,32 @@ def get_colorado_courthouse_address(county: str) -> Optional[str]:
     return COLORADO_COURTHOUSE_ADDRESSES.get(key)
 
 
+CONNECTICUT_COURTHOUSE_ADDRESSES: Dict[str, str] = {
+    "hartford": "Hartford Housing Session, 80 Washington Street, Hartford, CT 06106",
+    "fairfield": "Bridgeport Housing Session, 1061 Main Street, Bridgeport, CT 06604",
+    "new haven": "New Haven Housing Session, 121 Elm Street, New Haven, CT 06510",
+    "waterbury": "Waterbury Housing Session, 300 Grand Street, Waterbury, CT 06702",
+    "bridgeport": "Bridgeport Housing Session, 1061 Main Street, Bridgeport, CT 06604",
+    "norwalk": "Norwalk Housing Session, 17 Belden Avenue, Norwalk, CT 06850",
+    "stamford": "Stamford Superior Court, 123 Hoyt Street, Stamford, CT 06905",
+    "danbury": "Danbury Superior Court, 146 White Street, Danbury, CT 06810",
+    "new britain": "New Britain Housing Session, 20 Franklin Square, New Britain, CT 06051",
+    "litchfield": "Torrington Judicial District, 50 Field Street, Torrington, CT 06790",
+    "middlesex": "Middletown Judicial District, 1 Court Street, Middletown, CT 06457",
+    "new london": "New London Judicial District, 70 Huntington Street, New London, CT 06320",
+    "tolland": "Rockville Judicial District, 69 Brooklyn Street, Rockville, CT 06066",
+    "windham": "Danielson Judicial District, 120 School Street, Danielson, CT 06239",
+}
+
+
+def get_connecticut_courthouse_address(county: str) -> Optional[str]:
+    """Look up official Connecticut Housing Session / Judicial District courthouse address."""
+    if not county:
+        return None
+    key = county.strip().lower().replace(" county", "").strip()
+    return CONNECTICUT_COURTHOUSE_ADDRESSES.get(key)
+
+
 STATE_CONFIGS: Dict[str, StateConfig] = {
     # ══════════════════════════════════════════
     # VIRGINIA — DC-442 Grounds of Defense
@@ -563,24 +589,34 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_form": "ct_fee_waiver.pdf",
         "fee_waiver_mapping": {
             "full_address": "topmostSubform[0].Page1[0].ADDRAPP[0]",
+            "court_address": "topmostSubform[0].Page1[0].COURT[2]",
             "case_name": "NAMECASE[0]",
             "case_number": "DOCKETNO[0]",
             "cash_on_hand": "CASH",
             "checking_balance": "CHECKING",
-            "child_care_expense": "ME6",
+            "child_care_expense": "ME9",
+            "clothing_expense": "ME5",
             "date": "topmostSubform[0].Page2[0].DATESIGN[0]",
             "debt_payments": "DEBTPAYTOTAL",
-            "food_expense": "ME3",
+            "debt_type_1": "topmostSubform[0].Page1[0].DEBTTYPE1[0]",
+            "debt_owed_1": "DEBTOWED1",
+            "debt_pay_1": "DEBTPAY1",
+            "food_expense": "ME4",
             "full_name": "topmostSubform[0].Page1[0].NAMEAPP[0]",
             "household_children": "DEPENDENTS",
-            "medical_expense": "ME5",
+            "how_supported": "topmostSubform[0].Page2[0].HOWSUPPORT[0]",
+            "insurance_expense": "ME6",
+            "medical_expense": "ME7",
             "monthly_gross_income": "GMI",
             "monthly_net_income": "NMI",
             "other_assets_value": "OPPEV",
-            "other_income_description": "INCOMEOTHER",
+            "other_expenses": "ME10",
+            "other_income": "INCOMEOTHER",
+            "other_income_description": "topmostSubform[0].Page1[0].COLUMN1[0].SOURCE[0]",
             "phone": "topmostSubform[0].Page1[0].PHONE[0]",
             "printed_name": "topmostSubform[0].Page2[0].NAMESIGN[0]",
             "real_estate_loan_owed": "RELOANBAL",
+            "real_estate_taxes": "ME2",
             "real_estate_value": "REEV",
             "rent_or_mortgage": "ME1",
             "savings_balance": "SAVINGS",
@@ -591,8 +627,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "equity_other_property": "EQUITYOPP",
             "total_assets_equity": "TOTALASSETS",
             "total_debt_owed": "DEBTOWEDTOTAL",
-            "transportation_expense": "ME4",
-            "utilities_expense": "ME2",
+            "transportation_expense": "ME8",
+            "utilities_expense": "ME3",
             "vehicle_loan_owed": "MVLOANBAL",
             "vehicle_value": "MVEV",
         },
@@ -642,44 +678,18 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "rent_offered": "RENTOFFERED[0]",
             "rent_paid": "RENTPAID[0]",
         },
-        "overlay_positions": {
-            "full_name": {"page": 1, "x": 72, "y": 200, "w": 250, "h": 20, "size": 11},
-            "landlord_name": {"page": 1, "x": 72, "y": 175, "w": 250, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 425, "y": 93, "w": 130, "h": 20, "size": 10},
-            "address": {"page": 1, "x": 72, "y": 220, "w": 300, "h": 20, "size": 10},
-            "phone": {"page": 1, "x": 72, "y": 240, "w": 200, "h": 20, "size": 10},
-        
-            "date": {"page": 1, "x": 144, "y": 299, "w": 120, "h": 16, "size": 10},
-            "defense_accepted_rent": {"page": 1, "x": 45, "y": 225, "w": 14, "h": 14, "size": 10},
-            "defense_amount": {"page": 1, "x": 97, "y": 129, "w": 14, "h": 14, "size": 10},
-            "defense_attempted_pay": {"page": 1, "x": 45, "y": 213, "w": 14, "h": 14, "size": 10},
-            "defense_corrected": {"page": 1, "x": 45, "y": 453, "w": 14, "h": 14, "size": 10},
-            "defense_other": {"page": 1, "x": 45, "y": 465, "w": 14, "h": 14, "size": 10},
-            "defense_waived": {"page": 1, "x": 45, "y": 225, "w": 14, "h": 14, "size": 10},
-            "printed_name": {"page": 1, "x": 128, "y": 659, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 1, "x": 128, "y": 659, "w": 200, "h": 20, "size": 10},
-            "date": {"page": 2, "x": 119, "y": 681, "w": 120, "h": 16, "size": 10},
-            "defense_accepted_rent": {"page": 3, "x": 164, "y": 476, "w": 14, "h": 14, "size": 10},
-            "defense_amount": {"page": 1, "x": 21, "y": 621, "w": 14, "h": 14, "size": 10},
-            "defense_attempted_pay": {"page": 3, "x": 21, "y": 543, "w": 14, "h": 14, "size": 10},
-            "defense_bad_notice": {"page": 2, "x": 130, "y": 220, "w": 14, "h": 14, "size": 10},
-            "defense_corrected": {"page": 2, "x": 165, "y": 433, "w": 14, "h": 14, "size": 10},
-            "defense_paid": {"page": 2, "x": 196, "y": 167, "w": 14, "h": 14, "size": 10},
-            "defense_repairs": {"page": 2, "x": 185, "y": 718, "w": 14, "h": 14, "size": 10},
-            "defense_retaliation": {"page": 3, "x": 21, "y": 65, "w": 14, "h": 14, "size": 10},
-            "defense_waived": {"page": 3, "x": 129, "y": 423, "w": 14, "h": 14, "size": 10},
-            "email": {"page": 4, "x": 160, "y": 635, "w": 200, "h": 16, "size": 10},
-            "phone": {"page": 4, "x": 159, "y": 67, "w": 200, "h": 16, "size": 10},
-            "printed_name": {"page": 4, "x": 257, "y": 469, "w": 200, "h": 16, "size": 10},
-            "signature": {"page": 2, "x": 283, "y": 406, "w": 200, "h": 20, "size": 10}},
+        "overlay_positions": {},
         "defense_options": [
-            {"key": "def_paid", "label": "I paid the rent", "field": "form1[0].FRONT[0].RENTPAID[0]"},
-            {"key": "def_attempted_pay", "label": "I offered to pay but landlord refused", "field": "form1[0].FRONT[0].RENTOFFERED[0]"},
-            {"key": "def_accepted_rent", "label": "Landlord accepted rent after notice", "field": "form1[0].FRONT[0].RENTACCEPTED[0]"},
-            {"key": "def_not_owed", "label": "I do not owe the rent claimed", "field": "form1[0].FRONT[0].NORENTDUE[0]"},
-            {"key": "def_repairs", "label": "Landlord failed to fix conditions / I notified them", "field": "form1[0].FRONT[0].NOTIFIED[0]"},
-            {"key": "def_foreclosure", "label": "Property in foreclosure", "field": "form1[0].FRONT[0].FORECLOSE[0]"},
-            {"key": "def_pre_termination", "label": "Pre-termination mediation required", "field": "form1[0].FRONT[0].PRETERMINATION[0]"},
+            {"key": "def_paid", "label": "All rent has been paid to my landlord", "field": "form1[0].FRONT[0].RENTPAID[0]"},
+            {"key": "def_attempted_pay", "label": "Rent was offered to landlord before Notice to Quit", "field": "form1[0].FRONT[0].RENTOFFERED[0]"},
+            {"key": "def_accepted_rent", "label": "Landlord accepted rent or waived Notice to Quit", "field": "form1[0].FRONT[0].RENTACCEPTED[0]"},
+            {"key": "def_repairs", "label": "No rent is due because of code violations / Landlord notified", "field": "form1[0].FRONT[0].NORENTDUE[0]"},
+            {"key": "def_retaliation", "label": "Retaliation: Eviction brought because I complained to landlord or officials", "field": "form1[0].FRONT[0].EVICTION[0]"},
+            {"key": "def_rent_increase", "label": "I filed a rent increase complaint with Fair Rent Commission", "field": "form1[0].FRONT[0].RENTINCREA[0]"},
+            {"key": "def_elderly_disabled", "label": "Protected tenant status (disability or age 62+ in 5+ unit building)", "field": "form1[0].FRONT[0].STATUS[0]"},
+            {"key": "def_foreclosure", "label": "Eviction brought after foreclosure action", "field": "form1[0].FRONT[0].FORECLOSE[0]"},
+            {"key": "def_corrected", "label": "I fixed the issue(s) in my pre-termination notice", "field": "form1[0].FRONT[0].PRETERMINATION[0]"},
+            {"key": "def_other", "label": "Additional reasons why I should not be evicted", "field": "form1[0].FRONT[0].ADDITIONALREASONS[0]"},
         ],
         "static_values": {
             # Part 1 — deny (Disagree) every complaint paragraph 1-8.
@@ -697,9 +707,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "topmostSubform[0].Page1[0].FILING[0]": "Yes", # filing fee
         },
         "defense_details": [
-            {"key": "def_repairs", "field": "CODEVIOLA[0]"},
+            {"key": "def_repairs", "field": "form1[0].FRONT[0].CODEVIOLA[0]"},
+            {"key": "def_other", "field": "form1[0].FRONT[0].ADDINFO[0]"},
         ],
-        "notes": "CT JD-HM-5 form — 62 fillable fields but NO defendant name/address field (form assumes case caption provides it). Tenant data (name, address, phone) uses overlay positions. Landlord info, docket number, and defense checkboxes use fillable fields (full XFA dotted paths).",
+        "notes": "CT JD-HM-5 form — 62 native fillable fields (JD-HM-5 Summary Process Answer) + JD-CV-120 Fee Waiver. Full XFA dotted paths for caption, denial of complaint paragraphs 1-8, defenses, and service certification. Ink signature.",
     },
 
     # RHODE ISLAND — District Court Eviction Answer
