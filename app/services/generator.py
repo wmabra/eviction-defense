@@ -513,6 +513,8 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
         _deposit_clause = "determine the amount of rent to be deposited into the court registry pursuant to O.C.G.A. § 44-7-54."
     elif state == "CT":
         _deposit_clause = "determine the correct amount of rent or use and occupancy payments pursuant to Conn. Gen. Stat. § 47a-26b."
+    elif state == "CO":
+        _deposit_clause = "determine the correct amount of rent owed and set the required registry deposit, if any, pursuant to C.R.S. § 13-40-111 and C.R.S. § 38-12-507."
     else:
         _deposit_clause = "determine the correct amount of rent owed."
     elements.append(Paragraph(
@@ -533,10 +535,13 @@ def _generate_motion_to_determine_rent(data: dict, output_path: str):
         f"3. Defendant believes the amount claimed is incorrect.", S["Body"]
     ))
     _num = 3
-    if r.get("why_disagree"):
+    _disagree_reason = (r.get("why_disagree") or "").strip()
+    if not _disagree_reason and isinstance(data.get("defenses", {}).get("def_amount"), dict):
+        _disagree_reason = (data.get("defenses", {}).get("def_amount", {}).get("explanation") or "").strip()
+    if _disagree_reason:
         _num += 1
         elements.append(Paragraph(
-            f"{_num}. Specifically: {r['why_disagree']}", S["Body"]
+            f"{_num}. Specifically: {_disagree_reason}", S["Body"]
         ))
     _num += 1
     _owed = r.get("amount_tenant_believes_owed")
@@ -591,7 +596,7 @@ def _generate_payment_plan_letter(data: dict, output_path: str):
         _amount_num = None
     plan_amount = pref.get('payment_plan_amount') or ''
     if not plan_amount and _amount_num:
-        plan_amount = _money(_amount_num / 4, 0)
+        plan_amount = _money(_amount_num / 4)
     elif plan_amount:
         plan_amount = _money(plan_amount)
     
@@ -900,13 +905,24 @@ def _generate_hearing_script(data: dict, output_path: str):
         "def_corrected": "You already fixed the problem.",
         "def_not_owner": "The person suing you is not the owner.",
         "def_bad_notice": "You did not receive proper legal notice.",
+        "def_unlawful_fees": "The landlord is demanding unlawful or unauthorized fees.",
         "def_other": "You have another legal defense.",
     }
     
     checked = []
+    seen_keys = set()
     for key, label in DEFENSE_LABELS.items():
         d = defenses.get(key, {})
         if isinstance(d, dict) and d.get("checked"):
+            seen_keys.add(key)
+            exp = (d.get("explanation") or "").strip()
+            item = f"<b>&#10003; {label}</b>"
+            if exp:
+                item += f"<br/>&nbsp;&nbsp;&nbsp;&nbsp;<i>What to state:</i> \"{exp}\""
+            checked.append(item)
+    for key, d in defenses.items():
+        if key not in seen_keys and isinstance(d, dict) and d.get("checked"):
+            label = key.replace("def_", "").replace("_", " ").capitalize() + "."
             exp = (d.get("explanation") or "").strip()
             item = f"<b>&#10003; {label}</b>"
             if exp:
@@ -1569,6 +1585,10 @@ def _generate_defenses_explained(data: dict, output_path: str):
             "some of it, or the landlord overcharged you.\n\n"
             "EVIDENCE YOU NEED: Rent receipts, bank statements, canceled checks, lease agreement "
             "showing the correct rent amount. A written calculation of what you believe you owe."),
+        "def_unlawful_fees": ("Unlawful Fees or Charges",
+            "The landlord is demanding late fees, administrative fees, or utility charges that "
+            "exceed legal statutory caps (e.g. C.R.S. § 38-12-105) or were not authorized in the written lease.\n\n"
+            "EVIDENCE YOU NEED: Your lease agreement, the landlord's ledger/billing statements, and proof of timely payment."),
         "def_not_owed": ("I Do Not Owe the Amount Claimed",
             "Same as above — the landlord is claiming money you do not actually owe."),
         "def_paid": ("I Already Paid",
