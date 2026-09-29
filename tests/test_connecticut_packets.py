@@ -101,7 +101,7 @@ def test_connecticut_answer_form_fill():
 
 
 def test_connecticut_additional_defenses():
-    """Verify retaliation, pre-termination cure, and tender of rent on JD-HM-5."""
+    """Verify retaliation, pre-termination cure, tender of rent, elderly/disabled, and foreclosure on JD-HM-5."""
     data = copy.deepcopy(CT["data"])
     data["defenses"] = {
         "def_retaliation": {
@@ -115,6 +115,14 @@ def test_connecticut_additional_defenses():
         "def_attempted_pay": {
             "checked": True,
             "explanation": "Offered money order before notice to quit was served.",
+        },
+        "def_elderly_disabled": {
+            "checked": True,
+            "explanation": "Tenant is 65 years old and lives in a 12-unit apartment building.",
+        },
+        "def_foreclosure": {
+            "checked": True,
+            "explanation": "Eviction brought following mortgage foreclosure against property owner.",
         },
     }
 
@@ -135,6 +143,14 @@ def test_connecticut_additional_defenses():
 
         # Rent offered (Box b: RENTOFFERED[0])
         assert p1_widgets.get("form1[0].FRONT[0].RENTOFFERED[0]") in ("1", "Yes", "true", "2")
+
+        # Protected tenant status (Box h: STATUS[0] and AGE[1] for senior)
+        assert p1_widgets.get("form1[0].FRONT[0].STATUS[0]") in ("1", "Yes", "true", "2")
+        assert p1_widgets.get("form1[0].FRONT[0].AGE[1]") in ("1", "Yes", "true", "2")
+
+        # Foreclosure action (Box i: FORECLOSE[0] and LEASE[0])
+        assert p1_widgets.get("form1[0].FRONT[0].FORECLOSE[0]") in ("1", "Yes", "true", "2")
+        assert p1_widgets.get("form1[0].FRONT[0].LEASE[0]") in ("1", "Yes", "true", "2")
 
 
 def test_connecticut_fee_waiver_fill():
@@ -168,6 +184,7 @@ def test_connecticut_fee_waiver_fill():
         # Section 2: Income
         assert p1_widgets.get("GMI") == "$2,800.00"
         assert p1_widgets.get("NMI") == "$2,200.00"
+        assert p1_widgets.get("INCOMEOTHER") == "$0.00"
         assert p1_widgets.get("TOTALMONTHLYINCOME") == "$2,200.00"  # Net (B) + Other (C)
         assert "SNAP" in p1_widgets.get("topmostSubform[0].Page1[0].COLUMN1[0].SOURCE[0]", "")
 
@@ -181,7 +198,9 @@ def test_connecticut_fee_waiver_fill():
         assert p1_widgets.get("ME7") == "$100.00"    # Medical/Dental
         assert p1_widgets.get("ME8") == "$160.00"    # Transportation
         assert p1_widgets.get("ME9") in ("$0.00", "0", "")  # Childcare
-        assert p1_widgets.get("TOTALME") == "$2,330.00"
+        assert p1_widgets.get("ME10") == "$250.00"   # Debt payments mapped to Row J (Other)
+        assert p1_widgets.get("topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]") == "Credit cards / personal loans"
+        assert p1_widgets.get("TOTALME") == "$2,330.00"  # Sum of lines ME1 through ME10 matches exactly!
 
         # Section 4: Assets
         assert p1_widgets.get("MVEV") == "$6,000.00"

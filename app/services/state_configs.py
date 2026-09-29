@@ -611,6 +611,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "monthly_net_income": "NMI",
             "other_assets_value": "OPPEV",
             "other_expenses": "ME10",
+            "other_expenses_description": "topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]",
             "other_income": "INCOMEOTHER",
             "other_income_description": "topmostSubform[0].Page1[0].COLUMN1[0].SOURCE[0]",
             "phone": "topmostSubform[0].Page1[0].PHONE[0]",

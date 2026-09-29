@@ -1442,6 +1442,8 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             _oth = _to_float(financial.get("other_income") or 0.0)
             _tot_inc = _net + _oth
             values["TOTALMONTHLYINCOME"] = f"${_tot_inc:,.2f}"
+            if not values.get("INCOMEOTHER") and _oth == 0.0:
+                values["INCOMEOTHER"] = "$0.00"
 
             _debt_pmt = _to_float(financial.get("debt_payments") or 0.0)
             _debt_owed = _to_float(financial.get("debt_owed") or financial.get("debt_balance") or 0.0)
@@ -1457,6 +1459,22 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             else:
                 values["DEBTOWEDTOTAL"] = "$0.00"
                 values["DEBTPAYTOTAL"] = "$0.00"
+
+            # Section 3 Monthly Expenses: map other_expenses or debt_payments to row J (ME10)
+            _oth_exp = _to_float(financial.get("other_expenses") or 0.0)
+            if _oth_exp > 0:
+                values["ME10"] = f"${_oth_exp:,.2f}"
+                if not values.get("topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]"):
+                    values["topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]"] = str(financial.get("other_expenses_description") or "Other expenses")
+            elif _debt_pmt > 0:
+                values["ME10"] = f"${_debt_pmt:,.2f}"
+                if not values.get("topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]"):
+                    values["topmostSubform[0].Page1[0].COLUMN1[0].OTHEREXPENSES[0]"] = "Credit cards / personal loans"
+
+            # Reconcile TOTALME so it matches the exact mathematical sum of lines ME1 through ME10
+            _exp_sum = sum(_to_float(values.get(f"ME{i}")) or 0.0 for i in range(1, 11))
+            if _exp_sum > 0:
+                values["TOTALME"] = f"${_exp_sum:,.2f}"
 
             _gross = _to_float(financial.get("monthly_gross_income") or 0.0)
             if _gross == 0.0 and _tot_inc == 0.0:
@@ -1708,6 +1726,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             _rep_exp = (defenses.get("def_repairs", {}) or {}).get("explanation") or ""
             if _rep_exp:
                 values["form1[0].FRONT[0].CODEVIOLA[0]"] = _rep_exp
+            _r_date = _all_data.get("repair_notice_date") or _all_data.get("date_note")
+            if _r_date:
+                values["form1[0].FRONT[0].DATENOTE[0]"] = str(_r_date)
 
         # Retaliation (Box f):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_retaliation", "def_retaliate")):
@@ -1721,6 +1742,9 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         # Tender of rent refused (Box b):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_attempted_pay", "def_offered_pay")):
             values["form1[0].FRONT[0].RENTOFFERED[0]"] = "Yes"
+            _p_date = _all_data.get("rent_payment_date") or _all_data.get("date_offered")
+            if _p_date:
+                values["form1[0].FRONT[0].DATEOFFERED[0]"] = str(_p_date)
 
         # Rent accepted / waived (Box c):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_accepted_rent", "def_waived")):
@@ -1729,14 +1753,23 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
         # Fair Rent Commission complaint (Box g):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_rent_increase", "def_fair_rent")):
             values["form1[0].FRONT[0].RENTINCREA[0]"] = "Yes"
+            _i_date = _all_data.get("fair_rent_complaint_date") or _all_data.get("date_increase")
+            if _i_date:
+                values["form1[0].FRONT[0].DATEINCREASE[0]"] = str(_i_date)
 
         # Protected tenant status (Box h):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_elderly_disabled", "def_disability", "def_senior")):
             values["form1[0].FRONT[0].STATUS[0]"] = "Yes"
+            _exp = str((defenses.get("def_elderly_disabled") or {}).get("explanation") or "").lower()
+            if re.search(r'\b(6[2-9]|[7-9]\d|\d{2}\s*years?\s*old|senior|elder|older|age)\b', _exp):
+                values["form1[0].FRONT[0].AGE[1]"] = "2"
+            else:
+                values["form1[0].FRONT[0].AGE[0]"] = "1"
 
         # Foreclosure (Box i):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_foreclosure",)):
             values["form1[0].FRONT[0].FORECLOSE[0]"] = "Yes"
+            values["form1[0].FRONT[0].LEASE[0]"] = "1"
 
         # Additional reasons / Other defenses (Box k):
         # Includes def_other, def_bad_notice, def_amount (unauthorized fees/charges)
