@@ -4,19 +4,19 @@ Add fillable widgets to the OFFICIAL Oklahoma Pauper's Affidavit (flat PDF),
 preserving the exact official form 1:1. Fillable fields are placed at the
 exact blank positions so the filled form is court-accepted.
 """
-import pymupdf as fitz
+import pymupdf
 
 SRC = "app/templates/counties/ok_fee_waiver.pdf"
 OUT = "app/templates/counties/ok_fee_waiver_fillable.pdf"
 
-doc = fitz.open(SRC)
+doc = pymupdf.open(SRC)
 
 
 def add_widget(page, name, x, y, w, h, fontsize: float = 9):
-    wd = fitz.Widget()
+    wd = pymupdf.Widget()
     wd.field_name = name  # type: ignore[attr-defined]
-    wd.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-    wd.rect = fitz.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
+    wd.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    wd.rect = pymupdf.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
     wd.field_value = ""  # type: ignore[attr-defined]
     wd.text_font = "Helv"  # type: ignore[attr-defined]
     wd.text_fontsize = fontsize  # type: ignore[attr-defined]
@@ -49,7 +49,7 @@ doc.close()
 print(f"Created {OUT}")
 
 # Verify
-d = fitz.open(OUT)
+d = pymupdf.open(OUT)
 widgets = [w for p in d for w in p.widgets()]
 print(f"Widgets: {len(widgets)}")
 for w in widgets:

@@ -25,14 +25,14 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
 
-import pymupdf as fitz  # noqa: E402
+import pymupdf  # noqa: E402
 
 # PyMuPDF constants are not in the type stubs — resolve defensively.
-FITZ_TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 2)
-FITZ_CHECKBOX = getattr(fitz, "PDF_WIDGET_TYPE_CHECKBOX", 3)
-FITZ_RADIO = getattr(fitz, "PDF_WIDGET_TYPE_RADIOBUTTON", 4)
-FITZ_MULTILINE = getattr(fitz, "PDF_TX_FIELD_IS_MULTILINE", 4096)
-FITZ_READONLY = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
+PYMUPDF_TEXT = getattr(pymupdf, "PDF_WIDGET_TYPE_TEXT", 2)
+PYMUPDF_CHECKBOX = getattr(pymupdf, "PDF_WIDGET_TYPE_CHECKBOX", 3)
+PYMUPDF_RADIO = getattr(pymupdf, "PDF_WIDGET_TYPE_RADIOBUTTON", 4)
+PYMUPDF_MULTILINE = getattr(pymupdf, "PDF_TX_FIELD_IS_MULTILINE", 4096)
+PYMUPDF_READONLY = getattr(pymupdf, "PDF_FIELD_IS_READ_ONLY", 1)
 
 
 def _is_checked(value):
@@ -163,7 +163,7 @@ def check_pdf(path, label):
              "too_small": 0, "long_truncated": 0, "signature_widgets": 0}
 
     try:
-        doc = fitz.open(path)
+        doc = pymupdf.open(path)
     except Exception as e:
         return [f"cannot open PDF: {e}"], [], stats
 
@@ -175,7 +175,7 @@ def check_pdf(path, label):
         for w in widgets:
             ft = getattr(w, "field_type", None)
             fname = getattr(w, "field_name", "") or ""
-            if ft == FITZ_TEXT:
+            if ft == PYMUPDF_TEXT:
                 stats["text"] += 1
                 flags = getattr(w, "field_flags", 0) or 0
                 r = getattr(w, "rect", None)
@@ -185,7 +185,7 @@ def check_pdf(path, label):
                 # Native court forms with short single-line fields (h < 20) intentionally
                 # omit multiline to prevent MuPDF from clipping the top tips of ascenders.
                 if h >= 20.0 or "\n" in val:
-                    if not (flags & FITZ_MULTILINE):
+                    if not (flags & PYMUPDF_MULTILINE):
                         stats["non_multiline"] += 1
                         issues.append(f"{label}: tall text field '{fname}' NOT multiline (height={h:.1f})")
                 fits, needed, lines = estimate_text_fit(w)
@@ -194,10 +194,10 @@ def check_pdf(path, label):
                     r = getattr(w, "rect", None)
                     h = r.height if r else 0
                     warnings.append(f"{label}: field '{fname}' may clip (value needs ~{lines} lines, height {h:.0f}pt)")
-                if is_signature_field(w) and not (flags & FITZ_READONLY):
+                if is_signature_field(w) and not (flags & PYMUPDF_READONLY):
                     stats["signature_widgets"] += 1
                     issues.append(f"{label}: signature/notary field '{fname}' was made editable (should stay ink)")
-            elif ft in (FITZ_CHECKBOX, FITZ_RADIO):
+            elif ft in (PYMUPDF_CHECKBOX, PYMUPDF_RADIO):
                 stats["checkbox"] += 1
                 if _is_checked(getattr(w, "field_value", None)):
                     stats["checked"] += 1
@@ -244,13 +244,13 @@ def verify_fee_waiver_checkboxes(path, data):
     # Benefit boxes explicitly mapped via fee_waiver_mapping receives_* are filled
     # by _fill_via_widgets, not by _expected_fee_waiver_checkbox — skip them here.
     explicit_benefit_fields = {v for k, v in _fw_mapping.items() if k.startswith("receives_")}
-    doc = fitz.open(path)
+    doc = pymupdf.open(path)
     # Pre-scan on_state patterns so the check mirrors the fill logic (trust
     # on_state when a pair's widgets carry DIFFERENT on_states 'Yes'/'No').
     on_state_sets = {}
     for pg in doc:
         for w in pg.widgets():
-            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+            if getattr(w, "field_type", None) != PYMUPDF_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "")
             try:
@@ -262,12 +262,12 @@ def verify_fee_waiver_checkboxes(path, data):
     mismatches = []
     for pg in doc:
         for w in pg.widgets():
-            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+            if getattr(w, "field_type", None) != PYMUPDF_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "")
             if nm in explicit_benefit_fields:
                 continue
-            r = fitz.Rect(w.rect)
+            r = pymupdf.Rect(w.rect)
             try:
                 _os = str(getattr(w, "on_state", lambda: "")())
             except Exception:
@@ -287,12 +287,12 @@ def verify_fee_waiver_checkboxes(path, data):
 
 def verify_answer_defenses(path, data):
     """Verify answer-form defense checkboxes match intake. Returns mismatch strings."""
-    doc = fitz.open(path)
+    doc = pymupdf.open(path)
     mismatches = []
     defenses = data.get("defenses", {})
     for pg in doc:
         for w in pg.widgets():
-            if getattr(w, "field_type", None) != FITZ_CHECKBOX:
+            if getattr(w, "field_type", None) != PYMUPDF_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "").lower()
             actual = _is_checked(getattr(w, "field_value", None))

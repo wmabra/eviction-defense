@@ -10,7 +10,7 @@ import os
 import sys
 import re
 import json
-import fitz
+import pymupdf
 import copy
 import zipfile
 from pathlib import Path
@@ -221,7 +221,7 @@ def generate_and_verify_packet(data: dict):
     print("=" * 70)
 
     # 1. Verify JD-HM-5
-    doc_ans = fitz.open(ans_path)
+    doc_ans = pymupdf.open(ans_path)
     p1_ans = {w.field_name: w.field_value for w in doc_ans[0].widgets()}
     print("\n[JD-HM-5 Form Field Inspection]")
     print(f"  Caption:       {p1_ans.get('form1[0].FRONT[0].CASE[0]')}")
@@ -239,7 +239,7 @@ def generate_and_verify_packet(data: dict):
     print(f"  Cert Date:     {p1_ans.get('form1[0].FRONT[0].CERTDATE[0]')}")
 
     # 2. Verify JD-CV-120
-    doc_fw = fitz.open(fw_path)
+    doc_fw = pymupdf.open(fw_path)
     p1_fw = {w.field_name: w.field_value for w in doc_fw[0].widgets()}
     print("\n[JD-CV-120 Fee Waiver Inspection]")
     print(f"  Case:            {p1_fw.get('NAMECASE[0]')}")
@@ -273,7 +273,7 @@ def generate_and_verify_packet(data: dict):
     all_clean = True
     for f in pdf_files:
         fp = os.path.join(out_dir, f)
-        doc = fitz.open(fp)
+        doc = pymupdf.open(fp)
         txt = "".join(p.get_text() for p in doc)
         for leak in ["Colorado", "Denver", "JDF 205", "JDF 100", "undefined", "[Your Name]", "[Court Name]"]:
             if leak.lower() in txt.lower():

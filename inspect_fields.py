@@ -2,7 +2,7 @@
 # pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-import pymupdf as fitz
+import pymupdf
 
 def inspect_state(state_code):
     from app.services.state_configs import STATE_CONFIGS
@@ -19,7 +19,7 @@ def inspect_state(state_code):
         print(f"{state_code}: File not found: {path}")
         return
     
-    doc = fitz.open(path)
+    doc = pymupdf.open(path)
     print(f"\n{'='*70}")
     print(f"{state_code} — {cfg['name']} ({fn})")
     print(f"{doc.page_count} pages")

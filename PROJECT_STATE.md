@@ -115,8 +115,8 @@ worksheet, refined court captions) is also merged.
   checkbox appearance streams during `widget.update()`).
 - Repeated-row guard: substring auto-fill no longer copies one row's value into a
   sibling (`…value of the vehicle` vs `…value of the vehicle_2`).
-- PyMuPDF deprecation migration: `import fitz` → `import pymupdf as fitz` across 16
-  files (drop-in alias; `fitz.Rect/open/Widget` are the same objects as `pymupdf.*`).
+- PyMuPDF clean migration: Fully migrated from legacy `fitz` to direct `import pymupdf` across all
+  services, tests, and scripts (no `import fitz` and no `as fitz` alias; using standard `pymupdf.*`).
 - New `defense_details` config (per-item explanation text) + `explanation_*` overlay
   routing (MN HOU202 items 5/6/9); corrected MI DC 111a defense→item mapping.
 

@@ -9,7 +9,7 @@
 """
 import sys
 import os
-import pymupdf as fitz
+import pymupdf
 
 def audit_packet(pkg_dir):
     errors = []
@@ -24,7 +24,7 @@ def audit_packet(pkg_dir):
         
     for fname in files:
         fpath = os.path.join(pkg_dir, fname)
-        doc = fitz.open(fpath)
+        doc = pymupdf.open(fpath)
         
         # 1. Signature auto-fill check (signature widgets must stay blank for ink)
         for pno in range(len(doc)):
@@ -54,7 +54,7 @@ def audit_packet(pkg_dir):
                     w1, w2 = ws[i], ws[j]
                     if w1.field_name != w2.field_name and w1.rect.intersects(w2.rect):
                         # check if intersection is non-trivial (> 2pt)
-                        ir = fitz.Rect(w1.rect).intersect(w2.rect)
+                        ir = pymupdf.Rect(w1.rect).intersect(w2.rect)
                         if ir.width > 2 and ir.height > 2:
                             errors.append(f"{fname} Page {pno+1}: widget {w1.field_name} intersects {w2.field_name} by {ir.width:.1f}x{ir.height:.1f}pt")
 

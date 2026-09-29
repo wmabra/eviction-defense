@@ -11,7 +11,7 @@ Run: python3 tests/verify_mapping.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
-import pymupdf as fitz
+import pymupdf
 from app.services.pdf_overlay import fill_answer_form, fill_fee_waiver
 
 STATES = ["AR","CO","CT","GA","IL","IN","KY","LA","MI","MN","MO","NM","OH","OK","OR","RI","SC","TN","TX","VA"]
@@ -29,7 +29,7 @@ TEST = {
 
 
 def _values(path):
-    d = fitz.open(path)
+    d = pymupdf.open(path)
     vals = []
     for pno in range(d.page_count):
         for w in d[pno].widgets():

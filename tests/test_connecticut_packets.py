@@ -6,7 +6,7 @@ import os
 import sys
 import copy
 import tempfile
-import fitz
+import pymupdf
 from pathlib import Path
 
 # Ensure app is in python path
@@ -67,7 +67,7 @@ def test_connecticut_answer_form_fill():
         assert ok is True
         assert os.path.exists(out_pdf)
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         assert len(doc) == 1
 
         p1_widgets = _get_page_widgets(doc[0])
@@ -131,7 +131,7 @@ def test_connecticut_additional_defenses():
         ok = fill_answer_form(data, "CT", out_pdf)
         assert ok is True
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         p1_widgets = _get_page_widgets(doc[0])
 
         # Retaliation (Box f: EVICTION[0] and LANDLORD[0])
@@ -163,7 +163,7 @@ def test_connecticut_fee_waiver_fill():
         assert ok is True
         assert os.path.exists(out_pdf)
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         assert len(doc) == 3
 
         # Page 1: Caption, Case type, Court address, Income & Expenses
@@ -238,7 +238,7 @@ def test_connecticut_zero_income_support():
         ok = fill_fee_waiver(data, "CT", out_pdf)
         assert ok is True
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         p2_widgets = _get_page_widgets(doc[1])
         assert "Assistance from family" in p2_widgets.get("topmostSubform[0].Page2[0].HOWSUPPORT[0]", "")
 

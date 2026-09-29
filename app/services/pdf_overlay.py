@@ -29,7 +29,7 @@ def _money(val, dec: int = 2) -> str:
         return "$0.00"
 
 
-import pymupdf as fitz  # PyMuPDF
+import pymupdf
 
 from app.services.state_configs import get_state_config
 
@@ -228,7 +228,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     ctx = " ".join(str(x[4]) for x in cw).lower()
 
     # Find other checkboxes on the same row to bound local text strictly
-    other_cbs = [w.rect for w in page.widgets() if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX and w.rect]
+    other_cbs = [w.rect for w in page.widgets() if getattr(w, "field_type", None) == pymupdf.PDF_WIDGET_TYPE_CHECKBOX and w.rect]
     same_row_after = [o for o in other_cbs if abs((o.y0 + o.y1) / 2 - (r.y0 + r.y1) / 2) < 7 and o.x0 > r.x1]
     next_x = min([o.x0 for o in same_row_after]) if same_row_after else r.x1 + 80
     max_x = min(r.x1 + 80, next_x)
@@ -329,7 +329,7 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
     return None
 
 
-def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> int:
+def _map_fee_waiver_checkboxes(doc: pymupdf.Document, data: dict, config: dict) -> int:
     """Check fee-waiver Yes/No and benefit boxes from the intake financial data.
 
     Handles Yes/No pairs that share a single field name (e.g. two 'Check Box1'
@@ -348,7 +348,7 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
     for page in doc:
         for w in page.widgets():
             w = cast(Any, w)
-            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_CHECKBOX:
+            if getattr(w, "field_type", None) != pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                 continue
             nm = str(getattr(w, "field_name", "") or "cb")
             try:
@@ -362,9 +362,9 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
     for page in doc:
         for w in page.widgets():
             w = cast(Any, w)
-            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_CHECKBOX:
+            if getattr(w, "field_type", None) != pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                 continue
-            r = fitz.Rect(w.rect)
+            r = pymupdf.Rect(w.rect)
             nm = str(getattr(w, "field_name", "") or "cb")
             if nm in explicit_benefit_fields:
                 continue
@@ -417,7 +417,7 @@ def _map_fee_waiver_checkboxes(doc: fitz.Document, data: dict, config: dict) -> 
     return checked
 
 
-def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
+def _resolve_radio_groups(doc: pymupdf.Document, data: dict, config: dict) -> int:
     """Set mutually-exclusive radio groups to a single selection (or blank).
 
     Radio groups otherwise ship with every option 'On' — a form that shows both
@@ -442,7 +442,7 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
         for w in page.widgets():
             w = cast(Any, w)
             _ft = getattr(w, "field_type", None)
-            if _ft != fitz.PDF_WIDGET_TYPE_RADIOBUTTON and _ft != fitz.PDF_WIDGET_TYPE_CHECKBOX:
+            if _ft != pymupdf.PDF_WIDGET_TYPE_RADIOBUTTON and _ft != pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                 continue
             groups.setdefault(str(getattr(w, "field_name", "") or ""), []).append(w)
         for gname, ws in groups.items():
@@ -454,7 +454,7 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
             # Unruled checkbox pairs are resolved later by
             # _map_fee_waiver_checkboxes via on-state/label auto-detection;
             # clearing them here would ship both halves blank.
-            if not rule and all(getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX for w in ws):
+            if not rule and all(getattr(w, "field_type", None) == pymupdf.PDF_WIDGET_TYPE_CHECKBOX for w in ws):
                 continue
             needle = None
             if rule:
@@ -517,7 +517,7 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
                     break
             for w in ws:
                 try:
-                    if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                    if getattr(w, "field_type", None) == pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                         # Checkboxes toggle on True/False; radio buttons select
                         # via on_state.
                         w.field_value = True if w is choice else False
@@ -531,7 +531,7 @@ def _resolve_radio_groups(doc: fitz.Document, data: dict, config: dict) -> int:
     return resolved
 
 
-def _sanitize_zapfdingbats(doc: fitz.Document) -> int:
+def _sanitize_zapfdingbats(doc: pymupdf.Document) -> int:
     """Strip a bogus /Encoding /WinAnsiEncoding from ZapfDingbats fonts.
 
     ZapfDingbats is a symbol font whose built-in encoding maps the checkmark
@@ -560,7 +560,7 @@ _DEAD_LINK_URL_RE = re.compile(
 )
 
 
-def _fix_or_clean_dead_links(doc: fitz.Document) -> int:
+def _fix_or_clean_dead_links(doc: pymupdf.Document) -> int:
     """Inspect all link annotations in the document.
 
     If a link has an empty or 'about:blank' URI, attempt to recover the URL
@@ -580,7 +580,7 @@ def _fix_or_clean_dead_links(doc: fitz.Document) -> int:
                     except Exception:
                         pass
                     continue
-                txt = page.get_text("text", clip=fitz.Rect(rect.x0, rect.y0 - 2, rect.x1, rect.y1 + 2))
+                txt = page.get_text("text", clip=pymupdf.Rect(rect.x0, rect.y0 - 2, rect.x1, rect.y1 + 2))
                 m = _DEAD_LINK_URL_RE.search(txt)
                 if m:
                     target_url = m.group(0).rstrip(".,;")
@@ -605,7 +605,7 @@ def _fix_or_clean_dead_links(doc: fitz.Document) -> int:
     return fixed_or_cleaned
 
 
-def _unhide_filled_widgets(doc: fitz.Document) -> None:
+def _unhide_filled_widgets(doc: pymupdf.Document) -> None:
     """Clear the /F (Hidden) annotation flag on every populated widget.
 
     Some official templates (e.g. Colorado JDF 103) ship conditional child
@@ -697,7 +697,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     c = data.get("case_details", {})
     defenses = data.get("defenses", {})
 
-    doc = fitz.open(form_path)
+    doc = pymupdf.open(form_path)
 
     # Sanitize ZapfDingbats fonts in the SOURCE template (some ship with a bogus
     # /Encoding /WinAnsiEncoding on the /ZaDb font).
@@ -710,11 +710,11 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     #    and move the text to Page 10 above the address inputs.
     if state_code == "AR" and form_key == "answer_form":
         if len(doc) > 5:
-            doc[5].add_redact_annot(fitz.Rect(65.0, 517.0, 212.0, 520.0), fill=(1, 1, 1))
-            doc[5].add_redact_annot(fitz.Rect(65.0, 698.0, 220.0, 722.0), fill=(1, 1, 1))
+            doc[5].add_redact_annot(pymupdf.Rect(65.0, 517.0, 212.0, 520.0), fill=(1, 1, 1))
+            doc[5].add_redact_annot(pymupdf.Rect(65.0, 698.0, 220.0, 722.0), fill=(1, 1, 1))
             doc[5].apply_redactions()
         if len(doc) > 9:
-            doc[8].add_redact_annot(fitz.Rect(60.0, 695.0, 418.0, 722.0), fill=(1, 1, 1))
+            doc[8].add_redact_annot(pymupdf.Rect(60.0, 695.0, 418.0, 722.0), fill=(1, 1, 1))
             doc[8].apply_redactions()
             p10_text = doc[9].get_text()
             if "Sign your name here and fill in your address" not in p10_text:
@@ -747,7 +747,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 w = cast(Any, w)
                 fn = str(getattr(w, "field_name", "") or "")
                 o = overrides.get(fn)
-                all_text = overrides.get("__all_text__") if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_TEXT else None
+                all_text = overrides.get("__all_text__") if getattr(w, "field_type", None) == pymupdf.PDF_WIDGET_TYPE_TEXT else None
                 if all_text:
                     o = {**all_text, **o} if o else dict(all_text)
                 if not o:
@@ -755,7 +755,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 r = w.rect
                 if r is None:
                     continue
-                w.rect = fitz.Rect(
+                w.rect = pymupdf.Rect(
                     o.get("x0", r.x0 + o.get("dx0", 0)),
                     o.get("y0", r.y0 + o.get("dy0", 0)),
                     o.get("x1", r.x1 + o.get("dx1", 0)),
@@ -789,12 +789,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 nm = str(getattr(w, "field_name", "") or "").lower()
                 if r.x0 < 90 and r.height < 25 and any(k in nm for k in ("plaintiff", "defendant", "printed")) \
                         and any(f in form_path for f in ("oh_eviction_answer", "in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer", "ok_eviction_answer")):
-                    r = fitz.Rect(130, r.y0, r.x1, r.y1)
+                    r = pymupdf.Rect(130, r.y0, r.x1, r.y1)
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
                         and "ky_eviction_answer" not in form_path \
                         and "in_eviction_answer" not in form_path:
-                    r = fitz.Rect(400, r.y0, r.x1, r.y1)
-                w.rect = fitz.Rect(r.x0, r.y0, r.x1, r.y1)
+                    r = pymupdf.Rect(400, r.y0, r.x1, r.y1)
+                w.rect = pymupdf.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
                     w.update()
                 except Exception:
@@ -844,7 +844,7 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
     return True
 
 
-def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: str = "", state_code: str = ""):
+def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key: str = "", state_code: str = ""):
     """Fill a PDF's form fields using widget/field mapping + smart auto-fill."""
     state_code = str(state_code or data.get("state") or data.get("court", {}).get("state") or data.get("case_details", {}).get("state") or data.get("personal_info", {}).get("state") or data.get("personal_info", {}).get("property_state") or config.get("state_code") or "").upper()
     mapping = config.get("field_mapping", {})
@@ -1189,7 +1189,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                     break
                 target_w = widths[line_idx] - 4.0
                 test_line = (curr_line + " " + w_word).strip()
-                if fitz.get_text_length(test_line, fontname="helv", fontsize=9.0) <= target_w:
+                if pymupdf.get_text_length(test_line, fontname="helv", fontsize=9.0) <= target_w:
                     curr_line = test_line
                 else:
                     if curr_line:
@@ -1847,13 +1847,13 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
             field_name = cast(str, widget.field_name)
             if not field_name:
                 continue
-            if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
+            if widget.field_type == pymupdf.PDF_WIDGET_TYPE_TEXT:
                 h = widget.rect.height if widget.rect else 0
                 val_str = str(values.get(field_name, "") or "")
                 if h >= 20.0 or "\n" in val_str:
-                    widget.field_flags = (widget.field_flags or 0) | fitz.PDF_TX_FIELD_IS_MULTILINE
+                    widget.field_flags = (widget.field_flags or 0) | pymupdf.PDF_TX_FIELD_IS_MULTILINE
                 else:
-                    widget.field_flags = (widget.field_flags or 0) & ~fitz.PDF_TX_FIELD_IS_MULTILINE
+                    widget.field_flags = (widget.field_flags or 0) & ~pymupdf.PDF_TX_FIELD_IS_MULTILINE
             
             # 1. Check explicit mapping first
             if field_name in values:
@@ -1871,7 +1871,7 @@ def _fill_via_widgets(doc: fitz.Document, data: dict, config: dict, form_key: st
                         except Exception:
                             pass
                 else:
-                    if widget.field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                    if widget.field_type == pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                         widget.field_value = (val not in ("", "Off", "off", False, "False", "0"))
                     else:
                         widget.field_value = val
@@ -2047,12 +2047,12 @@ def _find_label_for_line(words, r) -> Optional[str]:
 
 def _is_signature_line(page, rect) -> bool:
     """True if text near rect is a signature/notary area (keep as ink, not editable)."""
-    clip = fitz.Rect(rect.x0 - 60, rect.y0 - 14, rect.x1 + 160, rect.y1 + 14)
+    clip = pymupdf.Rect(rect.x0 - 60, rect.y0 - 14, rect.x1 + 160, rect.y1 + 14)
     txt = page.get_text("text", clip=clip).lower()
     return any(k in txt for k in ("signature", "notary", "affiant", "officer", "sworn", "subscribed", "witness", "deponent", "attesting"))
 
 
-def _force_multiline_text_widgets(doc: fitz.Document) -> int:
+def _force_multiline_text_widgets(doc: pymupdf.Document) -> int:
     """Ensure every text widget is multiline and mask filled values' underlines.
 
     Native form fields (especially on fee-waiver forms) often carry only the
@@ -2069,19 +2069,19 @@ def _force_multiline_text_widgets(doc: fitz.Document) -> int:
     for page in doc:
         for w in page.widgets():
             w = cast(Any, w)
-            if getattr(w, "field_type", None) != fitz.PDF_WIDGET_TYPE_TEXT:
+            if getattr(w, "field_type", None) != pymupdf.PDF_WIDGET_TYPE_TEXT:
                 continue
             dirty = False
             flags = getattr(w, "field_flags", 0) or 0
             h = w.rect.height if w.rect else 0
             val_str = str(getattr(w, "field_value", "") or "")
             if h >= 20.0 or "\n" in val_str:
-                if not (flags & fitz.PDF_TX_FIELD_IS_MULTILINE):
-                    w.field_flags = flags | fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                if not (flags & pymupdf.PDF_TX_FIELD_IS_MULTILINE):
+                    w.field_flags = flags | pymupdf.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
                     dirty = True
             else:
-                if flags & fitz.PDF_TX_FIELD_IS_MULTILINE:
-                    w.field_flags = flags & ~fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+                if flags & pymupdf.PDF_TX_FIELD_IS_MULTILINE:
+                    w.field_flags = flags & ~pymupdf.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
                     dirty = True
             if val_str.strip():
                 # Only large multi-line narrative areas (height > 30) get an opaque
@@ -2158,16 +2158,16 @@ def _over_printed_text(words, rect, tol: float = 1.5) -> bool:
     exact definition the fill path enforces — a metric that measures with a
     different ruler than the fix produces numbers that disagree with reality.
     """
-    r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
+    r = pymupdf.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
     for wd in words:
         if _is_decorative_word(str(wd[4])):
             continue
-        if r.intersects(fitz.Rect(wd[0], wd[1], wd[2], wd[3])):
+        if r.intersects(pymupdf.Rect(wd[0], wd[1], wd[2], wd[3])):
             return True
     return False
 
 
-def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] = None) -> int:
+def _make_signature_fields_readonly(doc: pymupdf.Document, config: Optional[dict] = None) -> int:
     """Blank + read-only any text field that is actually a signature/notary line.
 
     Signature, notary, affiant, witness, sworn/subscribed, commission, and bank
@@ -2176,14 +2176,14 @@ def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] =
     ``/s/`` — we clear them and lock them so they stay blank and non-editable.
     Printed-name and date fields are left editable on purpose.
     """
-    readonly = getattr(fitz, "PDF_FIELD_IS_READ_ONLY", 1)
+    readonly = getattr(pymupdf, "PDF_FIELD_IS_READ_ONLY", 1)
     # States that pre-fill digital "/s/" signature markers (e.g. IL) keep the
     # marker text but still lock the field read-only (so it can't be typed over).
     keep_marker = bool(config and config.get("populate_signature_fields"))
     locked = 0
     for page in doc:
         text_widgets = [cast(Any, w) for w in page.widgets()
-                        if getattr(w, "field_type", None) == fitz.PDF_WIDGET_TYPE_TEXT]
+                        if getattr(w, "field_type", None) == pymupdf.PDF_WIDGET_TYPE_TEXT]
         # Rows that already contain a signature/notary field. A DATE field sharing
         # such a row belongs to the same signature block. The Michigan fee waiver
         # is the live example: its `Date` sits directly under "I declare under the
@@ -2222,7 +2222,7 @@ def _make_signature_fields_readonly(doc: fitz.Document, config: Optional[dict] =
     return locked
 
 
-def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
+def _make_scanned_form_editable(doc: pymupdf.Document, data: dict) -> None:
     """Add editable text/checkbox widgets at every blank + checkbox on a scanned form.
 
     Handles every blank representation: underscore runs, horizontal lines, rectangle
@@ -2247,10 +2247,10 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         drawings = page.get_drawings()
         # PyMuPDF search_for/get_drawings/get_text all return top-down
         # coordinates, and widget rects are top-down too — no flipping needed.
-        covered = [fitz.Rect(w.rect) for w in page.widgets() if w.rect is not None]
+        covered = [pymupdf.Rect(w.rect) for w in page.widgets() if w.rect is not None]
 
         def _covered(rect, tol=4):
-            r = fitz.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
+            r = pymupdf.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
             return any(r.intersects(e) for e in covered)
 
         # Fill characters that DO make up a blank are not "printed text" — an
@@ -2260,7 +2260,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
 
         # 1. checkboxes drawn as "☐" (U+2610) or "❑" (U+2751) glyphs
         for i, r in enumerate(list(page.search_for("\u2610")) + list(page.search_for("\u2751"))):
-            rr = fitz.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
+            rr = pymupdf.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
             if _covered(rr):
                 continue
             lb = _label_to_right(words, r.x1, r.y0, r.y1)
@@ -2318,7 +2318,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
             if not placed:
                 merged.append(bb[:])
         for i, (x0, x1, y0, y1) in enumerate(merged):
-            r = fitz.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
+            r = pymupdf.Rect(x0, y0 - 6, max(x1, x0 + 48), y1 + 4)
             if _covered(r) or _is_signature_line(page, r) or _over_text(r):
                 continue
             _add_text_widget(page, r, f"ufill_{pno}_{i}", "")
@@ -2327,7 +2327,7 @@ def _make_scanned_form_editable(doc: fitz.Document, data: dict) -> None:
         # 4. horizontal lines -> text fields
         for i, dr in enumerate([d for d in drawings if d["rect"].height < 3 and d["rect"].width > 15]):
             raw_r = dr["rect"]
-            r = fitz.Rect(raw_r.x0, raw_r.y0 - 12, raw_r.x1, raw_r.y0 + 4)
+            r = pymupdf.Rect(raw_r.x0, raw_r.y0 - 12, raw_r.x1, raw_r.y0 + 4)
             if _covered(r, tol=1) or _is_signature_line(page, raw_r) or _over_text(r):
                 continue
             _add_text_widget(page, r, f"fill_{pno}_{i}", "")
@@ -2350,14 +2350,14 @@ def _add_text_widget(page, rect, name: str, value: str, font_size: float = 10, f
     if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
         return
     if rect.height < 4:
-        rect = fitz.Rect(rect.x0, rect.y0 - 12, rect.x1, rect.y0 + 4)
-    w = cast(Any, fitz.Widget())
+        rect = pymupdf.Rect(rect.x0, rect.y0 - 12, rect.x1, rect.y0 + 4)
+    w = cast(Any, pymupdf.Widget())
     w.field_name = name
-    w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    w.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
     w.rect = rect
     w.field_value = str(value)
     if rect.height > 25 or any(k in name for k in ("narrative", "summary")):
-        w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
+        w.field_flags = pymupdf.PDF_TX_FIELD_IS_MULTILINE  # type: ignore[attr-defined]
     else:
         w.field_flags = 0
     w.text_fontsize = font_size
@@ -2384,15 +2384,15 @@ def _add_checkbox_widget(page, rect, name: str, checked: bool = True) -> None:
     """Add an editable checkbox at the given rect."""
     if rect.x1 <= rect.x0 or rect.y1 <= rect.y0:
         return
-    w = cast(Any, fitz.Widget())
+    w = cast(Any, pymupdf.Widget())
     w.field_name = name
-    w.field_type = fitz.PDF_WIDGET_TYPE_CHECKBOX  # type: ignore[attr-defined]
+    w.field_type = pymupdf.PDF_WIDGET_TYPE_CHECKBOX  # type: ignore[attr-defined]
     w.rect = rect
     w.field_value = bool(checked)
     page.add_widget(w)
 
 
-def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: str = "answer_form"):
+def _fill_via_overlay(doc: pymupdf.Document, data: dict, config: dict, form_key: str = "answer_form"):
     """Overlay text on scanned/non-fillable PDFs using coordinate positions.
     
     For fee waivers, uses fee_waiver_overlay if available, otherwise falls back
@@ -2425,7 +2425,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 w = pos.get("w", 200)
                 h = pos.get("h", 20)
                 y = pos["y"]
-                _pr = fitz.Rect(x, y, x + w, y + h)
+                _pr = pymupdf.Rect(x, y, x + w, y + h)
                 if any(_pr.intersects(r) for r in existing_rects):
                     continue  # already filled via a fillable widget (rebuilt form)
                 value = _get_field_value(key, data)
@@ -2433,7 +2433,7 @@ def _fill_via_overlay(doc: fitz.Document, data: dict, config: dict, form_key: st
                 is_checkbox = (key.startswith("def_") or key.startswith("checkbox_")) and pos.get("h", 20) <= 20
                 if is_checkbox:
                     s = pos.get("h", 14)
-                    _add_checkbox_widget(page, fitz.Rect(x, y, x + s, y + s), key, checked=bool(value))
+                    _add_checkbox_widget(page, pymupdf.Rect(x, y, x + s, y + s), key, checked=bool(value))
                 elif value:
                     if (config.get("strip_dollar_signs") or pos.get("strip_dollar")) and isinstance(value, str) and value.startswith("$"):
                         value = value[1:]
@@ -2659,7 +2659,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                 curr = []
                 for wd in words:
                     trial = " ".join(curr + [wd])
-                    if fitz.get_text_length(trial, fontname="helv", fontsize=8.5) <= 435:
+                    if pymupdf.get_text_length(trial, fontname="helv", fontsize=8.5) <= 435:
                         curr.append(wd)
                     else:
                         wlines.append(" ".join(curr))
@@ -3048,7 +3048,7 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
         l_words = []
         for wd in words:
             trial = " ".join(l_words + [wd])
-            if fitz.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
+            if pymupdf.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
                 l_words.append(wd)
             else:
                 if l_words:
@@ -3083,7 +3083,7 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
             full_text = f"{item_num}. {label}{expl}" if expl else f"{item_num}. {label.rstrip(': ')}"
             item_num += 1
 
-            w = fitz.get_text_length(full_text, fontname="helv", fontsize=font_size)
+            w = pymupdf.get_text_length(full_text, fontname="helv", fontsize=font_size)
             if w <= max_width or len(lines) >= max_lines - 1:
                 lines.append(full_text)
             else:
@@ -3091,7 +3091,7 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
                 l1_words = []
                 for wd in words:
                     trial = " ".join(l1_words + [wd])
-                    if fitz.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
+                    if pymupdf.get_text_length(trial, fontname="helv", fontsize=font_size) <= max_width:
                         l1_words.append(wd)
                     else:
                         break

@@ -6,7 +6,7 @@ that every field is correctly filled.
 Usage: python3 tests/qa_verify_forms.py
 """
 import urllib.request, json, io, zipfile, os, sys
-import pymupdf as fitz
+import pymupdf
 from datetime import datetime
 from typing import Any, cast
 
@@ -69,7 +69,7 @@ SCENARIOS = [
 
 def extract_all_content(pdf_bytes):
     """Extract ALL content from a PDF — page text AND widget values separately."""
-    doc = fitz.open("pdf", pdf_bytes)
+    doc = pymupdf.open("pdf", pdf_bytes)
     page_text: str = ""
     widget_values: dict = {}
     for i in range(doc.page_count):

@@ -5,24 +5,24 @@ Create a fillable Ohio fee waiver (Form 20 — Civil Fee Waiver Affidavit).
 Ohio Form 20 is a flat statewide form; this recreates its key fields as a
 fillable PDF with standardized field names.
 """
-import pymupdf as fitz
+import pymupdf
 
 OUT = "app/templates/counties/oh_fee_waiver.pdf"
 
-doc = fitz.open()
+doc = pymupdf.open()
 page = doc.new_page(width=612, height=792)
 
 
 def text(x, y, s, size: float = 10, bold: bool = False):
     font = "hebo" if bold else "helv"
-    page.insert_text(fitz.Point(x, y), s, fontsize=size, fontname=font)
+    page.insert_text(pymupdf.Point(x, y), s, fontsize=size, fontname=font)
 
 
 def field(name, x, y, w, h, fontsize: float = 9):
-    wd = fitz.Widget()
+    wd = pymupdf.Widget()
     wd.field_name = name  # type: ignore[attr-defined]
-    wd.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-    wd.rect = fitz.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
+    wd.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    wd.rect = pymupdf.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
     wd.field_value = ""  # type: ignore[attr-defined]
     wd.text_font = "Helv"  # type: ignore[attr-defined]
     wd.text_fontsize = fontsize  # type: ignore[attr-defined]
@@ -104,7 +104,7 @@ doc.save(OUT, deflate=True)
 doc.close()
 print(f"Created fillable form: {OUT}")
 
-d = fitz.open(OUT)
+d = pymupdf.open(OUT)
 widgets = list(d[0].widgets())
 print(f"Widgets: {len(widgets)}")
 for w in widgets:

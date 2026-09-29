@@ -3,7 +3,7 @@ Automated Form Verification Suite — tests all 20 states across 4 scenarios.
 Run: python3 tests/verify_all_forms.py
 """
 import urllib.request, json, io, zipfile, os, sys, traceback
-import pymupdf as fitz
+import pymupdf
 from datetime import datetime
 from typing import Any, cast
 
@@ -147,7 +147,7 @@ def audit_form(zip_file, form_pattern, required_checks, scenario):
         return [f"MISSING: {form_pattern}"], {}
     
     zip_file.extract(matches[0], "/tmp/")
-    doc = fitz.open(f"/tmp/{matches[0]}")
+    doc = pymupdf.open(f"/tmp/{matches[0]}")
     
     # Collect all widget data
     widgets = {}

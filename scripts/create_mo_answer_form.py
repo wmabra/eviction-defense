@@ -7,34 +7,34 @@ This recreates the court-accepted "Answer to Plaintiff's Rent and Possession
 Complaint" structure as a fillable PDF with standardized field names so the
 existing pdf_overlay.py unified mapping fills it correctly.
 """
-import pymupdf as fitz
+import pymupdf
 
 OUT = "app/templates/counties/mo_eviction_answer.pdf"
 
-doc = fitz.open()
+doc = pymupdf.open()
 page = doc.new_page(width=612, height=792)  # letter
 
 W = 612
 # Helper: insert static text
 def text(x, y, s, size: float = 11, bold: bool = False, color=(0, 0, 0)):
     font = "hebo" if bold else "helv"
-    page.insert_text(fitz.Point(x, y), s, fontsize=size, fontname=font, color=color)
+    page.insert_text(pymupdf.Point(x, y), s, fontsize=size, fontname=font, color=color)
 
 # Helper: add a text widget
 def field(name, x, y, w, h, fontsize: float = 10, multiline=False):
-    wd = fitz.Widget()
+    wd = pymupdf.Widget()
     wd.field_name = name  # type: ignore[attr-defined]
-    wd.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-    wd.rect = fitz.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
+    wd.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    wd.rect = pymupdf.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
     wd.field_value = ""  # type: ignore[attr-defined]
     wd.text_font = "Helv"  # type: ignore[attr-defined]
     wd.text_fontsize = fontsize  # type: ignore[attr-defined]
-    wd.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE if multiline else 0  # type: ignore[attr-defined]
+    wd.field_flags = pymupdf.PDF_TX_FIELD_IS_MULTILINE if multiline else 0  # type: ignore[attr-defined]
     page.add_widget(wd)
 
 # ── Caption ──────────────────────────────────────────────
 # Measure text widths so the county field doesn't overlap
-lead = fitz.get_text_length("IN THE CIRCUIT COURT OF ", fontname="helv", fontsize=12)
+lead = pymupdf.get_text_length("IN THE CIRCUIT COURT OF ", fontname="helv", fontsize=12)
 text(72, 70, "IN THE CIRCUIT COURT OF ", 12)
 field("county", 72 + lead, 57, 120, 18, 11)          # county name
 ctail = 72 + lead + 120 + 4
@@ -96,7 +96,7 @@ doc.close()
 print(f"Created fillable form: {OUT}")
 
 # Verify
-d = fitz.open(OUT)
+d = pymupdf.open(OUT)
 widgets = list(d[0].widgets())
 print(f"Widgets: {len(widgets)}")
 for w in widgets:

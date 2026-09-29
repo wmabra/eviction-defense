@@ -14,9 +14,9 @@ position, so no coordinate conversion is needed.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
-import pymupdf as fitz
+import pymupdf
 
-TEXT = getattr(fitz, "PDF_WIDGET_TYPE_TEXT", 7)
+TEXT = getattr(pymupdf, "PDF_WIDGET_TYPE_TEXT", 7)
 DPI = 96
 _THIN_LINE_PX = 4  # an underline is ~1-2pt (1-3px at 96dpi); text is much taller
 _MIN_LINE_RUN_PX = 20  # a real underline is at least ~15pt wide (~20px at 96dpi)
@@ -62,15 +62,15 @@ def _region_has_line_ink(samples, width, height, px0, py0, px1, py1) -> bool:
 
 def check_overlap(filled_path: str, blank_form_path: str) -> list:
     """Return a list of overlap descriptions: a filled value sits on printed text."""
-    blank = fitz.open(blank_form_path)
-    filled = fitz.open(filled_path)
+    blank = pymupdf.open(blank_form_path)
+    filled = pymupdf.open(filled_path)
     overlaps = []
     scale = DPI / 72.0
     for pno in range(min(blank.page_count, filled.page_count)):
         # annots=False hides the blank form's own field default values (e.g. a
         # pre-printed "CLARK" county or "$0" totals), which the fill REPLACES
         # rather than overlaps.
-        pix = blank[pno].get_pixmap(dpi=DPI, colorspace=fitz.csGRAY, annots=False)
+        pix = blank[pno].get_pixmap(dpi=DPI, colorspace=pymupdf.csGRAY, annots=False)
         samples = pix.samples
         w, h = pix.width, pix.height
         for wdg in filled[pno].widgets():
@@ -83,7 +83,7 @@ def check_overlap(filled_path: str, blank_form_path: str) -> list:
             if r is None or r.is_empty:
                 continue
             fs = getattr(wdg, "text_fontsize", None) or 10.0
-            vw = fitz.get_text_length(val, fontname="helv", fontsize=fs)
+            vw = pymupdf.get_text_length(val, fontname="helv", fontsize=fs)
             # value text extent (left-aligned): x from r.x0, width = text width
             x0 = r.x0
             x1 = min(r.x0 + vw, r.x1)

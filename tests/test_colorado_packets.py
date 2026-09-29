@@ -6,7 +6,7 @@ import os
 import sys
 import copy
 import tempfile
-import fitz
+import pymupdf
 from pathlib import Path
 
 # Ensure app is in python path
@@ -49,7 +49,7 @@ def test_denver_answer_form_and_cos():
         assert ok is True
         assert os.path.exists(out_pdf)
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         assert len(doc) == 2
 
         # Page 1 checks
@@ -93,7 +93,7 @@ def test_colorado_statewide_jdf103():
         assert ok is True
         assert os.path.exists(out_pdf)
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         assert len(doc) == 6
 
         # Page 1: Jury trial demand
@@ -133,7 +133,7 @@ def test_colorado_fee_waiver_household_and_bank():
         assert ok is True
         assert os.path.exists(out_pdf)
 
-        doc = fitz.open(out_pdf)
+        doc = pymupdf.open(out_pdf)
         assert len(doc) == 3
 
         # Page 1: Categorical benefits

@@ -7,28 +7,28 @@ hearing-based (KRS 383.200-383.275). This recreates the court-accepted
 "Answer to Forcible Detainer Complaint" structure as a fillable PDF with a
 KY CR 5.03 Certificate of Service.
 """
-import pymupdf as fitz
+import pymupdf
 
 OUT = "app/templates/counties/ky_eviction_answer.pdf"
 
-doc = fitz.open()
+doc = pymupdf.open()
 page = doc.new_page(width=612, height=792)  # letter
 
 
 def text(x, y, s, size: float = 11, bold: bool = False):
     font = "hebo" if bold else "helv"
-    page.insert_text(fitz.Point(x, y), s, fontsize=size, fontname=font)
+    page.insert_text(pymupdf.Point(x, y), s, fontsize=size, fontname=font)
 
 
 def field(name, x, y, w, h, fontsize: float = 10, multiline=False):
-    wd = fitz.Widget()
+    wd = pymupdf.Widget()
     wd.field_name = name  # type: ignore[attr-defined]
-    wd.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
-    wd.rect = fitz.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
+    wd.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+    wd.rect = pymupdf.Rect(x, y, x + w, y + h)  # type: ignore[attr-defined]
     wd.field_value = ""  # type: ignore[attr-defined]
     wd.text_font = "Helv"  # type: ignore[attr-defined]
     wd.text_fontsize = fontsize  # type: ignore[attr-defined]
-    wd.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE if multiline else 0  # type: ignore[attr-defined]
+    wd.field_flags = pymupdf.PDF_TX_FIELD_IS_MULTILINE if multiline else 0  # type: ignore[attr-defined]
     page.add_widget(wd)
 
 
@@ -89,7 +89,7 @@ doc.save(OUT, deflate=True)
 doc.close()
 print(f"Created fillable form: {OUT}")
 
-d = fitz.open(OUT)
+d = pymupdf.open(OUT)
 widgets = list(d[0].widgets())
 print(f"Widgets: {len(widgets)}")
 for w in widgets:

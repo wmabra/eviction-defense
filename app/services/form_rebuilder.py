@@ -8,7 +8,7 @@ Result: identical to the official form but with clean, predictable field names.
 # pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportOperatorIssue=false
 
 import os
-import pymupdf as fitz
+import pymupdf
 import logging
 
 logger = logging.getLogger(__name__)
@@ -100,9 +100,9 @@ def rebuild_state(state_code: str):
         return "No field positions — needs manual mapping"
     
     # Open source and create new document
-    source = fitz.open(source_path)
+    source = pymupdf.open(source_path)
     output_path = os.path.join(REBUILT_DIR, f"{state_code.lower()}_answer_rebuilt.pdf")
-    output = fitz.open()
+    output = pymupdf.open()
     
     for page_num in range(source.page_count):
         page = source[page_num]
@@ -277,7 +277,7 @@ def _extract_positions_from_widgets(state_code):
         std = std_key_map.get(data_key, data_key)
         reverse_map[widget_name.lower()] = std
     
-    doc = fitz.open(source_path)
+    doc = pymupdf.open(source_path)
     placements = {}
     assigned = set()
     
@@ -386,22 +386,22 @@ def _add_widget(page, field_name, position):
     is_defense = field_name.startswith("defense_") and field_name != "defense_narrative"
     
     if is_defense:
-        widget = fitz.Widget()
+        widget = pymupdf.Widget()
         widget.field_name = field_name
-        widget.field_type = fitz.PDF_WIDGET_TYPE_CHECKBOX
-        widget.rect = fitz.Rect(x, y, x + 14, y + 14)
+        widget.field_type = pymupdf.PDF_WIDGET_TYPE_CHECKBOX
+        widget.rect = pymupdf.Rect(x, y, x + 14, y + 14)
         widget.field_value = False
         page.add_widget(widget)
     else:
-        widget = fitz.Widget()
+        widget = pymupdf.Widget()
         widget.field_name = field_name
-        widget.field_type = fitz.PDF_WIDGET_TYPE_TEXT
+        widget.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT
         # Ensure text fields are wide enough
         if w < 50:
             w = 200
         if h < 14:
             h = 18
-        rect = fitz.Rect(x, y, x + w, y + h)
+        rect = pymupdf.Rect(x, y, x + w, y + h)
         widget.rect = rect
         widget.field_value = ""
         widget.text_fontsize = position.get("size", 10)

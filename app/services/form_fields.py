@@ -11,7 +11,7 @@ from typing import Any, cast
 
 import os
 
-import pymupdf as fitz
+import pymupdf
 
 
 # Text that marks a line as part of a signature / attestation / service block.
@@ -39,7 +39,7 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
     Runs that sit inside a sentence and are not signature-related ARE genuine
     blanks ("scheduled for ___ at ___ (time)", "approximately ___ days").
     """
-    doc = fitz.open(src_path)
+    doc = pymupdf.open(src_path)
     added = 0
     for pno in range(doc.page_count):
         page = doc[pno]
@@ -85,15 +85,15 @@ def make_document_editable(src_path: str, dst_path: str | None = None) -> int:
                 continue
             x0 = min(b[0] for b in r); y0 = min(b[1] for b in r)
             x1 = max(b[2] for b in r); y1 = max(b[3] for b in r)
-            w = cast(Any, fitz.Widget())
+            w = cast(Any, pymupdf.Widget())
             w.field_name = f"fill_{pno}_{added}"
-            w.field_type = fitz.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
+            w.field_type = pymupdf.PDF_WIDGET_TYPE_TEXT  # type: ignore[attr-defined]
             # Size the field to its own text line. The previous fixed 44pt box
             # (y1-42) reached ~3 lines above the underscore and covered the
             # printed line above it on every generated document.
             _h = max(12.0, min(28.0, size * 1.35 + 2.0))
-            w.rect = fitz.Rect(x0, y1 - _h, max(x1, x0 + 48), y1 + 2)
-            w.field_flags = fitz.PDF_TX_FIELD_IS_MULTILINE if _h >= 20.0 else 0  # type: ignore[attr-defined]
+            w.rect = pymupdf.Rect(x0, y1 - _h, max(x1, x0 + 48), y1 + 2)
+            w.field_flags = pymupdf.PDF_TX_FIELD_IS_MULTILINE if _h >= 20.0 else 0  # type: ignore[attr-defined]
             page.add_widget(w)
             added += 1
 
