@@ -2772,21 +2772,31 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     if key == "fw_employment_details":
         fin = data.get("financial_info", {}) or {}
         is_emp = fin.get("is_employed")
+        self_emp = bool(fin.get("self_employment_income"))
         emp_name = fin.get("employer_name")
         emp_addr = fin.get("employer_address")
-        wages = fin.get("employment_income") or fin.get("self_employment_income") or fin.get("monthly_net_income") or fin.get("monthly_gross_income")
-        if is_emp is True or emp_name or (wages and float(wages) > 0) or fin.get("self_employment_income"):
+        wages = fin.get("employment_income") or fin.get("self_employment_income")
+        if wages is None and is_emp is True:
+            wages = fin.get("monthly_net_income") or fin.get("monthly_gross_income")
+
+        # If explicitly not employed or zero employment wages with no employer
+        if is_emp is False and not self_emp and not emp_name:
+            return None
+        if not is_emp and not self_emp and not emp_name and (_to_float(wages) <= 0):
+            return None
+
+        if is_emp is True or self_emp or emp_name or (_to_float(wages) > 0):
             parts = []
             if emp_name:
-                if fin.get("self_employment_income") and "self" not in emp_name.lower():
+                if self_emp and "self" not in emp_name.lower():
                     parts.append(f"{emp_name} (Self-Employed)")
                 else:
                     parts.append(emp_name)
-            elif fin.get("self_employment_income"):
+            elif self_emp:
                 parts.append("Self-Employed")
             if emp_addr:
                 parts.append(emp_addr)
-            if wages is not None and float(wages) > 0:
+            if _to_float(wages) > 0:
                 parts.append(f"({_money(wages, 2)}/mo)")
             return " - ".join(parts) if parts else "Employed"
         return None
@@ -2806,7 +2816,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             if last_date:
                 parts.append(f"Last employed: {last_date}")
             if last_wage:
-                parts.append(f"Prior wage: {last_wage}")
+                wage_str = _money(last_wage, 2) if str(last_wage).replace('.', '', 1).isdigit() else str(last_wage)
+                parts.append(f"Prior wage: {wage_str}/mo")
             return ", ".join(parts) if parts else "Currently unemployed - $0.00 employment income"
         return None
 
