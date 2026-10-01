@@ -298,7 +298,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "Check Box33": "Yes",  # Public housing: No
             "Check Box59": "Yes",  # Valuable personal property: No
             "Check Box2": "Yes",   # Extraordinary medical expenses: No
-            "Check Box4": "Yes",   # Other circumstances: No
         },
         "field_rect_overrides": {
             "fee_waiver_form": {
@@ -313,9 +312,19 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             },
             "answer_form": {
                 # Native "additional reasons" widgets ship displaced to the
-                # bottom footer (y≈757); move them onto the printed blank lines.
-                "Answer.AdditionalReasons": {"x0": 115, "y0": 426, "x1": 530, "y1": 438, "text_fontsize": 9},
-                "CounterClaim.AdditionalReasons": {"x0": 115, "y0": 450, "x1": 530, "y1": 462, "text_fontsize": 9},
+                # bottom footer (y≈757) with white text & white fill.
+                # Move Answer.AdditionalReasons onto the line above COUNTERCLAIM
+                # with black text and transparent background.
+                "Answer.AdditionalReasons": {
+                    "x0": 85,
+                    "y0": 432,
+                    "x1": 520,
+                    "y1": 441.5,
+                    "text_fontsize": 7.5,
+                    "text_color": [0.0, 0.0, 0.0],
+                    "fill_color": None,
+                    "border_color": None,
+                },
                 "Date.CurrentDate.SlashMDY": {"align": "center"},
                 "County.Selection": {"align": "center"},
                 "CaseNumber": {"align": "center"},
@@ -344,6 +353,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_attempted_pay", "label": "Landlord refused payment with costs", "field": "Reason.LandlordRefusePayment"},
             {"key": "def_repairs", "label": "Landlord failed to repair property", "field": "Reason.FailedToRepair"},
             {"key": "def_not_owner", "label": "Landlord not entitled to evict", "field": "Reason.LandlordNotEntitled"},
+            {"key": "def_other", "label": "Other additional reasons", "field": "Reason.LandlordNotEntitled"},
             {"key": "def_repairs", "label": "Landlord failed to repair (counterclaim)", "field": "FailedToRepair"},
             {"key": "def_corrected", "label": "Defendant made repairs", "field": "Defendant.DidMakeRepairs"},
             {"key": "def_paid", "label": "Landlord owes money", "field": "DoesOweMoney"},
@@ -353,6 +363,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "address": "2 Current Address",
             "case_number": "FILE NO",
             "checking_balance": "What is the current balance in your account",
+            "checking_bank_name": "If so at what financial institution",
+            "bank_name": "If so at what financial institution",
             "city": "City",
             "court_level": "COURT OF",
             "county": "COUNTY",
@@ -367,6 +379,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "real_estate_loan_owed": "How much do you owe on the property mortgage balance",
             "real_estate_value": "What is the approximate value of the property",
             "savings_balance": "What is the current balance in your account_2",
+            "savings_bank_name": "If so at what financial institution_2",
             "state": "State",
             "vehicle_make_model": "Make",
             "vehicle_value": "What is the approximate value of the vehicle",

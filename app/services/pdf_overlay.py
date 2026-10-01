@@ -769,6 +769,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                     o.get("y1", r.y1 + o.get("dy1", 0)))
                 if "text_fontsize" in o:
                     w.text_fontsize = o["text_fontsize"]
+                if "text_color" in o:
+                    w.text_color = o["text_color"]
+                if "fill_color" in o:
+                    w.fill_color = o["fill_color"]
+                if "border_color" in o:
+                    w.border_color = o["border_color"]
                 if "align" in o and getattr(w, "xref", None):
                     try:
                         if o["align"] == "center":
@@ -1477,19 +1483,111 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             values["Text Field 14"] = "Single" if _adults <= 1 else "Married"
 
         # Georgia Fee Waiver: split vehicle year/make/model into separate native
-        # fields and compute Section F.1 total liabilities (rent + debt).
+        # fields, populate dependents schedule, employer, bank accounts, liabilities, and hardship.
         if state_code == "GA":
             _v = str(financial.get("vehicle_make_model") or "").strip().split()
             if len(_v) >= 3 and _v[0].isdigit() and len(_v[0]) == 4:
                 values["Year"] = _v[0]
                 values["Make"] = _v[1]
                 values["Model"] = " ".join(_v[2:])
-            if "total_monthly_liabilities" in fw_mapping:
-                _rent = _to_float(financial.get("rent_or_mortgage") or c.get("monthly_rent") or 0.0)
-                _debt = _to_float(financial.get("debt_payments") or 0.0)
-                _liab = _rent + _debt
-                if _liab > 0:
-                    values[fw_mapping["total_monthly_liabilities"]] = f"{_liab:,.2f}"
+            elif len(_v) == 2 and _v[0].isdigit() and len(_v[0]) == 4:
+                values["Year"] = _v[0]
+                values["Make"] = _v[1]
+
+            # GA Fee Waiver Page 2: Dependents Table
+            _deps = financial.get("dependents_detail") or financial.get("household_members")
+            _ch_count = int(financial.get("household_children") or 0)
+            _dep_fields = ["undefined_5", "undefined_6", "undefined_7", "undefined_8", "undefined_9"]
+            _dep_yes = ["Check Box8", "Check Box9", "Check Box10", "Check Box11", "Check Box12"]
+            _dep_no = ["Check Box17", "Check Box16", "Check Box15", "Check Box14", "Check Box13"]
+            if _deps and isinstance(_deps, list):
+                for idx, dep in enumerate(_deps[:5]):
+                    if isinstance(dep, dict):
+                        d_name = dep.get("name") or f"Dependent {idx+1}"
+                        d_age = dep.get("age") or "Minor"
+                        d_rel = dep.get("relationship") or "Child"
+                        values[_dep_fields[idx]] = f"{d_name}, Age {d_age}, {d_rel}"
+                    else:
+                        values[_dep_fields[idx]] = str(dep)
+                    values[_dep_yes[idx]] = "Yes"
+                    values[_dep_no[idx]] = "Off"
+            elif _ch_count > 0:
+                for idx in range(min(_ch_count, 5)):
+                    values[_dep_fields[idx]] = f"Child {idx+1}, Minor, Dependent Child"
+                    values[_dep_yes[idx]] = "Yes"
+                    values[_dep_no[idx]] = "Off"
+
+            # GA Fee Waiver Page 3: Employer Details
+            _emp_name = financial.get("employer_name") or ""
+            _emp_phone = financial.get("employer_phone") or ""
+            _emp_wage = _to_float(financial.get("employment_income") or financial.get("monthly_gross_income") or 0.0)
+            _is_emp = financial.get("is_employed")
+            if _emp_name or _is_emp or _emp_wage > 0:
+                _parts = []
+                if _emp_name:
+                    _parts.append(str(_emp_name))
+                if _emp_phone:
+                    _parts.append(str(_emp_phone))
+                if _emp_wage > 0:
+                    _parts.append(f"${_emp_wage:,.2f}/mo")
+                values["Employer Name 1"] = " | ".join(_parts) if _parts else "Employed"
+
+            # GA Fee Waiver Page 4: Checking & Savings Financial Institutions
+            _bname = financial.get("checking_bank_name") or financial.get("bank_name")
+            if _bname and not values.get("If so at what financial institution"):
+                values["If so at what financial institution"] = str(_bname)
+            _sbname = financial.get("savings_bank_name") or financial.get("bank_name")
+            if _sbname and not values.get("If so at what financial institution_2"):
+                values["If so at what financial institution_2"] = str(_sbname)
+
+            # GA Fee Waiver Page 5: Liabilities Breakdown & Total
+            _rent = _to_float(financial.get("rent_or_mortgage") or c.get("monthly_rent") or 0.0)
+            _debt = _to_float(financial.get("debt_payments") or 0.0)
+            _debt_bal = _to_float(financial.get("debt_owed") or financial.get("total_debt_owed") or financial.get("debt_balance") or 0.0)
+            _med = _to_float(financial.get("medical_expense") or 0.0)
+
+            row_idx = 1
+            if _rent > 0:
+                values[f"Source of Debt {row_idx}"] = "Housing rent"
+                values[f"Total Amount Owed {row_idx}"] = "Current"
+                values[f"Monthly Payment {row_idx}"] = f"{_rent:,.2f}"
+                row_idx += 1
+            if _debt > 0 or _debt_bal > 0:
+                values[f"Source of Debt {row_idx}"] = "Credit cards / personal loans"
+                values[f"Total Amount Owed {row_idx}"] = f"{_debt_bal:,.2f}" if _debt_bal > 0 else "N/A"
+                values[f"Monthly Payment {row_idx}"] = f"{_debt:,.2f}"
+                row_idx += 1
+            if _med > 0 and row_idx <= 4:
+                values[f"Source of Debt {row_idx}"] = "Medical expenses"
+                values[f"Total Amount Owed {row_idx}"] = "N/A"
+                values[f"Monthly Payment {row_idx}"] = f"{_med:,.2f}"
+                row_idx += 1
+
+            _liab = _rent + _debt
+            if _liab > 0:
+                values["Total_2"] = f"{_liab:,.2f}"
+
+            # GA Fee Waiver Page 6: Other Circumstances / Hardship Statement
+            _hardship = str(pref.get("hardship_reason") or "").strip()
+            if _hardship:
+                values["Check Box3"] = "Yes"
+                values["Check Box4"] = "Off"
+                _words = _hardship.split()
+                _hlines = []
+                _cur = []
+                for wd in _words:
+                    if len(" ".join(_cur + [wd])) <= 80:
+                        _cur.append(wd)
+                    else:
+                        _hlines.append(" ".join(_cur))
+                        _cur = [wd]
+                if _cur:
+                    _hlines.append(" ".join(_cur))
+                for l_idx, line in enumerate(_hlines[:4]):
+                    values[f"pay the required fees {l_idx+1}"] = line
+            else:
+                values["Check Box3"] = "Off"
+                values["Check Box4"] = "Yes"
 
         # Connecticut Fee Waiver (JD-CV-120):
         # 1. Total Monthly Income (B+C) = Net employment income (B) + other income (C).
@@ -1810,6 +1908,20 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         elif "efile" in cos_meth or "online" in cos_meth:
             # If e-filing, clear CoS_Mail
             values["CoS_Mail"] = ""
+
+    # GA Answer Form: Summary for Answer.AdditionalReasons to prevent text truncation/overflow
+    if state_code == "GA" and form_key == "answer_form":
+        _narr = str(values.get("Answer.AdditionalReasons") or "").strip()
+        if _narr:
+            if len(_narr) > 55 or "\n" in _narr:
+                _def_labels = []
+                for _dk in ("def_repairs", "def_amount", "def_bad_notice", "def_not_owner", "def_other", "def_attempted_pay", "def_corrected", "def_paid"):
+                    if isinstance(defenses.get(_dk), dict) and defenses[_dk].get("checked"):
+                        _lbl = defenses[_dk].get("label") or _dk.replace("def_", "").replace("_", " ").title()
+                        _def_labels.append(_lbl)
+                _summary = ", ".join(_def_labels[:3]) if _def_labels else "See attached"
+                values["Answer.AdditionalReasons"] = f"See attached Defenses (Doc 05): {_summary}"
+            values["Reason.LandlordNotEntitled"] = "Yes"
 
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":

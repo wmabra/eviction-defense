@@ -117,11 +117,11 @@ STATE_PROFILES = {
         "has_jury_demand": False,
         "cos_type": "standard",
         "benefits_question": "Do you receive any public assistance (such as TANF, SNAP/food stamps, Medicaid, or SSI)?",
-        "household_question_type": "counts_only",
+        "household_question_type": "table",
         "ask_bank_name": True,
         "profile_notes": [
             "- Georgia Magistrate Court uses the statewide Dispossessory Answer form across all 159 Georgia counties.",
-            "- Georgia Pauper's Affidavit fee waiver asks for bank name and public benefits.",
+            "- Georgia Pauper's Affidavit fee waiver asks for household dependents table, employer, bank name, liabilities, and hardship circumstances.",
         ],
     },
     "IL": {
