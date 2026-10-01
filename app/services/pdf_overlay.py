@@ -358,8 +358,16 @@ def _map_fee_waiver_checkboxes(doc: pymupdf.Document, data: dict, config: dict) 
             if _os in ("yes", "no"):
                 on_state_sets.setdefault(nm, set()).add(_os)
 
+    state_code_upper = str(config.get("state_code") or data.get("state") or "").upper()
+    cat_keys = config.get("categorical_assistance_keys") or ("receives_public_benefits", "receives_ssi", "receives_tanf", "receives_snap")
+    skip_financial = config.get("skip_financial_when_categorical") and any(
+        bool((data.get("financial_info") or data.get("financial") or {}).get(k)) for k in cat_keys
+    )
+
     checked = 0
-    for page in doc:
+    for page_idx, page in enumerate(doc):
+        if state_code_upper == "IL" and skip_financial and page_idx in (1, 2):
+            continue
         for w in page.widgets():
             w = cast(Any, w)
             if getattr(w, "field_type", None) != pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
@@ -1302,7 +1310,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             else:
                 val = _get_financial_value(map_key, data)
                 if val is not None and val != "":
-                    if skip_financial:
+                    if skip_financial and map_key not in ("household_adults", "household_children", "total_dependents"):
                         continue
                     if config.get("strip_dollar_signs"):
                         val = str(val).lstrip("$")
@@ -1481,6 +1489,35 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 values["Text Field 16"] = str(_ch)
                 values["Text Field 17"] = "Children"
             values["Text Field 14"] = "Single" if _adults <= 1 else "Married"
+
+        # Illinois Fee Waiver (ATJ 601.9):
+        if state_code == "IL":
+            # Section 1: For Myself
+            values["5 - Checkboxes"] = "For Myself"
+
+            # Section 2: Household adults (not counting myself) & children
+            _ha = financial.get("household_adults")
+            if _ha is not None:
+                try:
+                    _adults_val = int(float(str(_ha)))
+                    values["8 - # of Adults"] = str(max(0, _adults_val - 1))
+                except (ValueError, TypeError):
+                    pass
+            _hc = financial.get("household_children")
+            if _hc is not None:
+                try:
+                    values["9 - Number of Children Under 18"] = str(int(float(str(_hc))))
+                except (ValueError, TypeError):
+                    pass
+
+            # Section 5: Hardship
+            _hardship = str(pref.get("hardship_reason") or "").strip()
+            if _hardship and not values.get("107-110 - Hardship"):
+                values["107-110 - Hardship"] = _hardship
+
+            # Hearing preference (Section 6 / Page 4)
+            _is_remote = bool(pref.get("hearing_format") == "remote" or pref.get("prefers_remote"))
+            values["111 - Checkboxes"] = "Remote" if _is_remote else "In-Person"
 
         # Georgia Fee Waiver: split vehicle year/make/model into separate native
         # fields, populate dependents schedule, employer, bank accounts, liabilities, and hardship.
@@ -1923,6 +1960,82 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 values["Answer.AdditionalReasons"] = f"See attached Defenses (Doc 05): {_summary}"
             values["Reason.LandlordNotEntitled"] = "Yes"
 
+    # IL Eviction Answer Form (il_eviction_answer.pdf)
+    if state_code == "IL" and form_key == "answer_form":
+        # 1. Defenses & Supporting Facts
+        # Bad notice (43 + 44)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_bad_notice", "def_notice")):
+            values["43 - Checkbox"] = "Yes"
+            values["44 - Checkbox"] = "Yes"
+
+        # Repairs / Habitability (52 + 53, 54, 55)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_repairs", "def_conditions", "def_habitability")):
+            values["52 - Checkbox"] = "Yes"
+            _rep_exp = (defenses.get("def_repairs", {}) or {}).get("explanation") or ""
+            if not _rep_exp:
+                for k in ("def_conditions", "def_habitability"):
+                    if isinstance(defenses.get(k), dict) and defenses[k].get("explanation"):
+                        _rep_exp = defenses[k]["explanation"]
+                        break
+            values["53 - Serious Problems"] = _rep_exp or "See attached Defenses (Doc 05): Bad Property Conditions"
+            _r_date = data.get("rent_payment", {}).get("repair_notice_date") or _all_data.get("repair_notice_date") or "Ongoing"
+            values["54 - Date"] = str(_r_date)
+            values["55 - Date"] = "Not repaired"
+
+        # Cure / Corrected (48 + 49)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_corrected", "def_cured")):
+            values["48 - Checkbox"] = "Yes"
+            _cor_exp = (defenses.get("def_corrected", {}) or {}).get("explanation") or "Cured alleged lease violation within notice period."
+            values["49 - Additional Details"] = _cor_exp
+
+        # Retaliation (63 + 67 + 74.1)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_retaliation", "def_retaliate")):
+            values["63 - Checkbox"] = "Yes"
+            values["67 - "] = "Yes"
+            _ret_exp = (defenses.get("def_retaliation", {}) or {}).get("explanation") or "Exercised tenant rights / requested repairs."
+            values["74.1 - What You Told Them or Did"] = _ret_exp
+
+        # Waiver (77 + 78 + 80)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_waived", "def_accepted_rent")):
+            values["77 - Checkbox"] = "Yes"
+            _w_date = data.get("rent_payment", {}).get("rent_paid_date") or "After notice"
+            values["78 - Date"] = str(_w_date)
+            values["80 - Details"] = "Landlord accepted rent payment after issuing notice, waiving notice."
+
+        # Tender / Refusal to accept payment (84 + 85 + 86 + 87)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_attempted_pay", "def_tender")):
+            values["84 - Checkbox"] = "Yes"
+            _p_date = data.get("rent_payment", {}).get("rent_paid_date") or "Before filing"
+            values["85 - Date"] = str(_p_date)
+            _rent_amt = c.get("monthly_rent") or data.get("rent_payment", {}).get("monthly_rent") or ""
+            if _rent_amt:
+                values["86 - Amount"] = f"{_to_float(_rent_amt):,.2f}"
+            values["87 - Details"] = "Offered full rent payment within notice period, but landlord refused to accept."
+
+        # Disputed amount / Other affirmative defense (90 + 91 + 92)
+        if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_amount", "def_other")):
+            values["90 - Checkbox"] = "Yes"
+            if isinstance(defenses.get("def_amount"), dict) and defenses["def_amount"].get("checked"):
+                values["91 - Other Affirmative Defense"] = "Improper Rent Claimed / Accounting Dispute"
+                values["92 - Facts"] = defenses["def_amount"].get("explanation") or "Dispute amount of rent/fees claimed by landlord."
+            else:
+                values["91 - Other Affirmative Defense"] = "Other Affirmative Defense"
+                values["92 - Facts"] = (defenses.get("def_other", {}) or {}).get("explanation") or "See attached Defenses (Doc 05)"
+
+        # 2. Service / Proof of Delivery (Pages 5-6)
+        cos_meth = str(pref.get("certificate_of_service_method") or c.get("certificate_of_service_method") or "regular_mail").lower()
+        if "efile" in cos_meth or "email" in cos_meth or "electronic" in cos_meth:
+            values["4 - By checkboxes"] = "Electronically"
+            values["4 - Email / EFSP checkboxes"] = "Email"
+            values["1A - Email of Party - Page 4"] = l.get("landlord_email") or ""
+        else:
+            values["4 - By checkboxes"] = "Sending Another Way"
+            values["4 - Sending the Document"] = "Mail or 3rd Party Carrier"
+            values["4 - Document Date"] = today.strftime("%m/%d/%Y")
+            values["4 - Sent Time"] = "9:00 AM"
+
+        values["4B - Delivery Address"] = ""
+
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":
         # Rent paid after notice (Box a):
@@ -2037,7 +2150,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         (re.compile(r'(?<![a-zA-Z])city', re.IGNORECASE), p.get("property_city", "")),
     ]
     # Field names that should NOT receive auto-fill from substring rules
-    auto_fill_skip = re.compile(r'(court|ct|trial|bop|file|attorney|judge|jury|clerk|issue|order).*(address|date)|'
+    auto_fill_skip = re.compile(r'(court|ct|trial|bop|file|attorney|judge|jury|clerk|issue|order|delivery|prison|jail).*(address|date)|'
                                 r'landlord.*(accepted|date|payment|partial)|'
                                 r'(notice|amount|date).*(landlord)|'
                                 r'(damages|owes|reduced|repairs|amt|fees|costs|number|months)|'
@@ -2046,7 +2159,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                                 r'plaintiff.*(address|age|occupation|employer)|defendant.*(address|phone|email)|'
                                 r'birthday|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
-                                r'date.*(start|fixed|repair|lease|rent|notice|problem)|'
+                                r'(\d+.*-\s*date|document\s*date)|'
                                 r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
     
     # Apply to each page
@@ -2082,7 +2195,20 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                             pass
                 else:
                     if widget.field_type == pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
-                        widget.field_value = (val not in ("", "Off", "off", False, "False", "0"))
+                        if isinstance(val, bool):
+                            widget.field_value = val
+                        elif isinstance(val, str) and val.lower() in ("yes", "on", "true", "1"):
+                            widget.field_value = True
+                        elif isinstance(val, str) and val.lower() in ("", "off", "no", "false", "0"):
+                            widget.field_value = False
+                        else:
+                            try:
+                                os_raw = str(widget.on_state() or "")
+                                os_clean = os_raw.replace("#20", " ").replace("#28", "(").replace("#29", ")").strip().lower()
+                                val_clean = str(val).strip().lower()
+                                widget.field_value = (val_clean in os_clean or os_clean in val_clean)
+                            except Exception:
+                                widget.field_value = (val not in ("", "Off", "off", False, "False", "0"))
                     else:
                         widget.field_value = val
                     widget.update()

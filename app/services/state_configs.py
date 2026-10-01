@@ -490,6 +490,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "unemployment_income": "25 - Unemployment Total",
             "utilities_expense": "66 - Utilities Total",
             "vehicle_value": "94 - Value",
+            "hardship_reason": "107-110 - Hardship",
         },
         "has_fillable_fields": True,
         "court_type": "Circuit Court",
@@ -515,9 +516,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "categorical_assistance_keys": ["receives_snap", "receives_ssi", "receives_tanf", "receives_county_assistance"],
         "populate_signature_fields": False,
         "radio_selections": {
+            "11 - Checkboxes": {
+                "value": "I deny the claims made by the Plaintiff (landlord) in their Eviction Complaint"
+            },
+            "5 - Checkboxes": {
+                "value": "For Myself"
+            },
             # ATJ 601.9 Section 3 instruction box: only select "I checked one of the public benefit boxes..."
             # if an actual Section 3 benefit (SSI, AABD, GA, SNAP, TANF) was checked.
             "15 - Checkboxes": {"any_financial": ["receives_snap", "receives_ssi", "receives_tanf", "receives_county_assistance"], "yes": "checked one of the public benefit boxes", "no": "did not check any of the public benefit boxes"},
+            # ATJ 601.9 Section 6 / Page 4 hearing format: Remote vs In-Person
+            "111 - Checkboxes": {"data": "prefers_remote", "yes": "Remote", "no": "In-Person", "default": "no"},
         },
         "field_mapping": {
             "county": "1 - County",
@@ -542,7 +551,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "proof_email": "J - Email",
         },
         "static_values": {
-            "11 - Checkboxes": "I deny the claims made by the Plaintiff (landlord) in their Eviction Complaint ",
             "3 - Plaintiff Name (First, Middle, Last)": "",
             "4 - Plaintiff Name (First, Middle, Last)": "",
             "6 - Defendants (First, middle, last name)": "",
@@ -555,20 +563,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "4B - Full Address of Party - Page 4": "",
             "4B - Email of Party - Page 4": "",
             "4B - Address or Intersection": "",
-            "54 - Date": "",
-            "55 - Date": "",
-            "57 - Date": "",
-            "58 - Date": "",
-            "60 - Date": "",
-            "61 - Date": "",
-            "74.1 - Date": "",
-            "74.2 - Date": "",
-            "74.3 - Date": "",
-            "78 - Date": "",
-            "79 - Date": "",
-            "85 - Date": "",
-            "4 - Document Date": "",
+            "4B - Delivery Address": "",
             "4B - Document Date": "",
+            "4B - Sent Time": "",
+            "4B - Prison or Jail": "",
             "Last - Lawyer Email": "",
             "Last - Lawyer Address": "",
             "Last - Completing this form myself checkbox": "Yes",
@@ -585,6 +583,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             {"key": "def_retaliation", "label": "Retaliation", "field": "63 - Checkbox"},
             {"key": "def_waived", "label": "Waiver/Accepted rent", "field": "77 - Checkbox"},
             {"key": "def_attempted_pay", "label": "Refusal to accept rent payment", "field": "84 - Checkbox"},
+            {"key": "def_amount", "label": "Dispute rent amount claimed", "field": "90 - Checkbox"},
             {"key": "def_other", "label": "Other affirmative defense", "field": "90 - Checkbox"},
         ],
         "notes": "IL Circuit Court eviction answer — statewide form with 189 field widgets across 6 pages. Cook County has preferred local forms but Illinois law does not mandate a county-specific answer form.",

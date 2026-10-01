@@ -130,7 +130,7 @@ STATE_PROFILES = {
         "has_jury_demand": True,
         "cos_type": "standard",
         "benefits_question": "Do you receive any public benefits (such as SNAP/food stamps, SSI, TANF, AABD, General Assistance, Medicaid, Section 8, or energy assistance)?",
-        "household_question_type": "table",
+        "household_question_type": "counts_only",
         "ask_bank_name": False,
         "has_county_rule": "cook",
         "profile_notes": [
