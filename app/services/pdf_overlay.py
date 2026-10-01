@@ -1190,6 +1190,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         _n = _all_data.get(_cert_name_key, "")
         _a = _all_data.get(_cert_addr_key, "")
         _all_data["cos_mail"] = ", ".join(x for x in (_n, _a) if x)
+    _all_data["cos_served_to"] = _all_data["cos_mail"]
     if "mailing_address" not in _all_data and "property_address" in _all_data:
         _all_data["mailing_address"] = _all_data["property_address"]
     
@@ -1200,7 +1201,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
     _all_data["landlord_service_address"] = "\n".join(x for x in (
         _all_data.get(_cert_name_key, ""), _all_data.get(_cert_addr_key, "")) if x).strip()
     cert_synthesis = {
-        "cert_name": "landlord_name" if state_code in ("KY", "IN") else "full_name",
+        "cert_name": "cos_served_to" if state_code in ("KY", "IN") else "full_name",
         "cert_address": "landlord_service_address",
         "cert_date_signed": None,
         "cert_date": None,
@@ -1476,9 +1477,9 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             if fname not in values:
                 values[fname] = p.get("full_name", "")
 
-        # KY AOC-026: populate dependents count/relationship and marital status
-        # from intake household data (otherwise left blank).
-        if state_code == "KY":
+        # KY AOC-026: populate dependents count/relationship, marital status,
+        # public assistance (SNAP, K-TAP, LIHEAP), and bank accounts.
+        if state_code == "KY" and form_key == "fee_waiver_form":
             try:
                 _ch = int(financial.get("household_children") or 0)
             except (TypeError, ValueError):
@@ -1491,6 +1492,27 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 values["Text Field 16"] = str(_ch)
                 values["Text Field 17"] = "Children"
             values["Text Field 14"] = "Single" if _adults <= 1 else "Married"
+
+            # SNAP / Food Stamps (Text Field 20)
+            if financial.get("receives_snap"):
+                _snap = financial.get("snap_amount") or financial.get("food_stamps_amount")
+                values["Text Field 20"] = str(_snap).lstrip("$") if _snap else "Yes"
+
+            # K-TAP / TANF (Text Field 25)
+            if financial.get("receives_tanf"):
+                _tanf = financial.get("tanf_income") or financial.get("public_assistance_income")
+                values["Text Field 25"] = str(_tanf).lstrip("$") if _tanf else "Yes"
+
+            # LIHEAP (Text Field 27)
+            if financial.get("receives_liheap") or financial.get("receives_energy_assistance"):
+                values["Text Field 27"] = "Yes"
+
+            # Bank accounts: checking & savings (Assests 2 & Assests 3)
+            if "cash_on_hand" in financial:
+                if not values.get("Assests 2"):
+                    values["Assests 2"] = "0.00"
+                if not values.get("Assests 3"):
+                    values["Assests 3"] = "0.00"
 
         # Illinois Fee Waiver (ATJ 601.9):
         if state_code == "IL":

@@ -1627,11 +1627,16 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "strip_dollar_signs": True,
         "has_fillable_fields": True,
         "court_type": "District Court",
+        "overlay_positions": {
+            "checkbox_cos_mail": {"page": 1, "x": 254.5, "y": 697.5, "w": 10, "h": 11},
+            "checkbox_cos_hand": {"page": 1, "x": 306.0, "y": 697.5, "w": 10, "h": 11},
+            "checkbox_cos_efile": {"page": 1, "x": 377.5, "y": 697.5, "w": 10, "h": 11},
+        },
         "field_rect_overrides": {
             "answer_form": {
-                "county": {"align": "center"},
+                "county": {"x0": 72.0, "y0": 70.0, "x1": 230.0, "y1": 85.0, "align": "right"},
                 "case_number": {"align": "center"},
-                "printed_name": {"align": "center"},
+                "printed_name": {"x0": 135.0, "y0": 616.0, "x1": 322.0, "y1": 634.0, "align": "left"},
                 "date": {"y0": 530.0, "y1": 544.5, "align": "center"},
             },
             "fee_waiver_form": {
