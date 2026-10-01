@@ -128,6 +128,7 @@ CO = {
         "state": "CO",
         "personal_info": {
             "full_name": FULL_NAME,
+            "date_of_birth": "1985-07-22",
             "phone": "(303) 555-0173",
             "email": "john.doe.303@example.com",
             "property_address": "4812 W Cedar Avenue",
@@ -149,11 +150,13 @@ CO = {
             "summons_service_date": "2024-05-28",
             "response_deadline": "2024-06-04",
             "court_date": "2024-06-12",
+            "hearing_time": "9:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 1100.00,
             "agree_with_amount": False,
             "amount_tenant_believes_owed": 880.00,
+            "repair_notice_date": "2024-03-10",
         },
         "defenses": {
             "def_repairs": {
@@ -205,6 +208,8 @@ CO = {
         },
         "financial_info": {
             "monthly_gross_income": 2400.00,
+            "is_employed": True,
+            "pay_period": "monthly",
             "employment_income": 2400.00,
             "unemployment_income": 0.00,
             "rent_or_mortgage": 1100.00,
@@ -247,6 +252,7 @@ CO_DENVER = {
         "state": "CO",
         "personal_info": {
             "full_name": FULL_NAME,
+            "date_of_birth": "1990-03-15",
             "phone": "(720) 555-0149",
             "email": "john.doe.denver@example.com",
             "property_address": "1450 S Pearl Street",
@@ -270,11 +276,13 @@ CO_DENVER = {
             "summons_service_date": "2024-05-20",
             "response_deadline": "2024-05-27",
             "court_date": "2024-06-05",
+            "hearing_time": "9:30 AM",
         },
         "rent_payment": {
             "monthly_rent": 1300.00,
             "agree_with_amount": False,
             "amount_tenant_believes_owed": 1040.00,
+            "repair_notice_date": "2024-02-15",
         },
         "defenses": {
             "def_repairs": {
@@ -319,6 +327,8 @@ CO_DENVER = {
         },
         "financial_info": {
             "monthly_gross_income": 3200.00,
+            "is_employed": True,
+            "pay_period": "monthly",
             "employment_income": 3200.00,
             "unemployment_income": 0.00,
             "rent_or_mortgage": 1300.00,
@@ -362,6 +372,7 @@ CT = {
         "state": "CT",
         "personal_info": {
             "full_name": FULL_NAME,
+            "date_of_birth": "1988-04-12",
             "phone": "(860) 555-0171",
             "email": "john.doe.ct@example.com",
             "property_address": "238 Maple Avenue",
@@ -382,11 +393,13 @@ CT = {
             "summons_service_date": "2024-05-15",
             "response_deadline": "2024-05-22",
             "court_date": "2024-05-29",
+            "hearing_time": "9:30 AM",
         },
         "rent_payment": {
             "monthly_rent": 1200.00,
             "agree_with_amount": False,
             "amount_tenant_believes_owed": 960.00,
+            "repair_notice_date": "2024-02-10",
         },
         "defenses": {
             "def_repairs": {
@@ -420,6 +433,8 @@ CT = {
         "financial_info": {
             "monthly_gross_income": 2800.00,
             "monthly_net_income": 2200.00,
+            "is_employed": True,
+            "pay_period": "monthly",
             "employment_income": 2800.00,
             "rent_or_mortgage": 1200.00,
             "utilities_expense": 200.00,
@@ -429,6 +444,7 @@ CT = {
             "child_care_expense": 0.00,
             "debt_payments": 250.00,
             "debt_owed": 2500.00,
+            "total_debt_owed": 2500.00,
             "total_monthly_expenses": 2330.00,
             "cash_on_hand": 100.00,
             "checking_balance": 200.00,

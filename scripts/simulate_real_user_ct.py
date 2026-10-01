@@ -54,6 +54,7 @@ Your factual profile:
 - Paid rent after notice: No
 - Applied for rental assistance: Yes, under review with UniteCT
 - Written repair notice sent to landlord: Yes, sent written notice about broken heat on November 15
+- Date repair notice sent: 11/15/2023
 - Defenses to check: Numbers 4 and 10 (code violations/repairs, and additional reasons: unauthorized late fees)
 - Facts for defense 4: The main heating boiler broke down in November and the landlord failed to repair it for 8 weeks despite multiple written notices.
 - Facts for defense 10: The ledger includes unauthorized late fees and utility charges not allowed by the lease.
@@ -66,6 +67,7 @@ Your factual profile:
 - Employer: Yale New Haven Health, 789 Howard Avenue, New Haven, CT 06519.
 - Take-home net pay: $1,950.00/mo.
 - Other regular income: None.
+- Number of adults in home: 1 (just myself)
 - Number of dependents: 2
 - Monthly rent payment: $1,350.00
 - Monthly utilities: $180.00
@@ -74,6 +76,7 @@ Your factual profile:
 - Monthly medical: $60.00
 - Monthly childcare: $0.00
 - Monthly debt payments: $150.00
+- Total debt balance owed on credit cards/loans: $1,800.00
 - Public assistance: Yes, SNAP and Medicaid. Other benefits: None.
 - Cash on hand: $80.00
 - Checking/savings balance: $150.00

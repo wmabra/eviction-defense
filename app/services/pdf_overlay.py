@@ -493,6 +493,13 @@ def _resolve_radio_groups(doc: pymupdf.Document, data: dict, config: dict) -> in
                         _val = pi.get(_src)
                     if _val is None:
                         _val = pref.get(_src)
+                    if _src == "is_employed" and _val is None:
+                        _emp_inc = _to_float(fin.get("employment_income") or fin.get("self_employment_income") or fin.get("monthly_gross_income") or 0.0)
+                        _unemp_inc = _to_float(fin.get("unemployment_income") or 0.0)
+                        if _emp_inc > 0 and _unemp_inc == 0:
+                            _val = True
+                        elif _unemp_inc > 0 or fin.get("last_employment_date") or _emp_inc == 0:
+                            _val = False
                     if _src == "prefers_remote" and _val is None and pref.get("hearing_format"):
                         _val = ("remote" in str(pref.get("hearing_format")).lower())
                     if _val is not None:
@@ -908,12 +915,14 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         narrative = _build_defense_narrative(defenses)
         values["defense_narrative"] = narrative
     
-    # === LEGACY: Build _all_data for non-rebuilt forms that use field_mapping ===
+    # === Build _all_data across all intake sections ===
+    r = data.get("rent_payment", {}) or {}
     _all_data = {}
-    for section in [p, l, c]:
-        for k, v in section.items():
-            if v:
-                _all_data[k] = str(v)
+    for section in [p, l, c, r, pref, financial]:
+        if isinstance(section, dict):
+            for k, v in section.items():
+                if v is not None and v != "":
+                    _all_data[k] = str(v)
     
     # Synthesize aliases — field_mapping keys must match _all_data keys
     aliases = {
@@ -928,6 +937,12 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         "email": ["e_mail", "email_address"],
         "county": ["county_name", "county_mover", "county_tp"],
         "date_of_birth": ["dob", "birth_date", "birthdate"],
+        "repair_notice_date": ["date_note", "repair_date"],
+        "total_debt_owed": ["debt_owed", "debt_balance"],
+        "debt_owed": ["total_debt_owed", "debt_balance"],
+        "last_employment_date": ["last_paycheck_date"],
+        "rent_paid_date": ["date_offered", "rent_payment_date"],
+        "fair_rent_complaint_date": ["date_increase"],
     }
     for source_key, target_keys in aliases.items():
         if source_key in _all_data:
@@ -944,10 +959,45 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             return f"{parts[1]}/{parts[2]}/{parts[0]}"
         return val_str
 
+    if "date_of_birth" in _all_data:
+        _fmt_dob = _format_date_mdy(_all_data["date_of_birth"])
+        _all_data["date_of_birth"] = _fmt_dob
+        _all_data["dob"] = _fmt_dob
+        _all_data["birth_date"] = _fmt_dob
+        _all_data["birthdate"] = _fmt_dob
+
+    if "last_employment_date" in _all_data:
+        _fmt_led = _format_date_mdy(_all_data["last_employment_date"])
+        _all_data["last_employment_date"] = _fmt_led
+        _all_data["last_paycheck_date"] = _fmt_led
+        _all_data["7.5"] = _fmt_led
+
+    if "rent_paid_date" in _all_data:
+        _fmt_rpd = _format_date_mdy(_all_data["rent_paid_date"])
+        _all_data["rent_paid_date"] = _fmt_rpd
+        _all_data["date_offered"] = _fmt_rpd
+        _all_data["DATEOFFERED[0]"] = _fmt_rpd
+
+    if "fair_rent_complaint_date" in _all_data:
+        _fmt_frd = _format_date_mdy(_all_data["fair_rent_complaint_date"])
+        _all_data["fair_rent_complaint_date"] = _fmt_frd
+        _all_data["date_increase"] = _fmt_frd
+        _all_data["DATEINCREASE[0]"] = _fmt_frd
+
     if "summons_service_date" in _all_data:
         _fmt_sd = _format_date_mdy(_all_data["summons_service_date"])
         _all_data["date_served"] = _fmt_sd
         _all_data["service_date"] = _fmt_sd
+
+    if "repair_notice_date" in _all_data:
+        _fmt_rnd = _format_date_mdy(_all_data["repair_notice_date"])
+        _all_data["repair_notice_date"] = _fmt_rnd
+        _all_data["date_note"] = _fmt_rnd
+        _all_data["DATENOTE[0]"] = _fmt_rnd
+
+    if "court_date" in _all_data:
+        _fmt_cd = _format_date_mdy(_all_data["court_date"])
+        _all_data["hearing_date"] = _fmt_cd
 
     # Colorado courthouse mailing address lookup:
     # If in Colorado and court_address is empty or just repeats the county/court name without a street address,
@@ -1144,7 +1194,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         "notified": None,
         "code_violation": None,
         "date_offered": None,
-        "date_note": None,
+        "date_note": "repair_notice_date",
         "date_increase": None,
         "lease": None,
         "lease_renewal": None,
@@ -1243,16 +1293,16 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 val = _get_financial_value(map_key, data)
                 if val:
                     values[pdf_field] = "Yes"
-            elif map_key in _all_data:
-                values[pdf_field] = str(_all_data[map_key])
             else:
-                if skip_financial:
-                    continue
                 val = _get_financial_value(map_key, data)
                 if val is not None and val != "":
+                    if skip_financial:
+                        continue
                     if config.get("strip_dollar_signs"):
                         val = str(val).lstrip("$")
                     values[pdf_field] = str(val)
+                elif map_key in _all_data:
+                    values[pdf_field] = str(_all_data[map_key])
 
         # Colorado fee waiver: if tenant auto-qualifies via categorical assistance (SNAP/SSI/TANF),
         # clear embedded template default values ('0') in Section 9 total fields so they remain blank
@@ -1393,6 +1443,17 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 if "financial_info" in data and isinstance(data["financial_info"], dict):
                     data["financial_info"][f"dep_{idx+1}_dependent"] = dep
 
+            # Colorado JDF 205 Section 10: "Is there anything else you want the court to know about your financial situation?" (10C)
+            if not values.get("10C"):
+                _hardship = pref.get("hardship_reason") or ""
+                if _hardship:
+                    values["10C"] = str(_hardship).strip()
+
+            # Colorado JDF 205 Section 9A: Self-employment description (9A.6A)
+            _self_emp = _to_float(financial.get("self_employment_income") or 0.0)
+            if _self_emp > 0 and not values.get("9A.6A"):
+                values["9A.6A"] = str(financial.get("employer_name") or "Self-employed")
+
         # Additional native fields that hold the tenant's full name (e.g. the "I, ___"
         # affidavit blank and the "Petitioner" line) beyond the single mapped name field.
         for fname in config.get("fee_waiver_name_fields", []):
@@ -1446,7 +1507,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 values["INCOMEOTHER"] = "$0.00"
 
             _debt_pmt = _to_float(financial.get("debt_payments") or 0.0)
-            _debt_owed = _to_float(financial.get("debt_owed") or financial.get("debt_balance") or 0.0)
+            _debt_owed = _to_float(financial.get("debt_owed") or financial.get("total_debt_owed") or financial.get("debt_balance") or 0.0)
             if _debt_pmt > 0 or _debt_owed > 0:
                 if not values.get("topmostSubform[0].Page1[0].DEBTTYPE1[0]"):
                     values["topmostSubform[0].Page1[0].DEBTTYPE1[0]"] = "Credit cards / personal loans"
@@ -1454,13 +1515,35 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                     values["DEBTOWED1"] = f"${_debt_owed:,.2f}"
                     values["DEBTOWEDTOTAL"] = f"${_debt_owed:,.2f}"
                 else:
-                    values["DEBTOWEDTOTAL"] = ""
+                    values["DEBTOWED1"] = "$0.00"
+                    values["DEBTOWEDTOTAL"] = "$0.00"
                 if _debt_pmt > 0:
                     values["DEBTPAY1"] = f"${_debt_pmt:,.2f}"
                     values["DEBTPAYTOTAL"] = f"${_debt_pmt:,.2f}"
             else:
+                values["DEBTOWED1"] = "$0.00"
                 values["DEBTOWEDTOTAL"] = "$0.00"
+                values["DEBTPAY1"] = "$0.00"
                 values["DEBTPAYTOTAL"] = "$0.00"
+
+            # Ensure zero-value asset and expense schedules have $0.00 defaults
+            if not values.get("EQUITYRE"):
+                values["EQUITYRE"] = "$0.00"
+            if not values.get("REEV"):
+                values["REEV"] = "$0.00"
+            if not values.get("RELOANBAL"):
+                values["RELOANBAL"] = "$0.00"
+            if not values.get("EQUITYOPP"):
+                values["EQUITYOPP"] = "$0.00"
+            if not values.get("OPPEV"):
+                values["OPPEV"] = "$0.00"
+            if not values.get("OPPLOANBAL"):
+                values["OPPLOANBAL"] = "$0.00"
+            if not values.get("EQUITYOA"):
+                values["EQUITYOA"] = "$0.00"
+            for _me_k in ("ME2", "ME5", "ME6", "ME9"):
+                if not values.get(_me_k):
+                    values[_me_k] = "$0.00"
 
             # Section 3 Monthly Expenses: map other_expenses or debt_payments to row J (ME10)
             _oth_exp = _to_float(financial.get("other_expenses") or 0.0)
@@ -1710,6 +1793,16 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             if fin.get("receives_tanf") or fin.get("receives_and"):
                 values["7E.5C"] = "Yes"
 
+        # 7F.1 & 7F.2: Other defenses
+        _other_def = defenses.get("def_other")
+        if isinstance(_other_def, dict) and _other_def.get("checked"):
+            _other_exp = str(_other_def.get("explanation") or "").strip()
+            if _other_exp:
+                _first_line = _other_exp.split("\n")[0].strip()
+                if len(_first_line) > 55:
+                    _first_line = _first_line[:52] + "..."
+                values["7F.1"] = f"{_first_line} (See Section 8)"
+
         # Certificate of Service method handling
         cos_meth = str(pref.get("certificate_of_service_method") or c.get("certificate_of_service_method") or "").lower()
         if "other" in cos_meth or "hand" in cos_meth:
@@ -1720,6 +1813,11 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
 
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":
+        # Rent paid after notice (Box a):
+        if (data.get("rent_payment", {}).get("paid_after_notice") is True) or any(
+            isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_paid", "def_paid_after_notice")
+        ):
+            values["form1[0].FRONT[0].RENTPAID[0]"] = "Yes"
         # Habitability / Code violations (Boxes d and e):
         if any(isinstance(defenses.get(k), dict) and defenses[k].get("checked") for k in ("def_repairs", "def_conditions", "def_habitability")):
             values["form1[0].FRONT[0].NORENTDUE[0]"] = "Yes"
@@ -2868,6 +2966,11 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
             val = financial.get("last_employment_date")
         if val is None and key == "pay_frequency":
             val = financial.get("pay_period") or "Monthly"
+        if key == "last_paycheck_date" and val:
+            val_str = str(val).strip()
+            if re.match(r'^\d{4}-\d{2}-\d{2}$', val_str):
+                parts = val_str.split('-')
+                val = f"{parts[1]}/{parts[2]}/{parts[0]}"
         return str(val) if val else None
     
     # Household numbers

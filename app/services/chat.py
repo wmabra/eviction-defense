@@ -536,9 +536,11 @@ b. Do you agree with the amount of rent the landlord claims you owe? (yes/no)
 c. If no: How much rent do you believe you actually owe?
 d. If no: Why do you disagree with the amount claimed?
 e. Have you paid any rent after receiving the eviction notice? (yes/no)
+   - If yes: In your next message, ask: "Approximately what date did you pay or offer the rent?" (record under rent_paid_date in rent_payment).
 f. Have you applied for rental assistance? (yes/no)
 g. If yes: What is the current status of your rental assistance application?
-{repair_q}"""
+{repair_q}
+i. If yes to sending a repair notice: Approximately what date (or month/year) did you send the repair notice to your landlord? (record under repair_notice_date in rent_payment)"""
 
 
 def _build_phase4(state: Optional[str], county: Optional[str]) -> str:
@@ -682,7 +684,8 @@ m. What are your monthly food and grocery expenses?
 n. What are your monthly transportation costs (gas, car payment, bus)?
 o. What are your monthly medical or prescription expenses?
 p. What are your monthly childcare expenses, if any (or $0)?
-q. What are your monthly credit card or loan debt payments, if any (or $0)?
+q. What are your monthly credit card or loan debt payments, if any (or $0)? (record under debt_payments)
+   - If greater than $0: In your next message, ask: "Approximately what is the total balance you owe across those credit cards or loans?" (record under total_debt_owed and debt_owed).
 r. {benefits_q}
    - MULTI-BENEFIT LOOP RULE (CRITICAL): A tenant may receive multiple public assistance benefits.
      1. If the user mentions any benefit (e.g. SNAP, Medicaid, SSI, TANF, etc.):
@@ -776,10 +779,10 @@ The collected_data JSON must include these top-level keys matching the CompleteI
 - personal_info: {{full_name, date_of_birth, phone, email, property_address, property_city, property_zip, county, needs_interpreter, interpreter_language}}
 - landlord_info: {{landlord_name, landlord_address, landlord_phone, landlord_email, landlord_attorney_name, landlord_attorney_address}}
 - case_details: {{case_number, court_name, division, received_3day_notice, summons_service_date, complaint_amount_claimed, court_date, hearing_time, response_deadline}}
-- rent_payment: {{monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, applied_for_rental_assistance, rental_assistance_status}}
+- rent_payment: {{monthly_rent, agree_with_amount, amount_tenant_believes_owed, why_disagree, paid_after_notice, rent_paid_date, applied_for_rental_assistance, rental_assistance_status, sent_repair_notice, repair_notice_date}}
 {defenses_schema_note}
 - preferences: {{trial_by, hearing_format, certificate_of_service_method, certificate_of_service_other, needs_more_time, hardship_reason, wants_payment_plan, payment_plan_amount, needs_continuance, continuance_reason, continuance_days, continuance_reasons, continuance_other_reason, continuance_notify_method, continuance_notify_date, continuance_plaintiff_position, needs_emergency_stay, emergency_stay_reason, emergency_stay_days, facing_writ_possession, filing_bankruptcy}}
-- financial_info: {{monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, marital_status, household_adults, household_children, total_dependents, dependents_detail, household_members, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, bank_name, checking_bank_name, savings_bank_name, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_blind_aid, receives_oap, receives_and, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}}
+- financial_info: {{monthly_gross_income, monthly_net_income, is_employed, employer_name, employer_address, last_employment_date, last_employment_wage, employment_income, self_employment_income, social_security_income, ssi_income, unemployment_income, pension_income, disability_income, veterans_benefits, child_support_income, alimony_income, other_income, other_income_description, marital_status, household_adults, household_children, total_dependents, dependents_detail, household_members, rent_or_mortgage, utilities_expense, food_expense, transportation_expense, medical_expense, child_care_expense, debt_payments, debt_owed, total_debt_owed, other_expenses, total_monthly_expenses, cash_on_hand, checking_balance, savings_balance, bank_name, checking_bank_name, savings_bank_name, vehicle_make_model, vehicle_value, vehicle_loan_owed, owns_real_estate, real_estate_value, real_estate_loan_owed, other_assets_description, other_assets_value, receives_public_benefits, receives_snap, receives_ssi, receives_medicaid, receives_tanf, receives_blind_aid, receives_oap, receives_and, receives_section8, receives_public_housing, receives_county_assistance, receives_energy_assistance, receives_child_care_assistance, receives_veterans_benefits, unable_to_pay_fees}}
 
 Note on self-employment: When the tenant is self-employed, set is_employed=true, record their business or company name under employer_name, their business address under employer_address, and their monthly net earnings under self_employment_income (and employment_income).
 
