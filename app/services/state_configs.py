@@ -1744,21 +1744,30 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "ssi_income": "MonthlySSI/SSD",
             "child_support_income": "MonthlyChildSupportReceived",
             "full_address": "Address",
+            "insurance_expense": "MonthlyInsurance",
+            "child_support_expense": "MonthlyChildSupportPaid",
+            "financial_support": "FinancialSupport",
         },
         "fee_waiver_name_fields": ["Name"],
         "strip_dollar_signs": True,
         "fee_waiver_overlay": {
             "case_number": {"page": 1, "x": 355, "y": 56, "w": 140, "h": 13, "size": 10, "align": "center"},
-            "date": {"page": 2, "x": 72, "y": 553, "w": 150, "h": 16, "size": 10, "align": "center"},
+            "date": {"page": 2, "x": 72, "y": 519, "w": 120, "h": 14, "size": 10, "align": "center"},
             "case_number_page3": {"page": 3, "x": 335, "y": 96, "w": 160, "h": 13, "size": 10, "align": "center"},
+        },
+        "overlay_positions": {
+            "checkbox_cos_mail": {"page": 1, "x": 291, "y": 711, "w": 10, "h": 11},
+            "checkbox_cos_hand": {"page": 1, "x": 346, "y": 711, "w": 10, "h": 11},
+            "checkbox_cos_efile": {"page": 1, "x": 421, "y": 711, "w": 10, "h": 11},
+            "cos_served_to": {"page": 1, "x": 120, "y": 729, "w": 420, "h": 14, "size": 8.5},
         },
         "field_rect_overrides": {
             "answer_form": {
                 "county": {"align": "center"},
                 "case_number": {"align": "center"},
-                "printed_name": {"align": "center"},
+                "printed_name": {"x0": 135.0, "y0": 642.0, "x1": 322.0, "y1": 658.0, "align": "left"},
                 "date": {"x0": 115.0, "y0": 541.0, "x1": 245.0, "y1": 555.5, "align": "center"},
-                "property_address": {"x0": 405.0, "y0": 648.0, "x1": 540.0, "y1": 662.0, "text_fontsize": 8.5},
+                "property_address": {"x0": 398.0, "y0": 638.0, "x1": 545.0, "y1": 668.0, "text_fontsize": 8.0},
                 "phone": {"x0": 398.0, "y0": 608.0, "x1": 540.0, "y1": 622.0},
             },
             "fee_waiver_form": {

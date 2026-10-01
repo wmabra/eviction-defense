@@ -789,6 +789,8 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                             doc.xref_set_key(w.xref, "Q", "1")
                         elif o["align"] == "right":
                             doc.xref_set_key(w.xref, "Q", "2")
+                        elif o["align"] == "left":
+                            doc.xref_set_key(w.xref, "Q", "0")
                     except Exception:
                         pass
                 try:
@@ -2036,6 +2038,44 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
 
         values["4B - Delivery Address"] = ""
 
+    # IN Fee Waiver form handling (CCA-GF-0819-3004)
+    if state_code == "IN" and form_key == "fee_waiver_form":
+        # Item 3: "I live with the following persons who are over eighteen (18) years of age"
+        adults = int(financial.get("household_adults") or 1)
+        if adults <= 1:
+            values["HouseholdAdults"] = "None (applicant only)"
+        else:
+            values["HouseholdAdults"] = f"{adults - 1} other adult(s)"
+
+        # Item 4: "I live with the following persons who are under eighteen (18) years of age"
+        children = int(financial.get("household_children") or 0)
+        if children == 0:
+            values["HouseholdChildren"] = "None"
+        elif children == 1:
+            values["HouseholdChildren"] = "1 minor child"
+        else:
+            values["HouseholdChildren"] = f"{children} minor children"
+
+        # Item 5: "I am responsible for the financial support of the following people who live in my household"
+        if children > 0:
+            values["FinancialSupport"] = f"{children} minor child" if children == 1 else f"{children} minor children"
+        elif adults > 1:
+            values["FinancialSupport"] = f"Self and {adults - 1} other adult(s)"
+        else:
+            values["FinancialSupport"] = "Self only"
+
+        # Monthly benefits (AFDC/TANF row)
+        tanf_val = financial.get("tanf_income") or financial.get("public_assistance_income") or "0.00"
+        if config.get("strip_dollar_signs"):
+            tanf_val = str(tanf_val).lstrip("$")
+        values["MonthlyBenefits"] = str(tanf_val) if tanf_val else "0.00"
+
+        # Zero fill unpopulated expense items to avoid lone "$" in template
+        if not values.get("MonthlyInsurance"):
+            values["MonthlyInsurance"] = "0.00"
+        if not values.get("MonthlyChildSupportPaid"):
+            values["MonthlyChildSupportPaid"] = "0.00"
+
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":
         # Rent paid after notice (Box a):
@@ -2846,6 +2886,14 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             if (l.get('landlord_attorney_name') or '').strip() and (l.get('landlord_attorney_address') or '').strip()
             else l.get("landlord_address")
         ),
+        "cos_served_to": ", ".join(filter(None, [
+            (f"{(l.get('landlord_attorney_name') or '').strip()} (attorney for {l.get('landlord_name', '')})"
+             if (l.get('landlord_attorney_name') or '').strip()
+             else l.get("landlord_name")),
+            ((l.get('landlord_attorney_address') or '').strip()
+             if (l.get('landlord_attorney_name') or '').strip() and (l.get('landlord_attorney_address') or '').strip()
+             else l.get("landlord_address"))
+        ])),
     }
     
     # Handle defense narrative text generation
