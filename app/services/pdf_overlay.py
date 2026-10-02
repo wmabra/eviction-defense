@@ -1987,7 +1987,24 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             _contest_exp = defenses.get("def_contest", {}).get("explanation") if isinstance(defenses.get("def_contest"), dict) else ""
             values["Reason of Contestation, Use Additional Pages if Necessary"] = _contest_exp or "Defendant contests the jurisdiction of this Court."
 
-    # South Carolina SCCA405 Fee Waiver: set circuit and clean fields
+        # Clean up landlord address to street only if it contains city/state/zip
+        _l_street = l.get("landlord_street") or ""
+        _l_addr = l.get("landlord_address") or ""
+        _l_city_zip = l.get("landlord_city_state_zip") or ""
+        if not _l_street and _l_addr:
+            if _l_city_zip and _l_addr.endswith(_l_city_zip):
+                _l_street = _l_addr[:-len(_l_city_zip)].rstrip(", ")
+            elif "," in _l_addr:
+                _l_street = _l_addr.split(",")[0].strip()
+            else:
+                _l_street = _l_addr
+        if _l_street:
+            values["Plaintiff Street Address"] = _l_street
+
+        values["Date Signed"] = today.strftime("%m/%d/%Y")
+        values["Signature of Defendant (or their attorney)"] = ""
+
+    # South Carolina SCCA405 Fee Waiver: set circuit, financials, sworn block, and clean fields
     if state_code == "SC" and form_key == "fee_waiver_form":
         _cty_key = str(p.get("county") or "").strip().lower().replace(" county", "").strip()
         _circuit = SC_COUNTY_TO_CIRCUIT.get(_cty_key)
@@ -1997,9 +2014,78 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             values["Select the County"] = _cty_key.title()
         values["Plaintiff’s Address"] = _compose_full_address(p, state_code)
         values["Plaintiff’s Age"] = ""
-        values["Plaintiff’s Occupation"] = ""
-        values["Plaintiff’s Employer"] = ""
+        values["Plaintiff’s Occupation"] = str(financial.get("occupation") or ("Employed" if (financial.get("employment_income") or financial.get("monthly_gross_income")) else ""))
+        values["Plaintiff’s Employer"] = str(financial.get("employer_name") or financial.get("employer") or "")
         values["Employer Address"] = ""
+
+        # Page 2 Gross Monthly Income:
+        _earn = _to_float(financial.get("employment_income") or financial.get("monthly_gross_income") or 0.0)
+        values["Fill in Earnings Amount"] = f"${_earn:,.2f}" if _earn > 0 else "$0.00"
+        _oth_inc = _to_float(financial.get("other_income") or 0.0)
+        _ssi_inc = _to_float(financial.get("social_security_income") or financial.get("ssi_income") or 0.0)
+        _unemp = _to_float(financial.get("unemployment_income") or 0.0)
+        _cs_inc = _to_float(financial.get("child_support_income") or 0.0)
+        _tot_gross = _earn + _oth_inc + _ssi_inc + _unemp + _cs_inc
+        values["Fill in Total Amounts"] = f"${_tot_gross:,.2f}"
+
+        # Page 2 Assets:
+        _cash = _to_float(financial.get("cash_on_hand") or 0.0)
+        values["Fill in Cash Amount"] = f"${_cash:,.2f}" if _cash > 0 else "$0.00"
+        _bank = _to_float(financial.get("checking_balance") or 0.0) + _to_float(financial.get("savings_balance") or 0.0)
+        values["Fill in Money in Bank Amount"] = f"${_bank:,.2f}" if _bank > 0 else "$0.00"
+        _tot_assets = _cash + _bank + _to_float(financial.get("retirement_balance") or 0.0) + _to_float(financial.get("other_assets") or 0.0)
+        values["Fill in Total Asset Amounts (Add lines 1-4)"] = f"${_tot_assets:,.2f}"
+
+        # Page 2 & 3 Monthly Expenses:
+        _rent = _to_float(financial.get("rent_or_mortgage") or 0.0)
+        values["Fill in Rent  Mortgage Amount"] = f"${_rent:,.2f}" if _rent > 0 else "$0.00"
+        _util = _to_float(financial.get("utilities_expense") or 0.0)
+        values["Fill in Utilities Amount"] = f"${_util:,.2f}" if _util > 0 else "$0.00"
+        _phone_exp = _to_float(financial.get("phone_expense") or financial.get("cell_phone_expense") or 0.0)
+        values["Fill in Cell Phone  Phone Amount"] = f"${_phone_exp:,.2f}" if _phone_exp > 0 else "$0.00"
+
+        _food = _to_float(financial.get("food_expense") or 0.0)
+        values["Fill in Food Amount"] = f"${_food:,.2f}" if _food > 0 else "$0.00"
+        _car_pmt = _to_float(financial.get("car_loan") or financial.get("auto_loan") or 0.0)
+        values["Fill in Car Payment Amount"] = f"${_car_pmt:,.2f}" if _car_pmt > 0 else "$0.00"
+        _car_exp = _to_float(financial.get("transportation_expense") or financial.get("car_expenses") or 0.0)
+        values["Fill in Car Expenses Amount"] = f"${_car_exp:,.2f}" if _car_exp > 0 else "$0.00"
+        _cloth = _to_float(financial.get("clothing_expense") or 0.0)
+        values["Fill in Clothing Amount"] = f"${_cloth:,.2f}" if _cloth > 0 else "$0.00"
+        _cable = _to_float(financial.get("cable_internet_expense") or 0.0)
+        values["Fill in Cable  Satellite TV  Internet"] = f"${_cable:,.2f}" if _cable > 0 else "$0.00"
+        _med = _to_float(financial.get("medical_expense") or 0.0)
+        values["Fill in Medical  Dental  Vision"] = f"${_med:,.2f}" if _med > 0 else "$0.00"
+        _med_ins = _to_float(financial.get("medical_insurance_expense") or 0.0)
+        values["Fill in Medical  Dental  Vision_2"] = f"${_med_ins:,.2f}" if _med_ins > 0 else "$0.00"
+        # Line 13 on SCCA 405 CP is "Credit Card / Loan Payments", which the PDF template named "Fill in Medical  Dental  Vision Amount"
+        _debt = _to_float(financial.get("debt_payments") or financial.get("credit_card_payments") or 0.0)
+        values["Fill in Medical  Dental  Vision Amount"] = f"${_debt:,.2f}" if _debt > 0 else "$0.00"
+        _oth_exp = _to_float(financial.get("other_expenses") or 0.0)
+        values["Fill in Other Amount_2"] = f"${_oth_exp:,.2f}" if _oth_exp > 0 else "$0.00"
+
+        _tot_exp = _rent + _util + _phone_exp + _food + _car_pmt + _car_exp + _cloth + _cable + _med + _med_ins + _debt + _oth_exp
+        values["Fill in Total Amounts (Add Lines 1-14)"] = f"${_tot_exp:,.2f}"
+
+        # Page 3 Household Information:
+        _ad_dep = int(financial.get("household_adults") or 1)
+        values["Fill in Number of Adult Dependents Residing in the Home"] = str(_ad_dep)
+        _ch_dep = int(financial.get("household_children") or 0)
+        values["Fill in Number of Minor Dependents Residing in the Home"] = str(_ch_dep)
+        values["Fill in Total Number of Dependents (Add Lines 1-2)"] = str(_ad_dep + _ch_dep)
+
+        # Page 4 Sworn Block:
+        day_num = today.day
+        suffix = "th" if 11 <= day_num <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day_num % 10, "th")
+        values["Enter Day of Sworn"] = f"{day_num}{suffix}"
+        values["Enter Month Name of Sworn"] = today.strftime("%B")
+        values["Enter Year of Sworn"] = str(today.year)
+        values["Signature of Plaintiff"] = ""
+        values["Signature of Notary Public"] = ""
+        values["Printed Name of Notary Public"] = ""
+        values["Enter Day of Expiry"] = ""
+        values["Enter Month Name of Expiry"] = ""
+        values["Enter Year of Expiry"] = ""
 
     # Virginia DC-442 Grounds of Defense: populate numbered defense paragraphs User.1 - User.5
     if state_code == "VA" and form_key == "answer_form":
@@ -2671,6 +2757,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
                                 r'(\d+.*-\s*date|document\s*date)|'
                                 r'entered as an order|order of the court|by order of|'
+                                r'fill in cell phone|cell phone.*amount|'
                                 r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
     
     # Apply to each page
@@ -2956,7 +3043,7 @@ _SIG_WORDS = ("sign", "notary", "affiant", "deponent", "witness",
 # signature fields. Without these the substring test wrongly locks them, so an
 # exclusion list is required — a word-boundary match is not an option, because
 # it would stop matching camelCase names like "DefendantSignature".
-_SIG_EXCLUDE = ("print", "design", "assign", "consign", "date", "name", "county", "where_signed")
+_SIG_EXCLUDE = ("print", "design", "assign", "consign", "date", "day", "month", "year", "name", "county", "where_signed")
 _SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d+\b")
 
 

@@ -220,10 +220,22 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "utilities_expense": "Fill in Utilities Amount",
         },
         "has_fillable_fields": True,
+        "populate_signature_dates": True,
         "court_type": "Magistrates Court",
         "field_rect_overrides": {
             "answer_form": {
                 "Magistrate Court Filed With": {"text_fontsize": 8.0},
+                "Date Signed": {"text_fontsize": 8.5},
+                "Defendant(s) Telephone Number": {"text_fontsize": 8.5},
+                "Defendant(s) Email Address": {"text_fontsize": 8.5},
+                "Reason Not Responsible for Total Amount Claimed, Use Additional Pages if Necessary": {"text_fontsize": 8.5},
+                "Reason Not Responsible at All For Amount Claimed, Use Additional Pages if Necessary": {"text_fontsize": 8.5},
+            },
+            "fee_waiver_form": {
+                "Enter Day of Sworn": {"text_fontsize": 8.5},
+                "Enter Month Name of Sworn": {"text_fontsize": 8.5},
+                "Enter Year of Sworn": {"text_fontsize": 8.5},
+                "Fill in Cell Phone  Phone Amount": {"text_fontsize": 8.5},
             },
         },
         "field_mapping": {
@@ -240,6 +252,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "county": "County of:",
             "court_name": "Magistrate Court Filed With",
             "date_served": "Date Served with a Complaint",
+            "date": "Date Signed",
         },
         "defense_options": [
             {"key": "def_admit_all", "label": "I admit everything in the complaint and do not want a trial", "field": "I admit everything in the complaint and do not want a trial"},
