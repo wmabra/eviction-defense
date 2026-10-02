@@ -1471,32 +1471,92 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "has_fillable_fields": False,
         "court_type": "Magistrate Court",
         "overlay_positions": {
-            # Page 0 — Court header
-            "court_type": {"page": 1, "x": 90, "y": 114, "w": 96, "h": 16, "size": 10},
-            "county": {"page": 1, "x": 90, "y": 128, "w": 96, "h": 16, "size": 10},
-            "case_number": {"page": 1, "x": 462, "y": 156, "w": 120, "h": 16, "size": 10},
+            # Page 1 — Court header
+            "court_type": {"page": 1, "x": 90, "y": 114, "w": 96, "h": 16, "size": 9.5},
+            "county": {"page": 1, "x": 90, "y": 128, "w": 96, "h": 16, "size": 9.5},
+            "case_number": {"page": 1, "x": 462, "y": 152, "w": 120, "h": 16, "size": 9.5},
             # Party names: line is x=90..297
-            "plaintiff_name": {"page": 1, "x": 90, "y": 180, "w": 200, "h": 14, "size": 10},
-            "defendant_name": {"page": 1, "x": 90, "y": 236, "w": 200, "h": 14, "size": 10},
-            # Defense narratives: lines span x=126..522
-            "defense_narrative_1": {"page": 1, "x": 126, "y": 336, "w": 396, "h": 26, "size": 8.0, "fill_color": None},
-            "defense_narrative_2": {"page": 1, "x": 126, "y": 392, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
-            "defense_narrative_3": {"page": 1, "x": 126, "y": 448, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
-            "defense_narrative_4": {"page": 1, "x": 126, "y": 490, "w": 396, "h": 14, "size": 8.0, "fill_color": None},
+            "plaintiff_name": {"page": 1, "x": 90, "y": 180, "w": 200, "h": 14, "size": 9.5},
+            "defendant_name": {"page": 1, "x": 90, "y": 236, "w": 200, "h": 14, "size": 9.5},
+            # Defense narratives: ruled lines span x=126..522
+            "defense_narrative_1a": {"page": 1, "x": 126, "y": 336, "w": 396, "h": 14, "size": 8.5, "fill_color": None},
+            "defense_narrative_1b": {"page": 1, "x": 126, "y": 350, "w": 396, "h": 14, "size": 8.5, "fill_color": None},
+            "defense_narrative_2": {"page": 1, "x": 126, "y": 392, "w": 396, "h": 14, "size": 8.5, "fill_color": None},
+            "defense_narrative_3": {"page": 1, "x": 126, "y": 448, "w": 396, "h": 14, "size": 8.5, "fill_color": None},
+            "defense_narrative_4": {"page": 1, "x": 126, "y": 490, "w": 396, "h": 14, "size": 8.5, "fill_color": None},
             # Signature block: underlines are x=234..426
-            "signature": {"page": 1, "x": 234, "y": 542, "w": 192, "h": 14, "size": 10},
-            "printed_name": {"page": 1, "x": 234, "y": 584, "w": 192, "h": 14, "size": 10},
-            "property_address": {"page": 1, "x": 234, "y": 626, "w": 192, "h": 14, "size": 10},
-            "city_state_zip": {"page": 1, "x": 234, "y": 668, "w": 192, "h": 14, "size": 10},
+            "signature": {"page": 1, "x": 234, "y": 542, "w": 192, "h": 14, "size": 9.5},
+            "printed_name": {"page": 1, "x": 234, "y": 584, "w": 192, "h": 14, "size": 9.5},
+            "property_address": {"page": 1, "x": 234, "y": 626, "w": 192, "h": 14, "size": 9.5},
+            "city_state_zip": {"page": 1, "x": 234, "y": 668, "w": 192, "h": 14, "size": 9.5},
             # Page 2 — Telephone: underline is x=234..426
-            "phone": {"page": 2, "x": 234, "y": 39, "w": 192, "h": 14, "size": 10},
+            "phone": {"page": 2, "x": 234, "y": 39, "w": 192, "h": 14, "size": 9.5},
         },
         "notes": "NM Form 4-907 — statewide for all 33 counties. Works in Magistrate, Metropolitan, and District courts. Narrative-style defenses (write-in).",
         "fee_waiver_overlay": {
-            "county": {"page": 1, "x": 300, "y": 120, "w": 200, "h": 20, "size": 11},
-            "case_number": {"page": 1, "x": 385, "y": 230, "w": 115, "h": 16, "size": 11},
-            "date": {"page": 5, "x": 72, "y": 600, "w": 150, "h": 20, "size": 11},
-            "full_name": {"page": 1, "x": 72, "y": 200, "w": 300, "h": 20, "size": 11}
+            # Page 1 — Caption, Marital status, Public Assistance
+            "county": {"page": 1, "x": 150, "y": 140, "w": 110, "h": 14, "size": 9.5},
+            "court_type": {"page": 1, "x": 72, "y": 154, "w": 140, "h": 14, "size": 9.5},
+            "landlord_name": {"page": 1, "x": 72, "y": 196, "w": 185, "h": 14, "size": 9.0},
+            "full_name": {"page": 1, "x": 72, "y": 238, "w": 185, "h": 14, "size": 9.0},
+            "case_number": {"page": 1, "x": 382, "y": 224, "w": 100, "h": 14, "size": 9.5},
+            "checkbox_marital_single": {"page": 1, "x": 210, "y": 350, "w": 14, "h": 14, "size": 10},
+            "checkbox_marital_married": {"page": 1, "x": 278, "y": 350, "w": 14, "h": 14, "size": 10},
+            "checkbox_marital_divorced": {"page": 1, "x": 352, "y": 350, "w": 14, "h": 14, "size": 10},
+            "checkbox_marital_separated": {"page": 1, "x": 424, "y": 350, "w": 14, "h": 14, "size": 10},
+            "checkbox_interpretation_no": {"page": 1, "x": 293, "y": 378, "w": 14, "h": 14, "size": 10},
+            "checkbox_no_assistance": {"page": 1, "x": 73, "y": 490, "w": 14, "h": 14, "size": 10},
+            "checkbox_receives_assistance": {"page": 1, "x": 73, "y": 518, "w": 14, "h": 14, "size": 10},
+            "public_assistance_county": {"page": 1, "x": 372, "y": 518, "w": 120, "h": 14, "size": 9.0},
+            "checkbox_tanf": {"page": 1, "x": 109, "y": 546, "w": 14, "h": 14, "size": 10},
+            "checkbox_snap": {"page": 1, "x": 109, "y": 560, "w": 14, "h": 14, "size": 10},
+            "checkbox_medicaid": {"page": 1, "x": 109, "y": 574, "w": 14, "h": 14, "size": 10},
+            "checkbox_ga": {"page": 1, "x": 109, "y": 588, "w": 14, "h": 14, "size": 10},
+            "checkbox_ssi": {"page": 1, "x": 109, "y": 602, "w": 14, "h": 14, "size": 10},
+            "checkbox_public_housing": {"page": 1, "x": 109, "y": 616, "w": 14, "h": 14, "size": 10},
+
+            # Page 2 — Employment & Other Income
+            "checkbox_unemployed": {"page": 2, "x": 73, "y": 98, "w": 14, "h": 14, "size": 10},
+            "checkbox_unemployed_no_income": {"page": 2, "x": 109, "y": 140, "w": 14, "h": 14, "size": 10},
+            "checkbox_employed": {"page": 2, "x": 73, "y": 154, "w": 14, "h": 14, "size": 10},
+            "fw_employer_name": {"page": 2, "x": 108, "y": 168, "w": 336, "h": 14, "size": 8.5},
+            "fw_employer_address": {"page": 2, "x": 108, "y": 182, "w": 336, "h": 14, "size": 8.5},
+            "checkbox_no_other_income": {"page": 2, "x": 73, "y": 518, "w": 14, "h": 14, "size": 10},
+
+            # Page 3 — Assets, Expenses & Household
+            "cash_on_hand_raw": {"page": 3, "x": 260, "y": 126, "w": 55, "h": 14, "size": 8.5},
+            "bank_accounts_raw": {"page": 3, "x": 260, "y": 140, "w": 55, "h": 14, "size": 8.5},
+            "income_tax_refund_raw": {"page": 3, "x": 260, "y": 154, "w": 55, "h": 14, "size": 8.5},
+            "vehicle_desc": {"page": 3, "x": 72, "y": 182, "w": 120, "h": 14, "size": 8.5},
+            "vehicle_value_raw": {"page": 3, "x": 260, "y": 182, "w": 55, "h": 14, "size": 8.5},
+
+            "rent_or_mortgage_raw": {"page": 3, "x": 296, "y": 350, "w": 55, "h": 14, "size": 8.5},
+            "utilities_expense_raw": {"page": 3, "x": 296, "y": 364, "w": 55, "h": 14, "size": 8.5},
+            "telephone_expense_raw": {"page": 3, "x": 296, "y": 378, "w": 55, "h": 14, "size": 8.5},
+            "food_expense_raw": {"page": 3, "x": 296, "y": 392, "w": 55, "h": 14, "size": 8.5},
+            "auto_loan_expense_raw": {"page": 3, "x": 296, "y": 406, "w": 55, "h": 14, "size": 8.5},
+            "gasoline_expense_raw": {"page": 3, "x": 296, "y": 420, "w": 55, "h": 14, "size": 8.5},
+            "insurance_expense_raw": {"page": 3, "x": 296, "y": 434, "w": 55, "h": 14, "size": 8.5},
+            "child_care_expense_raw": {"page": 3, "x": 296, "y": 448, "w": 55, "h": 14, "size": 8.5},
+            "debt_expense_raw": {"page": 3, "x": 296, "y": 462, "w": 55, "h": 14, "size": 8.5},
+            "court_support_expense_raw": {"page": 3, "x": 296, "y": 476, "w": 55, "h": 14, "size": 8.5},
+            "court_order_expense_raw": {"page": 3, "x": 296, "y": 488, "w": 55, "h": 14, "size": 8.5},
+            "medical_expense_raw": {"page": 3, "x": 296, "y": 502, "w": 55, "h": 14, "size": 8.5},
+
+            "full_address_p3": {"page": 3, "x": 115, "y": 574, "w": 380, "h": 14, "size": 8.5},
+            "head_of_household": {"page": 3, "x": 235, "y": 588, "w": 265, "h": 14, "size": 8.5},
+
+            # Page 4 — Signature block & Verification
+            "printed_name_p4": {"page": 4, "x": 290, "y": 405, "w": 200, "h": 14, "size": 9.5},
+            "checkbox_role_respondent": {"page": 4, "x": 373, "y": 447, "w": 14, "h": 14, "size": 10},
+            "property_address_p4": {"page": 4, "x": 290, "y": 488, "w": 200, "h": 14, "size": 9.0},
+            "city_state_zip_p4": {"page": 4, "x": 290, "y": 530, "w": 200, "h": 14, "size": 9.0},
+            "phone_p4": {"page": 4, "x": 290, "y": 571, "w": 200, "h": 14, "size": 9.0},
+            "venue_state": {"page": 4, "x": 118, "y": 613, "w": 150, "h": 14, "size": 9.0},
+            "venue_county": {"page": 4, "x": 128, "y": 641, "w": 150, "h": 14, "size": 9.0},
+
+            # Page 5 — Notary / Applicant acknowledgment
+            "applicant_name_p5": {"page": 5, "x": 96, "y": 84, "w": 120, "h": 14, "size": 9.0},
         }},
 
     # ══════════════════════════════════════════

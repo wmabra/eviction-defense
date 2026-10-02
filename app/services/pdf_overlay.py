@@ -3021,6 +3021,14 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     When key starts with 'def_', returns 'X' if the defense is checked (triggers checkmark).
     When key is 'defense_narrative', returns formatted defense explanation text.
     """
+    # Strip leading dollar signs for forms with pre-printed dollar signs
+    if key.endswith("_raw"):
+        base_k = key[:-4]
+        raw_val = _get_field_value(base_k, data)
+        if raw_val is not None:
+            return str(raw_val).lstrip("$").strip()
+        return "0.00"
+
     # Allow page-suffixed overlay keys (e.g. case_number_page3) to resolve to the
     # base field name so one field can be overlaid on multiple pages of a form.
     key = re.sub(r'_(?:p|page)\d+$', '', key)
@@ -3028,6 +3036,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     l = data.get("landlord_info", {})
     c = data.get("case_details", {})
     defenses = data.get("defenses", {})
+    fin = data.get("financial_info", {}) or data.get("financial", {}) or {}
     
     mapper = {
         "full_name": p.get("full_name"),
@@ -3040,6 +3049,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "printed_name": p.get("full_name"),
         "your_name": p.get("full_name"),
         "your_name_goes_here": p.get("full_name"),
+        "applicant_name": p.get("full_name"),
+        "head_of_household": p.get("full_name"),
         "phone": p.get("phone"),
         "phone_bottom": p.get("phone"),
         "email": p.get("email"),
@@ -3057,12 +3068,35 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "county_state_signed": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
         "county_and_state": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
         "county_where_signed": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
-        "court_type": "Magistrate Court",  # default, overridden for Bernalillo County
+        "venue_state": "New Mexico",
+        "venue_county": f"{p.get('county', '')} County".strip(),
+        "public_assistance_county": p.get("county"),
+        "court_type": (
+            "Metropolitan Court"
+            if (p.get("county") or "").strip().lower() == "bernalillo" or "metropolitan" in str(c.get("court_name", "")).lower()
+            else (c.get("court_type") or "Magistrate Court")
+        ),
         "judicial_district": c.get("judicial_district") or ("4th" if (p.get("county") or "").lower() == "hennepin" else ""),
         "case_type": c.get("case_type", ""),
         "landlord_name": l.get("landlord_name"),
         "plaintiff_name": l.get("landlord_name"),
         "landlord_address": l.get("landlord_address"),
+        "bank_accounts": (
+            _money((_to_float(fin.get("checking_balance")) or 0.0) + (_to_float(fin.get("savings_balance")) or 0.0), 2)
+            if (fin.get("checking_balance") is not None or fin.get("savings_balance") is not None or fin.get("bank_balance") is not None)
+            else "$0.00"
+        ),
+        "income_tax_refund": "$0.00",
+        "vehicle_desc": fin.get("vehicle_make_model") or ("Vehicle" if fin.get("vehicle_value") else None),
+        "telephone_expense": _money(fin.get("telephone_expense") or 50.0, 2),
+        "auto_loan_expense": _money(fin.get("vehicle_loan_owed") or 0.0, 2) if fin.get("vehicle_loan_owed") else "$0.00",
+        "gasoline_expense": _money(fin.get("transportation_expense") or 0.0, 2) if fin.get("transportation_expense") else "$0.00",
+        "insurance_expense": "$0.00",
+        "debt_expense": _money(fin.get("debt_payments") or 0.0, 2) if fin.get("debt_payments") else "$0.00",
+        "court_support_expense": "$0.00",
+        "court_order_expense": "$0.00",
+        "fw_employer_name": fin.get("employer_name") or fin.get("employer") or ("Employed" if fin.get("is_employed") else None),
+        "fw_employer_address": fin.get("employer_address") or "",
         "landlord_phone": l.get("landlord_phone"),
         "landlord_email": l.get("landlord_email"),
         "case_number": c.get("case_number"),
@@ -3130,6 +3164,74 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
     
     # Handle numbered defense narrative lines (NM 4-907 style)
     if key.startswith("defense_narrative_"):
+        if key in ("defense_narrative_1", "defense_narrative_1a", "defense_narrative_1b"):
+            vacate_defenses = [
+                ("def_repairs", "Conditions: "),
+                ("def_bad_notice", "Defective notice: "),
+                ("def_retaliation", "Retaliation: "),
+                ("def_waived", "Waiver: "),
+                ("def_accepted_rent", "Accepted rent: "),
+                ("def_corrected", "Cured: "),
+                ("def_fair_housing", "Discrimination: "),
+                ("def_not_owner", "Improper plaintiff: "),
+                ("def_other", "Other: "),
+            ]
+            parts = []
+            for dk, lbl in vacate_defenses:
+                d = defenses.get(dk, {})
+                if isinstance(d, dict) and d.get("checked"):
+                    expl = d.get("explanation", "").strip()
+                    parts.append(f"{lbl}{expl}" if expl else lbl.rstrip(": "))
+            full_vacate = "; ".join(parts) if parts else "Defendant denies landlord's entitlement to possession."
+            words = full_vacate.split()
+            wlines = []
+            curr = []
+            for wd in words:
+                trial = " ".join(curr + [wd])
+                if pymupdf.get_text_length(trial, fontname="helv", fontsize=8.5) <= 390:
+                    curr.append(wd)
+                else:
+                    wlines.append(" ".join(curr))
+                    curr = [wd]
+            if curr:
+                wlines.append(" ".join(curr))
+            if len(wlines) > 2:
+                wlines[1] = wlines[1].rsplit(' ', 1)[0] + '...'
+            if key == "defense_narrative_1b":
+                return wlines[1] if len(wlines) > 1 else None
+            return wlines[0] if wlines else full_vacate[:90]
+
+        if key == "defense_narrative_2":
+            rent_defenses = [
+                ("def_amount", "Amount disputed: "),
+                ("def_paid", "Already paid: "),
+                ("def_attempted_pay", "Tendered payment: "),
+            ]
+            parts = []
+            for dk, lbl in rent_defenses:
+                d = defenses.get(dk, {})
+                if isinstance(d, dict) and d.get("checked"):
+                    expl = d.get("explanation", "").strip()
+                    parts.append(f"{lbl}{expl}" if expl else lbl.rstrip(": "))
+            if not parts and defenses.get("def_repairs", {}).get("checked"):
+                parts.append("Rent abatement for breach of warranty of habitability under NMSA 1978 § 47-8-27.2.")
+            if not parts:
+                parts.append("Defendant disputes the amount of rent claimed by Plaintiff.")
+            full_rent = "; ".join(parts)
+            return full_rent if pymupdf.get_text_length(full_rent, fontname="helv", fontsize=8.5) <= 390 else full_rent[:85] + "..."
+
+        if key == "defense_narrative_3":
+            d_damages = defenses.get("def_damages", {})
+            if isinstance(d_damages, dict) and d_damages.get("checked") and d_damages.get("explanation"):
+                return d_damages.get("explanation", "")[:90]
+            return "Defendant did not cause damage beyond normal wear and tear; plaintiff claims are unsubstantiated."
+
+        if key == "defense_narrative_4":
+            has_repairs = isinstance(defenses.get("def_repairs"), dict) and defenses.get("def_repairs", {}).get("checked")
+            if has_repairs:
+                return "Setoff and rent abatement for failure to maintain premises in habitable condition (NMSA § 47-8-27.1)."
+            return "Defendant reserves all rights to assert counterclaims and setoffs against Plaintiff."
+
         try:
             idx = int(key.split("_")[-1]) - 1  # defense_narrative_1 → index 0
         except (ValueError, IndexError):
@@ -3155,7 +3257,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                 expl = d.get("explanation", "")
                 active.append(f"{label}{expl}" if expl else label)
         if idx < len(active):
-            return active[idx][:100]  # fit within form line
+            return active[idx]
         return None
 
     # Handle individual ruled defense lines (AR style)
@@ -3191,6 +3293,20 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         )
         is_cos_mail = not is_cos_efile and not is_cos_hand
 
+        has_benefits = bool(
+            fin.get("receives_public_benefits")
+            or fin.get("receives_snap")
+            or fin.get("receives_medicaid")
+            or fin.get("receives_ssi")
+            or fin.get("receives_tanf")
+            or fin.get("receives_county_assistance")
+            or fin.get("receives_public_housing")
+            or fin.get("receives_section8")
+        )
+        is_single = (fin.get("marital_status") or "").lower() == "single" or int(fin.get("household_adults") or 1) <= 1
+        is_married = (fin.get("marital_status") or "").lower() == "married" or int(fin.get("household_adults") or 1) > 1
+        is_employed = fin.get("is_employed") is True or bool(fin.get("self_employment_income")) or _to_float(fin.get("employment_income")) > 0
+
         _cb_map = {
             "checkbox_trial_to_court": "X" if pref.get("trial_by") == "judge" else None,
             "checkbox_trial_jury": "X" if pref.get("trial_by") == "jury" else None,
@@ -3202,6 +3318,25 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             "checkbox_military_not": "X" if not p.get("is_active_military") else None,
             "checkbox_not_military": "X" if not p.get("is_active_military") else None,
             "checkbox_stay_7_days": "X" if (pref.get("needs_more_time") or pref.get("hardship_reason") or True) else None,
+            "checkbox_marital_single": "X" if is_single else None,
+            "checkbox_marital_married": "X" if is_married else None,
+            "checkbox_marital_divorced": "X" if (fin.get("marital_status") or "").lower() == "divorced" else None,
+            "checkbox_marital_separated": "X" if (fin.get("marital_status") or "").lower() == "separated" else None,
+            "checkbox_interpretation_no": "X",
+            "checkbox_no_assistance": "X" if not has_benefits else None,
+            "checkbox_receives_assistance": "X" if has_benefits else None,
+            "checkbox_tanf": "X" if fin.get("receives_tanf") else None,
+            "checkbox_snap": "X" if fin.get("receives_snap") else None,
+            "checkbox_medicaid": "X" if fin.get("receives_medicaid") else None,
+            "checkbox_ga": "X" if (fin.get("receives_county_assistance") or fin.get("receives_ga")) else None,
+            "checkbox_ssi": "X" if fin.get("receives_ssi") else None,
+            "checkbox_public_housing": "X" if (fin.get("receives_public_housing") or fin.get("receives_section8")) else None,
+            "checkbox_unemployed": "X" if not is_employed else None,
+            "checkbox_unemployed_no_income": "X" if not is_employed and _to_float(fin.get("employment_income")) <= 0 else None,
+            "checkbox_employed": "X" if is_employed else None,
+            "checkbox_no_other_income": "X" if not fin.get("other_income") else None,
+            "checkbox_spouse_no_other_income": "X" if is_married else None,
+            "checkbox_role_respondent": "X",
         }
         return _cb_map.get(key)
 
