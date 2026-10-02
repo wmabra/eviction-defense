@@ -330,17 +330,24 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 # with black text and transparent background.
                 "Answer.AdditionalReasons": {
                     "x0": 85,
-                    "y0": 432,
+                    "y0": 433.5,
                     "x1": 520,
-                    "y1": 441.5,
-                    "text_fontsize": 7.5,
+                    "y1": 441.0,
+                    "text_fontsize": 6.5,
                     "text_color": [0.0, 0.0, 0.0],
                     "fill_color": None,
                     "border_color": None,
                 },
                 "Date.CurrentDate.SlashMDY": {"align": "center"},
                 "County.Selection": {"align": "center"},
-                "CaseNumber": {"align": "center"},
+                "CaseNumber": {
+                    "x0": 377.0,
+                    "x1": 452.0,
+                    "align": "center",
+                },
+                "Property.ReducedRentAmt": {"fill_color": None, "border_color": None},
+                "Property.RepairsAmt": {"fill_color": None, "border_color": None},
+                "Landlord.OwesAmt": {"fill_color": None, "border_color": None},
                 "Defendant.SEQ001.Name.Full": {"text_fontsize": 9.0},
                 "Defendant.SEQ001.HomeAddress.Street": {"text_fontsize": 9.0},
                 "Defendant.SEQ001.HomeAddress.CityStateZip": {"text_fontsize": 9.0},
@@ -1909,7 +1916,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "field_rect_overrides": {
             "answer_form": {
                 "county": {"x0": 72.0, "y0": 70.0, "x1": 230.0, "y1": 85.0, "align": "right"},
-                "case_number": {"align": "center"},
+                "case_number": {"align": "left"},
                 "printed_name": {"x0": 135.0, "y0": 616.0, "x1": 322.0, "y1": 634.0, "align": "left"},
                 "date": {"y0": 530.0, "y1": 544.5, "align": "center"},
             },
@@ -2040,9 +2047,9 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "fee_waiver_name_fields": ["Name"],
         "strip_dollar_signs": True,
         "fee_waiver_overlay": {
-            "case_number": {"page": 1, "x": 355, "y": 56, "w": 140, "h": 13, "size": 10, "align": "center"},
+            "case_number": {"page": 1, "x": 355, "y": 56, "w": 184, "h": 13, "size": 10, "align": "center"},
             "date": {"page": 2, "x": 72, "y": 519, "w": 120, "h": 14, "size": 10, "align": "center"},
-            "case_number_page3": {"page": 3, "x": 335, "y": 96, "w": 160, "h": 13, "size": 10, "align": "center"},
+            "case_number_page3": {"page": 3, "x": 335, "y": 96, "w": 192, "h": 13, "size": 10, "align": "center"},
         },
         "overlay_positions": {
             "checkbox_cos_mail": {"page": 1, "x": 291, "y": 711, "w": 10, "h": 11},
@@ -2052,8 +2059,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "field_rect_overrides": {
             "answer_form": {
-                "county": {"align": "center"},
-                "case_number": {"align": "center"},
+                "county": {"align": "left"},
+                "case_number": {"align": "left"},
                 "printed_name": {"x0": 135.0, "y0": 642.0, "x1": 322.0, "y1": 658.0, "align": "left"},
                 "date": {"x0": 115.0, "y0": 541.0, "x1": 245.0, "y1": 555.5, "align": "center"},
                 "property_address": {"x0": 398.0, "y0": 638.0, "x1": 545.0, "y1": 668.0, "text_fontsize": 8.0},

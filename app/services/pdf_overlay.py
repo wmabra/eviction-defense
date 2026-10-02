@@ -2411,6 +2411,23 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                 _summary = ", ".join(_def_labels[:3]) if _def_labels else "See attached"
                 values["Answer.AdditionalReasons"] = f"See attached Defenses (Doc 05): {_summary}"
             values["Reason.LandlordNotEntitled"] = "Yes"
+        _rent_amt = values.get("Property.ReducedRentAmt")
+        if _rent_amt:
+            _rent_val = _to_float(_rent_amt)
+            if _rent_val > 0:
+                values["Property.ReducedRentAmt"] = f"${_rent_val:,.2f}"
+
+    # OK Pauper Affidavit Fee Waiver: split case number across segmented slots
+    if state_code == "OK" and form_key == "fee_waiver_form":
+        _cn = str(c.get("case_number") or values.get("case_number") or "").strip()
+        _m = re.match(r"^([A-Za-z]+)[-\s]+(\d{2,4})[-\s]+(\d+)$", _cn)
+        if _m:
+            values["case_number"] = ""  # Clear single wide widget
+            _p1, _p2, _p3 = _m.groups()
+            _page = doc[0]
+            _page.insert_text(pymupdf.Point(405 - len(_p1) * 3, 159), _p1, fontsize=10, fontname="helv")
+            _page.insert_text(pymupdf.Point(438 - len(_p2) * 2.5, 159), _p2, fontsize=10, fontname="helv")
+            _page.insert_text(pymupdf.Point(483 - len(_p3) * 2.5, 159), _p3, fontsize=10, fontname="helv")
 
     # IL Eviction Answer Form (il_eviction_answer.pdf)
     if state_code == "IL" and form_key == "answer_form":
