@@ -819,11 +819,12 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                     continue
                 nm = str(getattr(w, "field_name", "") or "").lower()
                 if r.x0 < 90 and r.height < 25 and any(k in nm for k in ("plaintiff", "defendant", "printed")) \
-                        and any(f in form_path for f in ("oh_eviction_answer", "in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer", "ok_eviction_answer")):
+                        and any(f in form_path for f in ("in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer", "ok_eviction_answer")):
                     r = pymupdf.Rect(130, r.y0, r.x1, r.y1)
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
                         and "ky_eviction_answer" not in form_path \
-                        and "in_eviction_answer" not in form_path:
+                        and "in_eviction_answer" not in form_path \
+                        and "oh_eviction_answer" not in form_path:
                     r = pymupdf.Rect(400, r.y0, r.x1, r.y1)
                 w.rect = pymupdf.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
@@ -3590,6 +3591,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                      "other_income", "rent_or_mortgage", "utilities_expense",
                      "food_expense", "transportation_expense", "medical_expense",
                      "child_care_expense", "debt_payments", "other_expenses",
+                     "telephone_expense",
                      "total_monthly_expenses", "total_expenses_table", "cash_on_hand",
                      "checking_balance", "savings_balance", "vehicle_value",
                      "vehicle_loan_owed", "real_estate_value", "real_estate_loan_owed",
@@ -3611,7 +3613,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
             _exp_sum = sum(_to_float(financial.get(k)) for k in (
                 "rent_or_mortgage", "utilities_expense", "food_expense",
                 "transportation_expense", "medical_expense", "child_care_expense",
-                "debt_payments", "other_expenses"
+                "debt_payments", "other_expenses", "telephone_expense"
             ))
             if _exp_sum > 0:
                 val = _exp_sum

@@ -31,18 +31,18 @@ def field(name, x, y, w, h, fontsize: float = 9):
 
 # ── Caption ──────────────────────────────────────────────
 text(72, 55, "IN THE", 11)
-field("court_name", 120, 47, 300, 16, 10)
-text(72, 72, "COUNTY, OHIO", 11)
-field("county", 120, 64, 200, 16, 10)
+field("court_name", 115, 42, 300, 16, 10)
+field("county", 72, 64, 110, 16, 10)
+text(188, 76, "COUNTY, OHIO", 11)
 
-field("plaintiff_name", 72, 105, 250, 16, 10)
-text(72, 125, "Plaintiff,", 10)
-text(400, 107, "CASE NO.", 9)
-field("case_number", 440, 102, 120, 16, 10)
+field("plaintiff_name", 72, 98, 250, 16, 10)
+text(72, 126, "Plaintiff,", 10)
+text(380, 107, "CASE NO.", 9)
+field("case_number", 435, 95, 125, 16, 10)
 
 text(72, 150, "vs.", 10)
-field("defendant_name", 72, 170, 250, 16, 10)
-text(72, 190, "Defendant.", 10)
+field("defendant_name", 72, 168, 250, 16, 10)
+text(72, 196, "Defendant.", 10)
 
 # ── Title ────────────────────────────────────────────────
 text(72, 225, "FINANCIAL DISCLOSURE / FEE-WAIVER AFFIDAVIT AND ORDER", 11, bold=True)
@@ -79,7 +79,7 @@ field("food_expense", 130, 515, 90, 16, 10)
 text(90, 543, "Transportation:", 10)
 field("transportation_expense", 180, 535, 90, 16, 10)
 text(90, 563, "Phone:", 10)
-field("phone", 130, 555, 90, 16, 10)
+field("telephone_expense", 135, 550, 90, 16, 10)
 text(90, 583, "Child Care:", 10)
 field("child_care_expense", 160, 575, 90, 16, 10)
 text(90, 603, "Medical:", 10)
@@ -92,13 +92,15 @@ field("total_monthly_expenses", 230, 635, 90, 16, 10)
 # ── Certification / Signature ────────────────────────────
 text(72, 680, "I certify that the information above is true and that I am unable to prepay costs.", 9)
 text(72, 700, "DATED: __________________", 10)
-field("date", 150, 687, 110, 16, 10)
+field("date", 120, 687, 110, 16, 10)
 
-field("signature", 72, 720, 250, 16, 10)
-text(72, 740, "Signature", 9)
+page.draw_line(pymupdf.Point(72, 736), pymupdf.Point(320, 736))
+field("signature", 72, 718, 248, 16, 10)
+text(72, 748, "Signature", 9)
 
-field("printed_name", 360, 720, 180, 16, 10)
-text(360, 740, "Printed Name", 9)
+page.draw_line(pymupdf.Point(360, 736), pymupdf.Point(540, 736))
+field("printed_name", 360, 718, 180, 16, 10)
+text(360, 748, "Printed Name", 9)
 
 doc.save(OUT, deflate=True)
 doc.close()

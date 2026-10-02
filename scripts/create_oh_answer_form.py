@@ -32,57 +32,56 @@ def field(name, x, y, w, h, fontsize: float = 10, multiline=False):
 
 
 # ── Caption ──────────────────────────────────────────────
-text(72, 60, "IN THE MUNICIPAL COURT", 12)
-text(72, 78, "COUNTY, OHIO", 11, bold=True)
-lead = pymupdf.get_text_length("", fontname="helv", fontsize=11)
-text(72, 96, "")
-field("county", 72, 96, 180, 16, 10)
-text(72, 116, "CASE NO.", 10)
-field("case_number", 120, 108, 180, 16, 10)
+text(72, 55, "IN THE MUNICIPAL COURT", 12)
+field("county", 72, 65, 110, 16, 10)
+text(188, 77, "COUNTY, OHIO", 11, bold=True)
+text(72, 105, "CASE NO.", 10)
+field("case_number", 130, 95, 180, 16, 10)
 
 # ── Party block ──────────────────────────────────────────
-field("plaintiff_name", 72, 150, 280, 18, 11)
-text(72, 172, "Plaintiff,", 11)
-text(400, 152, "DIVISION NO.", 10)
-field("division", 465, 146, 80, 18, 10)
+field("plaintiff_name", 72, 126, 280, 16, 10)
+text(72, 154, "Plaintiff,", 10)
+text(390, 105, "DIVISION NO.", 10)
+field("division", 465, 95, 80, 16, 10)
 
-text(72, 200, "v.", 11)
+text(72, 175, "v.", 10)
 
-field("defendant_name", 72, 225, 280, 18, 11)
-text(72, 247, "Defendant.", 11)
+field("defendant_name", 72, 192, 280, 16, 10)
+text(72, 220, "Defendant.", 10)
 
 # ── Title ────────────────────────────────────────────────
-text(72, 285, "ANSWER TO COMPLAINT IN FORCIBLE ENTRY AND DETAINER", 11, bold=True)
+text(72, 250, "ANSWER TO COMPLAINT IN FORCIBLE ENTRY AND DETAINER", 11, bold=True)
 
 # ── Body ────────────────────────────────────────────────
-text(72, 320, "Defendant, for the answer to Plaintiff's Complaint in Forcible Entry and Detainer, states as follows:", 11)
-text(72, 345, "1.  Defendant denies each and every allegation of Plaintiff's complaint.", 10.5)
-text(72, 365, "2.  Defendant affirmatively states the following defenses and reasons the", 10.5)
-text(84, 382, "complaint should be dismissed:", 10.5)
+text(72, 280, "Defendant, for the answer to Plaintiff's Complaint in Forcible Entry and Detainer, states as follows:", 10.5)
+text(72, 302, "1.  Defendant denies each and every allegation of Plaintiff's complaint.", 10)
+text(72, 320, "2.  Defendant affirmatively states the following defenses and reasons the complaint should be dismissed:", 10)
 
-field("defense_narrative", 72, 395, 468, 120, 10, multiline=True)
+field("defense_narrative", 72, 335, 468, 180, 10, multiline=True)
 
 # ── Signature block ──────────────────────────────────────
-text(72, 555, "DATED: _______________________", 10.5)
-field("date", 150, 542, 120, 18, 10)
+text(72, 545, "DATED: _______________________", 10.5)
+field("date", 120, 533, 140, 16, 10)
 
-text(72, 600, "______________________________________", 10.5)
-field("signature", 72, 586, 250, 18, 10)
-text(72, 620, "Defendant's Signature", 9)
+page.draw_line(pymupdf.Point(72, 600), pymupdf.Point(320, 600))
+field("signature", 72, 582, 248, 16, 10)
+text(72, 612, "Defendant's Signature", 9)
 
-field("printed_name", 72, 640, 250, 18, 10)
-text(72, 660, "Printed Name", 9)
+field("printed_name", 72, 632, 248, 16, 10)
+page.draw_line(pymupdf.Point(72, 650), pymupdf.Point(320, 650))
+text(72, 662, "Printed Name", 9)
 
-field("property_address", 360, 640, 180, 18, 10)
-text(360, 660, "Address", 9)
+field("phone", 360, 582, 180, 16, 10)
+page.draw_line(pymupdf.Point(360, 600), pymupdf.Point(540, 600))
+text(360, 612, "Phone", 9)
 
-field("phone", 360, 600, 180, 18, 10)
-text(360, 620, "Phone", 9)
+field("property_address", 360, 632, 180, 16, 8.5)
+page.draw_line(pymupdf.Point(360, 650), pymupdf.Point(540, 650))
+text(360, 662, "Address", 9)
 
 # ── Certificate of Service ───────────────────────────────
-text(72, 710, "CERTIFICATE OF SERVICE", 11, bold=True)
-text(72, 730, "I certify that a copy of this Answer was served on the Plaintiff or Plaintiff's", 9.5)
-text(84, 746, "attorney on the date above.", 9.5)
+text(72, 700, "CERTIFICATE OF SERVICE", 11, bold=True)
+text(72, 720, "I certify that a copy of this Answer was served on the Plaintiff or Plaintiff's attorney on the date above.", 9.5)
 
 doc.save(OUT, deflate=True)
 doc.close()

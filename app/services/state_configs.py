@@ -1916,6 +1916,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "utilities_expense": "utilities_expense",
             "food_expense": "food_expense",
             "transportation_expense": "transportation_expense",
+            "telephone_expense": "telephone_expense",
             "child_care_expense": "child_care_expense",
             "medical_expense": "medical_expense",
             "debt_payments": "debt_payments",
@@ -1925,22 +1926,6 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "Municipal Court",
         "field_mapping": {
             "division": "division",
-        },
-        "field_rect_overrides": {
-            # county widget was authored on the "CASE NO." line — move it up to
-            # the "COUNTY, OHIO" line (raw pre-flip coords), narrowed so the name
-            # fits before the (shifted-right) "COUNTY, OHIO" label.
-            "answer_form": {
-                "county": {"x0": 68.0, "x1": 109.0, "y0": 66, "y1": 81, "text_fontsize": 8.0},
-                "date": {"y0": 538.0, "y1": 552.0, "align": "center"},
-                "property_address": {"y0": 640.0, "y1": 668.0, "text_fontsize": 9.0},
-            },
-            # fee-waiver: county field overlaps "OHIO"; printed_name sits on its label.
-            "fee_waiver_form": {
-                "county": {"x0": 68.0, "x1": 109.0, "text_fontsize": 8.0},
-                "printed_name": {"x0": 420},
-                "case_number": {"x0": 448.0, "align": "center"},
-            },
         },
         "defense_options": [
             {"key": "def_repairs", "label": "The landlord failed to make necessary repairs", "field": "defense_repairs"},
