@@ -116,6 +116,11 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
                 return bool(fin.get(key))
         if "no income" in nm:
             return not has("employment_income", "monthly_gross_income")
+        if "other means tested" in nm:
+            return bool(fin.get("receives_other_assistance") or fin.get("other_assistance_description"))
+        if "unable to pay the fees" in nm or "did not check item 1 or 2" in nm:
+            cat_keys = ("receives_snap", "receives_ssi", "receives_tanf", "receives_medicaid", "receives_public_benefits")
+            return not any(bool(fin.get(k)) for k in cat_keys)
         benefit_names = [
             ("snap", "receives_snap"), ("food stamp", "receives_snap"),
             ("food assistance", "receives_snap"),
@@ -2216,6 +2221,25 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         values["Additional Income/Assets - Yes"] = "Off"
         values["False Answer - Yes"] = "Yes"
         values["False Answer - No"] = "Off"
+
+    # MI Fee Waiver form handling (Form MC 20)
+    if state_code == "MI" and form_key == "fee_waiver_form":
+        cat_keys = ("receives_snap", "receives_ssi", "receives_tanf", "receives_medicaid", "receives_public_benefits")
+        has_cat = any(bool(financial.get(k)) for k in cat_keys)
+        if has_cat:
+            values["Option 1 of 2: I Receive Public Assistance Because Of Indigence"] = "Yes"
+            values["3 I am unable to pay the fees and I did not check item 1 or 2 above"] = "Off"
+            values["Week and or Two Weeks and or  Month and or Year "] = ""
+            values["My Gross Household Income is in Dollars"] = ""
+            values["Number in household"] = ""
+            values["My Source Of Income Is"] = ""
+            values["Assets"] = ""
+            values["Obligations"] = ""
+        else:
+            values["Option 1 of 2: I Receive Public Assistance Because Of Indigence"] = "Off"
+            values["3 I am unable to pay the fees and I did not check item 1 or 2 above"] = "Yes"
+            if not values.get("Week and or Two Weeks and or  Month and or Year "):
+                values["Week and or Two Weeks and or  Month and or Year "] = "Month"
 
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":
