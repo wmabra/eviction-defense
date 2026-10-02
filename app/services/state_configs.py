@@ -1266,12 +1266,17 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "court_type": "District Court (Housing)",
         "overlay_positions": {
             "county": {"page": 1, "x": 130, "y": 110, "w": 190, "h": 16, "size": 11, "align": "center"},
+            "judicial_district": {"page": 1, "x": 417, "y": 107.5, "w": 120, "h": 14, "size": 10, "align": "center"},
             "case_number": {"page": 1, "x": 418, "y": 125, "w": 119, "h": 14, "size": 10, "align": "center"},
             "landlord_name": {"page": 1, "x": 76, "y": 172, "w": 235, "h": 14, "size": 10},
             "full_name": {"page": 1, "x": 76, "y": 260, "w": 235, "h": 14, "size": 10, "align": "center"},
             "address": {"page": 1, "x": 76, "y": 311.5, "w": 235, "h": 11.5, "size": 9.5},
+            "my_name_p1": {"page": 1, "x": 136, "y": 341, "w": 210, "h": 14, "size": 10, "align": "center"},
+            # Item 3: Military Service (check "I am not")
+            "checkbox_military_not": {"page": 2, "x": 141.5, "y": 123.5, "w": 11, "h": 11},
             # Form HOU202 defense checkboxes (Q5/Q6/Q9/Q10)
             "def_amount": {"page": 2, "x": 95, "y": 393, "w": 14, "h": 14},
+            "complaint_amount_claimed": {"page": 2, "x": 362, "y": 391, "w": 70, "h": 14, "size": 9.5, "align": "center"},
             "def_bad_notice": {"page": 2, "x": 95, "y": 519.5, "w": 14, "h": 14},
             "def_repairs": {"page": 3, "x": 95, "y": 162, "w": 14, "h": 14},
             "def_other": {"page": 3, "x": 95, "y": 136, "w": 14, "h": 14},
@@ -1282,6 +1287,10 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "explanation_def_bad_notice_2": {"page": 2, "x": 94, "y": 582.5, "w": 440, "h": 12.5, "size": 8.5},
             "explanation_def_repairs_1": {"page": 3, "x": 94, "y": 203.5, "w": 440, "h": 12.5, "size": 8.5},
             "explanation_def_repairs_2": {"page": 3, "x": 94, "y": 225.0, "w": 440, "h": 12.5, "size": 8.5},
+            # Item 11: 7-day stay of writ request & hardship reason
+            "checkbox_stay_7_days": {"page": 3, "x": 100.5, "y": 392.5, "w": 11, "h": 11},
+            "hardship_reason_line1": {"page": 3, "x": 94, "y": 432.5, "w": 440, "h": 12.5, "size": 8.5},
+            "hardship_reason_line2": {"page": 3, "x": 94, "y": 454.0, "w": 440, "h": 12.5, "size": 8.5},
             # Page 4: verification + signature block + contact info
             "date": {"page": 4, "x": 110, "y": 229, "w": 80, "h": 14, "size": 10, "align": "center"},
             "printed_name": {"page": 4, "x": 330, "y": 289, "w": 210, "h": 14, "size": 10, "align": "center"},
@@ -1292,12 +1301,21 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "notes": "MN HOU202 Housing Court Eviction Answer — scanned PDF. Data fields on page 1 via overlay; defense explanations routed to items 5/6/9; verification/contact block on page 4. OCR-verified at 600 DPI.",
         "fee_waiver_checkbox_overrides": {
-            "cb_1_0": False,   # "do not receive public assistance" — off
-            "cb_1_1": True,    # "I receive public assistance" — on
-            "cb_1_2": True,    # "a. under one or more..." — on
+            "cb_0_0": True,    # "I am including my pleadings with this Affidavit" — on
+            "cb_0_1": False,   # "I only want to have copy fees waived" — off
+            "cb_1_0": "no_public_benefits",   # "do not receive public assistance" — off if benefits
+            "cb_1_1": "receives_public_benefits",    # "I receive public assistance" — on if benefits
+            "cb_1_2": "receives_public_benefits",    # "a. under one or more..." — on if benefits
+            "cb_1_3": "receives_ssi",       # SSI
+            "cb_1_4": False,                # MSA
+            "cb_1_5": False,                # GA
             "cb_1_6": "receives_snap",      # SNAP / Food Stamps
-            "cb_1_8": "receives_medicaid",  # Medical Assistance
-            "cb_1_12": False,  # SSI — off
+            "cb_1_7": "receives_tanf",      # MFIP / DWP (TANF)
+            "cb_1_8": "receives_medicaid",  # MinnesotaCare or Medical Assistance
+            "cb_1_9": False,                # Part D extra help
+            "cb_1_10": False,               # Emergency Assistance
+            "cb_1_11": "receives_energy_assistance", # Energy Assistance
+            "cb_1_12": False,               # Other public assistance
         },
     
         "fee_waiver_overlay": {
@@ -1308,7 +1326,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "case_type": {"page": 1, "x": 400, "y": 138, "w": 120, "h": 13, "size": 10, "align": "center"},
             "full_name": {"page": 1, "x": 172, "y": 248, "w": 230, "h": 16, "size": 11},
             "date": {"page": 6, "x": 110, "y": 331, "w": 80, "h": 12, "size": 10, "align": "center"},
-            "county_page6": {"page": 6, "x": 230, "y": 331, "w": 180, "h": 13, "size": 10, "align": "center"},
+            "county_and_state": {"page": 6, "x": 235, "y": 355, "w": 280, "h": 14, "size": 10},
             "printed_name": {"page": 6, "x": 115, "y": 378, "w": 200, "h": 13, "size": 10, "align": "center"},
             "property_address": {"page": 6, "x": 125, "y": 396, "w": 240, "h": 11, "size": 9},
             "city_state_zip": {"page": 6, "x": 155, "y": 412, "w": 220, "h": 11, "size": 9},

@@ -225,11 +225,12 @@ def _expected_fee_waiver_checkbox(page, r, data, field_name="", on_state="", tru
             return (0.0, 0.0, 0.0, 0.0, "")
 
     words = [_bbox(x) for x in page.get_text("words")]
-    cw = [x for x in words if x[1] < r.y1 + 8 and x[3] > r.y0 - 8
+    cy = (r.y0 + r.y1) / 2
+    cw = [x for x in words if abs((x[1] + x[3]) / 2 - cy) < 6
           and x[0] >= 70 and x[2] <= 590]
-    # Match keywords only against words on the checkbox's own row (the ±8pt
-    # band) so labels from adjacent rows (e.g. "value of the vehicle" just above
-    # the "own real estate?" row) can't leak into this checkbox's question text.
+    # Match keywords only against words on the checkbox's own row (within 6pt
+    # of checkbox vertical center) so labels from adjacent rows can't leak into
+    # this checkbox's question text.
     ctx = " ".join(str(x[4]) for x in cw).lower()
 
     # Find other checkboxes on the same row to bound local text strictly
@@ -2651,7 +2652,7 @@ _SIG_WORDS = ("sign", "notary", "affiant", "deponent", "witness",
 # signature fields. Without these the substring test wrongly locks them, so an
 # exclusion list is required — a word-boundary match is not an option, because
 # it would stop matching camelCase names like "DefendantSignature".
-_SIG_EXCLUDE = ("print", "design", "assign", "consign", "date", "name")
+_SIG_EXCLUDE = ("print", "design", "assign", "consign", "date", "name", "county", "where_signed")
 _SIG_NUMBERED_RE = re.compile(r"\bsig\s*[_\- ]?\d+\b")
 
 
@@ -2801,10 +2802,15 @@ def _make_scanned_form_editable(doc: pymupdf.Document, data: dict) -> None:
 
         # 1. checkboxes drawn as "☐" (U+2610) or "❑" (U+2751) glyphs
         for i, r in enumerate(list(page.search_for("\u2610")) + list(page.search_for("\u2751"))):
-            rr = pymupdf.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
+            if r.height > r.width * 1.3:
+                cy = (r.y0 + r.y1) / 2
+                bsize = max(r.width, 10.0)
+                rr = pymupdf.Rect(r.x0 - 0.5, cy - bsize / 2, r.x0 - 0.5 + bsize, cy + bsize / 2)
+            else:
+                rr = pymupdf.Rect(r.x0 - 1, r.y0 - 2, r.x1 + 1, r.y1 + 1)
             if _covered(rr):
                 continue
-            lb = _label_to_right(words, r.x1, r.y0, r.y1)
+            lb = _label_to_right(words, rr.x1, rr.y0, rr.y1)
             m = _match_label_field(lb)
             _add_checkbox_widget(page, rr, f"cb_{pno}_{i}", m is not None and m[2] and _resolve_field_value(m[0], m[1], data) == "Yes")
             covered.append(rr)
@@ -3007,6 +3013,7 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "full_name": p.get("full_name"),
         "full_name_caption": p.get("full_name"),
         "full_name_sworn": p.get("full_name"),
+        "my_name": p.get("full_name"),
         "date_of_birth": p.get("date_of_birth"),
         "defendant_name": p.get("full_name"),
         "defendant_appearance": p.get("full_name"),
@@ -3027,8 +3034,11 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             f"{p.get('property_address', '')}, {p.get('property_city', '')}, {data.get('state', '')} {p.get('property_zip', '')}".strip(", ")
         ) if x),
         "county": p.get("county"),
+        "county_state_signed": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
+        "county_and_state": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
+        "county_where_signed": f"{p.get('county', '')} County, {data.get('state', '')}".strip(", "),
         "court_type": "Magistrate Court",  # default, overridden for Bernalillo County
-        "judicial_district": c.get("judicial_district", ""),
+        "judicial_district": c.get("judicial_district") or ("4th" if (p.get("county") or "").lower() == "hennepin" else ""),
         "case_type": c.get("case_type", ""),
         "landlord_name": l.get("landlord_name"),
         "plaintiff_name": l.get("landlord_name"),
@@ -3040,6 +3050,14 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "court_name": c.get("court_name"),
         "monthly_rent": str(c.get("monthly_rent", "")),
         "amount_demanded": str(c.get("notice_amount_demanded", "")),
+        "complaint_amount_claimed": (
+            f"{_to_float(c.get('complaint_amount_claimed') or c.get('notice_amount_demanded') or 0.0):,.2f}"
+            if _to_float(c.get('complaint_amount_claimed') or c.get('notice_amount_demanded') or 0.0) > 0 else ""
+        ),
+        "amount_claimed": (
+            f"{_to_float(c.get('complaint_amount_claimed') or c.get('notice_amount_demanded') or 0.0):,.2f}"
+            if _to_float(c.get('complaint_amount_claimed') or c.get('notice_amount_demanded') or 0.0) > 0 else ""
+        ),
         "cos_date": date.today().strftime("%m/%d/%Y"),
         "cos_recipient": (
             f"{(l.get('landlord_attorney_name') or '').strip()} (attorney for {l.get('landlord_name', '')})"
@@ -3161,6 +3179,9 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
             "checkbox_cos_hand": "X" if is_cos_hand else None,
             "checkbox_cos_efile": "X" if is_cos_efile else None,
             "checkbox_cos_mail": "X" if is_cos_mail else None,
+            "checkbox_military_not": "X" if not p.get("is_active_military") else None,
+            "checkbox_not_military": "X" if not p.get("is_active_military") else None,
+            "checkbox_stay_7_days": "X" if (pref.get("needs_more_time") or pref.get("hardship_reason") or True) else None,
         }
         return _cb_map.get(key)
 
@@ -3217,6 +3238,30 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                     wlines.append(" ".join(curr))
                 return wlines[line_idx] if line_idx < len(wlines) else None
             return raw_text
+        return None
+
+    # Handle statutory 7-day stay hardship reason lines (MN HOU202 Item 11)
+    if key.startswith("hardship_reason_line"):
+        suffix_match = re.search(r'(\d+)$', key)
+        line_idx = int(suffix_match.group(1)) - 1 if suffix_match else 0
+        pref = data.get("preferences", {}) or {}
+        raw_text = pref.get("hardship_reason", "").strip()
+        if not raw_text and pref.get("needs_more_time"):
+            raw_text = "Vacating immediately would cause severe substantial hardship to my household."
+        if raw_text:
+            words = raw_text.split()
+            wlines = []
+            curr = []
+            for wd in words:
+                trial = " ".join(curr + [wd])
+                if pymupdf.get_text_length(trial, fontname="helv", fontsize=8.5) <= 435:
+                    curr.append(wd)
+                else:
+                    wlines.append(" ".join(curr))
+                    curr = [wd]
+            if curr:
+                wlines.append(" ".join(curr))
+            return wlines[line_idx] if line_idx < len(wlines) else None
         return None
 
     # Arkansas & fee waiver question detail overlays
