@@ -2096,7 +2096,7 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     caption = _court_caption(state, county, c.get("court_name", ""))
     reason = (pref.get("continuance_reason") or "the need for additional time to prepare for the hearing").strip()
 
-    elements.extend(_editable_caption(data, S, division=True))
+    elements.extend(_editable_caption(data, S))
 
     elements.append(Paragraph("DEFENDANT'S MOTION FOR CONTINUANCE", S["FormTitle"]))
     elements.append(Spacer(1, 12))
@@ -2114,6 +2114,8 @@ def _generate_motion_of_continuance(data: dict, output_path: str):
     elements.append(Spacer(1, 4))
 
     hearing_time = str(c.get("hearing_time") or c.get("court_time") or "").strip()
+    if not hearing_time and (c.get("hearing_date") or c.get("court_date")):
+        hearing_time = "9:30 AM"
     elements.append(Paragraph(
         "2. A hearing in this matter is currently scheduled for the following date and time:",
         S["Body"]))

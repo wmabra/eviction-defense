@@ -57,6 +57,7 @@ AR = {
             "summons_service_date": "2024-06-03",
             "response_deadline": "2024-06-10",
             "court_date": "2024-06-20",
+            "hearing_time": "9:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 925.00,
@@ -491,6 +492,7 @@ GA = {
             "summons_service_date": "2024-05-10",
             "response_deadline": "2024-05-17",
             "court_date": "2024-05-24",
+            "hearing_time": "9:30 AM",
         },
         "rent_payment": {
             "monthly_rent": 1300.00,
@@ -586,6 +588,7 @@ IL = {
             "summons_service_date": "2024-05-02",
             "response_deadline": "2024-05-12",
             "court_date": "2024-05-15",
+            "hearing_time": "9:30 AM",
         },
         "rent_payment": {
             "monthly_rent": 1200.00,
@@ -679,6 +682,7 @@ IN = {
             "summons_service_date": "2024-04-22",
             "response_deadline": "2024-05-05",
             "court_date": "2024-05-08",
+            "hearing_time": "9:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 1100.00,
@@ -773,6 +777,7 @@ KY = {
             "summons_service_date": "2024-04-15",
             "response_deadline": "2024-04-25",
             "court_date": "2024-04-28",
+            "hearing_time": "9:30 AM",
         },
         "rent_payment": {
             "monthly_rent": 950.00,
@@ -867,6 +872,7 @@ LA = {
             "summons_service_date": "2024-04-08",
             "response_deadline": "2024-04-15",
             "court_date": "2024-04-16",
+            "hearing_time": "10:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 1050.00,
@@ -960,6 +966,7 @@ MI = {
             "summons_service_date": "2024-04-11",
             "response_deadline": "2024-04-18",
             "court_date": "2024-04-22",
+            "hearing_time": "9:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 900.00,
@@ -1052,6 +1059,7 @@ MN = {
             "summons_service_date": "2024-04-05",
             "response_deadline": "2024-04-12",
             "court_date": "2024-04-19",
+            "hearing_time": "9:00 AM",
         },
         "rent_payment": {
             "monthly_rent": 950.00,
@@ -1141,6 +1149,7 @@ def _john_doe(state, county, city, address, zipcode, court, case_number,
                 "summons_service_date": "2024-05-02",
                 "response_deadline": "2024-05-12",
                 "court_date": "2024-05-15",
+                "hearing_time": "9:30 AM",
             },
             "rent_payment": {
                 "monthly_rent": rent,
