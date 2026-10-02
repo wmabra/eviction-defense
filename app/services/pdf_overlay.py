@@ -819,12 +819,13 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                     continue
                 nm = str(getattr(w, "field_name", "") or "").lower()
                 if r.x0 < 90 and r.height < 25 and any(k in nm for k in ("plaintiff", "defendant", "printed")) \
-                        and any(f in form_path for f in ("in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer", "ok_eviction_answer")):
+                        and any(f in form_path for f in ("in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer")):
                     r = pymupdf.Rect(130, r.y0, r.x1, r.y1)
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
                         and "ky_eviction_answer" not in form_path \
                         and "in_eviction_answer" not in form_path \
-                        and "oh_eviction_answer" not in form_path:
+                        and "oh_eviction_answer" not in form_path \
+                        and "ok_eviction_answer" not in form_path:
                     r = pymupdf.Rect(400, r.y0, r.x1, r.y1)
                 w.rect = pymupdf.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
@@ -1326,6 +1327,23 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             except (TypeError, ValueError):
                 _adults = 1
             _all_data["is_single"] = "Yes" if _adults <= 1 else "No"
+        # Oklahoma fee waiver helpers:
+        if state_code == "OK":
+            _is_emp = bool(financial.get("is_employed") is True or financial.get("employment_income") or financial.get("monthly_gross_income"))
+            _all_data["employed_yes"] = "X" if _is_emp else ""
+            _all_data["employed_no"] = "X" if not _is_emp else ""
+            _all_data["residence_rent"] = "X"
+            _all_data["residence_own"] = ""
+            if "employer_name" not in _all_data:
+                _all_data["employer_name"] = str(financial.get("employer_name") or financial.get("employer") or ("Employed" if _is_emp else ""))
+            if financial.get("debt_payments") or financial.get("credit_card_balance"):
+                _all_data["creditor_1"] = "Credit Card / Personal Debt"
+                _all_data["debt_balance_1"] = f"{_to_float(financial.get('credit_card_balance') or financial.get('debt_owed') or financial.get('total_debt_owed') or 0.0):.2f}"
+                _all_data["debt_payment_1"] = f"{_to_float(financial.get('debt_payments') or 0.0):.2f}"
+            _all_data["printed_name_order"] = str(p.get("full_name", ""))
+            _all_data["property_address_order"] = str(p.get("property_address", ""))
+            _all_data["city_state_zip_order"] = str(_all_data.get("city_state_zip", ""))
+            _all_data["phone_order"] = str(p.get("phone", ""))
         # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
         # and the tenant receives categorical assistance, leave the income/expense/asset
         # fields blank (they are only required when categorical assistance is absent).
@@ -3646,9 +3664,27 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
     
     # Text fields
     text_fields = ["vehicle_make_model", "other_income_description", "other_assets_description",
-                   "previous_fee_waiver_case", "last_paycheck_date", "pay_rate", "pay_frequency", "marital_status"]
+                   "previous_fee_waiver_case", "last_paycheck_date", "pay_rate", "pay_frequency", "marital_status",
+                   "household_members"]
     if key in text_fields:
         val = financial.get(key)
+        if val is None and key == "household_members":
+            raw_m = financial.get("household_members") or financial.get("dependents_detail")
+            if isinstance(raw_m, list):
+                items = []
+                for item in raw_m:
+                    if isinstance(item, dict):
+                        n = item.get("name") or "Dependent"
+                        rel = item.get("relationship", "")
+                        items.append(f"{n} ({rel})" if rel else n)
+                    else:
+                        items.append(str(item))
+                val = ", ".join(items) if items else None
+            elif isinstance(raw_m, str) and raw_m.strip():
+                val = raw_m.strip()
+            elif int(financial.get("household_children") or 0) > 0:
+                _num_c = int(financial.get("household_children"))
+                val = f"{_num_c} dependent child" if _num_c == 1 else f"{_num_c} dependent children"
         if val is None and key == "marital_status":
             _ad = int(financial.get("household_adults") or 1)
             val = "Single" if _ad <= 1 else "Married"
