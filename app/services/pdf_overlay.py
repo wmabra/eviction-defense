@@ -783,6 +783,8 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                     w.fill_color = o["fill_color"]
                 if "border_color" in o:
                     w.border_color = o["border_color"]
+                if "field_flags" in o:
+                    w.field_flags = o["field_flags"]
                 if "align" in o and getattr(w, "xref", None):
                     try:
                         if o["align"] == "center":
@@ -2098,6 +2100,123 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         if not values.get("MonthlyChildSupportPaid"):
             values["MonthlyChildSupportPaid"] = "0.00"
 
+    # LA Fee Waiver form handling
+    if state_code == "LA" and form_key == "fee_waiver_form":
+        # Section 5: Children Live With You & Other Dependents
+        ch_count = int(financial.get("household_children") or 0)
+        ad_count = max(0, int(financial.get("household_adults") or 1) - 1)
+        values["Children Live With You"] = str(ch_count) if ch_count > 0 else "0"
+        values["Any other Dependents"] = str(ad_count) if ad_count > 0 else "0"
+
+        # Dependents table (Rows 1 to 5)
+        raw_members = financial.get("household_members") or financial.get("dependents_detail") or []
+        la_members = []
+        if isinstance(raw_members, list):
+            for item in raw_members:
+                if isinstance(item, dict):
+                    la_members.append(item)
+                elif isinstance(item, str) and item.strip():
+                    la_members.append({"name": item.strip(), "age": "Minor", "relationship": "Child"})
+        elif isinstance(raw_members, str) and raw_members.strip():
+            for part in re.split(r'[;\n]+', raw_members):
+                part = part.strip()
+                if part:
+                    la_members.append({"name": part, "age": "Minor", "relationship": "Child"})
+
+        if not la_members:
+            for idx in range(1, ch_count + 1):
+                la_members.append({
+                    "name": f"Dependent Child {idx}" if ch_count > 1 else "Dependent Child",
+                    "age": "Minor",
+                    "relationship": "Child",
+                })
+            for idx in range(1, ad_count + 1):
+                la_members.append({
+                    "name": f"Adult Member {idx}" if ad_count > 1 else "Adult Member",
+                    "age": "Adult",
+                    "relationship": "Family",
+                })
+
+        for idx, m in enumerate(la_members[:5]):
+            row_num = idx + 1
+            values[f"Dependents Name 0{row_num}"] = str(m.get("name", ""))
+            values[f"Dependents Age 0{row_num}"] = str(m.get("age", ""))
+            values[f"Dependents Relationship 0{row_num}"] = str(m.get("relationship", ""))
+
+        # Item 4: Student status
+        if not financial.get("is_student"):
+            values["Student - No"] = "Yes"
+            values["Student - Yes"] = "Off"
+
+        # Item 7: Net monthly income & tax deductions
+        inc = _to_float(financial.get("monthly_net_income") or financial.get("monthly_gross_income") or financial.get("employment_income") or 0.0)
+        if inc > 0:
+            values["Total Net Monthly Income"] = f"{inc:,.2f}"
+        if not values.get("Monthly Federal Tax Deductions"):
+            values["Monthly Federal Tax Deductions"] = "0.00"
+        if not values.get("Monthly FICA Tax Deductions"):
+            values["Monthly FICA Tax Deductions"] = "0.00"
+        if not values.get("Total Monthly Deductions"):
+            values["Total Monthly Deductions"] = "0.00"
+
+        # Section 8(b): Public assistance checkboxes and fields
+        has_support = any(
+            bool(financial.get(k)) for k in (
+                "receives_snap", "receives_tanf", "receives_ssi", "receives_medicaid",
+                "receives_public_benefits", "ssi_income", "disability_income", "unemployment_income"
+            )
+        )
+        if has_support:
+            values["Any Support - Yes"] = "Yes"
+            values["Any Support - No"] = "Off"
+            if financial.get("receives_snap"):
+                _snap = financial.get("snap_amount") or financial.get("food_stamps_amount")
+                values["Food Stamps"] = f"{_to_float(_snap):,.2f}" if _snap else "Yes"
+            if financial.get("receives_tanf"):
+                _tanf = financial.get("tanf_income") or financial.get("public_assistance_income")
+                values["TANF"] = f"{_to_float(_tanf):,.2f}" if _tanf else "Yes"
+            if financial.get("receives_ssi") or financial.get("ssi_income"):
+                _ssi = financial.get("ssi_income")
+                values["SSI Support"] = f"{_to_float(_ssi):,.2f}" if _ssi else "Yes"
+        else:
+            values["Any Support - Yes"] = "Off"
+            values["Any Support - No"] = "Yes"
+
+        # Bank accounts
+        _bank = financial.get("checking_bank_name") or financial.get("bank_name") or financial.get("savings_bank_name")
+        if _bank:
+            values["Name/Location of Bank"] = str(_bank)
+        if financial.get("checking_balance") or financial.get("cash_on_hand") or financial.get("has_bank_account"):
+            values["Checking"] = "Yes"
+
+        # Section B.i: Living expenses subtotal
+        rent = _to_float(financial.get("rent_or_mortgage") or 0.0)
+        util = _to_float(financial.get("utilities_expense") or 0.0)
+        food = _to_float(financial.get("food_expense") or 0.0)
+        trans = _to_float(financial.get("transportation_expense") or 0.0)
+        med = _to_float(financial.get("medical_expense") or 0.0)
+        daycare = _to_float(financial.get("child_care_expense") or 0.0)
+        subtotal_i = rent + util + food + trans + med + daycare
+        if subtotal_i > 0:
+            values["Total Itemized Monthly Expenses"] = f"{subtotal_i:,.2f}"
+
+        # Section B.ii: Credit cards / loans
+        debt = _to_float(financial.get("debt_payments") or 0.0)
+        if debt > 0:
+            values["Credit Card Name 01"] = "Credit Card / Personal Debts"
+            values["Credit Card Monthly Payment 01"] = f"{debt:,.2f}"
+            values["Total Monthly Credit Card Payment"] = f"{debt:,.2f}"
+        if not values.get("Total Monthly Financial Loans"):
+            values["Total Monthly Financial Loans"] = "0.00"
+
+        # Page 3 questions
+        values["Help with Expenses - No"] = "Yes"
+        values["Help with Expenses - Yes"] = "Off"
+        values["Additional Income/Assets - No"] = "Yes"
+        values["Additional Income/Assets - Yes"] = "Off"
+        values["False Answer - Yes"] = "Yes"
+        values["False Answer - No"] = "Off"
+
     # CT JD-HM-5: Summary Process Answer defenses and service handling
     if state_code == "CT" and form_key == "answer_form":
         # Rent paid after notice (Box a):
@@ -3255,6 +3374,8 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         val = financial.get(key)
         # Fallback: employment_income from monthly_gross_income
         if val is None and key == "employment_income":
+            val = financial.get("monthly_gross_income")
+        if val is None and key == "monthly_net_income":
             val = financial.get("monthly_gross_income")
         if val is None and key == "total_monthly_income":
             val = financial.get("monthly_gross_income")
