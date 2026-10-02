@@ -2184,6 +2184,22 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
 
     # Virginia DC-442 Grounds of Defense: populate numbered defense paragraphs User.1 - User.5
     if state_code == "VA" and form_key == "answer_form":
+        # Caption & Court: clean General District Court
+        _ct = (p.get("county") or c.get("county") or "").strip()
+        if _ct and not _ct.lower().endswith("county") and not _ct.lower().endswith("city"):
+            _ct = f"{_ct} County"
+        values["User.Court"] = _ct or re.sub(r'(?i)\s*general\s+district\s+court', '', str(c.get("court_name") or "")).strip()
+
+        if c.get("court_address"):
+            values["User.CourtAddress"] = c.get("court_address")
+        if c.get("court_date"):
+            values["User.TrialDate"] = _format_date_mdy(c["court_date"])
+        if c.get("hearing_time"):
+            values["User.TrialTime"] = str(c["hearing_time"])
+        if c.get("response_deadline"):
+            values["User.FileDate"] = _format_date_mdy(c["response_deadline"])
+        values["User.BOPDueDate"] = ""
+
         active_defenses = []
         for _k, _label in [
             ("def_amount", "Dispute of amount claimed: "),
@@ -2206,6 +2222,92 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             else:
                 values[fld] = ""
         values["User.CB1"] = "Yes" if len(active_defenses) > 5 else "Off"
+
+        # Signatory block & Certificate of Service
+        values["User.Date3"] = today.strftime("%m/%d/%Y")
+        values["User.Name2"] = p.get("full_name", "")
+        values["User.AddressName2"] = _compose_full_address(p, "VA") or p.get("property_address", "")
+        values["User.PhoneName2"] = p.get("phone", "")
+        values["User.Day"] = str(today.day)
+        values["User.Month"] = today.strftime("%B")
+        values["User.Year"] = str(today.year)[2:]  # ", 20" is pre-printed on DC-442
+
+    # Virginia CC-1414 Fee Waiver: populate caption, employment, assets, expenses
+    if state_code == "VA" and form_key == "fee_waiver_form":
+        # Caption: Plaintiff (Name1) v. Defendant (Name2)
+        values["User.Name1"] = l.get("landlord_name", "")
+        values["User.Name2"] = p.get("full_name", "")
+        values["User.CourtName"] = c.get("court_name") or f"{p.get('county', '')} General District Court".strip()
+        values["User.CityOrCounty"] = p.get("county") or c.get("county") or ""
+
+        # Employment & Income (Self)
+        _emp_name = str(financial.get("employer_name") or financial.get("employer") or "")
+        _is_emp = financial.get("is_employed") or bool(_emp_name) or _to_float(financial.get("employment_income") or financial.get("monthly_gross_income")) > 0
+        if _emp_name:
+            _emp_addr = str(financial.get("employer_address") or "").strip()
+            values["User.Self"] = f"{_emp_name}, {_emp_addr}".strip(", ") if _emp_addr else _emp_name
+        elif _is_emp:
+            values["User.Self"] = "Employed"
+
+        _period = str(financial.get("pay_frequency") or financial.get("pay_period") or "").capitalize()
+        if not _period and _is_emp:
+            _period = "Monthly"
+        if _period:
+            values["User.PayPeriod"] = _period
+
+        _gross = _to_float(financial.get("monthly_gross_income") or financial.get("employment_income") or 0.0)
+        _net = _to_float(financial.get("monthly_net_income") or _gross)
+        if _gross > 0:
+            values["User.SelfPay"] = f"{_gross:,.2f}"
+        if _net > 0:
+            values["User.SelfTakeHome"] = f"{_net:,.2f}"
+            values["User.SelfTotalNet"] = f"{_net:,.2f}"
+
+        # Liquid Assets
+        _cash = _to_float(financial.get("cash_on_hand") or 0.0)
+        values["User.CashOnHand"] = "Cash"
+        values["User.SelfCashOnHand"] = f"{_cash:,.2f}"
+
+        _chk = _to_float(financial.get("checking_balance") or 0.0)
+        _sav = _to_float(financial.get("savings_balance") or 0.0)
+        _tot_bank = _chk + _sav
+        _bank_name = str(financial.get("bank_name") or financial.get("checking_bank_name") or "Checking & Savings")
+        values["User.BankAccounts"] = _bank_name
+        values["User.SelfBank"] = f"{_tot_bank:,.2f}"
+
+        _tot_assets = _cash + _tot_bank + _to_float(financial.get("other_assets_value") or 0.0)
+        values["User.SelfTotalAssets"] = f"{_tot_assets:,.2f}"
+
+        # Exceptional Expenses
+        _med = _to_float(financial.get("medical_expense") or 0.0)
+        if _med > 0:
+            values["User.MedicalExp"] = "Medical / Prescriptions"
+            values["User.MedicalTotal"] = f"{_med:,.2f}"
+        else:
+            values["User.MedicalExp"] = ""
+            values["User.MedicalTotal"] = "0.00"
+
+        _cc = _to_float(financial.get("child_care_expense") or 0.0)
+        if _cc > 0:
+            values["User.ChildCarePayments"] = "Child care"
+            values["User.ChildCareTotal"] = f"{_cc:,.2f}"
+        else:
+            values["User.ChildCarePayments"] = ""
+            values["User.ChildCareTotal"] = "0.00"
+
+        _tot_exp = _med + _cc
+        values["undefined_20"] = f"{_tot_exp:,.2f}"
+
+        # Public Assistance amounts
+        _snap = _to_float(financial.get("snap_income") or financial.get("food_stamps_income") or 0.0)
+        if _snap > 0:
+            values["User.SNAP"] = f"{_snap:,.2f}"
+        _tanf = _to_float(financial.get("tanf_income") or 0.0)
+        if _tanf > 0:
+            values["User.TANF"] = f"{_tanf:,.2f}"
+        _ssi = _to_float(financial.get("ssi_income") or 0.0)
+        if _ssi > 0:
+            values["User.SSI"] = f"{_ssi:,.2f}"
 
     # Populate per-item explanation text areas (e.g. DC 111a "details N" fields)
     # with the tenant's defense explanations.
