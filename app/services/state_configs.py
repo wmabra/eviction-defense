@@ -1508,6 +1508,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "answer_form": "mo_eviction_answer.pdf",
         "fee_waiver_form": "mo_fee_waiver.pdf",
         "fee_waiver_mapping": {
+            "judicial_circuit": "Judicial Circuit Court Number",
             "county": "COUNTY NAME",
             "court_name": "Judge or Division",
             "case_number": "Case Number",
@@ -1515,6 +1516,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "landlord_address": "Petitioners AddressTelephone",
             "full_name": "Respondent Name",
             "full_address": "Respondents AddressTelephone",
+            "marital_status": "Marital Status",
             "total_dependents": "Number of dependents",
             "employment_income": "Gross Salary",
             "ssi_income": "Public Assistance",
@@ -1529,6 +1531,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
             "utilities_expense": "Utilities Amount",
             "food_expense": "Food Amount",
             "debt_payments": "Payment on Debts and Credit Cards",
+            "credit_card_balance": "Credit Card Balance(s)",
             "medical_expense": "Medical Expenses",
             "total_monthly_expenses": "Total Monthly Expenses",
             "cash_on_hand": "Cash on Hand",
@@ -1549,6 +1552,7 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 "property_address": {"y0": 630.0, "y1": 658.0, "text_fontsize": 9.0},
             },
             "fee_waiver_form": {
+                "Judicial Circuit Court Number": {"y0": 38.0, "y1": 53.0, "text_fontsize": 10.0, "align": "center"},
                 "COUNTY NAME": {"y0": 38.0, "y1": 53.0, "text_fontsize": 10.0},
                 "Judge or Division": {"y0": 85.5, "y1": 99.0, "text_fontsize": 8.5},
                 "Case Number": {"y0": 85.5, "y1": 99.0, "text_fontsize": 8.5},
@@ -1556,6 +1560,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
                 "Petitioners AddressTelephone": {"y0": 114.0, "y1": 152.0},
                 "Respondent Name": {"y0": 167.0, "y1": 195.0},
                 "Respondents AddressTelephone": {"y0": 167.0, "y1": 195.0},
+                "Marital Status": {"y0": 237.0, "y1": 253.0, "text_fontsize": 9.0},
+                "Number of dependents": {"y0": 237.0, "y1": 253.0, "text_fontsize": 9.0, "align": "center"},
                 # Incomes
                 "Gross Salary": {"y0": 293.0, "y1": 307.0, "text_fontsize": 8.5},
                 "Public Assistance": {"y0": 308.0, "y1": 322.0, "text_fontsize": 8.5},

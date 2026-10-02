@@ -1120,6 +1120,26 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         # "36th District Court" -> "36th"; otherwise fall back to the court name.
         _all_data["judicial_district"] = _first if (_first and _first[:-2].isdigit() and _first[-2:].lower() in ("st", "nd", "rd", "th")) else _cn
 
+    # Missouri Judicial Circuit for circuit court / GN10 fee waiver.
+    if "judicial_circuit" not in _all_data:
+        _c = str(_all_data.get("county", "") or "").strip().lower()
+        _cn = str(_all_data.get("court_name", "") or "").strip()
+        _mo_circuits = {
+            "st. louis": "21st", "st louis": "21st", "st. louis county": "21st", "st louis county": "21st",
+            "st. louis city": "22nd", "st louis city": "22nd", "city of st. louis": "22nd",
+            "jackson": "16th", "st. charles": "11th", "st charles": "11th",
+            "clay": "7th", "jefferson": "23rd", "greene": "31st", "boone": "13th",
+            "platte": "6th", "cass": "17th", "buchanan": "5th", "jasper": "29th",
+            "franklin": "20th", "cole": "19th", "cape girardeau": "32nd",
+        }
+        _m = re.search(r'\b(\d+(?:st|nd|rd|th)?)\s+(?:judicial\s+)?circuit\b', _cn, re.I)
+        if _m:
+            _all_data["judicial_circuit"] = _m.group(1)
+        elif _c in _mo_circuits:
+            _all_data["judicial_circuit"] = _mo_circuits[_c]
+        else:
+            _all_data["judicial_circuit"] = ""
+
     # Composite caption fields (MI DC 111a): name + address + phone in one field.
     if "defendant_composite" not in _all_data:
         _all_data["defendant_composite"] = "\n".join(x for x in (
@@ -3438,7 +3458,7 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                      "total_monthly_expenses", "total_expenses_table", "cash_on_hand",
                      "checking_balance", "savings_balance", "vehicle_value",
                      "vehicle_loan_owed", "real_estate_value", "real_estate_loan_owed",
-                     "other_assets_value"]
+                     "other_assets_value", "total_assets", "total_debts", "credit_card_balance"]
     if key in dollar_fields:
         val = financial.get(key)
         # Fallback: employment_income from monthly_gross_income
@@ -3451,6 +3471,31 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         # Fallback: total_expenses_table is an alias for total_monthly_expenses
         if val is None and key == "total_expenses_table":
             val = financial.get("total_monthly_expenses")
+        # Fallback: total_monthly_expenses calculated from itemized expenses if missing
+        if val is None and key in ("total_monthly_expenses", "total_expenses_table"):
+            _exp_sum = sum(_to_float(financial.get(k)) for k in (
+                "rent_or_mortgage", "utilities_expense", "food_expense",
+                "transportation_expense", "medical_expense", "child_care_expense",
+                "debt_payments", "other_expenses"
+            ))
+            if _exp_sum > 0:
+                val = _exp_sum
+        if val is None and key == "total_assets":
+            _assets_sum = sum(_to_float(financial.get(k)) for k in (
+                "cash_on_hand", "checking_balance", "savings_balance",
+                "vehicle_value", "real_estate_value", "other_assets_value"
+            ))
+            if _assets_sum > 0 or any(financial.get(k) is not None for k in ("cash_on_hand", "checking_balance", "savings_balance")):
+                val = _assets_sum
+        if val is None and key == "total_debts":
+            _debts_sum = sum(_to_float(financial.get(k)) for k in (
+                "home_loan_balance", "real_estate_loan_owed", "vehicle_loan_owed",
+                "credit_card_balance", "debt_payments", "other_debts"
+            ))
+            if _debts_sum > 0 or any(financial.get(k) is not None for k in ("debt_payments", "credit_card_balance", "vehicle_loan_owed")):
+                val = _debts_sum
+        if val is None and key == "credit_card_balance":
+            val = financial.get("debt_payments")
         # Fallback: combined bank_balance into checking / savings
         if val is None and key == "checking_balance":
             if financial.get("bank_balance") is not None:
@@ -3467,6 +3512,9 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
                    "previous_fee_waiver_case", "last_paycheck_date", "pay_rate", "pay_frequency", "marital_status"]
     if key in text_fields:
         val = financial.get(key)
+        if val is None and key == "marital_status":
+            _ad = int(financial.get("household_adults") or 1)
+            val = "Single" if _ad <= 1 else "Married"
         if val is None and key == "pay_rate":
             val = financial.get("hourly_rate_or_salary") or financial.get("employment_income") or financial.get("monthly_gross_income")
             if val is not None:
@@ -3493,6 +3541,10 @@ def _get_financial_value(key: str, data: dict) -> Optional[str]:
         return str(_total)
     if key in ["household_adults", "household_children", "total_dependents"]:
         val = financial.get(key)
+        if key == "total_dependents" and val is None:
+            ch = int(financial.get("household_children") or 0)
+            ad = max(0, int(financial.get("household_adults") or 1) - 1)
+            val = ch + ad
         return str(val) if val is not None else None
     
     # Computed summary fields
