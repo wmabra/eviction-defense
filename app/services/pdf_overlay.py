@@ -2004,6 +2004,30 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         values["Date Signed"] = today.strftime("%m/%d/%Y")
         values["Signature of Defendant (or their attorney)"] = ""
 
+    # Tennessee General Sessions Sworn Denial (tn_eviction_answer.pdf)
+    if state_code == "TN" and form_key == "answer_form":
+        # Service of process fields on Page 2:
+        _recipient = (l.get('landlord_attorney_name') or '').strip()
+        if _recipient:
+            values["cert_1"] = f"{_recipient} (attorney for {l.get('landlord_name', '')})".strip()
+            values["cert_2"] = (l.get('landlord_attorney_address') or l.get('landlord_address') or '').strip()
+        else:
+            values["cert_1"] = (l.get('landlord_name') or '').strip()
+            values["cert_2"] = (l.get('landlord_address') or '').strip()
+        values["date_1"] = today.strftime("%m/%d/%Y")
+
+        # Notary Public jurat on Page 1:
+        # Pre-fill county of notary, but leave name, date_3 (commission expiration), and oath day/month/year blank for notary execution.
+        values["county_1"] = p.get("county") or c.get("county") or ""
+        values["name_1"] = ""
+        values["date_3"] = ""
+        values["day_2"] = ""
+        values["mm_1"] = ""
+        values["year_2"] = ""
+
+        # Defendant signature date
+        values["date_2"] = today.strftime("%m/%d/%Y")
+
     # South Carolina SCCA405 Fee Waiver: set circuit, financials, sworn block, and clean fields
     if state_code == "SC" and form_key == "fee_waiver_form":
         _cty_key = str(p.get("county") or "").strip().lower().replace(" county", "").strip()
@@ -2758,6 +2782,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                                 r'(\d+.*-\s*date|document\s*date)|'
                                 r'entered as an order|order of the court|by order of|'
                                 r'fill in cell phone|cell phone.*amount|'
+                                r'\bdate_3\b|commission.*date|expires.*date|'
                                 r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
     
     # Apply to each page
@@ -3326,8 +3351,14 @@ def _add_checkbox_widget(page, rect, name: str, checked: bool = True) -> None:
     w.field_name = name
     w.field_type = pymupdf.PDF_WIDGET_TYPE_CHECKBOX  # type: ignore[attr-defined]
     w.rect = rect
-    w.field_value = bool(checked)
-    page.add_widget(w)
+    w.field_value = "Yes" if checked else "Off"
+    new_w = page.add_widget(w)
+    if new_w:
+        try:
+            new_w.field_value = "Yes" if checked else "Off"
+            new_w.update()
+        except Exception:
+            pass
 
 
 def _fill_via_overlay(doc: pymupdf.Document, data: dict, config: dict, form_key: str = "answer_form"):
@@ -3465,9 +3496,14 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         "insurance_expense": "$0.00",
         "debt_expense": _money(fin.get("debt_payments") or 0.0, 2) if fin.get("debt_payments") else "$0.00",
         "court_support_expense": "$0.00",
-        "court_order_expense": "$0.00",
-        "fw_employer_name": fin.get("employer_name") or fin.get("employer") or ("Employed" if fin.get("is_employed") else None),
+        "tn_court": (
+            re.sub(r'(?i)\s*Court$', '', str(c.get("court_type") or "General Sessions")).strip()
+            if not str(c.get("court_name", "")).startswith("General Sessions")
+            else "General Sessions"
+        ),
+        "fw_employer_name": fin.get("employer_name") or fin.get("employer") or ("Employed" if (fin.get("is_employed") or _to_float(fin.get("employment_income") or fin.get("monthly_gross_income")) > 0) else None),
         "fw_employer_address": fin.get("employer_address") or "",
+        "fw_employer_phone": fin.get("employer_phone") or "",
         "landlord_phone": l.get("landlord_phone"),
         "landlord_email": l.get("landlord_email"),
         "case_number": c.get("case_number"),
@@ -3921,6 +3957,41 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
         if tot > 0:
             return f"{tot} dependent(s) ({ch} child(ren), {max(0, ad)} adult(s))"
         return "None"
+
+    if key.startswith("dep_"):
+        fin = data.get("financial_info", {}) or {}
+        n_children = int(fin.get("household_children") or 0)
+        n_adults = int(fin.get("household_adults") or 1)
+        if key == "dep_name_1":
+            if n_children >= 1:
+                return "Child 1 (Minor)"
+            elif n_adults > 1:
+                return "Adult Dependent"
+        elif key == "dep_rel_1":
+            if n_children >= 1:
+                return "Dependent Child"
+            elif n_adults > 1:
+                return "Household Member"
+        elif key == "dep_name_2":
+            if n_children >= 2:
+                return "Child 2 (Minor)"
+            elif n_adults > 1 and n_children >= 1:
+                return "Adult Dependent"
+        elif key == "dep_rel_2":
+            if n_children >= 2:
+                return "Dependent Child"
+            elif n_adults > 1 and n_children >= 1:
+                return "Household Member"
+        return None
+
+    if key == "debt_amount_1":
+        fin = data.get("financial_info", {}) or {}
+        amt = _to_float(fin.get("credit_card_balance") or fin.get("total_debt_owed") or fin.get("debt_payments") or 0.0)
+        return _money(amt, 2) if amt > 0 else None
+    if key == "debt_creditor_1":
+        fin = data.get("financial_info", {}) or {}
+        amt = _to_float(fin.get("credit_card_balance") or fin.get("total_debt_owed") or fin.get("debt_payments") or 0.0)
+        return fin.get("creditor_1") or fin.get("creditor_name_1") or ("Credit Card / Personal Debt" if amt > 0 else None)
 
     # Check financial fields directly if present
     fin_val = _get_financial_value(key, data)
