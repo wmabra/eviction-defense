@@ -825,7 +825,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                         and "ky_eviction_answer" not in form_path \
                         and "in_eviction_answer" not in form_path \
                         and "oh_eviction_answer" not in form_path \
-                        and "ok_eviction_answer" not in form_path:
+                        and "ok_eviction_answer" not in form_path \
+                        and "or_eviction_answer" not in form_path \
+                        and "or_fee_waiver" not in form_path:
                     r = pymupdf.Rect(400, r.y0, r.x1, r.y1)
                 w.rect = pymupdf.Rect(r.x0, r.y0, r.x1, r.y1)
                 try:
@@ -1267,6 +1269,19 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         if k not in _all_data or not _all_data.get(k):
             _all_data[k] = today_str
     _all_data["year_2digit"] = date.today().strftime("%y")
+
+    # Oregon answer certificate and narrative helpers
+    if state_code == "OR":
+        _all_data["cert_landlord_address"] = _all_data.get("cos_address") or _all_data.get("landlord_service_address") or _all_data.get("landlord_address") or ""
+        _all_data["cert_date_sig"] = today_str
+        _all_data["cert_name"] = str(p.get("full_name", ""))
+        _all_data["cert_date"] = today_str
+        if (defenses.get("def_repairs", {}) or {}).get("checked"):
+            values["defense_repairs_narrative"] = (defenses.get("def_repairs", {}) or {}).get("explanation") or "Landlord failed to maintain premises and make requested repairs."
+        if (defenses.get("def_bad_notice", {}) or {}).get("checked"):
+            values["defense_bad_notice_narrative"] = (defenses.get("def_bad_notice", {}) or {}).get("explanation") or "Notice was defective or not properly served."
+        if (defenses.get("def_other", {}) or {}).get("checked"):
+            values["defense_other_narrative"] = (defenses.get("def_other", {}) or {}).get("explanation") or ""
     
     # Map each field_mapping key to a value from our data
     # Also make defense_narrative available for field_mapping
@@ -1344,6 +1359,86 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             _all_data["property_address_order"] = str(p.get("property_address", ""))
             _all_data["city_state_zip_order"] = str(_all_data.get("city_state_zip", ""))
             _all_data["phone_order"] = str(p.get("phone", ""))
+        # Oregon fee waiver helpers:
+        if state_code == "OR":
+            _all_data["role_defendant"] = "Yes"
+            _all_data["fee_filing"] = "Yes"
+            _all_data["fee_response"] = "Yes"
+            _all_data["legal_aid_no"] = "Yes"
+            _all_data["legal_aid_yes"] = "No"
+            try:
+                _hs = int(financial.get("household_size") or (int(financial.get("household_adults") or 1) + int(financial.get("household_children") or 0)))
+            except (ValueError, TypeError):
+                _hs = 1
+            _all_data["household_size"] = str(_hs)
+
+            # Living expenses
+            _rent = _to_float(c.get("monthly_rent") or financial.get("rent_or_mortgage") or 0.0)
+            _util = sum(_to_float(financial.get(k)) or 0.0 for k in ("electricity", "gas_oil", "water_sewer", "trash", "utilities_expense", "telephone", "phone_internet", "telephone_expense"))
+            _food = _to_float(financial.get("food_groceries") or financial.get("food_expense") or 0.0)
+            home_total = _rent + _util + _food
+            _all_data["home_expense"] = f"{home_total:.2f}"
+
+            trans_total = sum(_to_float(financial.get(k)) or 0.0 for k in ("transportation", "transportation_expense", "auto_loan", "car_insurance", "auto_expenses", "gasoline"))
+            _all_data["transportation_expense"] = f"{trans_total:.2f}"
+
+            other_total = sum(_to_float(financial.get(k)) or 0.0 for k in ("debt_payments", "medical_expenses", "medical_expense", "child_care", "clothing", "laundry_cleaning", "other_expenses"))
+            _all_data["other_expenses"] = f"{other_total:.2f}"
+
+            total_exp = home_total + trans_total + other_total
+            _all_data["total_monthly_expenses"] = f"{total_exp:.2f}"
+
+            # Benefits
+            if financial.get("receives_snap"):
+                _all_data["receives_snap"] = "Yes"
+                _all_data["snap_amount"] = f"{_to_float(financial.get('snap_amount') or 0.0):.2f}"
+            if financial.get("receives_ssi"):
+                _all_data["receives_ssi"] = "Yes"
+                _all_data["ssi_amount"] = f"{_to_float(financial.get('ssi_amount') or 0.0):.2f}"
+            if financial.get("receives_tanf"):
+                _all_data["receives_tanf"] = "Yes"
+                _all_data["tanf_amount"] = f"{_to_float(financial.get('tanf_amount') or 0.0):.2f}"
+            if financial.get("receives_medicaid"):
+                _all_data["receives_medicaid"] = "Yes"
+            _tot_ben = _to_float(financial.get("total_monthly_benefits") or 0.0)
+            if _tot_ben == 0.0:
+                _tot_ben = _to_float(financial.get("snap_amount") or 0.0) + _to_float(financial.get("ssi_amount") or 0.0) + _to_float(financial.get("tanf_amount") or 0.0)
+            _all_data["total_benefits"] = f"{_tot_ben:.2f}"
+
+            # Income
+            _net = _to_float(financial.get("employment_income") or financial.get("monthly_gross_income") or 0.0)
+            _all_data["employment_income"] = f"{_net:.2f}"
+            _oth_inc = _to_float(financial.get("other_income") or 0.0)
+            _all_data["other_income"] = f"{_oth_inc:.2f}"
+            _all_data["total_monthly_income"] = f"{(_net + _oth_inc):.2f}"
+
+            # Assets
+            _cash = _to_float(financial.get("cash_on_hand") or 0.0) + _to_float(financial.get("checking_balance") or 0.0) + _to_float(financial.get("savings_balance") or 0.0)
+            _all_data["cash_on_hand"] = f"{_cash:.2f}"
+            _veh = _to_float(financial.get("vehicle_value") or 0.0)
+            if _veh > 0:
+                _all_data["asset_desc_1"] = f"Vehicle ({financial.get('vehicle_make_model') or 'Auto'})"
+                _all_data["asset_value"] = f"{_veh:.2f}"
+            else:
+                _all_data["asset_value"] = "0.00"
+            _all_data["total_assets"] = f"{(_cash + _veh):.2f}"
+
+            # Order fields (Pages 4 and 5)
+            _all_data["county_p4"] = str(p.get("county", ""))
+            _all_data["plaintiff_name_p4"] = str(l.get("landlord_name", ""))
+            _all_data["case_number_p4"] = str(c.get("case_number", ""))
+            _all_data["defendant_name_p4"] = str(p.get("full_name", ""))
+            _all_data["full_name_p4"] = str(p.get("full_name", ""))
+            _all_data["order_fee_filing"] = "Yes"
+            _all_data["order_role_defendant"] = "Yes"
+            _all_data["order_signature_1"] = ""
+            _all_data["order_print_name_1"] = str(p.get("full_name", ""))
+            _all_data["order_date"] = today_str
+            _all_data["order_signature"] = ""
+            _all_data["order_printed_name"] = str(p.get("full_name", ""))
+            _all_data["order_address"] = str(p.get("property_address", ""))
+            _all_data["order_city_state_zip"] = str(_all_data.get("city_state_zip", ""))
+            _all_data["order_phone"] = str(p.get("phone", ""))
         # When a state's fee waiver says "categorical assistance → skip Sections 7-10",
         # and the tenant receives categorical assistance, leave the income/expense/asset
         # fields blank (they are only required when categorical assistance is absent).
@@ -1366,7 +1461,10 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                         val = str(val).lstrip("$")
                     values[pdf_field] = str(val)
                 elif map_key in _all_data:
-                    values[pdf_field] = str(_all_data[map_key])
+                    _val = str(_all_data[map_key])
+                    if config.get("strip_dollar_signs"):
+                        _val = _val.lstrip("$")
+                    values[pdf_field] = _val
 
         # Colorado fee waiver: if tenant auto-qualifies via categorical assistance (SNAP/SSI/TANF),
         # clear embedded template default values ('0') in Section 9 total fields so they remain blank
