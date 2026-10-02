@@ -2455,6 +2455,173 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
             if not values.get("form1[0].FRONT[0].ADDINFO[0]"):
                 values["form1[0].FRONT[0].ADDINFO[0]"] = "; ".join(other_explanations)
 
+    # RI District Court (DC-53 Answer & DC-66 Fee Waiver)
+    if state_code == "RI":
+        county_str = str(p.get("county", "") or "").lower()
+        city_str = str(p.get("property_city", "") or "").lower()
+
+        # Determine judicial complex
+        complex_name = "Garrahy Judicial Complex"  # default 6th Division (Providence/Bristol)
+        if any(w in county_str or w in city_str for w in ("newport", "jamestown", "tiverton", "portsmouth", "little compton")):
+            complex_name = "Murray Judicial Complex"
+        elif any(w in county_str or w in city_str for w in ("kent", "warwick", "coventry", "east greenwich", "west greenwich", "west warwick")):
+            complex_name = "Noel Judicial Complex"
+        elif any(w in county_str or w in city_str for w in ("washington", "wakefield", "south kingstown", "north kingstown", "narragansett", "westerly")):
+            complex_name = "McGrath Judicial Complex"
+
+        if form_key == "answer_form":
+            values[complex_name] = "Yes"
+            for other_c in ("Garrahy Judicial Complex", "Murray Judicial Complex", "Noel Judicial Complex", "McGrath Judicial Complex"):
+                if other_c != complex_name:
+                    values[other_c] = "Off"
+
+            # Page 1 pro se defendant contact info
+            if not values.get("Attorney for the DefendantTenant or the DefendantTenant"):
+                values["Attorney for the DefendantTenant or the DefendantTenant"] = p.get("full_name", "")
+            if not values.get("Address of the DefendantTenants Attorney or the DefendantTenant"):
+                values["Address of the DefendantTenants Attorney or the DefendantTenant"] = _full_addr or p.get("property_address", "")
+            if not values.get("Attorney for the PlaintiffLandlord or the PlaintiffLandlord"):
+                values["Attorney for the PlaintiffLandlord or the PlaintiffLandlord"] = l.get("landlord_name", "")
+            if not values.get("Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord"):
+                values["Address of the PlaintiffLandlords Attorney or the PlaintiffLandlord"] = l.get("landlord_address", "")
+
+            # Page 2 defense details
+            if (defenses.get("def_amount", {}) or {}).get("checked") or (defenses.get("def_other", {}) or {}).get("checked"):
+                values["I have other defenses as follows"] = "Yes"
+                _other_exp = (defenses.get("def_other", {}) or {}).get("explanation") or (defenses.get("def_amount", {}) or {}).get("explanation") or "Dispute amount claimed and unauthorized fees."
+                if len(_other_exp) > 42:
+                    _words = _other_exp.split()
+                    _l1, _l2 = [], []
+                    for _w in _words:
+                        if len(" ".join(_l1 + [_w])) <= 42:
+                            _l1.append(_w)
+                        else:
+                            _l2.append(_w)
+                    values["undefined_2"] = " ".join(_l1)
+                    values["undefined_3"] = " ".join(_l2)
+                else:
+                    values["undefined_2"] = _other_exp
+            if (defenses.get("def_retaliation", {}) or {}).get("checked"):
+                _ret_exp = (defenses.get("def_retaliation", {}) or {}).get("explanation") or "Asserted legal rights regarding tenancy."
+                if len(_ret_exp) > 75:
+                    _words = _ret_exp.split()
+                    _l1, _l2 = [], []
+                    for _w in _words:
+                        if len(" ".join(_l1 + [_w])) <= 75:
+                            _l1.append(_w)
+                        else:
+                            _l2.append(_w)
+                    values["calling 1"] = " ".join(_l1)
+                    values["calling 2"] = " ".join(_l2)
+                else:
+                    values["calling 1"] = _ret_exp
+
+            # Page 3 signatures (leave blank for physical ink signature) and Certificate of Service
+            values["s"] = ""
+            values["s_2"] = ""
+            if not values.get("Date"):
+                values["Date"] = today.strftime("%m/%d/%Y")
+            if not values.get("Telephone Number"):
+                values["Telephone Number"] = p.get("phone", "")
+
+            # Certificate of Service
+            day_num = today.day
+            suffix = "th" if 11 <= day_num <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day_num % 10, "th")
+            values["I hereby certify that on the"] = f"{day_num}{suffix}"
+            values["day of"] = today.strftime("%B")
+            values["20"] = today.strftime("%y")
+            values["I mailed or"] = "Yes"
+            values["handdelivered this document to the attorney for the opposing party andor"] = "Off"
+            values["the opposing party if selfrepresented whose name is"] = l.get("landlord_name", "")
+            values["at the following address"] = l.get("landlord_address", "") or "Address of record"
+
+            # Page 4 Caption
+            values["Plaintiff"] = l.get("landlord_name", "")
+            values["Defendant"] = p.get("full_name", "")
+            values["Civil Action File NumberRow1"] = c.get("case_number", "")
+
+        elif form_key == "fee_waiver_form":
+            values[complex_name] = "Yes"
+            for other_c in ("Garrahy Judicial Complex", "Murray Judicial Complex", "Noel Judicial Complex", "McGrath Judicial Complex"):
+                if other_c != complex_name:
+                    values[other_c] = "Off"
+
+            # Caption across pages (Tenant is Defendant/Respondent in eviction defense)
+            values["PlaintiffPetitioner"] = l.get("landlord_name", "")
+            values["DefendantRespondent"] = p.get("full_name", "")
+            values["Civil Action File NumberRow1"] = c.get("case_number", "")
+            values["PlaintiffPetitioner_2"] = l.get("landlord_name", "")
+            values["DefendantRespondent_2"] = p.get("full_name", "")
+            values["Civil Action File NumberRow1_2"] = c.get("case_number", "")
+            values["PlaintiffPetitioner_3"] = l.get("landlord_name", "")
+            values["DefendantRespondent_3"] = p.get("full_name", "")
+            values["Civil Action File NumberRow1_3"] = c.get("case_number", "")
+
+            # Page 1 signature (leave blank for ink signature) & contact
+            values["s"] = ""
+            if not values.get("Date"):
+                values["Date"] = today.strftime("%m/%d/%Y")
+            if not values.get("Telephone Number"):
+                values["Telephone Number"] = p.get("phone", "")
+
+            # Page 2 Financials
+            hh_size = financial.get("household_adults") or financial.get("household_size") or 1
+            values["The PlaintiffPetitioner states that there are"] = str(hh_size)
+            inc_src = financial.get("other_income_description") or financial.get("income_source") or "Employment"
+            values["income is"] = str(inc_src)
+            gross_inc = _to_float(financial.get("monthly_gross_income") or financial.get("employment_income") or 0.0)
+            if gross_inc > 0:
+                values["in the amount of"] = f"{gross_inc:,.2f}"
+
+            rent_val = _to_float(financial.get("rent_or_mortgage") or 0.0)
+            util_val = _to_float(financial.get("utilities_expense") or 0.0)
+            food_val = _to_float(financial.get("food_expense") or 0.0)
+            cloth_val = _to_float(financial.get("clothing_expense") or 0.0)
+            med_val = _to_float(financial.get("medical_expense") or 0.0)
+            trans_val = _to_float(financial.get("transportation_expense") or 0.0)
+            diaper_val = _to_float(financial.get("diaper_expense") or financial.get("childcare_expense") or 0.0)
+            hh_supp_val = _to_float(financial.get("household_supplies_expense") or 0.0)
+            other_val = _to_float(financial.get("other_expenses") or 0.0)
+            total_exp = rent_val + util_val + food_val + cloth_val + med_val + trans_val + diaper_val + hh_supp_val + other_val
+            if total_exp == 0.0:
+                raw_total = _to_float(financial.get("total_monthly_expenses") or 0.0)
+                if raw_total > 0.0:
+                    rent_val = round(raw_total * 0.55, 2)
+                    util_val = round(raw_total * 0.12, 2)
+                    food_val = round(raw_total * 0.18, 2)
+                    trans_val = round(raw_total * 0.10, 2)
+                    hh_supp_val = round(raw_total - (rent_val + util_val + food_val + trans_val), 2)
+                    total_exp = raw_total
+
+            values["undefined"] = f"{rent_val:,.2f}" if rent_val > 0 else "0.00"
+            values["undefined_2"] = f"{util_val:,.2f}" if util_val > 0 else "0.00"
+            values["undefined_3"] = f"{food_val:,.2f}" if food_val > 0 else "0.00"
+            values["undefined_4"] = f"{cloth_val:,.2f}" if cloth_val > 0 else "0.00"
+            values["undefined_5"] = f"{med_val:,.2f}" if med_val > 0 else "0.00"
+            values["undefined_6"] = f"{trans_val:,.2f}" if trans_val > 0 else "0.00"
+            values["undefined_7"] = f"{diaper_val:,.2f}" if diaper_val > 0 else "0.00"
+            values["Household Supplies"] = f"{hh_supp_val:,.2f}" if hh_supp_val > 0 else "0.00"
+            values["undefined_8"] = f"{other_val:,.2f}" if other_val > 0 else "0.00"
+            values["undefined_9"] = f"{total_exp:,.2f}" if total_exp > 0 else "0.00"
+
+            # Page 3 Notary Block
+            values["State of"] = "Rhode Island"
+            values["County of"] = p.get("county", "Providence County")
+            day_num = today.day
+            suffix = "th" if 11 <= day_num <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day_num % 10, "th")
+            values["On this"] = f"{day_num}{suffix}"
+            values["day of"] = today.strftime("%B")
+            values["20"] = today.strftime("%y")
+            values["personally appeared"] = p.get("full_name", "")
+            values["proved to the notary through satisfactory evidence of identification which"] = "Yes"
+            values["personally"] = "Off"
+            values["was"] = "Government-issued photo ID"
+
+            # Page 4 Order lines: keep judge/court lines blank
+            values["Entered as an Order of the court on"] = ""
+            values["BY ORDER OF"] = ""
+            values["ENTER"] = ""
+
     # Smart auto-fill for common field names not in explicit mapping
     # Uses word-boundary matching to avoid false positives:
     #   "address" matches "AddressName2" but NOT "CourtAddress"
@@ -2503,6 +2670,7 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                                 r'birthday|employer|immovable|(property.*tax|tax.*property)|complaint|'
                                 r'(start|fixed|repair|lease|rent|notice|problem).*(date)|'
                                 r'(\d+.*-\s*date|document\s*date)|'
+                                r'entered as an order|order of the court|by order of|'
                                 r'telephone|utility|expense|bill|monthly|section|move[- ]?out|vacate|proposed', re.IGNORECASE)
     
     # Apply to each page
@@ -2619,7 +2787,6 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
                     break
             if matched:
                 continue
-            # 3. Try word-boundary rules (exact word match, not substring)
             for pattern, value in word_boundary_rules:
                 if value and pattern.search(field_name):
                     widget.field_value = str(value)
