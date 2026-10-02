@@ -2028,6 +2028,77 @@ def _fill_via_widgets(doc: pymupdf.Document, data: dict, config: dict, form_key:
         # Defendant signature date
         values["date_2"] = today.strftime("%m/%d/%Y")
 
+    # Texas JP Court Eviction Answer (tx_eviction_answer.pdf)
+    if state_code == "TX" and form_key == "answer_form":
+        # Page 1: Court & Case Caption
+        values["Check Box JP"] = "Yes"
+        values["Other Court"] = ""
+        values["Check Other Court"] = "Off"
+        _pct_match = re.search(r'(?:precinct|pct\.?)\s*(\d+)', str(c.get("court_name") or ""), re.IGNORECASE)
+        values["Text4"] = _pct_match.group(1) if _pct_match else str(c.get("precinct") or c.get("court_number") or "1")
+        values["Text5"] = p.get("county") or c.get("county") or ""
+        values["Text1"] = c.get("case_number", "")
+        values["Text2"] = l.get("landlord_name", "")
+        values["Text3"] = p.get("full_name", "")
+
+        # Page 1 & 2: Statutory & procedural defense checkboxes
+        if isinstance(defenses.get("def_bad_notice"), dict) and defenses["def_bad_notice"].get("checked"):
+            values["Check Box4"] = "Yes"
+        if (isinstance(defenses.get("def_attempted_pay"), dict) and defenses["def_attempted_pay"].get("checked")) or \
+           (isinstance(defenses.get("def_failure_mitigate"), dict) and defenses["def_failure_mitigate"].get("checked")):
+            values["Check Box Mitigate"] = "Yes"
+        if isinstance(defenses.get("def_cares_act"), dict) and defenses["def_cares_act"].get("checked"):
+            values["Check Box2"] = "Yes"
+        if isinstance(defenses.get("def_moved_out"), dict) and defenses["def_moved_out"].get("checked"):
+            values["Check Box Does Not Live"] = "Yes"
+        if isinstance(defenses.get("def_forbearance"), dict) and defenses["def_forbearance"].get("checked"):
+            values["Check Box50"] = "Yes"
+        if isinstance(defenses.get("def_rental_assistance"), dict) and defenses["def_rental_assistance"].get("checked"):
+            values["Check Box 54"] = "Yes"
+
+        # Page 2: Jury trial
+        values["Check Box7"] = "Yes" if pref.get("trial_by") == "jury" else "Off"
+
+        # Page 2: Ruled narrative defense lines for Check Box6
+        has_narrative_defenses = any(
+            isinstance(defenses.get(k), dict) and defenses[k].get("checked")
+            for k in ("def_repairs", "def_amount", "def_unlawful_fees", "def_retaliation", "def_paid", "def_waived", "def_fair_housing", "def_other")
+        ) or any(
+            isinstance(d, dict) and d.get("checked") and d.get("explanation")
+            for d in defenses.values()
+        )
+        if has_narrative_defenses:
+            values["Check Box6"] = "Yes"
+            tx_lines = _build_defense_lines(defenses, max_lines=18, max_width=440.0, font_size=8.5)
+            tx_narrative_fields = [
+                "Text8", "Text9", "Text23", "Text24", "Text25",
+                "Text108", "Text109", "Text1023", "Text1024", "Text 1025",
+                "Text 1026", "Text 1027", "Text 1028", "Text 1029", "Text 1030",
+                "Text 1031", "Text 1032", "Text1033"
+            ]
+            for idx, fld in enumerate(tx_narrative_fields):
+                values[fld] = tx_lines[idx] if idx < len(tx_lines) else ""
+        else:
+            values["Check Box6"] = "Off"
+
+        # Page 3: Electronic service, Contact & Signatures
+        values["Check Box9"] = "Yes"
+        values["Text12"] = p.get("email", "")
+        values["Check Box10"] = "Off"
+        values["Text277"] = ""
+        values["Text28"] = ""
+        values["Text13"] = ""
+
+        # Signatures left blank for physical ink; dates populated
+        values["D signature"] = ""
+        values["D signature date"] = today.strftime("%m/%d/%Y")
+        values["Text15"] = p.get("property_address", "")
+        values["Text16"] = f"{p.get('property_city', '')}, {data.get('state', 'TX')} {p.get('property_zip', '')}".strip(", ")
+        values["Text 17"] = p.get("phone", "")
+        values["Text18"] = p.get("email", "")
+        values["D signature 2"] = ""
+        values["D signature date 2"] = today.strftime("%m/%d/%Y")
+
     # South Carolina SCCA405 Fee Waiver: set circuit, financials, sworn block, and clean fields
     if state_code == "SC" and form_key == "fee_waiver_form":
         _cty_key = str(p.get("county") or "").strip().lower().replace(" county", "").strip()
@@ -3207,7 +3278,7 @@ def _make_scanned_form_editable(doc: pymupdf.Document, data: dict) -> None:
         # coordinates, and widget rects are top-down too — no flipping needed.
         covered = [pymupdf.Rect(w.rect) for w in page.widgets() if w.rect is not None]
 
-        def _covered(rect, tol=4):
+        def _covered(rect, tol=1.0):
             r = pymupdf.Rect(rect.x0 - tol, rect.y0 - tol, rect.x1 + tol, rect.y1 + tol)
             return any(r.intersects(e) for e in covered)
 
@@ -3538,6 +3609,30 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
              if (l.get('landlord_attorney_name') or '').strip() and (l.get('landlord_attorney_address') or '').strip()
              else l.get("landlord_address"))
         ])),
+        "court_number": (
+            str(c.get("court_number") or c.get("precinct") or "").strip()
+            or (re.search(r'(?:precinct|pct\.?)\s*(\d+)', str(c.get("court_name") or ""), re.IGNORECASE).group(1)
+                if re.search(r'(?:precinct|pct\.?)\s*(\d+)', str(c.get("court_name") or ""), re.IGNORECASE)
+                else "1")
+        ),
+        "job_title": fin.get("job_title") or fin.get("occupation") or ("Employed" if (fin.get("is_employed") or _to_float(fin.get("employment_income") or fin.get("monthly_gross_income")) > 0) else None),
+        "bank_desc": "Checking & Savings" if (fin.get("checking_balance") is not None or fin.get("savings_balance") is not None or fin.get("bank_balance") is not None) else None,
+        "utilities_and_phone": (
+            _money(_to_float(fin.get("utilities_expense") or 0.0) + _to_float(fin.get("telephone_expense") or fin.get("phone_expense") or 0.0), 2)
+            if (fin.get("utilities_expense") is not None or fin.get("telephone_expense") is not None or fin.get("phone_expense") is not None)
+            else None
+        ),
+        "debt_summary": (
+            f"{fin.get('creditor_1') or 'Credit Card / Personal Debt'}: {_money(_to_float(fin.get('credit_card_balance') or fin.get('total_debt_owed') or fin.get('debt_payments') or 0.0), 2)}"
+            if (_to_float(fin.get("credit_card_balance") or fin.get("total_debt_owed") or fin.get("debt_payments") or 0.0) > 0)
+            else None
+        ),
+        "full_name_decl": p.get("full_name"),
+        "full_address_decl": _compose_full_address(p, data.get("state", "")),
+        "date_decl": date.today().strftime("%m/%d/%Y"),
+        "county_decl": p.get("county"),
+        "state_decl": data.get("state") or "TX",
+        "dob_decl": p.get("date_of_birth") or "",
     }
     
     # Handle defense narrative text generation
@@ -3972,6 +4067,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                 return "Dependent Child"
             elif n_adults > 1:
                 return "Household Member"
+        elif key == "dep_age_1":
+            return "< 18" if n_children >= 1 else ("Adult" if n_adults > 1 else None)
         elif key == "dep_name_2":
             if n_children >= 2:
                 return "Child 2 (Minor)"
@@ -3982,6 +4079,8 @@ def _get_field_value(key: str, data: dict) -> Optional[str]:
                 return "Dependent Child"
             elif n_adults > 1 and n_children >= 1:
                 return "Household Member"
+        elif key == "dep_age_2":
+            return "< 18" if n_children >= 2 else ("Adult" if n_adults > 1 and n_children >= 1 else None)
         return None
 
     if key == "debt_amount_1":
@@ -4321,6 +4420,7 @@ def _build_defense_lines(defenses: dict, max_lines: int = 5, max_width: float = 
 
     DEFENSE_LABELS = [
         ("def_repairs", "Failure to repair: "),
+        ("def_unlawful_fees", "Unlawful fees: "),
         ("def_amount", "Disputed rent: "),
         ("def_bad_notice", "Defective notice: "),
         ("def_attempted_pay", "Attempted payment: "),
