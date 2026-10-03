@@ -818,9 +818,9 @@ def _fill_form(data: dict, state: str, output_path: str, form_key: str) -> bool:
                 if r is None or (r.y0 <= 0 and r.y1 >= PH):
                     continue
                 nm = str(getattr(w, "field_name", "") or "").lower()
-                if r.x0 < 90 and r.height < 25 and any(k in nm for k in ("plaintiff", "defendant", "printed")) \
+                if r.x0 < 90 and r.height < 25 and "printed" in nm \
                         and any(f in form_path for f in ("in_eviction_answer", "ky_eviction_answer", "mo_eviction_answer")):
-                    r = pymupdf.Rect(130, r.y0, r.x1, r.y1)
+                    r = pymupdf.Rect(135, r.y0, r.x1, r.y1)
                 elif 350 <= r.x0 <= 370 and any(k in nm for k in ("address", "phone")) \
                         and "ky_eviction_answer" not in form_path \
                         and "in_eviction_answer" not in form_path \

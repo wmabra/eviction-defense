@@ -1797,6 +1797,11 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         "strip_dollar_signs": True,
         "field_rect_overrides": {
             "answer_form": {
+                "plaintiff_name": {"x0": 72.0, "y0": 121.0, "x1": 372.0, "y1": 137.0, "align": "left"},
+                "defendant_name": {"x0": 72.0, "y0": 196.0, "x1": 372.0, "y1": 212.0, "align": "left"},
+                "case_number": {"x0": 448.0, "y0": 119.0, "x1": 565.0, "y1": 135.0, "align": "left"},
+                "division": {"x0": 460.0, "y0": 194.0, "x1": 565.0, "y1": 210.0, "align": "left"},
+                "printed_name": {"x0": 135.0, "y0": 630.0, "x1": 322.0, "y1": 648.0, "align": "left"},
                 "date": {"y0": 528.0, "y1": 542.0, "align": "center"},
                 "property_address": {"y0": 630.0, "y1": 658.0, "text_fontsize": 9.0},
             },
@@ -1915,6 +1920,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "field_rect_overrides": {
             "answer_form": {
+                "plaintiff_name": {"x0": 72.0, "y0": 141.0, "x1": 352.0, "y1": 157.0, "align": "left"},
+                "defendant_name": {"x0": 72.0, "y0": 216.0, "x1": 352.0, "y1": 232.0, "align": "left"},
                 "county": {"x0": 72.0, "y0": 70.0, "x1": 230.0, "y1": 85.0, "align": "right"},
                 "case_number": {"align": "left"},
                 "printed_name": {"x0": 135.0, "y0": 616.0, "x1": 322.0, "y1": 634.0, "align": "left"},
@@ -2059,6 +2066,8 @@ STATE_CONFIGS: Dict[str, StateConfig] = {
         },
         "field_rect_overrides": {
             "answer_form": {
+                "plaintiff_name": {"x0": 72.0, "y0": 122.0, "x1": 352.0, "y1": 138.0, "align": "left"},
+                "defendant_name": {"x0": 72.0, "y0": 192.0, "x1": 352.0, "y1": 208.0, "align": "left"},
                 "county": {"align": "left"},
                 "case_number": {"align": "left"},
                 "printed_name": {"x0": 135.0, "y0": 642.0, "x1": 322.0, "y1": 658.0, "align": "left"},
