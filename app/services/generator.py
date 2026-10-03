@@ -2070,7 +2070,7 @@ def _generate_motion_for_hearing(data: dict, output_path: str):
         Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]),
         Paragraph(
             f"I HEREBY CERTIFY that a true and correct copy of the foregoing Motion for Hearing was "
-            f"delivered to {svc_name} at {svc_addr or '[ADDRESS]'}.", S["BodySmall"]),
+            f"delivered to {svc_name} at {svc_addr or '[ADDRESS]'} on this {_submitted_today()}. Served by:", S["BodySmall"]),
         _svc,
     ]))
 
@@ -2647,25 +2647,61 @@ def _generate_notice_automatic_stay_bankruptcy(data: dict, output_path: str):
     elements.extend(_editable_signature(data, S))
     elements.append(Spacer(1, 6))
 
-    svc_name, svc_addr = _service_recipient(data)
-    _s1 = Table([[FillableCheckbox("bk_svc1_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc1_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc1_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
-    _s1.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    _s2 = Table([[FillableCheckbox("bk_svc2_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc2_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc2_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
-    _s2.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    _s3 = Table([[FillableCheckbox("bk_svc3_0"), Paragraph("U.S. Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_1"), Paragraph("Hand Delivery", S["BodySmall"]), FillableCheckbox("bk_svc3_2"), Paragraph("Certified Mail", S["BodySmall"]), FillableCheckbox("bk_svc3_3"), Paragraph("Email", S["BodySmall"])]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
-    _s3.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
-    elements.append(KeepTogether([
+    cos_meth = str(pref.get("certificate_of_service_method") or "regular_mail").lower()
+    is_mail = ("mail" in cos_meth or "regular" in cos_meth or not cos_meth)
+    is_hand = ("hand" in cos_meth or "personal" in cos_meth)
+    is_certified = ("certified" in cos_meth)
+    is_email = ("email" in cos_meth or "electronic" in cos_meth or "efile" in cos_meth)
+
+    landlord_name = l.get("landlord_name") or "the Plaintiff"
+    landlord_addr = l.get("landlord_address") or ""
+    _has_ll_email = bool((l.get("landlord_email") or "").strip())
+
+    atty_name = (l.get("landlord_attorney_name") or "").strip()
+    atty_addr = (l.get("landlord_attorney_address") or "").strip()
+    _has_atty_email = bool((l.get("landlord_attorney_email") or "").strip())
+
+    court_str = (c.get("court_name") or "").strip()
+
+    cos_elements = [
         Paragraph("<b>CERTIFICATE OF SERVICE</b>", S["BodyBold"]),
         Paragraph(
             f"I HEREBY CERTIFY that a true and correct copy of the foregoing Notice of Automatic Stay "
-            f"Due to Bankruptcy Filing was furnished to:", S["BodySmall"]),
-        Paragraph(f"• {svc_name} at {svc_addr or '[ADDRESS]'}", S["BodySmall"]),
-        _s1,
-        Paragraph("• Clerk of Court", S["BodySmall"]),
-        _s2,
-        Paragraph("• Landlord's Attorney (if applicable)", S["BodySmall"]),
-        _s3,
-    ]))
+            f"Due to Bankruptcy Filing was furnished on this {_submitted_today()} to:", S["BodySmall"]),
+        Paragraph(f"• {landlord_name} at {landlord_addr or '[ADDRESS]'}", S["BodySmall"]),
+    ]
+    _s1 = Table([[
+        FillableCheckbox("bk_svc1_0", checked=is_mail), Paragraph("U.S. Mail", S["BodySmall"]),
+        FillableCheckbox("bk_svc1_1", checked=is_hand), Paragraph("Hand Delivery", S["BodySmall"]),
+        FillableCheckbox("bk_svc1_2", checked=is_certified), Paragraph("Certified Mail", S["BodySmall"]),
+        FillableCheckbox("bk_svc1_3", checked=(_has_ll_email or is_email)), Paragraph("Email", S["BodySmall"]),
+    ]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+    _s1.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    cos_elements.append(_s1)
+
+    if atty_name:
+        cos_elements.append(Paragraph(f"• {atty_name} (Landlord's Attorney) at {atty_addr or landlord_addr or '[ADDRESS]'}", S["BodySmall"]))
+        _s3 = Table([[
+            FillableCheckbox("bk_svc3_0", checked=is_mail), Paragraph("U.S. Mail", S["BodySmall"]),
+            FillableCheckbox("bk_svc3_1", checked=is_hand), Paragraph("Hand Delivery", S["BodySmall"]),
+            FillableCheckbox("bk_svc3_2", checked=is_certified), Paragraph("Certified Mail", S["BodySmall"]),
+            FillableCheckbox("bk_svc3_3", checked=(_has_atty_email or is_email)), Paragraph("Email", S["BodySmall"]),
+        ]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+        _s3.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+        cos_elements.append(_s3)
+
+    clerk_label = f"• Clerk of Court ({court_str})" if court_str else "• Clerk of Court"
+    cos_elements.append(Paragraph(clerk_label, S["BodySmall"]))
+    _s2 = Table([[
+        FillableCheckbox("bk_svc2_0", checked=is_mail), Paragraph("U.S. Mail", S["BodySmall"]),
+        FillableCheckbox("bk_svc2_1", checked=is_hand), Paragraph("Hand Delivery", S["BodySmall"]),
+        FillableCheckbox("bk_svc2_2", checked=is_certified), Paragraph("Certified Mail", S["BodySmall"]),
+        FillableCheckbox("bk_svc2_3", checked=is_email), Paragraph("Email", S["BodySmall"]),
+    ]], colWidths=[18, 80, 18, 100, 18, 100, 18, 70])
+    _s2.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LEFTPADDING", (0, 0), (-1, -1), 0)]))
+    cos_elements.append(_s2)
+
+    elements.append(KeepTogether(cos_elements))
 
     doc.build(elements)
 
